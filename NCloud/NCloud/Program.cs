@@ -1,3 +1,7 @@
+using Microsoft.EntityFrameworkCore;
+using NCloud.Models;
+using NCloud.Services;
+
 namespace NCloud
 {
     public class Program
@@ -6,16 +10,22 @@ namespace NCloud
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            // Add services to the container.
-            builder.Services.AddControllersWithViews();
+            builder.Services.AddDbContext<CloudDbContext>(options =>
+            {
+                IConfigurationRoot configuration = builder.Configuration;
+                options.UseSqlServer(configuration.GetConnectionString("SqlServerConnection"));
+                options.UseLazyLoadingProxies();
+            });
 
+            builder.Services.AddTransient<ICloudService, CloudService>();
+            
+            builder.Services.AddControllersWithViews();
+            
             var app = builder.Build();
 
-            // Configure the HTTP request pipeline.
             if (!app.Environment.IsDevelopment())
             {
                 app.UseExceptionHandler("/Home/Error");
-                // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
             }
 
@@ -29,6 +39,12 @@ namespace NCloud
             app.MapControllerRoute(
                 name: "default",
                 pattern: "{controller=Home}/{action=Index}/{id?}");
+
+            using (var serviceScope = app.Services.CreateScope())
+            using (var context = serviceScope.ServiceProvider.GetRequiredService<CloudDbContext>())
+            {
+                DbInitializer.Initialize(serviceScope.ServiceProvider);
+            }
 
             app.Run();
         }
