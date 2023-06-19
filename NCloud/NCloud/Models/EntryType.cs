@@ -2,6 +2,6 @@
 {
     public enum EntryType
     {
-        FOLDER,FILE
+        FOLDER=0,FILE=1
     }
 }
