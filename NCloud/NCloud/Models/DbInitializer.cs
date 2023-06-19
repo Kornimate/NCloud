@@ -26,6 +26,22 @@ namespace NCloud.Models
 			//}
 
 			if(context.Entries.Any()) { return; }
+
+			List<Entry> defFolders = new List<Entry>()
+			{
+				new Entry
+				{
+					Name="Public Folder",
+					Size=0,
+					IsVisibleForEveryOne = true,
+					CreatedDate= DateTime.Now,
+					Type = EntryType.FOLDER,
+					ParentId=0,
+				}
+			};
+
+			context.Entries.AddRange(defFolders);
+			context.SaveChanges();
 		}
 	}
 }
