@@ -1,6 +1,8 @@
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using NCloud.Models;
 using NCloud.Services;
+using NCloud.Users;
 
 namespace NCloud
 {
@@ -17,10 +19,31 @@ namespace NCloud
                 options.UseLazyLoadingProxies();
             });
 
+            builder.Services.AddIdentity<CloudUser, IdentityRole>(options =>
+            {
+                options.Password.RequireDigit = true;
+                options.Password.RequiredLength = 8;
+                options.Password.RequiredUniqueChars = 1;
+                options.Password.RequireLowercase = true;
+                options.Password.RequireNonAlphanumeric = false;
+                options.Password.RequireUppercase = true;
+            })
+            .AddEntityFrameworkStores<CloudDbContext>();
+
             builder.Services.AddTransient<ICloudService, CloudService>();
             
             builder.Services.AddControllersWithViews();
-            
+
+            builder.Services.AddDistributedMemoryCache();
+
+            builder.Services.AddHttpContextAccessor();
+            builder.Services.AddSession(options =>
+            {
+                options.IdleTimeout = TimeSpan.FromHours(24);
+                options.Cookie.HttpOnly = true;
+                options.Cookie.IsEssential = true;
+            });
+
             var app = builder.Build();
 
             if (!app.Environment.IsDevelopment())
@@ -30,9 +53,14 @@ namespace NCloud
             }
 
             app.UseHttpsRedirection();
+
             app.UseStaticFiles();
 
+            app.UseSession();
+
             app.UseRouting();
+
+            app.UseAuthentication();
 
             app.UseAuthorization();
 

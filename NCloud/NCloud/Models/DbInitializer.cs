@@ -1,31 +1,33 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using NCloud.Users;
 
 namespace NCloud.Models
 {
 	public class DbInitializer
 	{
 		private static CloudDbContext context = null!;
-		//private static UserManager<ApplicationUser> userManager = null!;
+		private static UserManager<CloudUser> userManager = null!;
 		public static void Initialize(IServiceProvider serviceProvider)
 		{
 			context = serviceProvider.GetRequiredService<CloudDbContext>();
-			//userManager = serviceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+			userManager = serviceProvider.GetRequiredService<UserManager<CloudUser>>();
 
 			context.Database.Migrate();
 
-			//if (!context.Users.Any())
-			//{
-			//	try
-			//	{
-			//		var user = new ApplicationUser { FullName = "Admin", UserName = "Admin" };
-			//		userManager.CreateAsync(user,"Admin").Wait();
-			//	}
-			//	catch { }
-			//}
+			var admin = new CloudUser { FullName = "Admin", UserName = "Admin" }; // Admin User : FullName: Admin, UserName: Admin
 
-			if(context.Entries.Any()) { return; }
+			if (!context.Users.Any())
+			{
+				try
+				{
+					userManager.CreateAsync(admin, "Admin").Wait(); // Passwords is Admin
+				}
+				catch { }
+			}
+
+			if (context.Entries.Any()) { return; }
 
 			List<Entry> defFolders = new List<Entry>()
 			{
@@ -33,10 +35,11 @@ namespace NCloud.Models
 				{
 					Name="Public Folder",
 					Size=0,
-					IsVisibleForEveryOne = true,
-					CreatedDate= DateTime.Now,
-					Type = EntryType.FOLDER,
 					ParentId=0,
+					Type = EntryType.FOLDER,
+					CreatedDate= DateTime.Now,
+					IsVisibleForEveryOne = true,
+					CreatedBy = admin,
 				}
 			};
 
