@@ -1,6 +1,6 @@
 ﻿namespace NCloud.Models
 {
-    public class File
+    public class File : Entry
     {
     }
 }

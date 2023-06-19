@@ -24,6 +24,8 @@ namespace NCloud.Models
 			//	}
 			//	catch { }
 			//}
+
+			if(context.Entries.Any()) { return; }
 		}
 	}
 }
