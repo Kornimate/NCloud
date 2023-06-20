@@ -1,8 +1,9 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Welcome Page";
 }
 
 <div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+    <h1 class="display-4 mb-5">Welcome to the NCloud Service!</h1>
+    <a asp-action="Login" asp-controller="Account" class="btn btn-primary">Login</a>
+    <a asp-action="Register" asp-controller="Account" class="btn btn-primary ms-3">Register</a>
 </div>

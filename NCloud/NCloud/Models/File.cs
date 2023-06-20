@@ -1,6 +1,10 @@
 ﻿namespace NCloud.Models
 {
-    public class File : Entry
+    public class File : CloudRegistration
     {
+        public override int GetSize()
+        {
+            return 1; // todo, sablonfuggveny alapjan megcsinalni
+        }
     }
 }
