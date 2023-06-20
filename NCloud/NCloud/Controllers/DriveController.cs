@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using NCloud.Services;
+using NCloud.Users;
 using NCloud.ViewModels;
 
 namespace NCloud.Controllers
@@ -8,10 +10,12 @@ namespace NCloud.Controllers
     public class DriveController : Controller
     {
         private readonly ICloudService service;
+        private readonly UserManager<CloudUser> userManager;
 
-        public DriveController(ICloudService service)
+        public DriveController(ICloudService service,UserManager<CloudUser> userManager)
         {
             this.service = service;
+            this.userManager = userManager;
         }
 
         // GET: DriveController
@@ -22,9 +26,10 @@ namespace NCloud.Controllers
         }
 
         // GET: DriveController/Details/5
-        public ActionResult Details(int depth)
+        public async Task<ActionResult> Details(int parentId)
         {
-            return View();
+            CloudUser user = await userManager.GetUserAsync(HttpContext.User);
+            return View(new DriveDetailsViewModel(service.GetCurrentDeptData(parentId,user)));
         }
 
         // GET: DriveController/Create
