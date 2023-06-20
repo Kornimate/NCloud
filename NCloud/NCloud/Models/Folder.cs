@@ -1,6 +1,10 @@
 ﻿namespace NCloud.Models
 {
-    public class Folder : Entry
+    public class Folder : CloudRegistration
     {
+        public override int GetSize()
+        {
+            return 0; // todo, sablonfuggveny alapjan megcsinalni
+        }
     }
 }

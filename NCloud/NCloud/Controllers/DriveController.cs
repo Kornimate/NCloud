@@ -18,11 +18,11 @@ namespace NCloud.Controllers
         public ActionResult Index()
         {
             var result = service.GetCurrentUserIndexData();
-            return View(new DriveIndexViewModel(result.item1,result.item2));
+            return View(new DriveIndexViewModel(result.Item1,result.Item2));
         }
 
         // GET: DriveController/Details/5
-        public ActionResult Details(int id)
+        public ActionResult Details(int depth)
         {
             return View();
         }

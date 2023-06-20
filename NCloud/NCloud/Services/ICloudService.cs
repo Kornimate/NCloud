@@ -5,6 +5,6 @@ namespace NCloud.Services
 {
     public interface ICloudService
     {
-        Tuple<List<File>, List<Folder>> GetCurrentUserIndexData();
+        Tuple<List<File?>, List<Folder?>> GetCurrentUserIndexData();
     }
 }
