@@ -60,6 +60,7 @@ namespace ELTE.TodoList.Web.Controllers
             return View(vm);
         }
         [HttpGet]
+        [AllowAnonymous]
         public IActionResult Register(string? returnUrl = null)
         {
 			ViewBag.ReturnUrl = returnUrl;
@@ -67,6 +68,7 @@ namespace ELTE.TodoList.Web.Controllers
         }
 
         [HttpPost]
+        [AllowAnonymous]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Register(RegisterViewModel vm, string? returnUrl = null)
         {

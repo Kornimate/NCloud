@@ -1,9 +1,16 @@
-﻿namespace NCloud.ViewModels
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace NCloud.ViewModels
 {
     public class RegisterViewModel
     {
-        public string? UserName { get; internal set; }
-        public string? Password { get; internal set; }
-        public string FullName { get; internal set; }
+        [Required]
+        public string? UserName { get; set; }
+        [Required] // need extra check
+        public string? FullName { get; set; }
+        [Required] // need extra check
+        public string? Password { get; set; }
+        [Required] // need extra check
+        public string? PasswordRepeat { get; set; }
     }
 }
