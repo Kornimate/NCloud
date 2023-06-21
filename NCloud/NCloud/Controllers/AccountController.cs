@@ -51,6 +51,10 @@ namespace ELTE.TodoList.Web.Controllers
 
                 if (result.Succeeded)
                 {
+                    if(returnUrl is null)
+                    {
+                        return RedirectToAction("Index", "Drive");
+                    }
                     return RedirectToLocal(returnUrl);
                 }
 
