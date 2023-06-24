@@ -1,3 +1,10 @@
 ﻿@{
-    Layout = "_Layout";
+    if (ViewContext.RouteData.Values["controller"] != null && ViewContext.RouteData.Values["controller"]!.ToString() == "Drive")
+    {
+        Layout = "_NavBarLayout";
+    }
+    else
+    {
+        Layout = "_Layout";
+    }
 }
