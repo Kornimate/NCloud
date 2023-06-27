@@ -1,0 +1,7 @@
+﻿@model DriveDetailsViewModel
+
+<h1>My Files</h1><br />
+
+@foreach(CloudRegistration? item in Model.items){
+    <span>@item?.Name</span>
+}

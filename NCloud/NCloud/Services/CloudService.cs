@@ -16,8 +16,8 @@ namespace NCloud.Services
 
         public List<CloudRegistration?> GetCurrentDeptData(int parentId, CloudUser user)
         {
-            return context.Entries.Where(x => x.CreatedBy == user && x.ParentId == parentId)
-                                  .Select(x => x as CloudRegistration)
+            return context.Entries.Where(x => x.ParentId == parentId)
+                                  .Select(x => CloudRegistration.CreateRegistration(x))
                                   .ToList();
         }
 
@@ -28,12 +28,12 @@ namespace NCloud.Services
                      context.Entries.Where(x => x.Type == EntryType.FILE)
                                     .OrderByDescending(x => x.CreatedDate)
                                     .Take(5)
-                                    .Select(x => x as File)
+                                    .Select(x => (File?)CloudRegistration.CreateRegistration(x))
                                     .ToList(),
                      context.Entries.Where(x => x.Type == EntryType.FILE)
                                     .OrderByDescending(x => x.CreatedDate)
                                     .Take(5)
-                                    .Select(x => x as Folder)
+                                    .Select(x => (Folder?)CloudRegistration.CreateRegistration(x))
                                     .ToList()
                 );
         }

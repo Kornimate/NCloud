@@ -43,7 +43,7 @@ namespace ELTE.TodoList.Web.Controllers
                 var user = await userManager.FindByNameAsync(vm.UserName);
                 if (user == null)
                 {
-                    ModelState.AddModelError("", "Failed to Login!");
+                    ModelState.AddModelError("", "No User with this UserName!");
                     return View(vm);
                 }
 
@@ -51,6 +51,10 @@ namespace ELTE.TodoList.Web.Controllers
 
                 if (result.Succeeded)
                 {
+                    if(returnUrl is null)
+                    {
+                        return RedirectToAction("Index", "Drive");
+                    }
                     return RedirectToLocal(returnUrl);
                 }
 
@@ -60,6 +64,7 @@ namespace ELTE.TodoList.Web.Controllers
             return View(vm);
         }
         [HttpGet]
+        [AllowAnonymous]
         public IActionResult Register(string? returnUrl = null)
         {
 			ViewBag.ReturnUrl = returnUrl;
@@ -67,12 +72,19 @@ namespace ELTE.TodoList.Web.Controllers
         }
 
         [HttpPost]
+        [AllowAnonymous]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Register(RegisterViewModel vm, string? returnUrl = null)
         {
 			ViewBag.ReturnUrl = returnUrl;
             if (ModelState.IsValid)
             {
+                var existing = await userManager.FindByNameAsync(vm.UserName);
+                if (existing != null)
+                {
+                    ModelState.AddModelError("", "This UserName is already in use!");
+                    return View(vm);
+                }
                 var user = new CloudUser { UserName = vm.UserName, FullName=vm.FullName};
                 var result = await userManager.CreateAsync(user, vm.Password);
 

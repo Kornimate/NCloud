@@ -22,7 +22,7 @@ namespace NCloud.Models
 			{
 				try
 				{
-					userManager.CreateAsync(admin, "Admin").Wait(); // Passwords is Admin
+					userManager.CreateAsync(admin, "Admin_1234").Wait(); // Passwords is Admin_1234 beacuse of safety reasons
 				}
 				catch { }
 			}
