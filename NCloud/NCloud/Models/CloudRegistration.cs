@@ -8,11 +8,31 @@ namespace NCloud.Models
         {
             if (x.Type == EntryType.FOLDER)
             {
-                return new Folder();
+                return new Folder()
+                {
+                    Id = x.Id,
+                    Name = x.Name,
+                    Size = x.Size,
+                    ParentId = x.ParentId,
+                    Type = x.Type,
+                    CreatedDate = x.CreatedDate,
+                    IsVisibleForEveryOne = x.IsVisibleForEveryOne,
+                    CreatedBy = x.CreatedBy,
+                };
             }
             else if (x.Type == EntryType.FILE)
             {
-                return new File();
+                return new File()
+                {
+                    Id = x.Id,
+                    Name = x.Name,
+                    Size = x.Size,
+                    ParentId = x.ParentId,
+                    Type = x.Type,
+                    CreatedDate = x.CreatedDate,
+                    IsVisibleForEveryOne = x.IsVisibleForEveryOne,
+                    CreatedBy = x.CreatedBy,
+                };
             }
             else
             {
