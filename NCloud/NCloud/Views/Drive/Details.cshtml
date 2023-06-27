@@ -1,7 +1,83 @@
 ﻿@model DriveDetailsViewModel
 
-<h1>My Files</h1><br />
+<h1>My Files</h1>
+<br />
 
-@foreach(CloudRegistration? item in Model.items){
-    <span>@item?.Name</span>
-}
+<table class="table">
+    <thead>
+        <tr>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (CloudRegistration? item in Model.items)
+        {
+            if (item != null)
+            {
+                <tr>
+                    <td>
+                        <details>
+                            <summary>
+                                <span id="iconforitemtype">
+                                    @if (item.Type == EntryType.FOLDER)
+                                    {
+                                        <img src="@Url.Action("DisplayFolderImage", "Drive")" class="item" />
+                                    }
+                                    else
+                                    {
+                                        <img src="@Url.Action("DisplayFileImage", "Drive", new { fileName = item.Name })" class="item rounded mx-auto d-block" id="image" />
+                                    }
+                                </span>
+                                <a asp-action="Details" asp-route-parentId="@item.Id" class="">@item.Name</a>
+                            </summary>
+                            <fieldset>
+                                <legend>Details</legend>
+                                <table>
+                                    <tr>
+                                        <td>
+                                            Size
+                                        </td>
+                                        <td>
+                                            @item.GetSize()
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            Public
+                                        </td>
+                                        <td>
+                                            @if (item.IsVisibleForEveryOne)
+                                            {
+                                                <span>✔</span>
+                                            }
+                                            else
+                                            {
+                                                <span>❌</span>
+                                            }
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            Created Time
+                                        </td>
+                                        <td>
+                                            @item.CreatedDate
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            Created By
+                                        </td>
+                                        <td>
+                                            @item.CreatedBy.FullName
+                                        </td>
+                                    </tr>
+                                </table>
+                            </fieldset>
+                        </details>
+                    </td>
+                </tr>
+            }
+        }
+    </tbody>
+</table>

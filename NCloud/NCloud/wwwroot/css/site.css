@@ -1,4 +1,4 @@
-@import url("navbar.css");
+﻿@import url("navbar.css");
 
 html {
   font-size: 14px;
@@ -17,4 +17,22 @@ html {
 
 body {
   margin-bottom: 60px;
+}
+
+details summary{
+    list-style: none;
+}
+
+summary:before {
+    content: "➕";
+    color: black;
+    float: right;
+    margin-right: 10px;
+}
+
+details[open] summary:before {
+    content: "➖";
+}
+#iconforitemtype {
+    margin : 5px;
 }
