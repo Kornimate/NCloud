@@ -1,17 +1,27 @@
 ﻿@model DriveDetailsViewModel
 
+@{
+    ViewData["Title"] = "My Files";
+}
+
 <div>
-    <form asp-action="Details" class="input-group mb-3">
-        <input type="text" class="form-control" name="filterString" id="filterString" />
+    <form asp-action="Details" class="input-group mb-3" id="pathform">
+        <input type="text" class="form-control" name="filterString" id="currentPath" value="@ViewData["currentPath"]" />
         <input type="number" class="visually-hidden" name="id" id="id" value="1" />
         <div class="input-group-append">
-            <input type="submit" value="🔎" class="btn btn-primary" />
+            <button type="submit" value="" class="btn btn-primary" form="pathform"><img src="~/utilities/arrow-right-circle.svg" width=" 20" height="20" class="rounded-circle align-middle" /></button>
         </div>
     </form>
+    <div class="d-flex justify-content-end">
+        <div class="btn-group" role="group">
+            <button type="button" class="btn btn-primary"><a asp-controller="Drive" asp-action="Details"><img src="~/utilities/arrow-repeat.svg" width=" 20" height="20" class="rounded-circle align-middle" /></a></button>
+            <button type="button" class="btn btn-secondary"><a asp-controller="Drive" asp-action="DownloadItems"><img src="~/utilities/cloud-download.svg" width=" 20" height="20" class="rounded-circle align-middle" /></a></button>
+            <button type="button" class="btn btn-secondary"><a asp-controller="Drive" asp-action="UploadToCurrentFolder"><img src="~/utilities/cloud-upload.svg" width=" 20" height="20" class="rounded-circle align-middle" /></a></button>
+            <button type="button" class="btn btn-secondary"><a asp-controller="Drive" asp-action="OpenTerminal"><img src="~/utilities/terminal.svg" width=" 20" height="20" class="align-middle" /></a></button>
+            <button type="button" class="btn btn-danger"><a asp-controller="Drive" asp-action="DeleteFromCurrentFolder"><img src="~/utilities/trash.svg" width=" 20" height="20" class="rounded-circle align-middle" /></a></button>
+        </div>
+    </div>
 </div>
-
-<h1>My Files</h1>
-<br />
 
 <table class="table">
     <thead>
@@ -29,18 +39,11 @@
                         <details>
                             <summary>
                                 <span id="iconforitemtype">
-                                    @if (item.Type == EntryType.FOLDER)
-                                    {
-                                        <img src="@item.IconPath" class="item" >
-                                    }
-                                    else
-                                    {
-                                        <img src="@item.IconPath" class="item rounded mx-auto d-block" id="image" />
-                                    }
+                                    <img src="@item.IconPath" width=" 20" height="20" class="item rounded align-bottom">
                                 </span>
                                 <a asp-action="Details" asp-route-parentId="@item.Id" class="itemlink">@item.Name</a>
                             </summary>
-                            <fieldset class="border border-dark p-2 m-2">
+                            <fieldset class="border border-dark p-2 m-2 rounded">
                                 <legend class="btn btn-outline-primary rounded-pill w-auto">Details</legend>
                                 <table class="table table-striped rounded">
                                     <tr>
@@ -84,10 +87,12 @@
                                     </tr>
                                 </table>
                             </fieldset>
-                            <div class="btn-group ms-2" role="group">
-                                <button type="button" class="btn btn-danger"><a asp-controller="Drive" asp-action="Delete" asp-route-id="@item.Id"><img src="~/utilities/trash.svg"/></a></button>
-                                <button type="button" class="btn btn-secondary"><a asp-controller="Drive" asp-action="Settings" asp-route-id="@item.Id"><img src="~/utilities/gear.svg" /></a></button>
-                                <button type="button" class="btn btn-primary"><a asp-controller="Drive" asp-action="PubliciseFolder" asp-route-id="@item.Id"><img src="~/utilities/globe.svg" /></a></button>
+                            <div class="d-flex justify-content-end">
+                                <div class="btn-group mx-2" role="group">
+                                    <button type="button" class="btn btn-primary"><a asp-controller="Drive" asp-action="PubliciseFolder" asp-route-id="@item.Id"><img src="~/utilities/globe.svg" width=" 20" height="20" class="rounded-circle align-middle" /></a></button>
+                                    <button type="button" class="btn btn-secondary"><a asp-controller="Drive" asp-action="Settings" asp-route-id="@item.Id"><img src="~/utilities/gear.svg" width=" 20" height="20" class="rounded-circle align-middle" /></a></button>
+                                    <button type="button" class="btn btn-danger"><a asp-controller="Drive" asp-action="Delete" asp-route-id="@item.Id"><img src="~/utilities/trash.svg" width=" 20" height="20" class="rounded-circle align-middle" /></a></button>
+                                </div>
                             </div>
                         </details>
                     </td>
