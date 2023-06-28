@@ -1,5 +1,15 @@
 ﻿@model DriveDetailsViewModel
 
+<div>
+    <form asp-action="Details" class="input-group mb-3">
+        <input type="text" class="form-control" name="filterString" id="filterString" />
+        <input type="number" class="visually-hidden" name="id" id="id" value="1" />
+        <div class="input-group-append">
+            <input type="submit" value="🔎" class="btn btn-primary" />
+        </div>
+    </form>
+</div>
+
 <h1>My Files</h1>
 <br />
 
@@ -21,18 +31,18 @@
                                 <span id="iconforitemtype">
                                     @if (item.Type == EntryType.FOLDER)
                                     {
-                                        <img src="@Url.Action("DisplayFolderImage", "Drive")" class="item" />
+                                        <img src="@item.IconPath" class="item" >
                                     }
                                     else
                                     {
-                                        <img src="@Url.Action("DisplayFileImage", "Drive", new { fileName = item.Name })" class="item rounded mx-auto d-block" id="image" />
+                                        <img src="@item.IconPath" class="item rounded mx-auto d-block" id="image" />
                                     }
                                 </span>
-                                <a asp-action="Details" asp-route-parentId="@item.Id" class="">@item.Name</a>
+                                <a asp-action="Details" asp-route-parentId="@item.Id" class="itemlink">@item.Name</a>
                             </summary>
-                            <fieldset>
-                                <legend>Details</legend>
-                                <table>
+                            <fieldset class="border border-dark p-2 m-2">
+                                <legend class="btn btn-outline-primary rounded-pill w-auto">Details</legend>
+                                <table class="table table-striped rounded">
                                     <tr>
                                         <td>
                                             Size
@@ -74,6 +84,11 @@
                                     </tr>
                                 </table>
                             </fieldset>
+                            <div class="btn-group ms-2" role="group">
+                                <button type="button" class="btn btn-danger"><a asp-controller="Drive" asp-action="Delete" asp-route-id="@item.Id"><img src="~/utilities/trash.svg"/></a></button>
+                                <button type="button" class="btn btn-secondary"><a asp-controller="Drive" asp-action="Settings" asp-route-id="@item.Id"><img src="~/utilities/gear.svg" /></a></button>
+                                <button type="button" class="btn btn-primary"><a asp-controller="Drive" asp-action="PubliciseFolder" asp-route-id="@item.Id"><img src="~/utilities/globe.svg" /></a></button>
+                            </div>
                         </details>
                     </td>
                 </tr>

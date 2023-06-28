@@ -4,6 +4,7 @@ namespace NCloud.Models
 {
     public abstract class CloudRegistration : Entry
     {
+        public string? IconPath { get; private set; }
         public static CloudRegistration? CreateRegistration(Entry x)
         {
             if (x.Type == EntryType.FOLDER)
@@ -18,6 +19,7 @@ namespace NCloud.Models
                     CreatedDate = x.CreatedDate,
                     IsVisibleForEveryOne = x.IsVisibleForEveryOne,
                     CreatedBy = x.CreatedBy,
+                    IconPath = ImageLoader.Load()
                 };
             }
             else if (x.Type == EntryType.FILE)
@@ -32,6 +34,7 @@ namespace NCloud.Models
                     CreatedDate = x.CreatedDate,
                     IsVisibleForEveryOne = x.IsVisibleForEveryOne,
                     CreatedBy = x.CreatedBy,
+                    IconPath = ImageLoader.Load(x.Name)
                 };
             }
             else

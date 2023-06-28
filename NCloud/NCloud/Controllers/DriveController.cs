@@ -94,22 +94,5 @@ namespace NCloud.Controllers
                 return View();
             }
         }
-
-        public IActionResult? DisplayFolderImage()
-        {
-            byte[] img = LoadImageFromUtils();
-            return File(new byte[] { },"image/png");
-        }
-
-        public IActionResult? DisplayFileImage(string fileName)
-        {
-            byte[] img = LoadImageFromUtils(fileName);
-            return File(img!, "image/png");
-        }
-
-        private byte[] LoadImageFromUtils(string? fileName = null)
-        {
-            return null!;
-        }
     }
 }
