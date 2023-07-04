@@ -14,7 +14,7 @@
     </form>
     <div class="d-flex justify-content-end">
         <div class="btn-group" role="group">
-            <button type="button" class="btn btn-primary"><a asp-controller="Drive" asp-action="Details"><img src="~/utilities/arrow-repeat.svg" width=" 20" height="20" class="rounded-circle align-middle" /></a></button>
+            <button type="button" class="btn btn-primary"><a asp-controller="Drive" asp-action="Details" asp-route-parentId="@Model.ParentId"><img src="~/utilities/arrow-repeat.svg" width=" 20" height="20" class="rounded-circle align-middle" /></a></button>
             <button type="button" class="btn btn-secondary"><a asp-controller="Drive" asp-action="DownloadItems"><img src="~/utilities/cloud-download.svg" width=" 20" height="20" class="rounded-circle align-middle" /></a></button>
             <button type="button" class="btn btn-secondary"><a asp-controller="Drive" asp-action="UploadToCurrentFolder"><img src="~/utilities/cloud-upload.svg" width=" 20" height="20" class="rounded-circle align-middle" /></a></button>
             <button type="button" class="btn btn-secondary"><a asp-controller="Drive" asp-action="OpenTerminal"><img src="~/utilities/terminal.svg" width=" 20" height="20" class="align-middle" /></a></button>

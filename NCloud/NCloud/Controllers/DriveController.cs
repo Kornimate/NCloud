@@ -29,7 +29,15 @@ namespace NCloud.Controllers
         public async Task<ActionResult> Details(int parentId)
         {
             CloudUser user = await userManager.GetUserAsync(HttpContext.User);
-            return View(new DriveDetailsViewModel(service.GetCurrentDeptData(parentId,user)));
+            if (ViewData["previousFolders"] is null)
+            {
+                ViewData["previousFolders"] = new List<int>() { parentId };
+            }
+            else
+            {
+                //todo add element to list but better than copying everything
+            }
+            return View(new DriveDetailsViewModel(service.GetCurrentDeptData(parentId,user),parentId));
         }
 
         // GET: DriveController/Create
