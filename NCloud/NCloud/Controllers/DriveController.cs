@@ -12,7 +12,7 @@ namespace NCloud.Controllers
         private readonly ICloudService service;
         private readonly UserManager<CloudUser> userManager;
 
-        public DriveController(ICloudService service,UserManager<CloudUser> userManager)
+        public DriveController(ICloudService service, UserManager<CloudUser> userManager)
         {
             this.service = service;
             this.userManager = userManager;
@@ -22,11 +22,11 @@ namespace NCloud.Controllers
         public ActionResult Index()
         {
             var result = service.GetCurrentUserIndexData();
-            return View(new DriveIndexViewModel(result.Item1,result.Item2));
+            return View(new DriveIndexViewModel(result.Item1, result.Item2));
         }
 
         // GET: DriveController/Details/5
-        public async Task<ActionResult> Details(int parentId)
+        public async Task<ActionResult> Details(int parentId, string? currentPath=null, string? folderName=null)
         {
             CloudUser user = await userManager.GetUserAsync(HttpContext.User);
             if (ViewData["previousFolders"] is null)
@@ -35,9 +35,17 @@ namespace NCloud.Controllers
             }
             else
             {
-                //todo add element to list but better than copying everything
+                //todo add element to list but better than copying evyrything
             }
-            return View(new DriveDetailsViewModel(service.GetCurrentDeptData(parentId,user),parentId));
+            if (currentPath is null)
+            {
+                ViewData["currentPath"] = @"CLOUDROOT::";
+            }
+            else
+            {
+                ViewData["currentPath"] = currentPath + $@"{(folderName is null ? "" : "//"+folderName)}";
+            }
+            return View(new DriveDetailsViewModel(service.GetCurrentDeptData(parentId, user), parentId));
         }
 
         // GET: DriveController/Create
