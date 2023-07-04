@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using NCloud.Services;
 using NCloud.Users;
 using NCloud.ViewModels;
+using Newtonsoft.Json;
 
 namespace NCloud.Controllers
 {
@@ -26,26 +27,47 @@ namespace NCloud.Controllers
         }
 
         // GET: DriveController/Details/5
-        public async Task<ActionResult> Details(int parentId, string? currentPath=null, string? folderName=null)
+        public async Task<ActionResult> Details(int id,int? parentId = null, string? currentPath = null, string? folderName = null)
         {
             CloudUser user = await userManager.GetUserAsync(HttpContext.User);
-            if (ViewData["previousFolders"] is null)
+            if (!HttpContext.Session.Keys.Contains("prevFolders"))
             {
-                ViewData["previousFolders"] = new List<int>() { parentId };
+                HttpContext.Session.SetString("prevFolders", JsonConvert.SerializeObject(new List<int?> { parentId}));
             }
             else
             {
-                //todo add element to list but better than copying evyrything
+                List<int?> folders = JsonConvert.DeserializeObject<List<int?>>(HttpContext.Session.GetString("prevFolders")!)!;
+                folders.Add(parentId);
+                HttpContext.Session.SetString("prevFolders", JsonConvert.SerializeObject(folders));
             }
             if (currentPath is null)
             {
-                ViewData["currentPath"] = @"CLOUDROOT::";
+                ViewData["currentPath"] = @"@CLOUDROOT::";
             }
             else
             {
-                ViewData["currentPath"] = currentPath + $@"{(folderName is null ? "" : "//"+folderName)}";
+                ViewData["currentPath"] = currentPath + $@"{(folderName is null ? "" : "//" + folderName)}";
             }
-            return View(new DriveDetailsViewModel(service.GetCurrentDeptData(parentId, user), parentId));
+            return View(new DriveDetailsViewModel(service.GetCurrentDeptData(id, user), id));
+        }
+
+        public IActionResult Back(string currentPath)
+        {
+            int? parentId = 0;
+            List<int?> prevFolders = JsonConvert.DeserializeObject<List<int?>>(HttpContext.Session.GetString("prevFolders")!)!;
+            if (prevFolders?.Count > 0)
+            {
+                parentId = prevFolders.Last();
+                parentId ??= 0;
+                prevFolders.RemoveAt(prevFolders.Count - 1);
+                currentPath = currentPath ?? string.Empty;
+                List<string> folders = currentPath.Split('/', StringSplitOptions.RemoveEmptyEntries).ToList();
+                folders.RemoveAt(folders.Count - 1);
+                currentPath = String.Join(@"//", folders);
+                ViewData["currentPath"] = currentPath;
+                HttpContext.Session.SetString("prevFolders", JsonConvert.SerializeObject(prevFolders));
+            }
+            return RedirectToAction("Details", new { id = parentId, currentPath = currentPath });
         }
 
         // GET: DriveController/Create
