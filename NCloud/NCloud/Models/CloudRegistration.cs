@@ -44,5 +44,14 @@ namespace NCloud.Models
         }
 
         public abstract int GetSize();
+
+        public virtual bool IsFile()
+        {
+            return false;
+        }
+        public virtual bool IsFolder()
+        {
+            return false;
+        }
     }
 }

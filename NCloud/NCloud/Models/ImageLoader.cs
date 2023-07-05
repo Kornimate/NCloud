@@ -18,7 +18,7 @@ namespace NCloud.Models
 
         private static Dictionary<string, string> iconPaths = new Dictionary<string, string>()
         {
-            {"Folder",@"/utilities/folder2.svg" },
+            {"Folder",@"/utilities/folder.svg" },
             {"File",@"/utilities/file.svg" }
         };
     }

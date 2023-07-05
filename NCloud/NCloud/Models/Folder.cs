@@ -6,5 +6,9 @@
         {
             return 0; // todo, sablonfuggveny alapjan megcsinalni
         }
+        public override bool IsFolder()
+        {
+            return true;
+        }
     }
 }

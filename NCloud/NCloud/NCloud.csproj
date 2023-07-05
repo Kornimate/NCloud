@@ -181,6 +181,9 @@
 	  <Content Update="wwwroot\utilities\filetype-yml.svg">
 	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 	  </Content>
+	  <Content Update="wwwroot\utilities\folder-plus.svg">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </Content>
 	  <Content Update="wwwroot\utilities\folder.svg">
 	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 	  </Content>
