@@ -3,30 +3,30 @@
 }
 <div class="container-fluid">
     <div class="row flex-nowrap">
-        <div class="col-auto col-md-3 col-xl-2 px-sm-2 px-0 bg-dark m-1 rounded-2">
+        <div class="col-auto col-md-3 col-xl-2 px-sm-2 px-0 bg-light m-1 rounded-2 border border-dark">
             <div class="d-flex flex-column align-items-center align-items-sm-start px-3 pt-2 text-white min-vh-100">
-                <a href="/" class="d-flex align-items-center pb-3 mb-md-0 me-md-auto text-white text-decoration-none">
-                    <span class="fs-5 d-none d-sm-inline align-middle">Cloud Functions</span>
+                <a href="/" class="d-flex align-items-center pb-3 mb-md-0 me-md-auto text-dark text-decoration-none">
+                    <span class="fs-5 d-none d-sm-inline align-middle justify-content-center">Cloud Functions</span>
                 </a>
                 <ul class="nav nav-pills flex-column mb-sm-auto mb-0 align-items-center align-items-sm-start" id="menu">
                     <li class="nav-item">
                         <a asp-controller="Drive" asp-action="Index" class="nav-link align-middle px-0">
-                            <span class=""></span> <span class="ms-1 d-none d-sm-inline">DashBoard</span>
+                            <span class="d-inline m-1"><img src="~/utilities/speedometer.svg" width="20" height="20" class="rounded-circle" /></span> <span class="ms-1 d-none d-sm-inline">DashBoard</span>
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a asp-controller="Drive" asp-action="Details" asp-route-parentId="0" class="nav-link align-middle px-0">
-                            <span class=""></span> <span class="ms-1 d-none d-sm-inline">My Files</span>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="#" class="nav-link align-middle px-0">
-                            <span class=""></span> <span class="ms-1 d-none d-sm-inline">Editor</span>
+                        <a asp-controller="Drive" asp-action="Details" asp-route-id="0" class="nav-link align-middle px-0">
+                            <span class="d-inline m-1"><img src="~/utilities/files.svg" width="20" height="20" class="rounded" /></span> <span class="ms-1 d-none d-sm-inline">My Files</span>
                         </a>
                     </li>
                     <li class="nav-item">
                         <a href="#" class="nav-link align-middle px-0">
-                            <span class=""></span> <span class="ms-1 d-none d-sm-inline">Others</span>
+                            <span class="d-inline m-1"><img src="~/utilities/code-slash.svg" width="20" height="20" class="rounded-circle" /></span> <span class="ms-1 d-none d-sm-inline">Editor</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link align-middle px-0">
+                            <span class="d-inline m-1"><img src="~/utilities/soundwave.svg" width="20" height="20" class="rounded-circle" /></span> <span class="ms-1 d-none d-sm-inline">Music Download</span>
                         </a>
                     </li>
                 </ul>

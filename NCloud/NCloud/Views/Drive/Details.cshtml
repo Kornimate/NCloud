@@ -1,7 +1,109 @@
 ﻿@model DriveDetailsViewModel
 
-<h1>My Files</h1><br />
-
-@foreach(CloudRegistration? item in Model.items){
-    <span>@item?.Name</span>
+@{
+    ViewData["Title"] = "My Files";
 }
+
+<div>
+    <form asp-action="Details" class="input-group mb-3" id="pathform">
+        <input type="text" class="form-control" name="filterString" id="currentPath" value="@ViewData["currentPath"]" />
+        <input type="number" class="visually-hidden" name="id" id="id" value="1" />
+        <div class="input-group-append">
+            <button type="submit" value="" class="btn btn-primary" form="pathform"><img src="~/utilities/arrow-right-circle.svg" width=" 20" height="20" class="rounded-circle align-middle" /></button>
+        </div>
+    </form>
+    <div class="d-flex justify-content-between">
+        <div class="">
+            <button type="button" class="btn btn-primary"><a asp-controller="Drive" asp-action="Back"><img src="~/utilities/arrow-left-circle.svg" width=" 20" height="20" class="rounded-circle align-middle" /></a></button>
+        </div>
+        <div class="">
+            <div class="btn-group" role="group">
+                <button type="button" class="btn btn-primary"><a asp-controller="Drive" asp-action="Details" asp-route-parentId="@Model.ParentId" asp-route-currentPath="@ViewData["currentPath"]"><img src="~/utilities/arrow-repeat.svg" width=" 20" height="20" class="rounded-circle align-middle" /></a></button>
+                <button type="button" class="btn btn-secondary"><a asp-controller="Drive" asp-action="DownloadItems"><img src="~/utilities/cloud-download.svg" width=" 20" height="20" class="rounded-circle align-middle" /></a></button>
+                <button type="button" class="btn btn-secondary"><a asp-controller="Drive" asp-action="UploadToCurrentFolder"><img src="~/utilities/cloud-upload.svg" width=" 20" height="20" class="rounded-circle align-middle" /></a></button>
+                <button type="button" class="btn btn-secondary"><a asp-controller="Drive" asp-action="AddNewFolder"><img src="~/utilities/folder-plus.svg" width=" 20" height="20" class="rounded align-middle" /></a></button>
+                <button type="button" class="btn btn-secondary"><a asp-controller="Drive" asp-action="OpenTerminal"><img src="~/utilities/terminal.svg" width=" 20" height="20" class="align-middle" /></a></button>
+                <button type="button" class="btn btn-danger"><a asp-controller="Drive" asp-action="DeleteFromCurrentFolder"><img src="~/utilities/trash.svg" width=" 20" height="20" class="rounded-circle align-middle" /></a></button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (CloudRegistration? item in Model.items)
+        {
+            if (item != null)
+            {
+                <tr>
+                    <td>
+                        <details>
+                            <summary>
+                                <span id="iconforitemtype">
+                                    <img src="@item.IconPath" width=" 20" height="20" class="item rounded align-bottom">
+                                </span>
+                                <a asp-action="Details" asp-route-id="@item.Id" asp-route-parentId="@item.ParentId" asp-route-folderName="@item.Name" class="itemlink">@item.Name</a>
+                            </summary>
+                            <fieldset class="border border-dark p-2 m-2 rounded">
+                                <legend class="btn btn-outline-primary rounded-pill w-auto">Details</legend>
+                                <table class="table table-striped rounded">
+                                    <tr>
+                                        <td>
+                                            Size
+                                        </td>
+                                        <td>
+                                            @item.GetSize()
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            Public
+                                        </td>
+                                        <td>
+                                            @if (item.IsVisibleForEveryOne)
+                                            {
+                                                <span>✔</span>
+                                            }
+                                            else
+                                            {
+                                                <span>❌</span>
+                                            }
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            Created Time
+                                        </td>
+                                        <td>
+                                            @item.CreatedDate
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            Created By
+                                        </td>
+                                        <td>
+                                            @item.CreatedBy.FullName
+                                        </td>
+                                    </tr>
+                                </table>
+                            </fieldset>
+                            <div class="d-flex justify-content-end">
+                                <div class="btn-group mx-2" role="group">
+                                    <button type="button" class="btn btn-primary"><a asp-controller="Drive" asp-action="PubliciseFolder" asp-route-id="@item.Id"><img src="~/utilities/globe.svg" width=" 20" height="20" class="rounded-circle align-middle" /></a></button>
+                                    <button type="button" class="btn btn-secondary"><a asp-controller="Drive" asp-action="Settings" asp-route-id="@item.Id"><img src="~/utilities/gear.svg" width=" 20" height="20" class="rounded-circle align-middle" /></a></button>
+                                    <button type="button" class="btn btn-danger"><a asp-controller="Drive" asp-action="Delete" asp-route-id="@item.Id"><img src="~/utilities/trash.svg" width=" 20" height="20" class="rounded-circle align-middle" /></a></button>
+                                </div>
+                            </div>
+                        </details>
+                    </td>
+                </tr>
+            }
+        }
+    </tbody>
+</table>

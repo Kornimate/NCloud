@@ -1,20 +1,49 @@
-@import url("navbar.css");
+﻿@import url("navbar.css");
 
 html {
-  font-size: 14px;
+    font-size: 14px;
 }
 
 @media (min-width: 768px) {
-  html {
-    font-size: 16px;
-  }
+    html {
+        font-size: 16px;
+    }
 }
 
 html {
-  position: relative;
-  min-height: 100%;
+    position: relative;
+    min-height: 100%;
 }
 
 body {
-  margin-bottom: 60px;
+    margin-bottom: 60px;
+}
+
+details summary {
+    list-style: none;
+}
+
+summary:before {
+    content: "➕";
+    color: black;
+    float: right;
+    margin-right: 10px;
+}
+
+details[open] summary:before {
+    content: "➖";
+}
+
+#iconforitemtype {
+    margin: 5px;
+}
+
+.itemlink {
+    text-decoration: none;
+    color: black;
+}
+
+.itemlink:hover {
+    text-decoration: underline;
+    color: black;
 }
