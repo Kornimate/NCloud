@@ -64,11 +64,14 @@ namespace NCloud.Controllers
                 parentId ??= 0;
                 pathdata.PreviousDirectories.RemoveAt(pathdata.PreviousDirectories.Count - 1);
                 List<string> folders = pathdata.CurrentPath.Split('/', StringSplitOptions.RemoveEmptyEntries).ToList();
-                folders.RemoveAt(folders.Count - 1);
-                pathdata.CurrentPath = String.Join(@"//", folders);
-                ViewData["currentPath"] = pathdata.CurrentPath;
-                pathdata.CurrentDirectory = (int)parentId;
-                HttpContext.Session.SetString("pathData", JsonConvert.SerializeObject(pathdata));
+                if(folders.Count >= 2)
+                {
+                    folders.RemoveAt(folders.Count - 1);
+                    pathdata.CurrentPath = String.Join(@"//", folders);
+                    ViewData["currentPath"] = pathdata.CurrentPath;
+                    pathdata.CurrentDirectory = (int)parentId;
+                    HttpContext.Session.SetString("pathData", JsonConvert.SerializeObject(pathdata));
+                }
             }
             return RedirectToAction("Details", new { id = parentId });
         }
