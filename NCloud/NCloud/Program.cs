@@ -31,6 +31,10 @@ namespace NCloud
             .AddEntityFrameworkStores<CloudDbContext>();
 
             builder.Services.AddTransient<ICloudService, CloudService>();
+
+            builder.Services.AddServerSideBlazor();
+
+            builder.Services.AddRazorPages();
             
             builder.Services.AddControllersWithViews();
 
@@ -64,9 +68,13 @@ namespace NCloud
 
             app.UseAuthorization();
 
+            app.UseBlazorFrameworkFiles();
+
             app.MapControllerRoute(
                 name: "default",
-                pattern: "{controller=Drive}/{action=Index}/{id?}");
+                pattern: "{controller=Home}/{action=Index}/{id?}");
+
+            app.MapBlazorHub();
 
             using (var serviceScope = app.Services.CreateScope())
             using (var context = serviceScope.ServiceProvider.GetRequiredService<CloudDbContext>())
