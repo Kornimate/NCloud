@@ -1,0 +1,12 @@
+﻿@model AccountViewModel
+
+<h1>Your Profile Page</h1>
+<div class="d-flex justify-content-center m-3">
+    <img src="/utilities/person-circle.svg" alt="profile_icon" width="100" height="100" class="rounded-circle m-1">
+</div>
+<div class="d-flex justify-content-center m-3 rounded-2 border border-dark">
+    <b>Username:</b><p>@Model.UserName</p>
+</div>
+<div class="d-flex justify-content-end m-3">
+    <a class="btn btn-danger" asp-action="Logout" asp-controller="Account">Logout</a>
+</div>

@@ -21,7 +21,7 @@ namespace ELTE.TodoList.Web.Controllers
         }
         public IActionResult Index()
         {
-            return View();
+            return View(new AccountViewModel(User.Identity?.Name));
         }
 
         [HttpGet]
