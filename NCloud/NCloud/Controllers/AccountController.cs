@@ -5,6 +5,7 @@ using System.Diagnostics;
 using NCloud.Users;
 using NCloud.ViewModels;
 using NCloud.Controllers;
+using System.IO;
 
 namespace ELTE.TodoList.Web.Controllers
 {
@@ -13,11 +14,13 @@ namespace ELTE.TodoList.Web.Controllers
     {
         private readonly UserManager<CloudUser> userManager;
         private readonly SignInManager<CloudUser> signInManager;
+        private readonly IWebHostEnvironment env;
 
-        public AccountController(UserManager<CloudUser> userManager, SignInManager<CloudUser> signInManager)
+        public AccountController(UserManager<CloudUser> userManager, SignInManager<CloudUser> signInManager, IWebHostEnvironment env)
         {
             this.userManager = userManager;
             this.signInManager = signInManager;
+            this.env = env;
         }
         public IActionResult Index()
         {
@@ -51,7 +54,7 @@ namespace ELTE.TodoList.Web.Controllers
 
                 if (result.Succeeded)
                 {
-                    if(returnUrl is null)
+                    if (returnUrl is null)
                     {
                         return RedirectToAction("Index", "Drive");
                     }
@@ -67,7 +70,7 @@ namespace ELTE.TodoList.Web.Controllers
         [AllowAnonymous]
         public IActionResult Register(string? returnUrl = null)
         {
-			ViewBag.ReturnUrl = returnUrl;
+            ViewBag.ReturnUrl = returnUrl;
             return View();
         }
 
@@ -76,7 +79,7 @@ namespace ELTE.TodoList.Web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Register(RegisterViewModel vm, string? returnUrl = null)
         {
-			ViewBag.ReturnUrl = returnUrl;
+            ViewBag.ReturnUrl = returnUrl;
             if (ModelState.IsValid)
             {
                 var existing = await userManager.FindByNameAsync(vm.UserName);
@@ -85,12 +88,13 @@ namespace ELTE.TodoList.Web.Controllers
                     ModelState.AddModelError("", "This UserName is already in use!");
                     return View(vm);
                 }
-                var user = new CloudUser { UserName = vm.UserName, FullName=vm.FullName};
+                var user = new CloudUser { UserName = vm.UserName, FullName = vm.FullName };
                 var result = await userManager.CreateAsync(user, vm.Password);
 
                 if (result.Succeeded)
                 {
-                    return RedirectToAction(nameof(Index),"Account");
+                    CreateBaseDirectory(await userManager.FindByNameAsync(vm.UserName));
+                    return RedirectToAction(nameof(Index), "Account");
                 }
 
                 ModelState.AddModelError("", "Failed to Register!");
@@ -98,6 +102,26 @@ namespace ELTE.TodoList.Web.Controllers
 
             return View(vm);
         }
+
+        [NonAction]
+        private void CreateBaseDirectory(CloudUser cloudUser)
+        {
+            string publicFolder = Path.Combine(env.WebRootPath, "CloudData", "Public");
+            if (!Directory.Exists(publicFolder))
+            {
+                Directory.CreateDirectory(publicFolder);
+            }
+            string userFolderPath = Path.Combine(env.WebRootPath, "CloudData", cloudUser.Id);
+            if (!Directory.Exists(userFolderPath))
+            {
+                Directory.CreateDirectory(userFolderPath);
+            }
+            Directory.CreateDirectory(Path.Combine(userFolderPath,"Documents"));
+            Directory.CreateDirectory(Path.Combine(userFolderPath,"Pictures"));
+            Directory.CreateDirectory(Path.Combine(userFolderPath,"Music"));
+            Directory.CreateDirectory(Path.Combine(userFolderPath,"Videos"));
+        }
+
         public async Task<IActionResult> Logout()
         {
             await signInManager.SignOutAsync();

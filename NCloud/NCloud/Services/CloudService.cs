@@ -8,10 +8,12 @@ namespace NCloud.Services
     public class CloudService : ICloudService
     {
         private readonly CloudDbContext context;
+        private readonly IWebHostEnvironment env;
 
-        public CloudService(CloudDbContext context)
+        public CloudService(CloudDbContext context,IWebHostEnvironment env)
         {
             this.context = context;
+            this.env = env;
         }
 
         public List<CloudRegistration?> GetCurrentDeptData(int parentId, CloudUser user)
