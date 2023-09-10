@@ -6,7 +6,7 @@ namespace NCloud.Services
 {
     public interface ICloudService
     {
-        List<CloudRegistration?> GetCurrentDeptData(int parentId,CloudUser user);
+        List<FileInfo?> GetCurrentDeptData(string currentPath);
         Tuple<List<File?>, List<Folder?>> GetCurrentUserIndexData();
     }
 }

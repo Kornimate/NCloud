@@ -6,7 +6,6 @@ namespace NCloud.Models
 {
     public class CloudDbContext : IdentityDbContext<CloudUser>
     {
-        public DbSet<Entry> Entries { get; set; } = null!;
         public CloudDbContext(DbContextOptions<CloudDbContext> options) : base(options) { }
     }
 }

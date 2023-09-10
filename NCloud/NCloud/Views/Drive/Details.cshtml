@@ -18,7 +18,7 @@
         </div>
         <div class="">
             <div class="btn-group" role="group">
-                <button type="button" class="btn btn-primary"><a asp-controller="Drive" asp-action="Details" asp-route-parentId="@Model.ParentId" asp-route-currentPath="@ViewData["currentPath"]"><img src="~/utilities/arrow-repeat.svg" width=" 20" height="20" class="rounded-circle align-middle" /></a></button>
+                <button type="button" class="btn btn-primary"><a asp-controller="Drive" asp-action="Details" asp-route-currentPath="@Model.CurrentPath"><img src="~/utilities/arrow-repeat.svg" width=" 20" height="20" class="rounded-circle align-middle" /></a></button>
                 <button type="button" class="btn btn-secondary"><a asp-controller="Drive" asp-action="DownloadItems"><img src="~/utilities/cloud-download.svg" width=" 20" height="20" class="rounded-circle align-middle" /></a></button>
                 <button type="button" class="btn btn-secondary"><a asp-controller="Drive" asp-action="UploadToCurrentFolder"><img src="~/utilities/cloud-upload.svg" width=" 20" height="20" class="rounded-circle align-middle" /></a></button>
                 <button type="button" class="btn btn-secondary"><a asp-controller="Drive" asp-action="AddNewFolder"><img src="~/utilities/folder-plus.svg" width=" 20" height="20" class="rounded align-middle" /></a></button>
@@ -47,7 +47,7 @@
                                 <span id="iconforitemtype">
                                     <img src="@item.IconPath" width=" 20" height="20" class="item rounded align-bottom">
                                 </span>
-                                <a asp-action="Details" asp-route-id="@item.Id" asp-route-parentId="@item.ParentId" asp-route-folderName="@item.Name" class="itemlink">@item.Name</a>
+                                <a asp-action="Details" asp-route-currentPath="@Model.CurrentPath" asp-route-folderName="@item.Name" class="itemlink">@item.Name</a>
                             </summary>
                             <fieldset class="border border-dark p-2 m-2 rounded">
                                 <legend class="btn btn-outline-primary rounded-pill w-auto">Details</legend>
