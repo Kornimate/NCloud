@@ -13,6 +13,8 @@ namespace NCloud.Controllers
     {
         private readonly ICloudService service;
         private readonly UserManager<CloudUser> userManager;
+        private const string FOLDERSEPARATOR = "//";
+        private const string COOKIENAME = "pathData";
 
         public DriveController(ICloudService service, UserManager<CloudUser> userManager)
         {
@@ -28,46 +30,52 @@ namespace NCloud.Controllers
         }
 
         // GET: DriveController/Details/5
-        public async Task<ActionResult> Details(string? currentPath = null, string? folderName = null)
+        public async Task<ActionResult> Details(string? folderName = null)
         {
             CloudUser user = await userManager.GetUserAsync(HttpContext.User);
-            if (currentPath is null && HttpContext.Session.Keys.Contains("pathData") && folderName is null)
+            PathData pathdata = null!;
+            if (HttpContext.Session.Keys.Contains(COOKIENAME))
             {
-                folderName = JsonConvert.DeserializeObject<PathData>(HttpContext.Session.GetString("pathData")!)!.CurrentDirectory;
-            }
-            PathData pathdata;
-            if (!HttpContext.Session.Keys.Contains("pathData"))
-            {
-                pathdata = new PathData();
-                HttpContext.Session.SetString("pathData", JsonConvert.SerializeObject(pathdata));
+                if (folderName is not null)
+                {
+                    pathdata = JsonConvert.DeserializeObject<PathData>(HttpContext.Session.GetString(COOKIENAME)!)!;
+                }
+                else
+                {
+                    return BadRequest();
+                }
             }
             else
             {
-                pathdata = JsonConvert.DeserializeObject<PathData>(HttpContext.Session.GetString("pathData")!)!;
-                pathdata.PreviousDirectories.Add(folderName!);
-                pathdata.CurrentPath += $@"{(folderName is null ? "" : "//" + folderName)}";
-                pathdata.CurrentDirectory = folderName ?? "";
-                HttpContext.Session.SetString("pathData", JsonConvert.SerializeObject(pathdata));
+                pathdata = new PathData();
+                HttpContext.Session.SetString(COOKIENAME, JsonConvert.SerializeObject(pathdata));
             }
-            return View(new DriveDetailsViewModel(service.GetCurrentDeptData(currentPath!), currentPath!));
+            string currentPath = pathdata.CurrentPath + FOLDERSEPARATOR + folderName;
+            pathdata.PreviousDirectories.Add(folderName!);
+            pathdata.CurrentPath += $@"{currentPath}"; //for security reasons
+            pathdata.CurrentDirectory = folderName!;
+            HttpContext.Session.SetString(COOKIENAME, JsonConvert.SerializeObject(pathdata));
+            return View(new DriveDetailsViewModel(service.GetCurrentDeptFiles(currentPath),
+                                                service.GetCurrentDeptFolders(currentPath),
+                                                                              currentPath));
         }
 
         public IActionResult Back()
         {
-            string folder = String.Empty;
-            PathData pathdata = JsonConvert.DeserializeObject<PathData>(HttpContext.Session.GetString("pathData")!)!;
+            string? folder = null;
+            PathData pathdata = JsonConvert.DeserializeObject<PathData>(HttpContext.Session.GetString(COOKIENAME)!)!;
             if (pathdata.PreviousDirectories.Count > 0)
             {
                 folder = pathdata.PreviousDirectories.Last();
                 folder ??= String.Empty;
                 pathdata.PreviousDirectories.RemoveAt(pathdata.PreviousDirectories.Count - 1);
                 List<string> folders = pathdata.CurrentPath.Split('/', StringSplitOptions.RemoveEmptyEntries).ToList();
-                if(folders.Count >= 2)
+                if (folders.Count >= 2)
                 {
                     folders.RemoveAt(folders.Count - 1);
                     pathdata.CurrentPath = String.Join(@"//", folders);
                     pathdata.CurrentDirectory = folder;
-                    HttpContext.Session.SetString("pathData", JsonConvert.SerializeObject(pathdata));
+                    HttpContext.Session.SetString(COOKIENAME, JsonConvert.SerializeObject(pathdata));
                 }
             }
             return RedirectToAction("Details", new { folderName = folder });

@@ -1,12 +1,13 @@
 ﻿using NCloud.Models;
 using NCloud.Users;
-using File = NCloud.Models.File;
+using FileII = NCloud.Models.FileII;
 
 namespace NCloud.Services
 {
     public interface ICloudService
     {
-        List<FileInfo?> GetCurrentDeptData(string currentPath);
-        Tuple<List<File?>, List<Folder?>> GetCurrentUserIndexData();
+        public List<CloudFolder?> GetCurrentDeptFolders(string currentPath);
+        public List<CloudFile?> GetCurrentDeptFiles(string currentPath);
+        Tuple<List<FileII?>, List<FolderII?>> GetCurrentUserIndexData();
     }
 }

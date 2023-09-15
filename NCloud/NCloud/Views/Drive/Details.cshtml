@@ -6,7 +6,7 @@
 
 <div>
     <form asp-action="Details" class="input-group mb-3" id="pathform">
-        <input type="text" class="form-control" name="filterString" id="currentPath" value="@ViewData["currentPath"]" />
+        <input type="text" class="form-control" name="filterString" id="currentPath" value="@ViewBag.CurrentPath" />
         <input type="number" class="visually-hidden" name="id" id="id" value="1" />
         <div class="input-group-append">
             <button type="submit" value="" class="btn btn-primary" form="pathform"><img src="~/utilities/arrow-right-circle.svg" width=" 20" height="20" class="rounded-circle align-middle" /></button>
@@ -36,7 +36,7 @@
         </tr>
     </thead>
     <tbody>
-        @foreach (CloudRegistration? item in Model.items)
+        @foreach (CloudFolder? item in Model.Folders)
         {
             if (item != null)
             {
@@ -47,7 +47,7 @@
                                 <span id="iconforitemtype">
                                     <img src="@item.IconPath" width=" 20" height="20" class="item rounded align-bottom">
                                 </span>
-                                <a asp-action="Details" asp-route-currentPath="@Model.CurrentPath" asp-route-folderName="@item.Name" class="itemlink">@item.Name</a>
+                                <a asp-action="Details" asp-route-folderName="@item.Info!.Name" class="itemlink">@item.Info!.Name</a>
                             </summary>
                             <fieldset class="border border-dark p-2 m-2 rounded">
                                 <legend class="btn btn-outline-primary rounded-pill w-auto">Details</legend>
@@ -57,7 +57,7 @@
                                             Size
                                         </td>
                                         <td>
-                                            @item.GetSize()
+                                            @item.Info.CreationTime
                                         </td>
                                     </tr>
                                     <tr>
@@ -65,7 +65,7 @@
                                             Public
                                         </td>
                                         <td>
-                                            @if (item.IsVisibleForEveryOne)
+                                            @if (item.IsFile())
                                             {
                                                 <span>✔</span>
                                             }
@@ -80,7 +80,7 @@
                                             Created Time
                                         </td>
                                         <td>
-                                            @item.CreatedDate
+                                            @item.Info.CreationTime
                                         </td>
                                     </tr>
                                     <tr>
@@ -88,16 +88,16 @@
                                             Created By
                                         </td>
                                         <td>
-                                            @item.CreatedBy.FullName
+                                            @item.Info.Extension
                                         </td>
                                     </tr>
                                 </table>
                             </fieldset>
                             <div class="d-flex justify-content-end">
                                 <div class="btn-group mx-2" role="group">
-                                    <button type="button" class="btn btn-primary"><a asp-controller="Drive" asp-action="PubliciseFolder" asp-route-id="@item.Id"><img src="~/utilities/globe.svg" width=" 20" height="20" class="rounded-circle align-middle" /></a></button>
-                                    <button type="button" class="btn btn-secondary"><a asp-controller="Drive" asp-action="Settings" asp-route-id="@item.Id"><img src="~/utilities/gear.svg" width=" 20" height="20" class="rounded-circle align-middle" /></a></button>
-                                    <button type="button" class="btn btn-danger"><a asp-controller="Drive" asp-action="Delete" asp-route-id="@item.Id"><img src="~/utilities/trash.svg" width=" 20" height="20" class="rounded-circle align-middle" /></a></button>
+                                    <button type="button" class="btn btn-primary"><a asp-controller="Drive" asp-action="PubliciseFolder" asp-route-id="@item.Info"><img src="~/utilities/globe.svg" width=" 20" height="20" class="rounded-circle align-middle" /></a></button>
+                                    <button type="button" class="btn btn-secondary"><a asp-controller="Drive" asp-action="Settings" asp-route-id="@item.Info"><img src="~/utilities/gear.svg" width=" 20" height="20" class="rounded-circle align-middle" /></a></button>
+                                    <button type="button" class="btn btn-danger"><a asp-controller="Drive" asp-action="Delete" asp-route-id="@item.Info"><img src="~/utilities/trash.svg" width=" 20" height="20" class="rounded-circle align-middle" /></a></button>
                                 </div>
                             </div>
                         </details>

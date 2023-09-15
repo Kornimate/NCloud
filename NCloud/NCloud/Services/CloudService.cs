@@ -1,5 +1,5 @@
 ﻿using NCloud.Models;
-using File = NCloud.Models.File;
+using FileII = NCloud.Models.FileII;
 using Microsoft.EntityFrameworkCore;
 using NCloud.Users;
 
@@ -16,12 +16,16 @@ namespace NCloud.Services
             this.env = env;
         }
 
-        public List<FileInfo?> GetCurrentDeptData(string currentPath)
+        public List<CloudFile?> GetCurrentDeptFiles(string currentPath)
         {
-            return Directory.GetFiles(currentPath.Replace("@CLOUDROOT", Path.Combine(env.WebRootPath, "UserData"))).Select(x => new FileInfo(x)).ToList()!;
+            return Directory.GetFiles(currentPath.Replace("@CLOUDROOT", Path.Combine(env.WebRootPath, "UserData"))).Select(x => new CloudFile(new FileInfo(x),x)).ToList()!;
+        }
+        public List<CloudFolder?> GetCurrentDeptFolders(string currentPath)
+        {
+            return Directory.GetDirectories(currentPath.Replace("@CLOUDROOT", Path.Combine(env.WebRootPath, "UserData"))).Select(x => new CloudFolder(new DirectoryInfo(x))).ToList()!;
         }
 
-        public Tuple<List<File?>, List<Folder?>> GetCurrentUserIndexData()
+        public Tuple<List<FileII?>, List<FolderII?>> GetCurrentUserIndexData()
         {
             return new(null!,null!);
         }

@@ -9,7 +9,7 @@ namespace NCloud.Models
 	{
 		private static CloudDbContext context = null!;
 		private static UserManager<CloudUser> userManager = null!;
-		public static void Initialize(IServiceProvider serviceProvider)
+		public static void Initialize(IServiceProvider serviceProvider, IWebHostEnvironment env)
 		{
 			context = serviceProvider.GetRequiredService<CloudDbContext>();
 			userManager = serviceProvider.GetRequiredService<UserManager<CloudUser>>();
@@ -26,24 +26,27 @@ namespace NCloud.Models
 				}
 				catch { }
 			}
-
-			if (context.Entries.Any()) { return; }
-
-			List<Entry> defFolders = new List<Entry>()
+			if (!Directory.Exists(Path.Combine(env.WebRootPath, "UserData")))
 			{
-				new Entry
-				{
-					Name="Public Folder",
-					Size=0,
-					ParentId=0,
-					Type = EntryType.FOLDER,
-					CreatedDate= DateTime.Now,
-					IsVisibleForEveryOne = true,
-					CreatedBy = admin,
-				}
-			};
+				Directory.CreateDirectory(Path.Combine(env.WebRootPath, "UserData"));
+			}
+			//if (context.Entries.Any()) { return; }
 
-			context.Entries.AddRange(defFolders);
+			//List<Entry> defFolders = new List<Entry>()
+			//{
+			//	new Entry
+			//	{
+			//		Name="Public Folder",
+			//		Size=0,
+			//		ParentId=0,
+			//		Type = EntryType.FOLDER,
+			//		CreatedDate= DateTime.Now,
+			//		IsVisibleForEveryOne = true,
+			//		CreatedBy = admin,
+			//	}
+			//};
+
+			//context.Entries.AddRange(defFolders);
 			context.SaveChanges();
 		}
 	}

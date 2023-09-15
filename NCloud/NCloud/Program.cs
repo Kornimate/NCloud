@@ -79,7 +79,7 @@ namespace NCloud
             using (var serviceScope = app.Services.CreateScope())
             using (var context = serviceScope.ServiceProvider.GetRequiredService<CloudDbContext>())
             {
-                DbInitializer.Initialize(serviceScope.ServiceProvider);
+                DbInitializer.Initialize(serviceScope.ServiceProvider, app.Environment);
             }
 
             app.Run();
