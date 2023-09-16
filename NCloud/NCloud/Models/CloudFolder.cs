@@ -2,7 +2,11 @@
 {
     public class CloudFolder : CloudRegistration
     {
-        public CloudFolder(FileSystemInfo info, string? iconPath = null) : base(info, iconPath) { }
+        public DirectoryInfo Info { get; set; }
+        public CloudFolder(DirectoryInfo info, string? iconPath = null) : base(iconPath)
+        {
+            Info = info;
+        }
 
         public override bool IsFile()
         {

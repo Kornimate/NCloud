@@ -9,5 +9,6 @@ namespace NCloud.Services
         public List<CloudFolder?> GetCurrentDeptFolders(string currentPath);
         public List<CloudFile?> GetCurrentDeptFiles(string currentPath);
         Tuple<List<FileII?>, List<FolderII?>> GetCurrentUserIndexData();
+        CloudUser GetAdmin();
     }
 }

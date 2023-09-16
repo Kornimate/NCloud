@@ -16,6 +16,11 @@ namespace NCloud.Services
             this.env = env;
         }
 
+        public CloudUser GetAdmin()
+        {
+            return context.Users.FirstOrDefault(x => x.UserName== "Admin")!;
+        }
+
         public List<CloudFile?> GetCurrentDeptFiles(string currentPath)
         {
             return Directory.GetFiles(currentPath.Replace("@CLOUDROOT", Path.Combine(env.WebRootPath, "UserData"))).Select(x => new CloudFile(new FileInfo(x),x)).ToList()!;

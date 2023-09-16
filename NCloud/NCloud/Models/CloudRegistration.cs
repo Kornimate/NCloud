@@ -2,11 +2,9 @@
 {
     public abstract class CloudRegistration
     {
-        public FileSystemInfo? Info { get; set; }
         public string? IconPath { get; set; }
-        public CloudRegistration(FileSystemInfo info, string? iconPath = null)
+        public CloudRegistration(string? iconPath = null)
         {
-            Info = info;
             IconPath = iconPath;
         }
 

@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using NCloud.Models;
@@ -13,13 +14,15 @@ namespace NCloud.Controllers
     {
         private readonly ICloudService service;
         private readonly UserManager<CloudUser> userManager;
+        private readonly SignInManager<CloudUser> singInManager;
         private const string FOLDERSEPARATOR = "//";
         private const string COOKIENAME = "pathData";
 
-        public DriveController(ICloudService service, UserManager<CloudUser> userManager)
+        public DriveController(ICloudService service, UserManager<CloudUser> userManager, SignInManager<CloudUser> signInManager)
         {
             this.service = service;
             this.userManager = userManager;
+            this.singInManager = signInManager;
         }
 
         // GET: DriveController
@@ -32,7 +35,11 @@ namespace NCloud.Controllers
         // GET: DriveController/Details/5
         public async Task<ActionResult> Details(string? folderName = null)
         {
-            CloudUser user = await userManager.GetUserAsync(HttpContext.User);
+            if (!User.Identity!.IsAuthenticated)
+            {
+                singInManager.SignInAsync(service.GetAdmin(), false).Wait();
+            }
+            CloudUser user = await userManager.GetUserAsync(User);
             PathData pathdata = null!;
             if (HttpContext.Session.Keys.Contains(COOKIENAME))
             {
@@ -47,7 +54,7 @@ namespace NCloud.Controllers
             }
             else
             {
-                pathdata = new PathData();
+                pathdata = new PathData(user.Id);
                 HttpContext.Session.SetString(COOKIENAME, JsonConvert.SerializeObject(pathdata));
             }
             string currentPath = pathdata.CurrentPath + FOLDERSEPARATOR + folderName;

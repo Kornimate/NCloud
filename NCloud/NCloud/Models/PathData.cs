@@ -6,11 +6,11 @@
         public List<string> PreviousDirectories { get; set; }
         public string CurrentPath { get; set; }
 
-        public PathData()
+        public PathData(string id)
         {
             PreviousDirectories = new List<string>();
             CurrentDirectory = String.Empty;
-            CurrentPath = @"@CLOUDROOT";
+            CurrentPath = Path.Combine(@"@CLOUDROOT","//",id);
         }
 
     }
