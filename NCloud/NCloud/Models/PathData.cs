@@ -1,4 +1,6 @@
-﻿namespace NCloud.Models
+﻿using System.Text.Json.Serialization;
+
+namespace NCloud.Models
 {
     public class PathData
     {
@@ -10,8 +12,11 @@
         {
             PreviousDirectories = new List<string>();
             CurrentDirectory = String.Empty;
-            CurrentPath = Path.Combine(@"@CLOUDROOT","//",id);
+            CurrentPath = Path.Combine("@CLOUDROOT",id);
         }
+
+        [JsonConstructor]
+        public PathData() { }
 
     }
 }

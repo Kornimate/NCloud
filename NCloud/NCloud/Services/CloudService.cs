@@ -23,7 +23,7 @@ namespace NCloud.Services
 
         public List<CloudFile?> GetCurrentDeptFiles(string currentPath)
         {
-            return Directory.GetFiles(currentPath.Replace("@CLOUDROOT", Path.Combine(env.WebRootPath, "UserData"))).Select(x => new CloudFile(new FileInfo(x),x)).ToList()!;
+            return Directory.GetFiles(currentPath.Replace("@CLOUDROOT", Path.Combine(env.WebRootPath, "UserData"))).Select(x => new CloudFile(new FileInfo(x),icon:x)).ToList()!;
         }
         public List<CloudFolder?> GetCurrentDeptFolders(string currentPath)
         {

@@ -3,7 +3,7 @@
     public class CloudFile : CloudRegistration
     {
         public FileInfo Info { get; set; }
-        public CloudFile(FileInfo info, string? iconPath = null) : base(iconPath)
+        public CloudFile(FileInfo info, string? icon = null) : base(icon)
         {
             Info = info;
         }

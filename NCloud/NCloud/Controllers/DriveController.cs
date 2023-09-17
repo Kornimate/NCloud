@@ -14,7 +14,7 @@ namespace NCloud.Controllers
     {
         private readonly ICloudService service;
         private readonly UserManager<CloudUser> userManager;
-        private readonly SignInManager<CloudUser> singInManager;
+        private readonly SignInManager<CloudUser> signInManager;
         private const string FOLDERSEPARATOR = "//";
         private const string COOKIENAME = "pathData";
 
@@ -22,12 +22,13 @@ namespace NCloud.Controllers
         {
             this.service = service;
             this.userManager = userManager;
-            this.singInManager = signInManager;
+            this.signInManager = signInManager;
         }
 
         // GET: DriveController
         public ActionResult Index()
         {
+            Task.Run(async () => await signInManager.PasswordSignInAsync("Admin", "Admin_1234", false, false)).Wait();
             var result = service.GetCurrentUserIndexData();
             return View(new DriveIndexViewModel(result.Item1, result.Item2));
         }
@@ -35,15 +36,21 @@ namespace NCloud.Controllers
         // GET: DriveController/Details/5
         public async Task<ActionResult> Details(string? folderName = null)
         {
-            if (!User.Identity!.IsAuthenticated)
-            {
-                singInManager.SignInAsync(service.GetAdmin(), false).Wait();
-            }
-            CloudUser user = await userManager.GetUserAsync(User);
             PathData pathdata = null!;
-            if (HttpContext.Session.Keys.Contains(COOKIENAME))
+            if (folderName is null)
             {
-                if (folderName is not null)
+                if (HttpContext.Session.Keys.Contains(COOKIENAME))
+                {
+                    pathdata = JsonConvert.DeserializeObject<PathData>(HttpContext.Session.GetString(COOKIENAME)!)!;
+                }
+                else
+                {
+                    pathdata = new PathData((await userManager.GetUserAsync(User)).Id.ToString());
+                }
+            }
+            else
+            {
+                if (HttpContext.Session.Keys.Contains(COOKIENAME))
                 {
                     pathdata = JsonConvert.DeserializeObject<PathData>(HttpContext.Session.GetString(COOKIENAME)!)!;
                 }
@@ -52,14 +59,9 @@ namespace NCloud.Controllers
                     return BadRequest();
                 }
             }
-            else
-            {
-                pathdata = new PathData(user.Id);
-                HttpContext.Session.SetString(COOKIENAME, JsonConvert.SerializeObject(pathdata));
-            }
-            string currentPath = pathdata.CurrentPath + FOLDERSEPARATOR + folderName;
+            string currentPath = folderName is null ? pathdata.CurrentPath : Path.Combine(pathdata.CurrentPath,folderName);
             pathdata.PreviousDirectories.Add(folderName!);
-            pathdata.CurrentPath += $@"{currentPath}"; //for security reasons
+            pathdata.CurrentPath = $@"{currentPath}"; //for security reasons
             pathdata.CurrentDirectory = folderName!;
             HttpContext.Session.SetString(COOKIENAME, JsonConvert.SerializeObject(pathdata));
             return View(new DriveDetailsViewModel(service.GetCurrentDeptFiles(currentPath),

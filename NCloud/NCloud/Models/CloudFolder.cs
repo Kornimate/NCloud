@@ -3,7 +3,7 @@
     public class CloudFolder : CloudRegistration
     {
         public DirectoryInfo Info { get; set; }
-        public CloudFolder(DirectoryInfo info, string? iconPath = null) : base(iconPath)
+        public CloudFolder(DirectoryInfo info, string? icon = null) : base(icon)
         {
             Info = info;
         }
