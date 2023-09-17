@@ -6,9 +6,8 @@
 
 <div>
     <form asp-action="Details" class="input-group mb-3" id="pathform">
+        <div class="input-group">
         <input type="text" class="form-control" name="filterString" id="currentPath" value="@ViewBag.CurrentPath" />
-        <input type="number" class="visually-hidden" name="id" id="id" value="1" />
-        <div class="input-group-append">
             <button type="submit" value="" class="btn btn-primary" form="pathform"><img src="~/utilities/arrow-right-circle.svg" width=" 20" height="20" class="rounded-circle align-middle" /></button>
         </div>
     </form>

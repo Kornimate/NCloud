@@ -6,7 +6,7 @@ using NCloud.Models;
 using NCloud.Services;
 using NCloud.Users;
 using NCloud.ViewModels;
-using Newtonsoft.Json;
+using System.Text.Json;
 
 namespace NCloud.Controllers
 {
@@ -41,29 +41,28 @@ namespace NCloud.Controllers
             {
                 if (HttpContext.Session.Keys.Contains(COOKIENAME))
                 {
-                    pathdata = JsonConvert.DeserializeObject<PathData>(HttpContext.Session.GetString(COOKIENAME)!)!;
+                    pathdata = JsonSerializer.Deserialize<PathData>(HttpContext.Session.GetString(COOKIENAME)!)!;
                 }
                 else
                 {
-                    pathdata = new PathData((await userManager.GetUserAsync(User)).Id.ToString());
+                    pathdata = new PathData();
+                    pathdata.SetDefaultPathData((await userManager.GetUserAsync(User)).Id.ToString());
                 }
             }
             else
             {
                 if (HttpContext.Session.Keys.Contains(COOKIENAME))
                 {
-                    pathdata = JsonConvert.DeserializeObject<PathData>(HttpContext.Session.GetString(COOKIENAME)!)!;
+                    pathdata = JsonSerializer.Deserialize<PathData>(HttpContext.Session.GetString(COOKIENAME)!)!;
                 }
                 else
                 {
                     return BadRequest();
                 }
             }
-            string currentPath = folderName is null ? pathdata.CurrentPath : Path.Combine(pathdata.CurrentPath,folderName);
-            pathdata.PreviousDirectories.Add(folderName!);
-            pathdata.CurrentPath = $@"{currentPath}"; //for security reasons
-            pathdata.CurrentDirectory = folderName!;
-            HttpContext.Session.SetString(COOKIENAME, JsonConvert.SerializeObject(pathdata));
+            string currentPath = pathdata.SetFolder(folderName);
+            HttpContext.Session.SetString(COOKIENAME, JsonSerializer.Serialize<PathData>(pathdata));
+            ViewBag.CurrentPath = pathdata.CurrentPathShow;
             return View(new DriveDetailsViewModel(service.GetCurrentDeptFiles(currentPath),
                                                 service.GetCurrentDeptFolders(currentPath),
                                                                               currentPath));
@@ -71,23 +70,13 @@ namespace NCloud.Controllers
 
         public IActionResult Back()
         {
-            string? folder = null;
-            PathData pathdata = JsonConvert.DeserializeObject<PathData>(HttpContext.Session.GetString(COOKIENAME)!)!;
-            if (pathdata.PreviousDirectories.Count > 0)
+            PathData pathdata = JsonSerializer.Deserialize<PathData>(HttpContext.Session.GetString(COOKIENAME)!)!;
+            if (pathdata.PreviousDirectories.Count > 2)
             {
-                folder = pathdata.PreviousDirectories.Last();
-                folder ??= String.Empty;
-                pathdata.PreviousDirectories.RemoveAt(pathdata.PreviousDirectories.Count - 1);
-                List<string> folders = pathdata.CurrentPath.Split('/', StringSplitOptions.RemoveEmptyEntries).ToList();
-                if (folders.Count >= 2)
-                {
-                    folders.RemoveAt(folders.Count - 1);
-                    pathdata.CurrentPath = String.Join(@"//", folders);
-                    pathdata.CurrentDirectory = folder;
-                    HttpContext.Session.SetString(COOKIENAME, JsonConvert.SerializeObject(pathdata));
-                }
+                pathdata.RemoveFolderFromPrevDirs();
+                HttpContext.Session.SetString(COOKIENAME, JsonSerializer.Serialize<PathData>(pathdata));
             }
-            return RedirectToAction("Details", new { folderName = folder });
+            return RedirectToAction("Details","Drive");
         }
 
         // GET: DriveController/Create
