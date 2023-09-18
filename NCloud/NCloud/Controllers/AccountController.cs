@@ -94,7 +94,7 @@ namespace ELTE.TodoList.Web.Controllers
                 if (result.Succeeded)
                 {
                     CreateBaseDirectory(await userManager.FindByNameAsync(vm.UserName));
-                    return RedirectToAction(nameof(Index), "Account");
+                    return RedirectToAction(nameof(Index), "Drive");
                 }
 
                 ModelState.AddModelError("", "Failed to Register!");
@@ -111,15 +111,15 @@ namespace ELTE.TodoList.Web.Controllers
             {
                 Directory.CreateDirectory(publicFolder);
             }
-            string userFolderPath = Path.Combine(env.WebRootPath, "CloudData", cloudUser.Id);
+            string userFolderPath = Path.Combine(env.WebRootPath, "CloudData", "UserData",cloudUser.Id);
             if (!Directory.Exists(userFolderPath))
             {
                 Directory.CreateDirectory(userFolderPath);
             }
             Directory.CreateDirectory(Path.Combine(userFolderPath,"Documents"));
             Directory.CreateDirectory(Path.Combine(userFolderPath,"Pictures"));
-            Directory.CreateDirectory(Path.Combine(userFolderPath,"Music"));
             Directory.CreateDirectory(Path.Combine(userFolderPath,"Videos"));
+            Directory.CreateDirectory(Path.Combine(userFolderPath,"Music"));
         }
 
         public async Task<IActionResult> Logout()

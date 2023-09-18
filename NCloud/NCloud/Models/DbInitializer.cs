@@ -29,10 +29,14 @@ namespace NCloud.Models
                         var result = await userManager.CreateAsync(admin, "Admin_1234");
                         if (result.Succeeded)
                         {
-                            var data = !Directory.Exists(Path.Combine(env.WebRootPath, "UserData", admin.Id.ToString()));
-                            if (data)
+                            string adminPath = Path.Combine(env.WebRootPath, "CloudData","UserData", admin.Id.ToString());
+                            if (!Directory.Exists(adminPath))
                             {
-                                Directory.CreateDirectory(Path.Combine(env.WebRootPath, "UserData", admin.Id.ToString()));
+                                Directory.CreateDirectory(adminPath);
+                                Directory.CreateDirectory(Path.Combine(adminPath,"Documents"));
+                                Directory.CreateDirectory(Path.Combine(adminPath,"Pictures"));
+                                Directory.CreateDirectory(Path.Combine(adminPath,"Videos"));
+                                Directory.CreateDirectory(Path.Combine(adminPath,"Music"));
                             }
                         }
 
@@ -56,6 +60,14 @@ namespace NCloud.Models
                 //};
 
                 //context.Entries.AddRange(defFolders);
+            }
+            if (!Directory.Exists(Path.Combine(env.WebRootPath,"CloudData","Public")))
+            {
+                Directory.CreateDirectory(Path.Combine(env.WebRootPath,"CloudData", "Public"));
+            }
+            if (!Directory.Exists(Path.Combine(env.WebRootPath,"CloudData", "UserData")))
+            {
+                Directory.CreateDirectory(Path.Combine(env.WebRootPath,"CloudData", "UserData"));
             }
             context.SaveChanges();
         }

@@ -13,16 +13,19 @@ namespace NCloud.Controllers
     public class DriveController : Controller
     {
         private readonly ICloudService service;
+        private readonly IWebHostEnvironment env;
         private readonly UserManager<CloudUser> userManager;
         private readonly SignInManager<CloudUser> signInManager;
         private const string FOLDERSEPARATOR = "//";
         private const string COOKIENAME = "pathData";
+        private const string ROOTNAME = "@CLOUDROOT";
 
-        public DriveController(ICloudService service, UserManager<CloudUser> userManager, SignInManager<CloudUser> signInManager)
+        public DriveController(ICloudService service, UserManager<CloudUser> userManager, SignInManager<CloudUser> signInManager,IWebHostEnvironment env)
         {
             this.service = service;
             this.userManager = userManager;
             this.signInManager = signInManager;
+            this.env = env;
         }
 
         // GET: DriveController
@@ -77,6 +80,11 @@ namespace NCloud.Controllers
                 HttpContext.Session.SetString(COOKIENAME, JsonSerializer.Serialize<PathData>(pathdata));
             }
             return RedirectToAction("Details","Drive");
+        }
+
+        public IActionResult SharedIndex()
+        {
+            return Content("Success");
         }
 
         // GET: DriveController/Create

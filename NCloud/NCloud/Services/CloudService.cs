@@ -23,11 +23,11 @@ namespace NCloud.Services
 
         public List<CloudFile?> GetCurrentDeptFiles(string currentPath)
         {
-            return Directory.GetFiles(currentPath.Replace("@CLOUDROOT", Path.Combine(env.WebRootPath, "UserData"))).Select(x => new CloudFile(new FileInfo(x),icon:x)).ToList()!;
+            return Directory.GetFiles(currentPath.Replace("@CLOUDROOT", Path.Combine(env.WebRootPath,"CloudData", "UserData"))).Select(x => new CloudFile(new FileInfo(x),icon:x)).ToList()!;
         }
         public List<CloudFolder?> GetCurrentDeptFolders(string currentPath)
         {
-            return Directory.GetDirectories(currentPath.Replace("@CLOUDROOT", Path.Combine(env.WebRootPath, "UserData"))).Select(x => new CloudFolder(new DirectoryInfo(x))).ToList()!;
+            return Directory.GetDirectories(currentPath.Replace("@CLOUDROOT", Path.Combine(env.WebRootPath,"CloudData", "UserData"))).Select(x => new CloudFolder(new DirectoryInfo(x))).ToList()!;
         }
 
         public Tuple<List<FileII?>, List<FolderII?>> GetCurrentUserIndexData()
