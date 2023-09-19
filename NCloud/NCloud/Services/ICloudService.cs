@@ -10,5 +10,6 @@ namespace NCloud.Services
         public List<CloudFile?> GetCurrentDeptFiles(string currentPath);
         Tuple<List<FileII?>, List<FolderII?>> GetCurrentUserIndexData();
         CloudUser GetAdmin();
+        bool CreateDirectory(string folderName, string currentPath);
     }
 }

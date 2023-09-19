@@ -47,3 +47,8 @@ details[open] summary:before {
     text-decoration: underline;
     color: black;
 }
+
+.hiddenfield {
+    display: none;
+}
+

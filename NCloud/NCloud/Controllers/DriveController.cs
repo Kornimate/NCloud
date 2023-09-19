@@ -6,7 +6,9 @@ using NCloud.Models;
 using NCloud.Services;
 using NCloud.Users;
 using NCloud.ViewModels;
+using System.Drawing.Drawing2D;
 using System.Text.Json;
+using PathData = NCloud.Models.PathData;
 
 namespace NCloud.Controllers
 {
@@ -82,6 +84,16 @@ namespace NCloud.Controllers
             return RedirectToAction("Details","Drive");
         }
 
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult AddNewFolder(string folderName)
+        {
+            bool success = service.CreateDirectory(folderName, GetSessionPathData().CurrentPath);
+            TempData["ResultText"] = success ? "The Folder is created successfully!" : "Failed to create Folder!";
+            TempData["Success"] = success;
+            return RedirectToAction("Details");
+        }
+
         public IActionResult SharedIndex()
         {
             return Content("Success");
@@ -148,6 +160,21 @@ namespace NCloud.Controllers
             {
                 return View();
             }
+        }
+
+        [NonAction]
+        private PathData GetSessionPathData()
+        {
+            PathData data = null!;
+            if (HttpContext.Session.Keys.Contains(COOKIENAME))
+            {
+                data = JsonSerializer.Deserialize<PathData>(HttpContext.Session.GetString(COOKIENAME)!)!;
+            } else
+            {
+                data = new PathData();
+                HttpContext.Session.SetString(COOKIENAME, JsonSerializer.Serialize<PathData>(data));
+            }
+            return data;
         }
     }
 }

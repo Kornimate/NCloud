@@ -1,13 +1,17 @@
 ﻿@model DriveDetailsViewModel
 
 @{
-    ViewData["Title"] = User.Identity!.Name;
+    ViewData["Title"] = "My Files";
 }
 
 <div>
+    @if (TempData["ResultText"] is not null)
+    {
+        
+    }
     <form asp-action="Details" class="input-group mb-3" id="pathform">
         <div class="input-group">
-        <input type="text" class="form-control" name="filterString" id="currentPath" value="@ViewBag.CurrentPath" />
+            <input type="text" class="form-control" name="filterString" id="currentPath" value="@ViewBag.CurrentPath" />
             <button type="submit" value="" class="btn btn-primary" form="pathform"><img src="~/utilities/arrow-right-circle.svg" width=" 20" height="20" class="rounded-circle align-middle" /></button>
         </div>
     </form>
@@ -18,14 +22,28 @@
         <div class="">
             <div class="btn-group" role="group">
                 <button type="button" class="btn btn-primary"><a asp-controller="Drive" asp-action="Details" asp-route-currentPath="@Model.CurrentPath"><img src="~/utilities/arrow-repeat.svg" width=" 20" height="20" class="rounded-circle align-middle" /></a></button>
-                <button type="button" class="btn btn-secondary"><a asp-controller="Drive" asp-action="DownloadItems"><img src="~/utilities/cloud-download.svg" width=" 20" height="20" class="rounded-circle align-middle" /></a></button>
+                <button type="button" class="btn btn-secondary"><img src="~/utilities/cloud-download.svg" width=" 20" height="20" class="rounded-circle align-middle" /></button>
                 <button type="button" class="btn btn-secondary"><a asp-controller="Drive" asp-action="UploadToCurrentFolder"><img src="~/utilities/cloud-upload.svg" width=" 20" height="20" class="rounded-circle align-middle" /></a></button>
-                <button type="button" class="btn btn-secondary"><a asp-controller="Drive" asp-action="AddNewFolder"><img src="~/utilities/folder-plus.svg" width=" 20" height="20" class="rounded align-middle" /></a></button>
+                <button type="button" class="btn btn-secondary" id="addFolderBtn"><img src="~/utilities/folder-plus.svg" width=" 20" height="20" class="rounded align-middle" /></button>
                 <button type="button" class="btn btn-secondary"><a asp-controller="Drive" asp-action="OpenTerminal"><img src="~/utilities/terminal.svg" width=" 20" height="20" class="align-middle" /></a></button>
                 <button type="button" class="btn btn-danger"><a asp-controller="Drive" asp-action="DeleteFromCurrentFolder"><img src="~/utilities/trash.svg" width=" 20" height="20" class="rounded-circle align-middle" /></a></button>
             </div>
         </div>
     </div>
+</div>
+
+<div class="w-100">
+    <fieldset class="border border-4 border-dark p-2 m-2 rounded hiddenfield" id="addFolderField">
+        <legend class="btn btn-outline-primary rounded-pill w-auto">Add Folder</legend>
+        <div class="d-flex justify-content-center w-100">
+            <form asp-action="AddNewFolder" class="w-100">
+                <div class="w-100 d-inline-flex input-group form-group">
+                    <input type="text" name="folderName" placeholder="Write new Folder name here..." class="d-inline form-control" />
+                    <button type="submit" class="btn btn-primary d-inline"><img src="~/utilities/folder-plus.svg" width=" 20" height="20" class="rounded-circle align-middle" /></button>
+                </div>
+            </form>
+        </div>
+    </fieldset>
 </div>
 
 <table class="table">
@@ -53,7 +71,7 @@
                                 <table class="table table-striped rounded">
                                     <tr>
                                         <td>
-                                            Size
+                                            Created Time
                                         </td>
                                         <td>
                                             @item.Info.CreationTime
@@ -64,7 +82,7 @@
                                             Public
                                         </td>
                                         <td>
-                                            @if (item.IsFile())
+                                            @if (false)
                                             {
                                                 <span>✔</span>
                                             }
@@ -76,10 +94,10 @@
                                     </tr>
                                     <tr>
                                         <td>
-                                            Created Time
+                                            Last Accessed Time
                                         </td>
                                         <td>
-                                            @item.Info.CreationTime
+                                            @item.Info.LastAccessTime
                                         </td>
                                     </tr>
                                     <tr>
@@ -87,7 +105,7 @@
                                             Created By
                                         </td>
                                         <td>
-                                            @item.Info.Extension
+                                            @User.Identity!.Name
                                         </td>
                                     </tr>
                                 </table>
@@ -125,22 +143,7 @@
                                             Size
                                         </td>
                                         <td>
-                                            @item.Info.CreationTime
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>
-                                            Public
-                                        </td>
-                                        <td>
-                                            @if (item.IsFile())
-                                            {
-                                                <span>✔</span>
-                                            }
-                                            else
-                                            {
-                                                <span>❌</span>
-                                            }
+                                            @item.Info.Length Bytes
                                         </td>
                                     </tr>
                                     <tr>
@@ -153,10 +156,33 @@
                                     </tr>
                                     <tr>
                                         <td>
+                                            Public
+                                        </td>
+                                        <td>
+                                            @if (false)
+                                            {
+                                                <span>✔</span>
+                                            }
+                                            else
+                                            {
+                                                <span>❌</span>
+                                            }
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            Last Accessed Time
+                                        </td>
+                                        <td>
+                                            @item.Info.LastAccessTime
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
                                             Created By
                                         </td>
                                         <td>
-                                            @item.Info.Extension
+                                            @User.Identity!.Name
                                         </td>
                                     </tr>
                                 </table>
@@ -175,3 +201,25 @@
         }
     </tbody>
 </table>
+<script type="text/javascript">
+    window.onload = init;
+
+    function init() {
+        document.getElementById("addFolderBtn").addEventListener("click", AddFolderClicked, false);
+    }
+
+    function AddFolderClicked(e) {
+        document.getElementById("addFolderField").classList.toggle("hiddenfield");
+    }
+</script>
+@if (TempData["ResultText"] is not null)
+{
+    <script type="text/javascript">
+
+        function AnimationFunction() {
+            
+        }
+
+        AnimationFunction();
+    </script>
+}
