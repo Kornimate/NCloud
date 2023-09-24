@@ -22,7 +22,7 @@ namespace NCloud.Controllers
         private const string COOKIENAME = "pathData";
         private const string ROOTNAME = "@CLOUDROOT";
 
-        public DriveController(ICloudService service, UserManager<CloudUser> userManager, SignInManager<CloudUser> signInManager,IWebHostEnvironment env)
+        public DriveController(ICloudService service, UserManager<CloudUser> userManager, SignInManager<CloudUser> signInManager, IWebHostEnvironment env)
         {
             this.service = service;
             this.userManager = userManager;
@@ -68,6 +68,13 @@ namespace NCloud.Controllers
             string currentPath = pathdata.SetFolder(folderName);
             HttpContext.Session.SetString(COOKIENAME, JsonSerializer.Serialize<PathData>(pathdata));
             ViewBag.CurrentPath = pathdata.CurrentPathShow;
+            ViewBag.Notifications = new List<NotificationAbstract>()
+            {
+                new NotificationOK("Hello","World"),
+                new NotificationFail("Hello","World"),
+                new NotificationWarning("Hello","World"),
+                new NotificationInfo("Hello","World")
+            };
             return View(new DriveDetailsViewModel(service.GetCurrentDeptFiles(currentPath),
                                                 service.GetCurrentDeptFolders(currentPath),
                                                                               currentPath));
@@ -81,7 +88,7 @@ namespace NCloud.Controllers
                 pathdata.RemoveFolderFromPrevDirs();
                 HttpContext.Session.SetString(COOKIENAME, JsonSerializer.Serialize<PathData>(pathdata));
             }
-            return RedirectToAction("Details","Drive");
+            return RedirectToAction("Details", "Drive");
         }
 
         [HttpPost]
@@ -169,7 +176,8 @@ namespace NCloud.Controllers
             if (HttpContext.Session.Keys.Contains(COOKIENAME))
             {
                 data = JsonSerializer.Deserialize<PathData>(HttpContext.Session.GetString(COOKIENAME)!)!;
-            } else
+            }
+            else
             {
                 data = new PathData();
                 HttpContext.Session.SetString(COOKIENAME, JsonSerializer.Serialize<PathData>(data));
