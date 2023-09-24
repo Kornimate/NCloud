@@ -22,7 +22,7 @@ namespace NCloud.Services
             string pathAndName = Path.Combine(ParseRootName(currentPath), folderName);
             if (Directory.Exists(pathAndName))
             {
-                return false;
+                throw new Exception("The Folder already exists!");
             }
             Directory.CreateDirectory(pathAndName);
             return true;

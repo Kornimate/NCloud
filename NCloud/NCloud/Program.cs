@@ -1,3 +1,4 @@
+using AspNetCoreHero.ToastNotification;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using NCloud.Models;
@@ -41,6 +42,15 @@ namespace NCloud
             builder.Services.AddDistributedMemoryCache();
 
             builder.Services.AddHttpContextAccessor();
+
+            builder.Services.AddNotyf(config =>
+            {
+                config.DurationInSeconds = 5;
+                config.IsDismissable = true;
+                config.Position = NotyfPosition.BottomRight;
+                config.HasRippleEffect = true;
+            });
+
             builder.Services.AddSession(options =>
             {
                 options.IdleTimeout = TimeSpan.FromMinutes(10);

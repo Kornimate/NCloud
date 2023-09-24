@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using AspNetCoreHero.ToastNotification.Abstractions;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -16,18 +17,20 @@ namespace NCloud.Controllers
     {
         private readonly ICloudService service;
         private readonly IWebHostEnvironment env;
+        private readonly INotyfService notifier;
         private readonly UserManager<CloudUser> userManager;
         private readonly SignInManager<CloudUser> signInManager;
         private const string FOLDERSEPARATOR = "//";
         private const string COOKIENAME = "pathData";
         private const string ROOTNAME = "@CLOUDROOT";
 
-        public DriveController(ICloudService service, UserManager<CloudUser> userManager, SignInManager<CloudUser> signInManager, IWebHostEnvironment env)
+        public DriveController(ICloudService service, UserManager<CloudUser> userManager, SignInManager<CloudUser> signInManager, IWebHostEnvironment env, INotyfService notifier)
         {
             this.service = service;
             this.userManager = userManager;
             this.signInManager = signInManager;
             this.env = env;
+            this.notifier = notifier;
         }
 
         // GET: DriveController
@@ -68,13 +71,6 @@ namespace NCloud.Controllers
             string currentPath = pathdata.SetFolder(folderName);
             HttpContext.Session.SetString(COOKIENAME, JsonSerializer.Serialize<PathData>(pathdata));
             ViewBag.CurrentPath = pathdata.CurrentPathShow;
-            ViewBag.Notifications = new List<NotificationAbstract>()
-            {
-                new NotificationOK("Hello","World"),
-                new NotificationFail("Hello","World"),
-                new NotificationWarning("Hello","World"),
-                new NotificationInfo("Hello","World")
-            };
             return View(new DriveDetailsViewModel(service.GetCurrentDeptFiles(currentPath),
                                                 service.GetCurrentDeptFolders(currentPath),
                                                                               currentPath));
@@ -93,11 +89,25 @@ namespace NCloud.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult AddNewFolder(string folderName)
+        public IActionResult AddNewFolder(string? folderName)
         {
-            bool success = service.CreateDirectory(folderName, GetSessionPathData().CurrentPath);
-            TempData["ResultText"] = success ? "The Folder is created successfully!" : "Failed to create Folder!";
-            TempData["Success"] = success;
+            try
+            {
+                if (folderName is null || folderName == String.Empty)
+                {
+                    throw new Exception("Folder name must be at least one charachter!");
+                }
+                if(!service.CreateDirectory(folderName!, GetSessionPathData().CurrentPath))
+                {
+                    throw new Exception("Unknown Error occured");
+                }
+                notifier.Success("Folder is created!");
+            }
+            catch (Exception ex)
+            {
+                TempData["FolderError"] = ex.Message;
+                notifier.Error("Failed to create Folder!");
+            }
             return RedirectToAction("Details");
         }
 
