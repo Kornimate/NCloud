@@ -111,6 +111,27 @@ namespace NCloud.Controllers
             return RedirectToAction("Details");
         }
 
+        public IActionResult DeleteFolder(string folderName)
+        {
+            try
+            {
+                if (folderName is null || folderName == String.Empty)
+                {
+                    throw new Exception("Folder name must be at least one charachter!");
+                }
+                if (!service.RemoveDirectory(folderName!, GetSessionPathData().CurrentPath))
+                {
+                    throw new Exception("Folder is System Folder!");
+                }
+                notifier.Success("Folder is removed!");
+            }
+            catch (Exception)
+            {
+                notifier.Error("Failed to remove Folder!");
+            }
+            return RedirectToAction("Details");
+        }
+
         public IActionResult SharedIndex()
         {
             return Content("Success");
