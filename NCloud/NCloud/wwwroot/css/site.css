@@ -60,3 +60,9 @@ details[open] summary:before {
     height:100%;
     width:20%;
 }
+
+.terminal{
+    background-color:darkblue;
+    color:yellow;
+    height:400px;
+}

@@ -111,6 +111,19 @@ namespace NCloud.Controllers
             return RedirectToAction("Details");
         }
 
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult AddNewFiles(List<IFormFile>? files = null)
+        {
+            if(files == null || files.Count == 0)
+            {
+                notifier.Warning("No Files were uploaded!");
+                return RedirectToAction("Details", "Drive");
+            }
+            notifier.Success("Files added successfully!");
+            return RedirectToAction("Details", "Drive");
+        }
+
         public IActionResult DeleteFolder(string folderName)
         {
             try
