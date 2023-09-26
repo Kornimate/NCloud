@@ -3,6 +3,7 @@ using FileII = NCloud.Models.FileII;
 using Microsoft.EntityFrameworkCore;
 using NCloud.Users;
 using Castle.Core.Internal;
+using System.Drawing.Drawing2D;
 
 namespace NCloud.Services
 {
@@ -13,6 +14,7 @@ namespace NCloud.Services
         private readonly IWebHostEnvironment env;
         private const int DISTANCE = 4;
         private readonly List<string> systemFolders;
+        private const string FILENAMEDELIMITER = "_";
 
         public CloudService(CloudDbContext context, IWebHostEnvironment env)
         {
@@ -38,14 +40,40 @@ namespace NCloud.Services
             return true;
         }
 
+        public async Task<int> CreateFile(IFormFile file, string currentPath)
+        {
+            int retNum = 1;
+            try
+            {
+                string pathAndName = Path.Combine(ParseRootName(currentPath), file.FileName);
+                int counter = 0;
+                while (System.IO.File.Exists(pathAndName))
+                {
+                    FileInfo fi = new FileInfo(file.FileName);
+                    string newName = fi.Name.Split('.')[0] + FILENAMEDELIMITER + $"{++counter}" + fi.Extension;
+                    pathAndName = Path.Combine(ParseRootName(currentPath), newName);
+                    retNum = 0;
+                }
+                using (FileStream stream = new FileStream(pathAndName, FileMode.Create))
+                {
+                    await file.CopyToAsync(stream);
+                }
+            }
+            catch
+            {
+                retNum = -1; //hibalépett fel
+            }
+            return retNum;
+        }
+
         public CloudUser GetAdmin()
         {
-            return context.Users.FirstOrDefault(x => x.UserName== "Admin")!;
+            return context.Users.FirstOrDefault(x => x.UserName == "Admin")!;
         }
 
         public List<CloudFile?> GetCurrentDeptFiles(string currentPath)
         {
-            return Directory.GetFiles(ParseRootName(currentPath)).Select(x => new CloudFile(new FileInfo(x),icon:x)).ToList()!;
+            return Directory.GetFiles(ParseRootName(currentPath)).Select(x => new CloudFile(new FileInfo(x), icon: x)).ToList()!;
         }
         public List<CloudFolder?> GetCurrentDeptFolders(string currentPath)
         {
@@ -54,7 +82,7 @@ namespace NCloud.Services
 
         public Tuple<List<FileII?>, List<FolderII?>> GetCurrentUserIndexData()
         {
-            return new(null!,null!);
+            return new(null!, null!);
         }
 
         public bool RemoveDirectory(string folderName, string currentPath)

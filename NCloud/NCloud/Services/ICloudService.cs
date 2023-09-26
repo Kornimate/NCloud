@@ -11,6 +11,7 @@ namespace NCloud.Services
         Tuple<List<FileII?>, List<FolderII?>> GetCurrentUserIndexData();
         CloudUser GetAdmin();
         bool CreateDirectory(string folderName, string currentPath);
+        Task<int> CreateFile(IFormFile file, string currentPath);
         bool RemoveDirectory(string folderName, string currentPath);
     }
 }

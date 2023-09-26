@@ -9,6 +9,7 @@ using NCloud.Users;
 using NCloud.ViewModels;
 using System.Drawing.Drawing2D;
 using System.Text.Json;
+using System.IO;
 using PathData = NCloud.Models.PathData;
 
 namespace NCloud.Controllers
@@ -23,6 +24,7 @@ namespace NCloud.Controllers
         private const string FOLDERSEPARATOR = "//";
         private const string COOKIENAME = "pathData";
         private const string ROOTNAME = "@CLOUDROOT";
+        private readonly List<string> ALLOWEDFILETYPES = new List<string>();
 
         public DriveController(ICloudService service, UserManager<CloudUser> userManager, SignInManager<CloudUser> signInManager, IWebHostEnvironment env, INotyfService notifier)
         {
@@ -97,7 +99,7 @@ namespace NCloud.Controllers
                 {
                     throw new Exception("Folder name must be at least one charachter!");
                 }
-                if(!service.CreateDirectory(folderName!, GetSessionPathData().CurrentPath))
+                if (!service.CreateDirectory(folderName!, GetSessionPathData().CurrentPath))
                 {
                     throw new Exception("Unknown Error occured");
                 }
@@ -113,14 +115,38 @@ namespace NCloud.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult AddNewFiles(List<IFormFile>? files = null)
+        public async Task<IActionResult> AddNewFiles(List<IFormFile>? files = null)
         {
-            if(files == null || files.Count == 0)
+            bool errorPresent = false;
+            if (files == null || files.Count == 0)
             {
                 notifier.Warning("No Files were uploaded!");
                 return RedirectToAction("Details", "Drive");
             }
-            notifier.Success("Files added successfully!");
+            PathData pathData = GetSessionPathData();
+            for (int i = 0; i < files.Count; i++)
+            {
+                FileInfo fi = new FileInfo(files[i].FileName);
+                // TODO: check if allowed filetype
+
+            }
+            for (int i = 0; i < files.Count; i++)
+            {
+                int res = await service.CreateFile(files[i], pathData.CurrentPath);
+                if (res == 0)
+                {
+                    notifier.Warning($"A File has been renamed!");
+                }
+                else if (res == -1)
+                {
+                    errorPresent = true;
+                    notifier.Error($"There was error adding the file {files[i].FileName}!");
+                }
+            }
+            if (!errorPresent)
+            {
+                notifier.Success($"File{(files.Count > 1 ? "s" : "")} added successfully!");
+            }
             return RedirectToAction("Details", "Drive");
         }
 
