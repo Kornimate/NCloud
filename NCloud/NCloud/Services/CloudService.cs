@@ -121,5 +121,10 @@ namespace NCloud.Services
             File.Delete(pathAndName);
             return true;
         }
+
+        public string ReturnServerPath(string currentPath)
+        {
+            return ParseRootName(currentPath);
+        }
     }
 }

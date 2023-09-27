@@ -1,14 +1,14 @@
-﻿@model DriveDeleteViewModel
+﻿@model DriveDownloadViewModel
 
 @{
     int i = 0;
 }
 
-<div class="w-100 bg-danger rounded">
+<div class="w-100 bg-secondary rounded">
     <a asp-action="Details" asp-controller="Drive" class="btn btn-primary"><img src="~/utilities/arrow-left-circle.svg" width=" 20" height="20" class="rounded align-middle" /></a>
 </div>
 
-<form asp-action="DeleteItems">
+<form asp-action="DownloadItems">
     <table class="table">
         <thead>
             <tr>
@@ -23,7 +23,7 @@
                     <tr>
                         <td>
                             <div class="d-flex-inline">
-                                <input type="checkbox" asp-for="ItemsForDelete![i]" class="form-check-input" value="@item.Info.Name"/>
+                                <input type="checkbox" asp-for="ItemsForDownload![i]" class="form-check-input" value="@item.Info.Name"/>
                                 <span id="iconforitemtype ms-2">
                                     <img src="@item.IconPath" width=" 20" height="20" class="item rounded align-bottom">
                                 </span>
@@ -41,7 +41,7 @@
                     <tr>
                         <td>
                             <div class="d-flex-inline">
-                                <input type="checkbox" asp-for="ItemsForDelete![i]" class="form-check-input" value="@($"_{item.Info.Name}")" />
+                                <input type="checkbox" asp-for="ItemsForDownload![i]" class="form-check-input" value="@($"_{item.Info.Name}")" />
                                 <span id="iconforitemtype ms-2">
                                     <img src="@item.IconPath" width=" 20" height="20" class="item rounded align-bottom">
                                 </span>
@@ -55,6 +55,6 @@
         </tbody>
     </table>
     <div class="d-flex w-100 justify-content-center">
-        <button type="submit" class="btn btn-outline-danger border border-danger border-3"><img src="~/utilities/trash.svg" width=" 20" height="20" class="rounded align-middle" /></button>
+        <button type="submit" class="btn btn-outline-secondary border border-secondary border-3"><img src="~/utilities/cloud-download.svg" width=" 20" height="20" class="rounded align-middle" /></button>
     </div>
 </form>

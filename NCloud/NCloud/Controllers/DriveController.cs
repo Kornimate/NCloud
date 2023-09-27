@@ -11,6 +11,7 @@ using System.Drawing.Drawing2D;
 using System.Text.Json;
 using System.IO;
 using PathData = NCloud.Models.PathData;
+using System.IO.Compression;
 
 namespace NCloud.Controllers
 {
@@ -24,6 +25,7 @@ namespace NCloud.Controllers
         private const string FOLDERSEPARATOR = "//";
         private const string COOKIENAME = "pathData";
         private const string ROOTNAME = "@CLOUDROOT";
+        private const string APPNAME = "NCloudDrive";
         private readonly List<string> ALLOWEDFILETYPES = new List<string>();
 
         public DriveController(ICloudService service, UserManager<CloudUser> userManager, SignInManager<CloudUser> signInManager, IWebHostEnvironment env, INotyfService notifier)
@@ -168,7 +170,28 @@ namespace NCloud.Controllers
             {
                 notifier.Error("Failed to remove Folder!");
             }
-            return RedirectToAction("Details","Drive");
+            return RedirectToAction("Details", "Drive");
+        }
+
+        public IActionResult DeleteFile(string fileName)
+        {
+            try
+            {
+                if (fileName is null || fileName == String.Empty)
+                {
+                    throw new Exception("File name must be at least one charachter!");
+                }
+                if (!service.RemoveFile(fileName!, GetSessionPathData().CurrentPath))
+                {
+                    throw new Exception("File is System Folder!");
+                }
+                notifier.Success("File is removed!");
+            }
+            catch (Exception)
+            {
+                notifier.Error("Failed to remove Folder!");
+            }
+            return RedirectToAction("Details", "Drive");
         }
 
         public IActionResult DeleteItems()
@@ -180,20 +203,19 @@ namespace NCloud.Controllers
             {
                 Folders = folders,
                 Files = files,
-                ItemsForDelete = new string[files.Count+folders.Count].ToList()
+                ItemsForDelete = new string[files.Count + folders.Count].ToList()
             });
         }
 
         [HttpPost]
-        [ValidateAntiForgeryToken,ActionName("DeleteItems")]
-
+        [ValidateAntiForgeryToken, ActionName("DeleteItems")]
         public IActionResult DeleteItemsFromForm([Bind("ItemsForDelete")] DriveDeleteViewModel vm)
         {
             bool noFail = true;
             PathData pathData = GetSessionPathData();
-            foreach(string itemName in vm.ItemsForDelete!)
+            foreach (string itemName in vm.ItemsForDelete!)
             {
-                if(itemName != "false")
+                if (itemName != "false")
                 {
                     if (itemName[0] == '_')
                     {
@@ -239,73 +261,63 @@ namespace NCloud.Controllers
             }
             return RedirectToAction("Details", "Drive");
         }
-
-        public IActionResult SharedIndex()
+        public IActionResult DownloadItems()
         {
-            return Content("Success");
+            PathData pathData = GetSessionPathData();
+            var files = service.GetCurrentDeptFiles(pathData.CurrentPath);
+            //var folders = service.GetCurrentDeptFolders(pathData.CurrentPath); //later to be able to add folders to zp too
+            var folders = new List<CloudFolder?>();
+            return View(new DriveDownloadViewModel
+            {
+                Folders = folders,
+                Files = files,
+                ItemsForDownload = new string[files.Count + folders.Count].ToList()
+            });
         }
 
-        // GET: DriveController/Create
-        public ActionResult Create()
-        {
-            return View();
-        }
-
-        // POST: DriveController/Create
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Create(IFormCollection collection)
+        [ValidateAntiForgeryToken, ActionName("DownloadItems")]
+        public IActionResult DownloadItemsFromForm([Bind("ItemsForDownload")] DriveDownloadViewModel vm)
         {
-            try
+            PathData pathData = GetSessionPathData();
+            string tempFile = Path.GetTempFileName();
+            using var zipFile = System.IO.File.Create(tempFile);
+            using (ZipArchive archive = new ZipArchive(zipFile, ZipArchiveMode.Create))
             {
-                return RedirectToAction(nameof(Index));
+                foreach (string itemName in vm.ItemsForDownload!)
+                {
+                    if (itemName != "false")
+                    {
+                        if (itemName[0] == '_')
+                        {
+                            string name = itemName[1..];
+                            archive.CreateEntryFromFile(Path.Combine(service.ReturnServerPath(pathData.CurrentPath),name), name);
+                            try
+                            {
+                                ;
+                            }
+                            catch (Exception ex)
+                            {
+                                notifier.Error($"{ex.Message} ({itemName})");
+                            }
+                        }
+                        else
+                        {
+                            try
+                            {
+                                // TODO: here comes folder zipping
+                            }
+                            catch (Exception ex)
+                            {
+                                notifier.Error($"{ex.Message} ({itemName})");
+                            }
+                        }
+                    }
+                }
             }
-            catch
-            {
-                return View();
-            }
-        }
-
-        // GET: DriveController/Edit/5
-        public ActionResult Edit(int id)
-        {
-            return View();
-        }
-
-        // POST: DriveController/Edit/5
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Edit(int id, IFormCollection collection)
-        {
-            try
-            {
-                return RedirectToAction(nameof(Index));
-            }
-            catch
-            {
-                return View();
-            }
-        }
-
-        // GET: DriveController/Delete/5
-        public ActionResult Delete(int id)
-        {
-            return View();
-        }
-
-        // POST: DriveController/Delete/5
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Delete(int id, IFormCollection collection)
-        {
-            try
-            {
-                return RedirectToAction(nameof(Index));
-            }
-            catch
-            {
-                return View();
-            }
+            FileStream stream = new FileStream(tempFile, FileMode.Open, FileAccess.Read, FileShare.Read, 4096, FileOptions.DeleteOnClose);
+            return File(stream, "application/zip", $"{APPNAME}_{DateTime.Now:yyyy'-'MM'-'dd'T'HH':'mm':'ss}.zip");
+            //return RedirectToAction("Details", "Drive");
         }
 
         [NonAction]
