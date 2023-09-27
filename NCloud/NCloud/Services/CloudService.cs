@@ -110,5 +110,16 @@ namespace NCloud.Services
             List<string> pathFolders = path.Split('\\').ToList();
             return systemFolders.Contains(pathFolders[pathFolders.FindIndex(x => x == "wwwroot") + DISTANCE]);
         }
+
+        public bool RemoveFile(string fileName, string currentPath)
+        {
+            string pathAndName = Path.Combine(ParseRootName(currentPath), fileName);
+            if (!File.Exists(pathAndName))
+            {
+                throw new Exception("The File does not exists!");
+            }
+            File.Delete(pathAndName);
+            return true;
+        }
     }
 }

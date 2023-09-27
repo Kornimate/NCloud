@@ -168,7 +168,76 @@ namespace NCloud.Controllers
             {
                 notifier.Error("Failed to remove Folder!");
             }
-            return RedirectToAction("Details");
+            return RedirectToAction("Details","Drive");
+        }
+
+        public IActionResult DeleteItems()
+        {
+            PathData pathData = GetSessionPathData();
+            var files = service.GetCurrentDeptFiles(pathData.CurrentPath);
+            var folders = service.GetCurrentDeptFolders(pathData.CurrentPath);
+            return View(new DriveDeleteViewModel
+            {
+                Folders = folders,
+                Files = files,
+                ItemsForDelete = new string[files.Count+folders.Count].ToList()
+            });
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken,ActionName("DeleteItems")]
+
+        public IActionResult DeleteItemsFromForm([Bind("ItemsForDelete")] DriveDeleteViewModel vm)
+        {
+            bool noFail = true;
+            PathData pathData = GetSessionPathData();
+            foreach(string itemName in vm.ItemsForDelete!)
+            {
+                if(itemName != "false")
+                {
+                    if (itemName[0] == '_')
+                    {
+                        try
+                        {
+                            if (!service.RemoveFile(itemName[1..], pathData.CurrentPath))
+                            {
+                                notifier.Error($"Error removing file {itemName}");
+                                noFail = false;
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            notifier.Error($"{ex.Message} ({itemName})");
+                            noFail = false;
+                        }
+                    }
+                    else
+                    {
+                        try
+                        {
+                            if (!service.RemoveDirectory(itemName, pathData.CurrentPath))
+                            {
+                                notifier.Error($"Error removing folder {itemName}");
+                                noFail = false;
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            notifier.Error($"{ex.Message} ({itemName})");
+                            noFail = false;
+                        }
+                    }
+                }
+            }
+            if (noFail)
+            {
+                notifier.Success("All Items removed successfully!");
+            }
+            else
+            {
+                notifier.Warning("Could not complete all item deletion!");
+            }
+            return RedirectToAction("Details", "Drive");
         }
 
         public IActionResult SharedIndex()

@@ -13,5 +13,6 @@ namespace NCloud.Services
         bool CreateDirectory(string folderName, string currentPath);
         Task<int> CreateFile(IFormFile file, string currentPath);
         bool RemoveDirectory(string folderName, string currentPath);
+        bool RemoveFile(string fileName, string currentPath);
     }
 }
