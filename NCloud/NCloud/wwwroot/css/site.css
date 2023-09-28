@@ -66,3 +66,7 @@ details[open] summary:before {
     color:yellow;
     height:400px;
 }
+
+.separator{
+    border: 3px solid black;
+}

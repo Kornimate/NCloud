@@ -259,7 +259,7 @@ namespace NCloud.Controllers
             {
                 notifier.Warning("Could not complete all item deletion!");
             }
-            return RedirectToAction("Details", "Drive");
+            return RedirectToAction("DeleteItems", "Drive");
         }
         public IActionResult DownloadItems()
         {
@@ -317,7 +317,6 @@ namespace NCloud.Controllers
             }
             FileStream stream = new FileStream(tempFile, FileMode.Open, FileAccess.Read, FileShare.Read, 4096, FileOptions.DeleteOnClose);
             return File(stream, "application/zip", $"{APPNAME}_{DateTime.Now:yyyy'-'MM'-'dd'T'HH':'mm':'ss}.zip");
-            //return RedirectToAction("Details", "Drive");
         }
 
         [NonAction]
