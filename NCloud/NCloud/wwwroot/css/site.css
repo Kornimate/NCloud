@@ -43,11 +43,23 @@ details[open] summary:before {
     color: black;
 }
 
-.itemlink:hover {
-    text-decoration: underline;
-    color: black;
+    .itemlink:hover {
+        text-decoration: underline;
+        color: black;
+    }
+
+.fixed {
+    position: fixed;
+    left: 0px;
+    top: 0px;
 }
 
+.maindiv {
+    width: 85%;
+    top: 0px;
+    right: 0px;
+    position: absolute;
+}
 .hiddenfield {
     display: none;
 }
@@ -69,4 +81,15 @@ details[open] summary:before {
 
 .separator{
     border: 3px solid black;
+  
+.navwidth {
+    width: 15%;
+}
+
+.logo {
+    width: 100%;
+}
+
+#menu {
+    margin-top: 50%;
 }
