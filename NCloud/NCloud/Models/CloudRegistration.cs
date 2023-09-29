@@ -1,57 +1,14 @@
-﻿using NCloud.Models;
-
-namespace NCloud.Models
+﻿namespace NCloud.Models
 {
-    public abstract class CloudRegistration : Entry
+    public abstract class CloudRegistration
     {
-        public string? IconPath { get; private set; }
-        public static CloudRegistration? CreateRegistration(Entry x)
+        public string? IconPath { get; set; }
+        public CloudRegistration(string? fileName = null)
         {
-            if (x.Type == EntryType.FOLDER)
-            {
-                return new Folder()
-                {
-                    Id = x.Id,
-                    Name = x.Name,
-                    Size = x.Size,
-                    ParentId = x.ParentId,
-                    Type = x.Type,
-                    CreatedDate = x.CreatedDate,
-                    IsVisibleForEveryOne = x.IsVisibleForEveryOne,
-                    CreatedBy = x.CreatedBy,
-                    IconPath = ImageLoader.Load()
-                };
-            }
-            else if (x.Type == EntryType.FILE)
-            {
-                return new File()
-                {
-                    Id = x.Id,
-                    Name = x.Name,
-                    Size = x.Size,
-                    ParentId = x.ParentId,
-                    Type = x.Type,
-                    CreatedDate = x.CreatedDate,
-                    IsVisibleForEveryOne = x.IsVisibleForEveryOne,
-                    CreatedBy = x.CreatedBy,
-                    IconPath = ImageLoader.Load(x.Name)
-                };
-            }
-            else
-            {
-                return null;
-            }
+            IconPath = ImageLoader.Load(fileName);
         }
 
-        public abstract int GetSize();
-
-        public virtual bool IsFile()
-        {
-            return false;
-        }
-        public virtual bool IsFolder()
-        {
-            return false;
-        }
+        public abstract bool IsFile();
+        public abstract bool IsFolder();
     }
 }

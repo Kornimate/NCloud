@@ -1,0 +1,60 @@
+﻿@model DriveDeleteViewModel
+
+@{
+    int i = 0;
+}
+
+<div class="w-100 bg-danger rounded">
+    <a asp-action="Details" asp-controller="Drive" class="btn btn-primary"><img src="~/utilities/arrow-left-circle.svg" width=" 20" height="20" class="rounded align-middle" /></a>
+</div>
+
+<form asp-action="DeleteItems">
+    <table class="table">
+        <thead>
+            <tr>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach(CloudFolder? item in Model.Folders)
+            {
+                if (item != null)
+                {
+                    <tr>
+                        <td>
+                            <div class="d-flex-inline">
+                                <input type="checkbox" asp-for="ItemsForDelete![i]" class="form-check-input" value="@item.Info.Name"/>
+                                <span id="iconforitemtype ms-2">
+                                    <img src="@item.IconPath" width=" 20" height="20" class="item rounded align-bottom">
+                                </span>
+                                <label class="form-check-label ms-2">@item.Info.Name</label>
+                            </div>
+                        </td>
+                    </tr>
+                }
+                i++;
+            }
+            @foreach (CloudFile? item in Model.Files)
+            {
+                if (item != null)
+                {
+                    <tr>
+                        <td>
+                            <div class="d-flex-inline">
+                                <input type="checkbox" asp-for="ItemsForDelete![i]" class="form-check-input" value="@($"_{item.Info.Name}")" />
+                                <span id="iconforitemtype ms-2">
+                                    <img src="@item.IconPath" width=" 20" height="20" class="item rounded align-bottom">
+                                </span>
+                                <label class="form-check-label ms-2">@item.Info.Name</label>
+                            </div>
+                        </td>
+                    </tr>
+                }
+                i++;
+            }
+        </tbody>
+    </table>
+    <div class="d-flex w-100 justify-content-center">
+        <button type="submit" class="btn btn-outline-danger border border-danger border-3"><img src="~/utilities/trash.svg" width=" 20" height="20" class="rounded align-middle" /></button>
+    </div>
+</form>

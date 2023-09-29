@@ -4,12 +4,15 @@
     <TargetFramework>net6.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>d27793b7-96d8-459b-9a48-e0a65e165f27</UserSecretsId>
   </PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Microsoft.AspNetCore.Components" Version="6.0.21" />
-		<PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="6.0.21" />
-		<PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="6.0.21" />
+		<PackageReference Include="AspNetCoreHero.ToastNotification" Version="1.1.0" />
+		<PackageReference Include="BlazorMonaco" Version="3.1.0" />
+		<PackageReference Include="Microsoft.AspNetCore.Components" Version="6.0.19" />
+		<PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="6.0.19" />
+		<PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="6.0.15" />
 		<PackageReference Include="Microsoft.AspNetCore.Session" Version="2.2.0" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore" Version="6.0.21" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="6.0.21">

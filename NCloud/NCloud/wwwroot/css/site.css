@@ -60,7 +60,28 @@ details[open] summary:before {
     right: 0px;
     position: absolute;
 }
+.hiddenfield {
+    display: none;
+}
 
+.notificationdiv{
+    z-index:10;
+    position:fixed;
+    right:5px;
+    bottom:5px;
+    height:100%;
+    width:20%;
+}
+
+.terminal{
+    background-color:darkblue;
+    color:yellow;
+    height:400px;
+}
+
+.separator{
+    border: 3px solid black;
+  
 .navwidth {
     width: 15%;
 }

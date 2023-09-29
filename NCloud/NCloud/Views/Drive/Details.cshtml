@@ -6,27 +6,66 @@
 
 <div>
     <form asp-action="Details" class="input-group mb-3" id="pathform">
-        <input type="text" class="form-control" name="filterString" id="currentPath" value="@ViewData["currentPath"]" />
-        <input type="number" class="visually-hidden" name="id" id="id" value="1" />
-        <div class="input-group-append">
+        <div class="input-group">
+            <input type="text" class="form-control" name="filterString" id="currentPath" value="@ViewBag.CurrentPath" />
             <button type="submit" value="" class="btn btn-primary" form="pathform"><img src="~/utilities/arrow-right-circle.svg" width=" 20" height="20" class="rounded-circle align-middle" /></button>
         </div>
     </form>
     <div class="d-flex justify-content-between">
         <div class="">
-            <button type="button" class="btn btn-primary"><a asp-controller="Drive" asp-action="Back"><img src="~/utilities/arrow-left-circle.svg" width=" 20" height="20" class="rounded-circle align-middle" /></a></button>
+            <button type="button" class="btn btn-primary"><a asp-controller="Drive" asp-action="Back"><img src="~/utilities/arrow-left-circle.svg" width=" 20" height="20" class="rounded align-middle" /></a></button>
         </div>
         <div class="">
             <div class="btn-group" role="group">
-                <button type="button" class="btn btn-primary"><a asp-controller="Drive" asp-action="Details" asp-route-parentId="@Model.ParentId" asp-route-currentPath="@ViewData["currentPath"]"><img src="~/utilities/arrow-repeat.svg" width=" 20" height="20" class="rounded-circle align-middle" /></a></button>
+                <button type="button" class="btn btn-primary" id="refreshBtn"><a asp-controller="Drive" asp-action="Details" asp-route-currentPath="@Model.CurrentPath"><img src="~/utilities/arrow-repeat.svg" width=" 20" height="20" class="rounded-circle align-middle" /></a></button>
                 <button type="button" class="btn btn-secondary"><a asp-controller="Drive" asp-action="DownloadItems"><img src="~/utilities/cloud-download.svg" width=" 20" height="20" class="rounded-circle align-middle" /></a></button>
-                <button type="button" class="btn btn-secondary"><a asp-controller="Drive" asp-action="UploadToCurrentFolder"><img src="~/utilities/cloud-upload.svg" width=" 20" height="20" class="rounded-circle align-middle" /></a></button>
-                <button type="button" class="btn btn-secondary"><a asp-controller="Drive" asp-action="AddNewFolder"><img src="~/utilities/folder-plus.svg" width=" 20" height="20" class="rounded align-middle" /></a></button>
-                <button type="button" class="btn btn-secondary"><a asp-controller="Drive" asp-action="OpenTerminal"><img src="~/utilities/terminal.svg" width=" 20" height="20" class="align-middle" /></a></button>
-                <button type="button" class="btn btn-danger"><a asp-controller="Drive" asp-action="DeleteFromCurrentFolder"><img src="~/utilities/trash.svg" width=" 20" height="20" class="rounded-circle align-middle" /></a></button>
+                <button type="button" class="btn btn-secondary" id="addFileBtn"><img src="~/utilities/cloud-upload.svg" width=" 20" height="20" class="rounded-circle align-middle" /></button>
+                <button type="button" class="btn btn-secondary" id="addFolderBtn"><img src="~/utilities/folder-plus.svg" width=" 20" height="20" class="rounded align-middle" /></button>
+                <button type="button" class="btn btn-secondary" id="terminalBtn"><img src="~/utilities/terminal.svg" width=" 20" height="20" class="align-middle" /></button>
+                <button type="button" class="btn btn-danger"><a asp-controller="Drive" asp-action="DeleteItems"><img src="~/utilities/trash.svg" width=" 20" height="20" class="rounded align-middle" /></a></button>
             </div>
         </div>
     </div>
+</div>
+
+<div class="w-100">
+    <fieldset class="bg-secondary border border-4 border-dark p-2 m-2 rounded @(TempData["FolderError"] is null ? "hiddenfield" : "")" id="addFolderField">
+        <legend class="btn btn-outline-dark rounded-pill w-auto">Add Folder</legend>
+        <div class="d-flex justify-content-center w-100">
+            <form asp-action="AddNewFolder" class="w-100">
+                <div class="w-100 d-inline-flex input-group form-group">
+                    <input type="text" name="folderName" placeholder="Write new Folder name here..." class="d-inline form-control" />
+                    <button type="submit" class="btn btn-primary d-inline"><img src="~/utilities/folder-plus.svg" width=" 20" height="20" class="rounded align-middle" /></button>
+                </div>
+                @if (TempData["FolderError"] is not null)
+                {
+                    <span class="field-validation-valid text-danger mx-1 my-2">@TempData["FolderError"]</span>
+                }
+            </form>
+        </div>
+    </fieldset>
+    <!------------------------------------------------------------->
+    <fieldset class="bg-secondary border border-4 border-dark p-2 m-2 rounded @(TempData["FileError"] is null ? "hiddenfield" : "")" id="addFileField">
+        <legend class="btn btn-outline-dark rounded-pill w-auto">Add Files</legend>
+        <div class="d-flex justify-content-center w-100">
+            <form asp-action="AddNewFiles" class="w-100" enctype="multipart/form-data">
+                <div class="w-100 d-inline-flex input-group form-group">
+                    <input type="file" multiple name="files" class="d-inline form-control" />
+                    <button type="submit" class="btn btn-primary d-inline"><img src="~/utilities/file-plus.svg" width=" 20" height="20" class="rounded align-middle" /></button>
+                </div>
+                @if (TempData["FileError"] is not null)
+                {
+                    <span class="field-validation-valid text-danger mx-1 my-2">@TempData["FileError"]</span>
+                }
+            </form>
+        </div>
+    </fieldset>
+    <!------------------------------------------------------------->
+    <fieldset class="terminal border border-4 border-dark p-2 m-2 rounded @(TempData["CommandeResult"] is null ? "hiddenfield" : "")" id="commandField">
+        <div class="d-flex justify-content-start w-100">
+            Welcome to CloudTerminal!
+        </div>
+    </fieldset>
 </div>
 
 <table class="table">
@@ -36,7 +75,7 @@
         </tr>
     </thead>
     <tbody>
-        @foreach (CloudRegistration? item in Model.items)
+        @foreach (CloudFolder? item in Model.Folders)
         {
             if (item != null)
             {
@@ -47,17 +86,17 @@
                                 <span id="iconforitemtype">
                                     <img src="@item.IconPath" width=" 20" height="20" class="item rounded align-bottom">
                                 </span>
-                                <a asp-action="Details" asp-route-id="@item.Id" asp-route-parentId="@item.ParentId" asp-route-folderName="@item.Name" class="itemlink">@item.Name</a>
+                                <a asp-action="Details" asp-route-folderName="@item.Info.Name" class="itemlink">@item.Info!.Name</a>
                             </summary>
                             <fieldset class="border border-dark p-2 m-2 rounded">
                                 <legend class="btn btn-outline-primary rounded-pill w-auto">Details</legend>
                                 <table class="table table-striped rounded">
                                     <tr>
                                         <td>
-                                            Size
+                                            Created Time
                                         </td>
                                         <td>
-                                            @item.GetSize()
+                                            @item.Info.CreationTime
                                         </td>
                                     </tr>
                                     <tr>
@@ -65,7 +104,7 @@
                                             Public
                                         </td>
                                         <td>
-                                            @if (item.IsVisibleForEveryOne)
+                                            @if (false)
                                             {
                                                 <span>✔</span>
                                             }
@@ -77,10 +116,10 @@
                                     </tr>
                                     <tr>
                                         <td>
-                                            Created Time
+                                            Last Accessed Time
                                         </td>
                                         <td>
-                                            @item.CreatedDate
+                                            @item.Info.LastAccessTime
                                         </td>
                                     </tr>
                                     <tr>
@@ -88,16 +127,93 @@
                                             Created By
                                         </td>
                                         <td>
-                                            @item.CreatedBy.FullName
+                                            @User.Identity!.Name
                                         </td>
                                     </tr>
                                 </table>
                             </fieldset>
                             <div class="d-flex justify-content-end">
                                 <div class="btn-group mx-2" role="group">
-                                    <button type="button" class="btn btn-primary"><a asp-controller="Drive" asp-action="PubliciseFolder" asp-route-id="@item.Id"><img src="~/utilities/globe.svg" width=" 20" height="20" class="rounded-circle align-middle" /></a></button>
-                                    <button type="button" class="btn btn-secondary"><a asp-controller="Drive" asp-action="Settings" asp-route-id="@item.Id"><img src="~/utilities/gear.svg" width=" 20" height="20" class="rounded-circle align-middle" /></a></button>
-                                    <button type="button" class="btn btn-danger"><a asp-controller="Drive" asp-action="Delete" asp-route-id="@item.Id"><img src="~/utilities/trash.svg" width=" 20" height="20" class="rounded-circle align-middle" /></a></button>
+                                    <button type="button" class="btn btn-primary"><a asp-controller="Drive" asp-action="PubliciseFolder" asp-route-id="@item.Info.Name"><img src="~/utilities/globe.svg" width=" 20" height="20" class="rounded-circle align-middle" /></a></button>
+                                    <button type="button" class="btn btn-secondary"><a asp-controller="Drive" asp-action="Settings" asp-route-id="@item.Info.Name"><img src="~/utilities/gear.svg" width=" 20" height="20" class="rounded-circle align-middle" /></a></button>
+                                    <button type="button" class="btn btn-danger"><a asp-controller="Drive" asp-action="DeleteFolder" asp-route-folderName="@item.Info.Name"><img src="~/utilities/trash.svg" width=" 20" height="20" class="rounded-circle align-middle" /></a></button>
+                                </div>
+                            </div>
+                        </details>
+                    </td>
+                </tr>
+            }
+        }
+        @foreach (CloudFile? item in Model.Files)
+        {
+            if (item != null)
+            {
+                <tr>
+                    <td>
+                        <details>
+                            <summary>
+                                <span id="iconforitemtype">
+                                    <img src="@item.IconPath" width=" 20" height="20" class="item rounded align-bottom">
+                                </span>
+                                <span class="itemlink">@item.Info!.Name</span>
+                            </summary>
+                            <fieldset class="border border-dark p-2 m-2 rounded">
+                                <legend class="btn btn-outline-primary rounded-pill w-auto">Details</legend>
+                                <table class="table table-striped rounded">
+                                    <tr>
+                                        <td>
+                                            Size
+                                        </td>
+                                        <td>
+                                            @item.Info.Length Bytes
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            Created Time
+                                        </td>
+                                        <td>
+                                            @item.Info.CreationTime
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            Public
+                                        </td>
+                                        <td>
+                                            @if (false)
+                                            {
+                                                <span>✔</span>
+                                            }
+                                            else
+                                            {
+                                                <span>❌</span>
+                                            }
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            Last Accessed Time
+                                        </td>
+                                        <td>
+                                            @item.Info.LastAccessTime
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            Created By
+                                        </td>
+                                        <td>
+                                            @User.Identity!.Name
+                                        </td>
+                                    </tr>
+                                </table>
+                            </fieldset>
+                            <div class="d-flex justify-content-end">
+                                <div class="btn-group mx-2" role="group">
+                                    <button type="button" class="btn btn-primary"><a asp-controller="Drive" asp-action="PubliciseFile" asp-route-id="@item.Info.Name"><img src="~/utilities/globe.svg" width=" 20" height="20" class="rounded-circle align-middle" /></a></button>
+                                    <button type="button" class="btn btn-secondary"><a asp-controller="Drive" asp-action="Settings" asp-route-id="@item.Info.Name"><img src="~/utilities/gear.svg" width=" 20" height="20" class="rounded-circle align-middle" /></a></button>
+                                    <button type="button" class="btn btn-danger"><a asp-controller="Drive" asp-action="DeleteFile" asp-route-id="@item.Info.Name"><img src="~/utilities/trash.svg" width=" 20" height="20" class="rounded-circle align-middle" /></a></button>
                                 </div>
                             </div>
                         </details>
@@ -107,3 +223,49 @@
         }
     </tbody>
 </table>
+<hr class="separator" />
+<div class="d-flex w-100 justify-content-end text-dark">
+    <span><b>@Model.Folders.Count Folders,</b></span>
+    <span class="ms-1"><b>@Model.Files.Count Files</b></span>
+</div>
+<script type="text/javascript">
+    window.onload = init;
+
+    function init() {
+        document.getElementById("addFolderBtn").addEventListener("click", AddFolderClicked, false);
+        document.getElementById("addFileBtn").addEventListener("click", AddFileClicked, false);
+        document.getElementById("terminalBtn").addEventListener("click", TerminalClicked, false);
+        document.getElementById("refreshBtn").addEventListener("click", RefreshClicked, false);
+        CheckSessionStorage();
+    }
+
+    function AddFolderClicked(e) {
+        document.getElementById("addFolderField").classList.toggle("hiddenfield");
+        document.getElementById("addFileField").classList.add("hiddenfield");
+        document.getElementById("commandField").classList.add("hiddenfield");
+    }
+    function AddFileClicked(e) {
+        document.getElementById("addFolderField").classList.add("hiddenfield");
+        document.getElementById("addFileField").classList.toggle("hiddenfield");
+        document.getElementById("commandField").classList.add("hiddenfield");
+    }
+    function TerminalClicked(e) {
+        document.getElementById("addFolderField").classList.add("hiddenfield");
+        document.getElementById("addFileField").classList.add("hiddenfield");
+        document.getElementById("commandField").classList.toggle("hiddenfield");
+    }
+    function RefreshClicked(e) {
+        let element = "";
+        if (!document.getElementById("addFolderField").classList.contains("hiddenfield")) element = "addFolderField";
+        if (!document.getElementById("addFileField").classList.contains("hiddenfield")) element = "addFileField";
+        if (!document.getElementById("commandField").classList.contains("hiddenfield")) element = "commandField";
+        sessionStorage.setItem("openedMiniWindow", element);
+    }
+    function CheckSessionStorage() {
+        let item = sessionStorage.getItem("openedMiniWindow");
+        if (item !== null) {
+            document.getElementById(item).classList.toggle("hiddenfield")
+        }
+        sessionStorage.removeItem("openedMiniWindow");
+    }
+</script>

@@ -1,6 +1,6 @@
 ﻿namespace NCloud.Models
 {
-    public class File : CloudRegistration
+    public class FileII : CloudRegistrationII
     {
         public override int GetSize()
         {

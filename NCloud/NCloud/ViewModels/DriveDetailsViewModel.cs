@@ -4,13 +4,14 @@ namespace NCloud.ViewModels
 {
     public class DriveDetailsViewModel
     {
-        public List<CloudRegistration?> items { get; set; }
-        public int ParentId { get; set; }
-
-        public DriveDetailsViewModel(List<CloudRegistration?> items,int parentId)
+        public List<CloudFile?> Files { get; set; }
+        public List<CloudFolder?> Folders { get; set; }
+        public string CurrentPath { get; set; }
+        public DriveDetailsViewModel(List<CloudFile?> files, List<CloudFolder?> folders, string currentPath)
         {
-            this.items = items;
-            ParentId = parentId;
+            Files = files;
+            Folders = folders;
+            CurrentPath = currentPath;
         }
     }
 }
