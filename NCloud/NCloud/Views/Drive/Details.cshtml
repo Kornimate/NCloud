@@ -225,8 +225,10 @@
 </table>
 <hr class="separator" />
 <div class="d-flex w-100 justify-content-end text-dark">
-    <span><b>@Model.Folders.Count Folders,</b></span>
-    <span class="ms-1"><b>@Model.Files.Count Files</b></span>
+    <div class=" border border-2 rounded border-secondary px-2">
+        <span><b>@Model.Folders.Count Folder@(@Model.Folders.Count > 1 ? "s" : ""),</b></span>
+        <span class="ms-1"><b>@Model.Files.Count File@(@Model.Files.Count > 1 ? "s" : "")</b></span>
+    </div>
 </div>
 <script type="text/javascript">
     window.onload = init;
