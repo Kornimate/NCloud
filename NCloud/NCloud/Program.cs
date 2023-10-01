@@ -33,9 +33,9 @@ namespace NCloud
 
             builder.Services.AddTransient<ICloudService, CloudService>();
 
-            builder.Services.AddServerSideBlazor();
-
             builder.Services.AddRazorPages();
+
+            builder.Services.AddServerSideBlazor();
             
             builder.Services.AddControllersWithViews();
 

@@ -94,3 +94,7 @@ details[open] summary:before {
 #menu {
     margin-top: 50%;
 }
+
+.my-editor-class {
+    height: 500px;
+}
