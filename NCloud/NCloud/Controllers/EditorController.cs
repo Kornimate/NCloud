@@ -1,83 +1,51 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using NCloud.Services;
+using NCloud.Models;
+using System.Text.Json;
+using NCloud.ViewModels;
 
 namespace NCloud.Controllers
 {
     public class EditorController : Controller
     {
+        private readonly ICloudService service;
+        private const string COOKIENAME = "pathData";
+
+        public EditorController(ICloudService service)
+        {
+            this.service = service;
+        }
         // GET: EditorController
-        public ActionResult Index()
+        public ActionResult Index(string? fileName = null)
+        {
+            if (fileName == null)
+            {
+                return View(new EditorViewModel());
+            }
+            PathData pathData = GetSessionPathData();
+            return View(new EditorViewModel { FilePath = service.ReturnServerPath(Path.Combine(pathData.CurrentPath, fileName)) });
+        }
+
+        public IActionResult IndexCode()
         {
             return View();
         }
 
-        // GET: EditorController/Details/5
-        public ActionResult Details(int id)
+        [NonAction]
+        private PathData GetSessionPathData()
         {
-            return View();
-        }
-
-        // GET: EditorController/Create
-        public ActionResult Create()
-        {
-            return View();
-        }
-
-        // POST: EditorController/Create
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Create(IFormCollection collection)
-        {
-            try
+            PathData data = null!;
+            if (HttpContext.Session.Keys.Contains(COOKIENAME))
             {
-                return RedirectToAction(nameof(Index));
+                data = JsonSerializer.Deserialize<PathData>(HttpContext.Session.GetString(COOKIENAME)!)!;
             }
-            catch
+            else
             {
-                return View();
+                data = new PathData();
+                HttpContext.Session.SetString(COOKIENAME, JsonSerializer.Serialize<PathData>(data));
             }
-        }
-
-        // GET: EditorController/Edit/5
-        public ActionResult Edit(int id)
-        {
-            return View();
-        }
-
-        // POST: EditorController/Edit/5
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Edit(int id, IFormCollection collection)
-        {
-            try
-            {
-                return RedirectToAction(nameof(Index));
-            }
-            catch
-            {
-                return View();
-            }
-        }
-
-        // GET: EditorController/Delete/5
-        public ActionResult Delete(int id)
-        {
-            return View();
-        }
-
-        // POST: EditorController/Delete/5
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Delete(int id, IFormCollection collection)
-        {
-            try
-            {
-                return RedirectToAction(nameof(Index));
-            }
-            catch
-            {
-                return View();
-            }
+            return data;
         }
     }
 }

@@ -92,10 +92,10 @@ details[open] summary:before {
 }
 
 #menu {
-    margin-top: 50%;
+    margin-top: 40%;
 }
 
 .my-editor-class {
-    height: 95vh;
+    height: 90vh;
     width:100%;
 }

@@ -1,4 +1,6 @@
-﻿<script src="_content/BlazorMonaco/jsInterop.js"></script>
+﻿@model EditorViewModel
+
+<script src="_content/BlazorMonaco/jsInterop.js"></script>
 <script src="_content/BlazorMonaco/lib/monaco-editor/min/vs/loader.js"></script>
 <script src="_content/BlazorMonaco/lib/monaco-editor/min/vs/editor/editor.main.js"></script>
 
@@ -6,6 +8,5 @@
     ViewData["Title"] = "Editor";
 }
 
-<div class="border border-dark border-3 w-100 h-100 rounded">
-    <component type="@typeof(Editor)" render-mode="ServerPrerendered" />
-</div>
+
+<component type="@typeof(Editor)" render-mode="ServerPrerendered" param-FilePath="@Model.FilePath"/>

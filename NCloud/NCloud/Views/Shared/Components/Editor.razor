@@ -1,13 +1,40 @@
 ﻿@using Microsoft.AspNetCore.Components
 @namespace NCloud.Views.Shared.Components
 @inject IJSRuntime jsRuntime
+@inject ICloudService service
 
-<StandaloneCodeEditor @ref="editor" Id="code_editor" CssClass="my-editor-class" ConstructionOptions="EditorConstructionOptions" OnDidInit="EditorOnDidInit" OnContextMenu="OnContextMenu" />
+<div class="d-flex justify-content-end mb-2 bg-secondary w-100 rounded">
+    <div class="btn-group">
+        <a @onclick="SaveClicked" class="btn btn-success">Save</a>
+    </div>
+</div>
+<div class=" border border-dark border-3 w-100 h-100 rounded">
+    <StandaloneCodeEditor @ref="editor" Id="code_editor" CssClass="my-editor-class" ConstructionOptions="EditorConstructionOptions" OnDidInit="EditorOnDidInit" OnContextMenu="OnContextMenu" />
+</div>
 
 @code {
+    [Parameter]
+    public string? FilePath { get; set; } // should be specified when calling
+
+
     private StandaloneCodeEditor editor = null!;
-    private string valueToSet = "";
+    private string valueToSet = String.Empty;
     private const string THEME = "vs-dark";
+
+    public async Task SaveClicked()
+    {
+        string fileData = await editor.GetValue();
+        System.IO.File.WriteAllText(FilePath!, fileData);
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (FilePath is not null && FilePath != String.Empty)
+        {
+            valueToSet = String.Join("\n", System.IO.File.ReadAllLines(FilePath!));
+            await Task.Delay(0); // for async
+        }
+    }
 
     private StandaloneEditorConstructionOptions EditorConstructionOptions(StandaloneCodeEditor editor)
     {
@@ -15,21 +42,19 @@
             {
                 Language = "javascript",
                 GlyphMargin = true,
-                Value = "\"use strict\";\n" +
-                        "function Person(age) {\n" +
-                        "	if (age) {\n" +
-                        "		this.age = age;\n" +
-                        "	}\n" +
-                        "}\n" +
-                        "Person.prototype.getAge = function () {\n" +
-                        "	return this.age;\n" +
-                        "};\n"
+                Value = valueToSet,
+                Theme = THEME,
+                LargeFileOptimizations = true,
+                WordBasedSuggestions = true,
+                DetectIndentation = true,
+                SelectOnLineNumbers = true,
+                RenderFinalNewline = true,
+                TabSize = 4
             };
     }
 
     private async Task EditorOnDidInit()
     {
-        await BlazorMonaco.Editor.Global.SetTheme(jsRuntime, THEME);
         await editor.AddCommand((int)KeyMod.CtrlCmd | (int)KeyCode.KeyH, (args) =>
         {
             Console.WriteLine("Ctrl+H : Initial editor command is triggered.");
@@ -134,7 +159,7 @@
                 return codeActionList;
 
             codeActionList.Actions = new List<CodeAction>
-                {
+                            {
                 new CodeAction
                 {
                     Title = "Fix example",
@@ -157,7 +182,7 @@
                     },
                     IsPreferred = true
                 }
-                };
+                            };
             return codeActionList;
         });
     }
@@ -170,7 +195,7 @@
             var completionList = new CompletionList()
                 {
                     Suggestions = new List<CompletionItem>
-                    {
+                                {
                     new CompletionItem
                     {
                         LabelAsString = "Replace by THIS",
@@ -186,7 +211,7 @@
                             EndColumn = 7
                         }
                     }
-                    }
+                                }
                 };
             return completionList;
         });

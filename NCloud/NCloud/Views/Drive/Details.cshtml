@@ -212,6 +212,7 @@
                             <div class="d-flex justify-content-end">
                                 <div class="btn-group mx-2" role="group">
                                     <button type="button" class="btn btn-primary"><a asp-controller="Drive" asp-action="PubliciseFile" asp-route-id="@item.Info.Name"><img src="~/utilities/globe.svg" width=" 20" height="20" class="rounded-circle align-middle" /></a></button>
+                                    <button type="button" class="btn btn-secondary"><a asp-controller="Editor" asp-action="Index" asp-route-fileName="@item.Info.Name"><img src="~/utilities/code-slash.svg" width=" 20" height="20" class="rounded-circle align-middle" /></a></button>
                                     <button type="button" class="btn btn-secondary"><a asp-controller="Drive" asp-action="Settings" asp-route-id="@item.Info.Name"><img src="~/utilities/gear.svg" width=" 20" height="20" class="rounded-circle align-middle" /></a></button>
                                     <button type="button" class="btn btn-danger"><a asp-controller="Drive" asp-action="DeleteFile" asp-route-id="@item.Info.Name"><img src="~/utilities/trash.svg" width=" 20" height="20" class="rounded-circle align-middle" /></a></button>
                                 </div>
