@@ -96,6 +96,48 @@ details[open] summary:before {
 }
 
 .my-editor-class {
-    height: 90vh;
+    height: 88vh;
     width:100%;
 }
+
+/*Loader style*/
+.loading-box {
+    position: relative;
+    width: 400px;
+    height: 30px;
+    border-radius: 50px;
+    border: 2px solid #ededed;
+    overflow: hidden;
+}
+
+.loader {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    border-radius: 50px;
+    background: linear-gradient(105.7deg, rgb(0, 238, 179) 23.2%, rgb(49, 100, 255) 100.5%);
+    left: 0%;
+}
+
+.loader {
+    left: -100%;
+    animation: load 3s linear infinite;
+}
+
+@keyframes load {
+    0% {
+        left: -100%;
+    }
+
+    100% {
+        left: 100%;
+    }
+}
+
+.topmargin{
+    margin-top:25%;
+}
+.background-color {
+    background: linear-gradient(105.7deg, rgb(0, 238, 179) 23.2%, rgb(49, 100, 255) 100.5%);
+}
+/*Loader animations end*/
