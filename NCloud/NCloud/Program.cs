@@ -1,4 +1,5 @@
 using AspNetCoreHero.ToastNotification;
+using DNTCaptcha.Core;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using NCloud.Models;
@@ -36,7 +37,7 @@ namespace NCloud
             builder.Services.AddServerSideBlazor();
 
             builder.Services.AddRazorPages();
-            
+
             builder.Services.AddControllersWithViews();
 
             builder.Services.AddDistributedMemoryCache();
@@ -57,6 +58,11 @@ namespace NCloud
                 options.Cookie.HttpOnly = true;
                 options.Cookie.IsEssential = true;
             });
+
+            builder.Services.AddDNTCaptcha(options =>
+                     options.UseCookieStorageProvider()
+                            .ShowThousandsSeparators(false)
+            );
 
             var app = builder.Build();
 
