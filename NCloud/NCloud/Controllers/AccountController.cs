@@ -82,18 +82,26 @@ namespace ELTE.TodoList.Web.Controllers
             ViewBag.ReturnUrl = returnUrl;
             if (ModelState.IsValid)
             {
-                var existing = await userManager.FindByNameAsync(vm.UserName);
-                if (existing != null)
+                var existingUserName = await userManager.FindByNameAsync(vm.UserName);
+                if (existingUserName != null)
                 {
-                    ModelState.AddModelError("", "This UserName is already in use!");
+                    ModelState.AddModelError("UserName", "This Username is already in use!");
                     return View(vm);
                 }
-                var user = new CloudUser { UserName = vm.UserName, FullName = vm.FullName };
+                var existingEmail = await userManager.FindByNameAsync(vm.Email);
+                if (existingEmail != null)
+                {
+                    ModelState.AddModelError("Email", "This Username is already in use!");
+                    return View(vm);
+                }
+                var user = new CloudUser { UserName = vm.UserName, FullName = vm.FullName,Email=vm.Email };
                 var result = await userManager.CreateAsync(user, vm.Password);
 
                 if (result.Succeeded)
                 {
-                    CreateBaseDirectory(await userManager.FindByNameAsync(vm.UserName));
+                    CloudUser newUser = await userManager.FindByNameAsync(vm.UserName);
+                    CreateBaseDirectory(newUser);
+                    await signInManager.SignInAsync(newUser,false);
                     return RedirectToAction(nameof(Index), "Drive");
                 }
 
