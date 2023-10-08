@@ -62,6 +62,10 @@ namespace NCloud
             builder.Services.AddDNTCaptcha(options =>
                      options.UseCookieStorageProvider()
                             .ShowThousandsSeparators(false)
+                            .AbsoluteExpiration(minutes: 7)
+                            .RateLimiterPermitLimit(10)
+                            .WithNoise(0.015f, 0.015f, 1, 0.0f)
+                            .WithEncryptionKey(builder.Configuration.GetSection("EncryptionKey").Value)
             );
 
             var app = builder.Build();

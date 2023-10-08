@@ -6,6 +6,7 @@ using NCloud.Users;
 using NCloud.ViewModels;
 using NCloud.Controllers;
 using System.IO;
+using DNTCaptcha.Core;
 
 namespace ELTE.TodoList.Web.Controllers
 {
@@ -66,7 +67,7 @@ namespace ELTE.TodoList.Web.Controllers
 
             return View(vm);
         }
-        [HttpGet]
+
         [AllowAnonymous]
         public IActionResult Register(string? returnUrl = null)
         {
@@ -77,6 +78,7 @@ namespace ELTE.TodoList.Web.Controllers
         [HttpPost]
         [AllowAnonymous]
         [ValidateAntiForgeryToken]
+        [ValidateDNTCaptcha(ErrorMessage = "Please enter the security code as a number.")]
         public async Task<IActionResult> Register(RegisterViewModel vm, string? returnUrl = null)
         {
             ViewBag.ReturnUrl = returnUrl;

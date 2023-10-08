@@ -14,7 +14,7 @@
                             <img src="~/utilities/cloud_logo.png" width="200" class="ms-2"/>
                             <h2 class="fw-bold mb-2 text-uppercase">Registration</h2>
                             <p class="text-white-50 mb-5">Please enter the required information!</p>
-                            <div asp-validation-summary="All" class="text-danger"></div>
+                            @* <div asp-validation-summary="All" class="text-danger"></div> *@
                             <div class="form-outline form-white mb-4">
                                 <label asp-for="FullName"></label>
                                 <input asp-for="FullName" class="form-control form-control-lg" />
@@ -40,7 +40,27 @@
                                 <input type="password" asp-for="PasswordRepeat" class="form-control form-control-lg" />
                                 <span asp-validation-for="PasswordRepeat" class="text-danger"></span>
                             </div>
-                            <button class="btn btn-outline-light btn-lg px-5" type="submit">Login</button>
+                            <div class="form-outline form-white mb-4">
+                                Captcha<dnt-captcha asp-captcha-generator-max="9999"
+                                             asp-captcha-generator-min="1"
+                                             asp-captcha-generator-language="English"
+                                             asp-captcha-generator-display-mode="NumberToWord"
+                                             asp-use-relative-urls="true"
+                                             asp-placeholder="Security code as a number"
+                                             asp-validation-error-message="Please enter the security code as a number."
+                                             asp-too-many-requests-error-message="Too many requests! Please wait a minute!"
+                                             asp-font-name="Tahoma"
+                                             asp-font-size="20"
+                                             asp-fore-color="#333333"
+                                             asp-back-color="#FCF6F5FF"
+                                             asp-text-box-class="form-control"
+                                             asp-text-box-template="<div class='input-group'><span class='input-group-text'></span>{0}</div>"
+                                             asp-validation-message-class="text-danger"
+                                             asp-refresh-button-class="bi-arrow-counterclockwise btn-lg"
+                                             asp-show-refresh-button="false"
+                                             asp-dir="ltr" />
+                            </div>
+                            <button class="btn btn-outline-light btn-lg px-5" type="submit">Register</button>
                         </div>
                         <div>
                             <p class="mb-0">
