@@ -11,33 +11,9 @@
 <body>
     <header>
         <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light background-color border-bottom box-shadow">
-            <div class="container-fluid">
+            <div class="d-flex-inline align-center ms-3 h-100">
                 <img src="/utilities/cloud_logo_no_text.png" alt="cloudlogo" width="40" height="40" class="me-3">
-                <p class="navbar-brand">NCloudDrive</p>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="navbar-collapse collapse">
-                    <ul class="navbar-nav flex-grow-1 d-flex justify-content-end align-items-center">
-                        <li class="nav-item">
-                            <div class="dropdown">
-                                <a href="#" class="d-flex align-items-center text-white text-decoration-none dropdown-toggle" id="dropdownUser1" data-bs-toggle="dropdown" aria-expanded="false">
-                                    <img src="/utilities/person-circle.svg" alt="profile_icon" width="30" height="30" class="rounded-circle m-1">
-                                    <span class="d-none d-sm-inline mx-1">User</span>
-                                </a>
-                                <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end text-small shadow my-3 p-1">
-                                    <li><a class="dropdown-item" asp-action="Index" asp-controller="Account">Profile</a></li>
-                                    <li><a class="dropdown-item" href="#">Settings</a></li>
-                                    <li>
-                                        <hr class="dropdown-divider">
-                                    </li>
-                                    <li><a class="dropdown-item active text-dark rounded" asp-area="" asp-controller="Account" asp-action="Login">Logout</a></li>
-                                </ul>
-                            </div>
-                        </li>
-                    </ul>
-                </div>
+                <div class="d-inline align-center h-100"><b>NCloudDrive</b></div>
             </div>
         </nav>
     </header>
@@ -48,8 +24,8 @@
     </div>
 
     <footer class="border-top footer text-muted bg-secondary">
-@*        <div class="container text-dark">
-            &copy; 2023 - NCloud - <a asp-area="" asp-controller="Home" asp-action="Index">Home</a>
+        @*        <div class="container text-dark">
+        &copy; 2023 - NCloud - <a asp-area="" asp-controller="Home" asp-action="Index">Home</a>
         </div>*@
     </footer>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
