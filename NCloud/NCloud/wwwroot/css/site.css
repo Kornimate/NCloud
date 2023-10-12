@@ -60,23 +60,24 @@ details[open] summary:before {
     right: 0px;
     position: absolute;
 }
+
 .hiddenfield {
     display: none;
 }
 
-.notificationdiv{
-    z-index:10;
-    position:fixed;
-    right:5px;
-    bottom:5px;
-    height:100%;
-    width:20%;
+.notificationdiv {
+    z-index: 10;
+    position: fixed;
+    right: 5px;
+    bottom: 5px;
+    height: 100%;
+    width: 20%;
 }
 
-.terminal{
-    background-color:darkblue;
-    color:yellow;
-    height:400px;
+.terminal {
+    background-color: darkblue;
+    color: yellow;
+    height: 400px;
 }
 
 .separator {
@@ -97,7 +98,7 @@ details[open] summary:before {
 
 .my-editor-class {
     height: 88vh;
-    width:100%;
+    width: 100%;
 }
 
 /*Loader style*/
@@ -134,9 +135,10 @@ details[open] summary:before {
     }
 }
 
-.topmargin{
-    margin-top:25%;
+.topmargin {
+    margin-top: 25%;
 }
+
 .background-color {
     background: linear-gradient(105.7deg, rgb(0, 238, 179) 23.2%, rgb(49, 100, 255) 100.5%);
 }
@@ -268,16 +270,27 @@ h6 {
     display: inline-block;
 }
 
-.user-card-full .social-link li a {
-    font-size: 20px;
-    margin: 0 10px 0 0;
-    -webkit-transition: all 0.3s ease-in-out;
-    transition: all 0.3s ease-in-out;
-}
+    .user-card-full .social-link li a {
+        font-size: 20px;
+        margin: 0 10px 0 0;
+        -webkit-transition: all 0.3s ease-in-out;
+        transition: all 0.3s ease-in-out;
+    }
 
 
 /*Profile page ends*/
 
-.textheight{
-    height:40px;
+.textheight {
+    height: 40px;
+}
+
+.verticalcenter {
+    margin-top: 10%;
+}
+
+.backbuttondiv {
+    width: 98%;
+    margin-left: 1%;
+    margin-right: 1%;
+    margin-top: 1%;
 }

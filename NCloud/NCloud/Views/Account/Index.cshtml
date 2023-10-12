@@ -1,6 +1,10 @@
 ﻿@model AccountViewModel
 
-<div class="page-content page-container" id="page-content">
+<div class="rounded bg-secondary backbuttondiv">
+    <a class="btn btn-primary" asp-controller="Account" asp-action="Back" asp-route-returnUrl="@ViewBag.ReturnUrl"><img src="~/utilities/arrow-left-circle.svg" width=" 20" height="20" class="rounded align-middle" /></a>
+</div>
+
+<div class="page-content page-container verticalcenter" id="page-content">
     <div class="padding">
         <div class="row container d-flex justify-content-center">
             <div class="col-xl-6 col-md-12">

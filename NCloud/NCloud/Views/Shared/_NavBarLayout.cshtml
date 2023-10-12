@@ -50,7 +50,7 @@
                     </ul>
                     <div class="dropdown mb-3 p-2 d-flex justify-content-center w-100 border border-3 rounded border-dark">
                         <div>
-                            <a asp-action="Index" asp-controller="Account" class="text-dark text-decoration-none">
+                            <a asp-action="Index" asp-controller="Account" asp-route-returnUrl="@($"{Context.Request.Scheme}://{Context.Request.Host}{Context.Request.PathBase}{Context.Request.Path}{Context.Request.QueryString}")" class="text-dark text-decoration-none">
                                 <img src="/utilities/person-circle.svg" alt="profile_icon" width="30" height="30" class="rounded-circle m-1">
                                 <span class="d-inline m-1">User</span>
                             </a>
