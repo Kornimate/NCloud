@@ -21,7 +21,7 @@
                 <button type="button" class="btn btn-secondary"><a asp-controller="Drive" asp-action="DownloadItems"><img src="~/utilities/cloud-download.svg" width=" 20" height="20" class="rounded-circle align-middle" /></a></button>
                 <button type="button" class="btn btn-secondary" id="addFileBtn"><img src="~/utilities/cloud-upload.svg" width=" 20" height="20" class="rounded-circle align-middle" /></button>
                 <button type="button" class="btn btn-secondary" id="addFolderBtn"><img src="~/utilities/folder-plus.svg" width=" 20" height="20" class="rounded align-middle" /></button>
-                <button type="button" class="btn btn-secondary" id="terminalBtn"><img src="~/utilities/terminal.svg" width=" 20" height="20" class="align-middle" /></button>
+                <button type="button" class="btn btn-secondary" id="terminalBtn"><a asp-controller="Drive" asp-action="Terminal"><img src="~/utilities/terminal.svg" width=" 20" height="20" class="align-middle" /></a></button>
                 <button type="button" class="btn btn-danger"><a asp-controller="Drive" asp-action="DeleteItems"><img src="~/utilities/trash.svg" width=" 20" height="20" class="rounded align-middle" /></a></button>
             </div>
         </div>
@@ -58,12 +58,6 @@
                     <span class="field-validation-valid text-danger mx-1 my-2">@TempData["FileError"]</span>
                 }
             </form>
-        </div>
-    </fieldset>
-    <!------------------------------------------------------------->
-    <fieldset class="terminal border border-4 border-dark p-2 m-2 rounded @(TempData["CommandeResult"] is null ? "hiddenfield" : "")" id="commandField">
-        <div class="d-flex justify-content-start w-100">
-            Welcome to CloudTerminal!
         </div>
     </fieldset>
 </div>
@@ -237,7 +231,6 @@
     function init() {
         document.getElementById("addFolderBtn").addEventListener("click", AddFolderClicked, false);
         document.getElementById("addFileBtn").addEventListener("click", AddFileClicked, false);
-        document.getElementById("terminalBtn").addEventListener("click", TerminalClicked, false);
         document.getElementById("refreshBtn").addEventListener("click", RefreshClicked, false);
         CheckSessionStorage();
     }
@@ -245,23 +238,15 @@
     function AddFolderClicked(e) {
         document.getElementById("addFolderField").classList.toggle("hiddenfield");
         document.getElementById("addFileField").classList.add("hiddenfield");
-        document.getElementById("commandField").classList.add("hiddenfield");
     }
     function AddFileClicked(e) {
         document.getElementById("addFolderField").classList.add("hiddenfield");
         document.getElementById("addFileField").classList.toggle("hiddenfield");
-        document.getElementById("commandField").classList.add("hiddenfield");
-    }
-    function TerminalClicked(e) {
-        document.getElementById("addFolderField").classList.add("hiddenfield");
-        document.getElementById("addFileField").classList.add("hiddenfield");
-        document.getElementById("commandField").classList.toggle("hiddenfield");
     }
     function RefreshClicked(e) {
         let element = "";
         if (!document.getElementById("addFolderField").classList.contains("hiddenfield")) element = "addFolderField";
         if (!document.getElementById("addFileField").classList.contains("hiddenfield")) element = "addFileField";
-        if (!document.getElementById("commandField").classList.contains("hiddenfield")) element = "commandField";
         sessionStorage.setItem("openedMiniWindow", element);
     }
     function CheckSessionStorage() {

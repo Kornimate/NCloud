@@ -319,6 +319,11 @@ namespace NCloud.Controllers
             return File(stream, "application/zip", $"{APPNAME}_{DateTime.Now:yyyy'-'MM'-'dd'T'HH':'mm':'ss}.zip");
         }
 
+        public IActionResult Terminal()
+        {
+            return View();
+        }
+
         [NonAction]
         private PathData GetSessionPathData()
         {
