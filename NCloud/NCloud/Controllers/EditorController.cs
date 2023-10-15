@@ -21,15 +21,25 @@ namespace NCloud.Controllers
         {
             if (fileName == null)
             {
-                return View(new EditorViewModel());
+                return View(new CodeEditorViewModel());
             }
             PathData pathData = GetSessionPathData();
-            return View(new EditorViewModel { FilePath = service.ReturnServerPath(Path.Combine(pathData.CurrentPath, fileName)) });
+            return View(new CodeEditorViewModel { FilePath = service.ReturnServerPath(Path.Combine(pathData.CurrentPath, fileName)) });
         }
 
-        public IActionResult IndexCode()
+        public IActionResult IndexText()
         {
-            return View();
+            //TODO: implement with file input
+            return View(new TextEditorViewModel());
+        }
+
+        [HttpPost]
+        [ActionName("IndexText")]
+        [ValidateAntiForgeryToken]
+        public IActionResult IndexTextPost(string? fileNameAndPath = null)
+        {
+            //TODO: implement save file or create new file
+            return View(new TextEditorViewModel());
         }
 
         [NonAction]

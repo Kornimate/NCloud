@@ -1,6 +1,6 @@
 ﻿namespace NCloud.ViewModels
 {
-    public class EditorViewModel
+    public class CodeEditorViewModel
     {
         public string? FilePath { get; set; } = null;
     }

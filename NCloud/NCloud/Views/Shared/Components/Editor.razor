@@ -6,7 +6,7 @@
 <div class="d-flex justify-content-end mb-2 background-color w-100 rounded">
     <div class="btn-group">
         <div class="btn">&nbsp;</div>
-        <div @onclick="SaveClicked" class="btn btn-outline-dark" hidden="@SaveHidden" ><img src="/utilities/save.svg" /></div>
+        <div @onclick="SaveClicked" class="btn btn-outline-white" hidden="@SaveHidden" ><img src="/utilities/save.svg" /></div>
     </div>
 </div>
 <div class="border border-primary border-3 w-100 h-100 rounded">
@@ -27,7 +27,7 @@
 
     private StandaloneCodeEditor editor = null!;
     private string valueToSet = String.Empty;
-    private const string THEME = "vs-light";
+    private const string THEME = "vs-dark";
 
     public async Task SaveClicked()
     {
