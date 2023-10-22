@@ -1,3 +1,43 @@
-﻿<div class="w-100 h-100">
+﻿@model TerminalViewModel
 
+<div class="w-100 h-100 d-flex justify-content-center">
+    <div class="terminal space shadow w-75 terminalstyle">
+        <div class="top">
+            <div class="btns">
+                <span class="circle red"></span>
+                <span class="circle yellow"></span>
+                <span class="circle green"></span>
+            </div>
+            <div class="title">CloudShell</div>
+        </div>
+        <div class="body h-100" id="terminal">
+            @*< div id="prev-text" class="w-100"></div>
+            <div class="d-inline-flex w-100">
+                <span class="d-inline">Cloudroot/HelloWorld/Macska></span>
+                <input type="text" class="terminalinput d-inline" />
+            </div> *@
+        </div>
+    </div>
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/jquery"></script>
+<script src="https://cdn.jsdelivr.net/npm/jquery.terminal/js/jquery.terminal.min.js"></script>
+<script src="~/js/terminal.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jquery.terminal/css/jquery.terminal.min.css" />
+
+<script>
+    terminal = new TerminalCommand;
+
+    jQuery(function ($, undefined) {
+        $('#terminal').terminal(async function (command) {
+            if (command !== '') {
+                var result = await terminal.eval(command,"@Url.Action("Evaluate","Terminal",new { input="@"})");
+                this.echo(result)
+            }
+        }, {
+            greetings: 'Hello User',
+            prompt: '@Model.CurrentDirectory> ',
+            checkArity: false
+        });
+    });
+</script>

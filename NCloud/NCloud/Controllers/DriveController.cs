@@ -321,7 +321,11 @@ namespace NCloud.Controllers
 
         public IActionResult Terminal()
         {
-            return View();
+            PathData pathData = GetSessionPathData();
+            return View(new TerminalViewModel
+            {
+                CurrentDirectory = pathData.CurrentPathShow
+            });
         }
 
         [NonAction]
