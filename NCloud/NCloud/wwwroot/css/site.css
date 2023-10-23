@@ -65,6 +65,10 @@ details[open] summary:before {
     display: none;
 }
 
+.hidden{
+    display:none;
+}
+
 .notificationdiv {
     z-index: 10;
     position: fixed;

@@ -11,5 +11,10 @@
             //TODO: implement command choosing and error handling
             return "Hello Terminal!";
         }
+
+        public void ExecuteSingleLineCommand(string? command)
+        {
+           //TODO: implement command execution
+        }
     }
 }

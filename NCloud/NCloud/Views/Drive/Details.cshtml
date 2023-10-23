@@ -5,15 +5,25 @@
 }
 
 <div>
-    <form asp-action="Details" class="input-group mb-3" id="pathform">
-        <div class="input-group">
-            <input type="text" class="form-control" name="filterString" id="currentPath" value="@ViewBag.CurrentPath" />
-            <button type="submit" value="" class="btn btn-primary" form="pathform"><img src="~/utilities/arrow-right-circle.svg" width=" 20" height="20" class="rounded-circle align-middle" /></button>
+    <form asp-action="EvaluateSingleLine" asp-controller="Terminal" class="input-group mb-3" id="pathform">
+        <div class="background-color rounded w-100 px-3 pt-3" id="breadcrumbDiv">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    @foreach (string item in ViewBag.CurrentPath.Split("//", StringSplitOptions.RemoveEmptyEntries))
+                    {
+                        <li class="breadcrumb-item text-dark" aria-current="page">@item</li>
+                    }
+                </ol>
+            </nav>
+        </div>
+        <div class="input-group hidden" id="fastInputDiv">
+            <input type="text" class="form-control py-3" name="filterString" id="currentPath" value="@ViewBag.CurrentPath" />
+            <button type="submit" value="" class="btn btn-primary" form="pathform" id="fastInputBtn"><img src="~/utilities/arrow-right-circle.svg" width=" 20" height="20" class="rounded-circle align-middle" /></button>
         </div>
     </form>
     <div class="d-flex justify-content-between">
         <div class="">
-            <a class=btn btn-primary" asp-controller="Drive" asp-action="Back"><img src="~/utilities/arrow-left-circle.svg" width=" 20" height="20" class="rounded align-middle" /></a>
+            <a class="btn btn-primary" asp-controller="Drive" asp-action="Back"><img src="~/utilities/arrow-left-circle.svg" width=" 20" height="20" class="rounded align-middle" /></a>
         </div>
         <div class="">
             <div class="btn-group" role="group">
@@ -232,6 +242,8 @@
         document.getElementById("addFolderBtn").addEventListener("click", AddFolderClicked, false);
         document.getElementById("addFileBtn").addEventListener("click", AddFileClicked, false);
         document.getElementById("refreshBtn").addEventListener("click", RefreshClicked, false);
+        document.getElementById("breadcrumbDiv").addEventListener("click", CrumbClicked, false);
+        document.getElementById("currentPath").addEventListener("focusout", InputFocusLost, false);
         CheckSessionStorage();
     }
 
@@ -255,5 +267,20 @@
             document.getElementById(item).classList.toggle("hiddenfield")
         }
         sessionStorage.removeItem("openedMiniWindow");
+    }
+    function CrumbClicked(e) {
+        document.getElementById("breadcrumbDiv").classList.toggle("hidden");
+        document.getElementById("fastInputDiv").classList.toggle("hidden");
+        input = document.getElementById("currentPath");
+        input.focus();
+        input.value = '';
+        input.value = "@ViewBag.CurrentPath";
+    }
+    function InputFocusLost(e) {
+        console.log(e)
+        if (e.relatedTarget.id !== "fastInputBtn") {
+            document.getElementById("breadcrumbDiv").classList.toggle("hidden");
+            document.getElementById("fastInputDiv").classList.toggle("hidden");
+        }
     }
 </script>

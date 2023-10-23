@@ -17,5 +17,12 @@ namespace NCloud.API
             string result = service.ExecuteCommand(input);
             return Content(result);
         }
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult EvaluateSingleLine(string? command)
+        {
+            service.ExecuteSingleLineCommand(command);
+            return Content("Success");
+        }
     }
 }

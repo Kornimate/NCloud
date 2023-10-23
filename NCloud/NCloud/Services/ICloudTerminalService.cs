@@ -3,5 +3,6 @@
     public interface ICloudTerminalService
     {
         string ExecuteCommand(string? input);
+        void ExecuteSingleLineCommand(string? command);
     }
 }
