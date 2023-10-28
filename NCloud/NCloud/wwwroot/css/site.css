@@ -79,9 +79,9 @@ details[open] summary:before {
     height:400px;
 }
 
-.separator{
+.separator {
     border: 3px solid black;
-  
+}
 .navwidth {
     width: 15%;
 }
@@ -92,4 +92,8 @@ details[open] summary:before {
 
 #menu {
     margin-top: 50%;
+}
+
+.background-color {
+    background: linear-gradient(105.7deg, rgb(0, 238, 179) 23.2%, rgb(49, 100, 255) 100.5%);
 }

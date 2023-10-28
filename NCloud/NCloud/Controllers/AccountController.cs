@@ -6,6 +6,7 @@ using NCloud.Users;
 using NCloud.ViewModels;
 using NCloud.Controllers;
 using System.IO;
+using DNTCaptcha.Core;
 
 namespace ELTE.TodoList.Web.Controllers
 {
@@ -66,7 +67,7 @@ namespace ELTE.TodoList.Web.Controllers
 
             return View(vm);
         }
-        [HttpGet]
+
         [AllowAnonymous]
         public IActionResult Register(string? returnUrl = null)
         {
@@ -77,23 +78,32 @@ namespace ELTE.TodoList.Web.Controllers
         [HttpPost]
         [AllowAnonymous]
         [ValidateAntiForgeryToken]
+        [ValidateDNTCaptcha(ErrorMessage = "Please enter the security code as a number.")]
         public async Task<IActionResult> Register(RegisterViewModel vm, string? returnUrl = null)
         {
             ViewBag.ReturnUrl = returnUrl;
             if (ModelState.IsValid)
             {
-                var existing = await userManager.FindByNameAsync(vm.UserName);
-                if (existing != null)
+                var existingUserName = await userManager.FindByNameAsync(vm.UserName);
+                if (existingUserName != null)
                 {
-                    ModelState.AddModelError("", "This UserName is already in use!");
+                    ModelState.AddModelError("UserName", "This Username is already in use!");
                     return View(vm);
                 }
-                var user = new CloudUser { UserName = vm.UserName, FullName = vm.FullName };
+                var existingEmail = await userManager.FindByNameAsync(vm.Email);
+                if (existingEmail != null)
+                {
+                    ModelState.AddModelError("Email", "This Username is already in use!");
+                    return View(vm);
+                }
+                var user = new CloudUser { UserName = vm.UserName, FullName = vm.FullName,Email=vm.Email };
                 var result = await userManager.CreateAsync(user, vm.Password);
 
                 if (result.Succeeded)
                 {
-                    CreateBaseDirectory(await userManager.FindByNameAsync(vm.UserName));
+                    CloudUser newUser = await userManager.FindByNameAsync(vm.UserName);
+                    CreateBaseDirectory(newUser);
+                    await signInManager.SignInAsync(newUser,false);
                     return RedirectToAction(nameof(Index), "Drive");
                 }
 

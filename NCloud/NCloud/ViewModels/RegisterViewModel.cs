@@ -7,13 +7,21 @@ namespace NCloud.ViewModels
         [Required]
         [MaxLength(10,ErrorMessage ="Maximum length is 10 chars!")]
         [MinLength(1,ErrorMessage ="Minimum length is 10 chars!")]
-        //regex for names
+        [Display(Name = "Username")]
         public string? UserName { get; set; }
         [Required] // need extra check
+        [Display(Name = "Full name")]
         public string? FullName { get; set; }
+
+        [Required]
+        [Display(Name = "Email")]
+        public string? Email { get; set; }
+
         [Required] // need extra check
+        [Display(Name = "Password")]
         public string? Password { get; set; }
         [Required] // need extra check
+        [Display(Name = "Repeat the password")]
         public string? PasswordRepeat { get; set; }
     }
 }

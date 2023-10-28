@@ -1,4 +1,5 @@
 using AspNetCoreHero.ToastNotification;
+using DNTCaptcha.Core;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using NCloud.Models;
@@ -36,7 +37,7 @@ namespace NCloud
             builder.Services.AddServerSideBlazor();
 
             builder.Services.AddRazorPages();
-            
+
             builder.Services.AddControllersWithViews();
 
             builder.Services.AddDistributedMemoryCache();
@@ -57,6 +58,15 @@ namespace NCloud
                 options.Cookie.HttpOnly = true;
                 options.Cookie.IsEssential = true;
             });
+
+            builder.Services.AddDNTCaptcha(options =>
+                     options.UseCookieStorageProvider()
+                            .ShowThousandsSeparators(false)
+                            .AbsoluteExpiration(minutes: 7)
+                            .RateLimiterPermitLimit(10)
+                            .WithNoise(0.015f, 0.015f, 1, 0.0f)
+                            .WithEncryptionKey(builder.Configuration.GetSection("EncryptionKey").Value)
+            );
 
             var app = builder.Build();
 
@@ -82,7 +92,7 @@ namespace NCloud
 
             app.MapControllerRoute(
                 name: "default",
-                pattern: "{controller=Drive}/{action=Index}/{id?}");
+                pattern: "{controller=Account}/{action=Register}/{id?}");
 
             app.MapBlazorHub();
 
