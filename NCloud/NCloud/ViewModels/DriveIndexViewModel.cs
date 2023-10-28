@@ -1,14 +1,14 @@
 ﻿using NCloud.Models;
-using FileII = NCloud.Models.FileII;
 
 namespace NCloud.ViewModels
 {
     public class DriveIndexViewModel
     {
-        public List<FolderII?> recentFolders { get; set; }
-        public List<FileII?> recentFiles { get; set; }
+        public List<CloudFolder?> recentFolders { get; set; }
+        public List<CloudFile?> recentFiles { get; set; }
+        public string? TestString { get; set; }
 
-        public DriveIndexViewModel(List<FileII?> recFiles,List<FolderII?> recFolders)
+        public DriveIndexViewModel(List<CloudFile?> recFiles,List<CloudFolder?> recFolders)
         {
             recentFiles = recFiles;
             recentFolders = recFolders;

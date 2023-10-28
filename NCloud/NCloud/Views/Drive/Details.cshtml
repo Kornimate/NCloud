@@ -277,8 +277,7 @@
         input.value = "@ViewBag.CurrentPath";
     }
     function InputFocusLost(e) {
-        console.log(e)
-        if (e.relatedTarget.id !== "fastInputBtn") {
+        if (e.relatedTarget === null || e.relatedTarget.id !== "fastInputBtn") {
             document.getElementById("breadcrumbDiv").classList.toggle("hidden");
             document.getElementById("fastInputDiv").classList.toggle("hidden");
         }

@@ -1,5 +1,4 @@
 ﻿using NCloud.Models;
-using FileII = NCloud.Models.FileII;
 using Microsoft.EntityFrameworkCore;
 using NCloud.Users;
 using Castle.Core.Internal;
@@ -80,11 +79,6 @@ namespace NCloud.Services
             return Directory.GetDirectories(ParseRootName(currentPath)).Select(x => new CloudFolder(new DirectoryInfo(x))).ToList()!;
         }
 
-        public Tuple<List<FileII?>, List<FolderII?>> GetCurrentUserIndexData()
-        {
-            return new(null!, null!);
-        }
-
         public bool RemoveDirectory(string folderName, string currentPath)
         {
             string pathAndName = Path.Combine(ParseRootName(currentPath), folderName);
@@ -125,6 +119,11 @@ namespace NCloud.Services
         public string ReturnServerPath(string currentPath)
         {
             return ParseRootName(currentPath);
+        }
+
+        public Tuple<List<CloudFile?>, List<CloudFolder?>> GetCurrentUserIndexData()
+        {
+            return new Tuple<List<CloudFile?>, List<CloudFolder?>>(new(), new());
         }
     }
 }

@@ -24,7 +24,10 @@ namespace NCloud.Controllers
         {
             Task.Run(async () => await signInManager.PasswordSignInAsync("Admin", "Admin_1234", false, false)).Wait();
             var result = service.GetCurrentUserIndexData();
-            return View(new DriveIndexViewModel(result.Item1, result.Item2));
+            return View(new DriveIndexViewModel(result.Item1, result.Item2)
+            {
+                //TestString = Url.Action("Index", "Drive",new { path="testpath" },Request.Scheme)
+            });
         }
 
         // GET: DriveController/Details/5
