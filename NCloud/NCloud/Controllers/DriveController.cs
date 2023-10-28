@@ -282,41 +282,46 @@ namespace NCloud.Controllers
             PathData pathData = GetSessionPathData();
             string tempFile = Path.GetTempFileName();
             using var zipFile = System.IO.File.Create(tempFile);
-            using (ZipArchive archive = new ZipArchive(zipFile, ZipArchiveMode.Create))
+            if (vm.ItemsForDownload is not null && vm.ItemsForDownload.Count != 0)
             {
-                foreach (string itemName in vm.ItemsForDownload!)
+                using (ZipArchive archive = new ZipArchive(zipFile, ZipArchiveMode.Create))
                 {
-                    if (itemName != "false")
+                    foreach (string itemName in vm.ItemsForDownload!)
                     {
-                        if (itemName[0] == '_')
+                        if (itemName != "false")
                         {
-                            string name = itemName[1..];
-                            archive.CreateEntryFromFile(Path.Combine(service.ReturnServerPath(pathData.CurrentPath),name), name);
-                            try
+                            if (itemName[0] == '_')
                             {
-                                ;
+                                string name = itemName[1..];
+                                archive.CreateEntryFromFile(Path.Combine(service.ReturnServerPath(pathData.CurrentPath), name), name);
+                                try
+                                {
+                                    ;
+                                }
+                                catch (Exception ex)
+                                {
+                                    notifier.Error($"{ex.Message} ({itemName})");
+                                }
                             }
-                            catch (Exception ex)
+                            else
                             {
-                                notifier.Error($"{ex.Message} ({itemName})");
-                            }
-                        }
-                        else
-                        {
-                            try
-                            {
-                                // TODO: here comes folder zipping
-                            }
-                            catch (Exception ex)
-                            {
-                                notifier.Error($"{ex.Message} ({itemName})");
+                                try
+                                {
+                                    // TODO: here comes folder zipping
+                                }
+                                catch (Exception ex)
+                                {
+                                    notifier.Error($"{ex.Message} ({itemName})");
+                                }
                             }
                         }
                     }
                 }
+                FileStream stream = new FileStream(tempFile, FileMode.Open, FileAccess.Read, FileShare.Read, 4096, FileOptions.DeleteOnClose);
+                return File(stream, "application/zip", $"{APPNAME}_{DateTime.Now:yyyy'-'MM'-'dd'T'HH':'mm':'ss}.zip");
             }
-            FileStream stream = new FileStream(tempFile, FileMode.Open, FileAccess.Read, FileShare.Read, 4096, FileOptions.DeleteOnClose);
-            return File(stream, "application/zip", $"{APPNAME}_{DateTime.Now:yyyy'-'MM'-'dd'T'HH':'mm':'ss}.zip");
+            //warning implementation
+            return RedirectToAction("DownloadItems");
         }
 
         public IActionResult Terminal()

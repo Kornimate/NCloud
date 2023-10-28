@@ -94,7 +94,7 @@ namespace NCloud
 
             app.MapControllerRoute(
                 name: "default",
-                pattern: "{controller=Account}/{action=Register}/{id?}");
+                pattern: "{controller=Drive}/{action=Index}/{id?}");
 
             app.MapBlazorHub();
 
