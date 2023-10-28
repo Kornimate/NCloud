@@ -8,26 +8,12 @@
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/NCloud.styles.css" asp-append-version="true" />
 </head>
-<body>
-    <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light background-color border-bottom box-shadow">
-            <div class="d-flex-inline align-center ms-3 h-100">
-                <img src="/utilities/cloud_logo_no_text.png" alt="cloudlogo" width="40" height="40" class="me-3">
-                <div class="d-inline align-center h-100"><b>NCloudDrive</b></div>
-            </div>
-        </nav>
-    </header>
+<body class="background-color">
     <div class="">
         <main role="main" class="">
             @RenderBody()
         </main>
     </div>
-
-    <footer class="border-top footer text-muted bg-secondary">
-        @*        <div class="container text-dark">
-        &copy; 2023 - NCloud - <a asp-area="" asp-controller="Home" asp-action="Index">Home</a>
-        </div>*@
-    </footer>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>

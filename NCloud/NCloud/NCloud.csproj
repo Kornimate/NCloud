@@ -11,6 +11,7 @@
 		<PackageReference Include="AspNetCoreHero.ToastNotification" Version="1.1.0" />
 		<PackageReference Include="BlazorMonaco" Version="3.1.0" />
 		<PackageReference Include="Microsoft.AspNet.Mvc" Version="5.2.9" />
+		<PackageReference Include="DNTCaptcha.Core" Version="4.9.1" />
 		<PackageReference Include="Microsoft.AspNetCore.Components" Version="6.0.19" />
 		<PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="6.0.19" />
 		<PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="6.0.15" />
