@@ -1,12 +1,16 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using AspNetCoreHero.ToastNotification.Abstractions;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using NCloud.Models;
+using NCloud.Services;
+using NCloud.Users;
 using System.Diagnostics;
 
 namespace NCloud.Controllers
 {
-    public class HomeController : Controller
+    public class HomeController : CloudControllerDefault
     {
-        public HomeController(){ }
+        public HomeController(ICloudService service, UserManager<CloudUser> userManager, SignInManager<CloudUser> signInManager, IWebHostEnvironment env, INotyfService notifier) : base(service, userManager, signInManager, env, notifier) { }
 
         public IActionResult Index()
         {

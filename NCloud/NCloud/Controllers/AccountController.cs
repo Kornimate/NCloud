@@ -7,22 +7,15 @@ using NCloud.ViewModels;
 using NCloud.Controllers;
 using System.IO;
 using DNTCaptcha.Core;
+using AspNetCoreHero.ToastNotification.Abstractions;
+using NCloud.Services;
 
 namespace ELTE.TodoList.Web.Controllers
 {
     [Authorize]
-    public class AccountController : Controller
+    public class AccountController : CloudControllerDefault
     {
-        private readonly UserManager<CloudUser> userManager;
-        private readonly SignInManager<CloudUser> signInManager;
-        private readonly IWebHostEnvironment env;
-
-        public AccountController(UserManager<CloudUser> userManager, SignInManager<CloudUser> signInManager, IWebHostEnvironment env)
-        {
-            this.userManager = userManager;
-            this.signInManager = signInManager;
-            this.env = env;
-        }
+        public AccountController(ICloudService service, UserManager<CloudUser> userManager, SignInManager<CloudUser> signInManager, IWebHostEnvironment env, INotyfService notifier) : base(service, userManager, signInManager, env, notifier) { }
         public IActionResult Back(string returnUrl)
         {
             return Redirect(returnUrl);
@@ -119,42 +112,10 @@ namespace ELTE.TodoList.Web.Controllers
 
             return View(vm);
         }
-
-        [NonAction]
-        private void CreateBaseDirectory(CloudUser cloudUser)
-        {
-            string publicFolder = Path.Combine(env.WebRootPath, "CloudData", "Public");
-            if (!Directory.Exists(publicFolder))
-            {
-                Directory.CreateDirectory(publicFolder);
-            }
-            string userFolderPath = Path.Combine(env.WebRootPath, "CloudData", "UserData",cloudUser.Id);
-            if (!Directory.Exists(userFolderPath))
-            {
-                Directory.CreateDirectory(userFolderPath);
-            }
-            Directory.CreateDirectory(Path.Combine(userFolderPath,"Documents"));
-            Directory.CreateDirectory(Path.Combine(userFolderPath,"Pictures"));
-            Directory.CreateDirectory(Path.Combine(userFolderPath,"Videos"));
-            Directory.CreateDirectory(Path.Combine(userFolderPath,"Music"));
-        }
-
         public async Task<IActionResult> Logout()
         {
             await signInManager.SignOutAsync();
             return RedirectToAction("Index", "Home");
-        }
-
-        private IActionResult RedirectToLocal(string? returnUrl)
-        {
-            if (Url.IsLocalUrl(returnUrl))
-            {
-                return Redirect(returnUrl);
-            }
-            else
-            {
-                return RedirectToAction(nameof(HomeController.Index), "Home");
-            }
         }
     }
 }

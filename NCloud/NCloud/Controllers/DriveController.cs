@@ -15,27 +15,9 @@ using System.IO.Compression;
 
 namespace NCloud.Controllers
 {
-    public class DriveController : Controller
+    public class DriveController : CloudControllerDefault
     {
-        private readonly ICloudService service;
-        private readonly IWebHostEnvironment env;
-        private readonly INotyfService notifier;
-        private readonly UserManager<CloudUser> userManager;
-        private readonly SignInManager<CloudUser> signInManager;
-        private const string FOLDERSEPARATOR = "//";
-        private const string COOKIENAME = "pathData";
-        private const string ROOTNAME = "@CLOUDROOT";
-        private const string APPNAME = "NCloudDrive";
-        private readonly List<string> ALLOWEDFILETYPES = new List<string>();
-
-        public DriveController(ICloudService service, UserManager<CloudUser> userManager, SignInManager<CloudUser> signInManager, IWebHostEnvironment env, INotyfService notifier)
-        {
-            this.service = service;
-            this.userManager = userManager;
-            this.signInManager = signInManager;
-            this.env = env;
-            this.notifier = notifier;
-        }
+        public DriveController(ICloudService service, UserManager<CloudUser> userManager, SignInManager<CloudUser> signInManager, IWebHostEnvironment env, INotyfService notifier) : base(service, userManager, signInManager, env,notifier) { }
 
         // GET: DriveController
         public ActionResult Index()
@@ -331,22 +313,6 @@ namespace NCloud.Controllers
             {
                 CurrentDirectory = pathData.CurrentPathShow
             });
-        }
-
-        [NonAction]
-        private PathData GetSessionPathData()
-        {
-            PathData data = null!;
-            if (HttpContext.Session.Keys.Contains(COOKIENAME))
-            {
-                data = JsonSerializer.Deserialize<PathData>(HttpContext.Session.GetString(COOKIENAME)!)!;
-            }
-            else
-            {
-                data = new PathData();
-                HttpContext.Session.SetString(COOKIENAME, JsonSerializer.Serialize<PathData>(data));
-            }
-            return data;
         }
     }
 }

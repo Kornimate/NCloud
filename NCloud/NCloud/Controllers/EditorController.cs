@@ -4,18 +4,16 @@ using NCloud.Services;
 using NCloud.Models;
 using System.Text.Json;
 using NCloud.ViewModels;
+using AspNetCoreHero.ToastNotification.Abstractions;
+using Microsoft.AspNetCore.Identity;
+using NCloud.Users;
 
 namespace NCloud.Controllers
 {
-    public class EditorController : Controller
+    public class EditorController : CloudControllerDefault
     {
-        private readonly ICloudService service;
-        private const string COOKIENAME = "pathData";
-
-        public EditorController(ICloudService service)
-        {
-            this.service = service;
-        }
+        public EditorController(ICloudService service, UserManager<CloudUser> userManager, SignInManager<CloudUser> signInManager, IWebHostEnvironment env, INotyfService notifier) : base(service, userManager, signInManager, env, notifier) { }
+        
         // GET: EditorController
         public ActionResult Index(string? fileName = null)
         {
@@ -40,22 +38,6 @@ namespace NCloud.Controllers
         {
             //TODO: implement save file or create new file
             return View(new TextEditorViewModel());
-        }
-
-        [NonAction]
-        private PathData GetSessionPathData()
-        {
-            PathData data = null!;
-            if (HttpContext.Session.Keys.Contains(COOKIENAME))
-            {
-                data = JsonSerializer.Deserialize<PathData>(HttpContext.Session.GetString(COOKIENAME)!)!;
-            }
-            else
-            {
-                data = new PathData();
-                HttpContext.Session.SetString(COOKIENAME, JsonSerializer.Serialize<PathData>(data));
-            }
-            return data;
         }
     }
 }
