@@ -1,0 +1,25 @@
+﻿@model TextEditorViewModel
+
+
+<form asp-controller="Editor" asp-action="IndexText" class="w-100 h-100">
+    <div class="d-flex justify-content-end mb-2 background-color w-100 rounded">
+        <div class="btn-group">
+            <div class="btn">&nbsp;</div>
+            <div class="btn btn-outline-white"><img src="/utilities/save.svg" /></div>
+        </div>
+    </div>
+    <textarea id="texteditor">@Model.Text</textarea>
+</form>
+
+<script src="/lib/tinymce/tinymce.min.js" referrerpolicy="origin"></script>
+<script>
+    tinymce.init({
+        selector: '#texteditor',
+        theme: "silver",
+        resize:false,
+        height:"640",
+        themes:"modern",
+        skin: "oxide-dark",
+        content_css: "dark"
+    });
+</script>

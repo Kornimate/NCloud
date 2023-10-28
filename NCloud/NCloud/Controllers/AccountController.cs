@@ -23,9 +23,16 @@ namespace ELTE.TodoList.Web.Controllers
             this.signInManager = signInManager;
             this.env = env;
         }
-        public IActionResult Index()
+        public IActionResult Back(string returnUrl)
         {
-            return View(new AccountViewModel(User.Identity?.Name));
+            return Redirect(returnUrl);
+        }
+
+        public async Task<IActionResult> Index(string returnUrl)
+        {
+            CloudUser user = await userManager.GetUserAsync(User);
+            ViewBag.ReturnUrl = returnUrl;
+            return View(new AccountViewModel(user.UserName, user.FullName, user.Email));
         }
 
         [HttpGet]

@@ -1,0 +1,119 @@
+﻿@using Microsoft.AspNetCore.Components
+@namespace NCloud.Views.Shared.Components
+@inject IJSRuntime jsRuntime
+@inject ICloudService service
+
+<div class="d-flex justify-content-end mb-2 background-color w-100 rounded">
+    <div class="btn-group">
+        <div class="btn">&nbsp;</div>
+        <div @onclick="SaveClicked" class="btn btn-outline-white" hidden="@SaveHidden" ><img src="/utilities/save.svg" /></div>
+    </div>
+</div>
+<div class="border border-primary border-3 w-100 h-100 rounded">
+    <div class="w-100 bg-primary" hidden="@ChangesWarningHidden">*</div>
+    <StandaloneCodeEditor @ref="editor" Id="code_editor" CssClass="my-editor-class" ConstructionOptions="EditorConstructionOptions" OnDidInit="EditorOnDidInit" OnContextMenu="OnContextMenu" />
+</div>
+@*<div class="my-editor-class d-flex justify-content-center topmargin" hidden="@(!HideElement)">
+    <div class="loading-box">
+        <div class="loader"></div>
+    </div>
+</div>*@
+
+@code {
+    [Parameter]
+    public string? FilePath { get; set; } // should be specified when calling
+    public bool SaveHidden { get; set; }
+    public bool ChangesWarningHidden { get; set; }
+
+    private StandaloneCodeEditor editor = null!;
+    private string valueToSet = String.Empty;
+    private const string THEME = "vs-dark";
+
+    public async Task SaveClicked()
+    {
+        string fileData = await editor.GetValue();
+        System.IO.File.WriteAllText(FilePath!, fileData);
+        ChangesWarningHidden = true;
+    }
+
+    public void ShowSaveWarning()
+    {
+        ChangesWarningHidden = false;
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (FilePath is not null && FilePath != String.Empty)
+        {
+            valueToSet = String.Join("\n", System.IO.File.ReadAllLines(FilePath!));
+            await Task.Delay(0); // for async
+        }
+        else
+        {
+            SaveHidden = true;
+        }
+        ChangesWarningHidden = true;
+    }
+
+    private StandaloneEditorConstructionOptions EditorConstructionOptions(StandaloneCodeEditor editor)
+    {
+        return new StandaloneEditorConstructionOptions
+            {
+                Language = "javascript",
+                GlyphMargin = true,
+                Value = valueToSet,
+                Theme = THEME,
+                LargeFileOptimizations = true,
+                WordBasedSuggestions = true,
+                DetectIndentation = true,
+                SelectOnLineNumbers = true,
+                RenderFinalNewline = true,
+                TabSize = 4
+            };
+    }
+
+    private async Task EditorOnDidInit()
+    {
+        await AddSaveCommand();
+
+        var newDecorations = new ModelDeltaDecoration[]
+        {
+            new ModelDeltaDecoration
+            {
+                Range = new BlazorMonaco.Range(3,1,3,1),
+                Options = new ModelDecorationOptions
+                {
+                    IsWholeLine = true,
+                    ClassName = "decorationContentClass",
+                    GlyphMarginClassName = "decorationGlyphMarginClass"
+                }
+            }
+        };
+
+        decorationIds = await editor.DeltaDecorations(null, newDecorations);
+        editor.OnDidContentSizeChange = new EventCallback<ContentSizeChangedEvent>(this, (Action)ShowSaveWarning);
+    }
+
+    private string[] decorationIds = new string[0];
+
+    private void OnContextMenu(EditorMouseEvent eventArg)
+    {
+        Console.WriteLine("OnContextMenu : " + System.Text.Json.JsonSerializer.Serialize(eventArg));
+    }
+
+    private async Task AddSaveCommand()
+    {
+        await editor.AddCommand((int)KeyMod.CtrlCmd | (int)KeyCode.KeyS, async (args) =>
+        {
+            await Task.Run(async () =>
+            {
+                if (FilePath is not null && FilePath != String.Empty)
+                {
+                    string fileData = await editor.GetValue(preserveBOM:true);
+                    System.IO.File.WriteAllText(FilePath!, fileData);
+                    ChangesWarningHidden = true;
+                }
+            });
+        });
+    }
+}

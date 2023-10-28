@@ -5,15 +5,25 @@
 }
 
 <div>
-    <form asp-action="Details" class="input-group mb-3" id="pathform">
-        <div class="input-group">
-            <input type="text" class="form-control" name="filterString" id="currentPath" value="@ViewBag.CurrentPath" />
-            <button type="submit" value="" class="btn btn-primary" form="pathform"><img src="~/utilities/arrow-right-circle.svg" width=" 20" height="20" class="rounded-circle align-middle" /></button>
+    <form asp-action="EvaluateSingleLine" asp-controller="Terminal" class="input-group mb-3" id="pathform">
+        <div class="background-color rounded w-100 px-3 pt-3" id="breadcrumbDiv">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    @foreach (string item in ViewBag.CurrentPath.Split("//", StringSplitOptions.RemoveEmptyEntries))
+                    {
+                        <li class="breadcrumb-item text-dark" aria-current="page">@item</li>
+                    }
+                </ol>
+            </nav>
+        </div>
+        <div class="input-group hidden" id="fastInputDiv">
+            <input type="text" class="form-control py-3" name="filterString" id="currentPath" value="@ViewBag.CurrentPath" />
+            <button type="submit" value="" class="btn btn-primary" form="pathform" id="fastInputBtn"><img src="~/utilities/arrow-right-circle.svg" width=" 20" height="20" class="rounded-circle align-middle" /></button>
         </div>
     </form>
     <div class="d-flex justify-content-between">
         <div class="">
-            <button type="button" class="btn btn-primary"><a asp-controller="Drive" asp-action="Back"><img src="~/utilities/arrow-left-circle.svg" width=" 20" height="20" class="rounded align-middle" /></a></button>
+            <a class="btn btn-primary" asp-controller="Drive" asp-action="Back"><img src="~/utilities/arrow-left-circle.svg" width=" 20" height="20" class="rounded align-middle" /></a>
         </div>
         <div class="">
             <div class="btn-group" role="group">
@@ -21,7 +31,7 @@
                 <button type="button" class="btn btn-secondary"><a asp-controller="Drive" asp-action="DownloadItems"><img src="~/utilities/cloud-download.svg" width=" 20" height="20" class="rounded-circle align-middle" /></a></button>
                 <button type="button" class="btn btn-secondary" id="addFileBtn"><img src="~/utilities/cloud-upload.svg" width=" 20" height="20" class="rounded-circle align-middle" /></button>
                 <button type="button" class="btn btn-secondary" id="addFolderBtn"><img src="~/utilities/folder-plus.svg" width=" 20" height="20" class="rounded align-middle" /></button>
-                <button type="button" class="btn btn-secondary" id="terminalBtn"><img src="~/utilities/terminal.svg" width=" 20" height="20" class="align-middle" /></button>
+                <button type="button" class="btn btn-secondary" id="terminalBtn"><a asp-controller="Drive" asp-action="Terminal"><img src="~/utilities/terminal.svg" width=" 20" height="20" class="align-middle" /></a></button>
                 <button type="button" class="btn btn-danger"><a asp-controller="Drive" asp-action="DeleteItems"><img src="~/utilities/trash.svg" width=" 20" height="20" class="rounded align-middle" /></a></button>
             </div>
         </div>
@@ -58,12 +68,6 @@
                     <span class="field-validation-valid text-danger mx-1 my-2">@TempData["FileError"]</span>
                 }
             </form>
-        </div>
-    </fieldset>
-    <!------------------------------------------------------------->
-    <fieldset class="terminal border border-4 border-dark p-2 m-2 rounded @(TempData["CommandeResult"] is null ? "hiddenfield" : "")" id="commandField">
-        <div class="d-flex justify-content-start w-100">
-            Welcome to CloudTerminal!
         </div>
     </fieldset>
 </div>
@@ -212,6 +216,7 @@
                             <div class="d-flex justify-content-end">
                                 <div class="btn-group mx-2" role="group">
                                     <button type="button" class="btn btn-primary"><a asp-controller="Drive" asp-action="PubliciseFile" asp-route-id="@item.Info.Name"><img src="~/utilities/globe.svg" width=" 20" height="20" class="rounded-circle align-middle" /></a></button>
+                                    <button type="button" class="btn btn-secondary"><a asp-controller="Editor" asp-action="Index" asp-route-fileName="@item.Info.Name"><img src="~/utilities/code-slash.svg" width=" 20" height="20" class="rounded-circle align-middle" /></a></button>
                                     <button type="button" class="btn btn-secondary"><a asp-controller="Drive" asp-action="Settings" asp-route-id="@item.Info.Name"><img src="~/utilities/gear.svg" width=" 20" height="20" class="rounded-circle align-middle" /></a></button>
                                     <button type="button" class="btn btn-danger"><a asp-controller="Drive" asp-action="DeleteFile" asp-route-id="@item.Info.Name"><img src="~/utilities/trash.svg" width=" 20" height="20" class="rounded-circle align-middle" /></a></button>
                                 </div>
@@ -225,8 +230,10 @@
 </table>
 <hr class="separator" />
 <div class="d-flex w-100 justify-content-end text-dark">
-    <span><b>@Model.Folders.Count Folders,</b></span>
-    <span class="ms-1"><b>@Model.Files.Count Files</b></span>
+    <div class=" border border-2 rounded border-secondary px-2">
+        <span><b>@Model.Folders.Count Folder@(@Model.Folders.Count > 1 ? "s" : ""),</b></span>
+        <span class="ms-1"><b>@Model.Files.Count File@(@Model.Files.Count > 1 ? "s" : "")</b></span>
+    </div>
 </div>
 <script type="text/javascript">
     window.onload = init;
@@ -234,31 +241,24 @@
     function init() {
         document.getElementById("addFolderBtn").addEventListener("click", AddFolderClicked, false);
         document.getElementById("addFileBtn").addEventListener("click", AddFileClicked, false);
-        document.getElementById("terminalBtn").addEventListener("click", TerminalClicked, false);
         document.getElementById("refreshBtn").addEventListener("click", RefreshClicked, false);
+        document.getElementById("breadcrumbDiv").addEventListener("click", CrumbClicked, false);
+        document.getElementById("currentPath").addEventListener("focusout", InputFocusLost, false);
         CheckSessionStorage();
     }
 
     function AddFolderClicked(e) {
         document.getElementById("addFolderField").classList.toggle("hiddenfield");
         document.getElementById("addFileField").classList.add("hiddenfield");
-        document.getElementById("commandField").classList.add("hiddenfield");
     }
     function AddFileClicked(e) {
         document.getElementById("addFolderField").classList.add("hiddenfield");
         document.getElementById("addFileField").classList.toggle("hiddenfield");
-        document.getElementById("commandField").classList.add("hiddenfield");
-    }
-    function TerminalClicked(e) {
-        document.getElementById("addFolderField").classList.add("hiddenfield");
-        document.getElementById("addFileField").classList.add("hiddenfield");
-        document.getElementById("commandField").classList.toggle("hiddenfield");
     }
     function RefreshClicked(e) {
         let element = "";
         if (!document.getElementById("addFolderField").classList.contains("hiddenfield")) element = "addFolderField";
         if (!document.getElementById("addFileField").classList.contains("hiddenfield")) element = "addFileField";
-        if (!document.getElementById("commandField").classList.contains("hiddenfield")) element = "commandField";
         sessionStorage.setItem("openedMiniWindow", element);
     }
     function CheckSessionStorage() {
@@ -267,5 +267,20 @@
             document.getElementById(item).classList.toggle("hiddenfield")
         }
         sessionStorage.removeItem("openedMiniWindow");
+    }
+    function CrumbClicked(e) {
+        document.getElementById("breadcrumbDiv").classList.toggle("hidden");
+        document.getElementById("fastInputDiv").classList.toggle("hidden");
+        input = document.getElementById("currentPath");
+        input.focus();
+        input.value = '';
+        input.value = "@ViewBag.CurrentPath";
+    }
+    function InputFocusLost(e) {
+        console.log(e)
+        if (e.relatedTarget.id !== "fastInputBtn") {
+            document.getElementById("breadcrumbDiv").classList.toggle("hidden");
+            document.getElementById("fastInputDiv").classList.toggle("hidden");
+        }
     }
 </script>

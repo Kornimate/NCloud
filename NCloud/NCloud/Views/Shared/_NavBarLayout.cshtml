@@ -11,7 +11,7 @@
 <body>
     <div class="container-fluid">
         <div class="row flex-nowrap">
-            <div class="col-auto col-md-3 col-xl-2 px-sm-2 px-0 bg-primary border border-dark fixed navwidth">
+            <div class="col-auto col-md-3 col-xl-2 px-sm-2 px-0 background-color border border-dark fixed navwidth">
                 <div class="d-flex flex-column align-items-center align-items-sm-start px-3 pt-2 text-dark min-vh-100">
                     <a asp-controller="Drive" asp-action="Index" class="d-flex align-items-center pb-3 mb-md-0 me-md-auto">
                         <span class="fs-5 d-none d-sm-inline align-middle justify-content-center"><img src="/utilities/cloud_logo_no_text.png" alt="cloudlogo" class="me-3 logo"></span>
@@ -28,19 +28,29 @@
                             </a>
                         </li>
                         <li class="nav-item my-2">
-                            <a href="#" class="align-middle px-0 text-decoration-none text-dark">
-                                <span class="d-inline m-1"><img src="~/utilities/code-slash.svg" width="20" height="20" class="rounded-circle" /></span> <span class="ms-1 d-none d-sm-inline">Editor</span>
+                            <a asp-controller="Drive" asp-action="SharedDetails" asp-route-id="0" class="align-middle px-0 text-decoration-none text-dark">
+                                <span class="d-inline m-1"><img src="~/utilities/cloud.svg" width="20" height="20" class="rounded" /></span> <span class="ms-1 d-none d-sm-inline">Shared Files</span>
+                            </a>
+                        </li>
+                        <li class="nav-item my-2">
+                            <a asp-controller="Editor" asp-action="Index" class="align-middle px-0 text-decoration-none text-dark">
+                                <span class="d-inline m-1"><img src="~/utilities/code-slash.svg" width="20" height="20" class="rounded-circle" /></span> <span class="ms-1 d-none d-sm-inline">Code Editor</span>
+                            </a>
+                        </li>
+                        <li class="nav-item my-2">
+                            <a asp-controller="Editor" asp-action="IndexText" class="align-middle px-0 text-decoration-none text-dark">
+                                <span class="d-inline m-1"><img src="~/utilities/file-text-fill.svg" width="20" height="20" class="rounded" /></span> <span class="ms-1 d-none d-sm-inline">Text Editor</span>
                             </a>
                         </li>
                         <li class="nav-item my-2">
                             <a href="#" class="align-middle px-0 text-decoration-none text-dark">
-                                <span class="d-inline m-1"><img src="~/utilities/soundwave.svg" width="20" height="20" class="rounded-circle" /></span> <span class="ms-1 d-none d-sm-inline">Music Download</span>
+                                <span class="d-inline m-1"><img src="~/utilities/soundwave.svg" width="20" height="20" class="rounded-circle" /></span> <span class="ms-1 d-none d-sm-inline">Music</span>
                             </a>
                         </li>
                     </ul>
                     <div class="dropdown mb-3 p-2 d-flex justify-content-center w-100 border border-3 rounded border-dark">
                         <div>
-                            <a asp-action="Index" asp-controller="Account" class="text-dark text-decoration-none">
+                            <a asp-action="Index" asp-controller="Account" asp-route-returnUrl="@($"{Context.Request.Scheme}://{Context.Request.Host}{Context.Request.PathBase}{Context.Request.Path}{Context.Request.QueryString}")" class="text-dark text-decoration-none">
                                 <img src="/utilities/person-circle.svg" alt="profile_icon" width="30" height="30" class="rounded-circle m-1">
                                 <span class="d-inline m-1">User</span>
                             </a>
