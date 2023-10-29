@@ -15,5 +15,6 @@ namespace NCloud.Services
         bool RemoveFile(string fileName, string currentPath);
         string ReturnServerPath(string currentPath);
         Tuple<List<CloudFile?>, List<CloudFolder?>> GetCurrentUserIndexData();
+        bool DirectoryExists(string? pathAndName);
     }
 }

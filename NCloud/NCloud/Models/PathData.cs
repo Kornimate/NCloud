@@ -37,11 +37,16 @@ namespace NCloud.Models
             PreviousDirectories.Add(ROOTNAME);
             PreviousDirectories.Add(id);
         }
+        public string? TrySetFolder(string? folderName)
+        {
+            if (folderName is null) return null;
+            return Path.Combine(CurrentPath, folderName);
+        }
 
         public string SetFolder(string? folderName)
         {
             string currentPath = String.Empty;
-            if (folderName == null)
+            if (folderName == null || folderName == String.Empty)
             {
                 currentPath = CurrentPath;
             }

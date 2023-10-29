@@ -55,7 +55,6 @@ namespace NCloud.Controllers
         }
 
         [NonAction]
-
         protected void SetSessionUserPathData(PathData pathData)
         {
             if (pathData == null) return;
@@ -76,6 +75,13 @@ namespace NCloud.Controllers
                 HttpContext.Session.SetString(SHAREDCOOKIENAME, JsonSerializer.Serialize<PathData>(data));
             }
             return data;
+        }
+
+        [NonAction]
+        protected void SetSessionSharedPathData(PathData pathData) //make it thread-safe
+        {
+            if (pathData == null) return;
+            HttpContext.Session.SetString(SHAREDCOOKIENAME, JsonSerializer.Serialize<PathData>(pathData));
         }
 
         [NonAction]

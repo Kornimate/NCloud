@@ -42,7 +42,15 @@ namespace NCloud.Controllers
         {
             HandleNotifications(notifications);
             PathData pathdata = GetSessionUserPathData();
-            string currentPath = pathdata.SetFolder(folderName);
+            string currentPath = String.Empty;
+            if (service.DirectoryExists(pathdata.TrySetFolder(folderName)))
+            {
+                currentPath = pathdata.SetFolder(folderName);
+            }
+            else
+            {
+                currentPath = pathdata.CurrentPath;
+            }
             SetSessionUserPathData(pathdata);
             ViewBag.CurrentPath = pathdata.CurrentPathShow;
             return View(new DriveDetailsViewModel(service.GetCurrentDeptFiles(currentPath),
@@ -52,11 +60,11 @@ namespace NCloud.Controllers
 
         public IActionResult Back()
         {
-            PathData pathdata = JsonSerializer.Deserialize<PathData>(HttpContext.Session.GetString(USERCOOKIENAME)!)!;
+            PathData pathdata = GetSessionUserPathData();
             if (pathdata.PreviousDirectories.Count > 2)
             {
                 pathdata.RemoveFolderFromPrevDirs();
-                HttpContext.Session.SetString(USERCOOKIENAME, JsonSerializer.Serialize<PathData>(pathdata));
+                SetSessionUserPathData(pathdata);
             }
             return RedirectToAction("Details", "Drive");
         }
@@ -91,7 +99,7 @@ namespace NCloud.Controllers
             CloudNotifierService nservice = new CloudNotifierService();
             try
             {
-                if(folderName == JSONCONTAINERNAME)
+                if (folderName == JSONCONTAINERNAME)
                 {
                     throw new Exception("Invalid Folder Name!");
                 }
@@ -109,7 +117,7 @@ namespace NCloud.Controllers
             {
                 nservice.AddNotification(ex.Message, NotificationType.ERROR);
             }
-            return RedirectToAction("Details",new { notifications = nservice.Notifications });
+            return RedirectToAction("Details", new { notifications = nservice.Notifications });
         }
 
         [HttpPost]
@@ -136,7 +144,7 @@ namespace NCloud.Controllers
             }
             for (int i = 0; i < files.Count; i++)
             {
-                int res = await service.CreateFile(files[i], pathData.CurrentPath,(await userManager.GetUserAsync(User)).UserName);
+                int res = await service.CreateFile(files[i], pathData.CurrentPath, (await userManager.GetUserAsync(User)).UserName);
                 if (res == 0)
                 {
                     notifier.Warning($"A File has been renamed!");

@@ -226,5 +226,11 @@ namespace NCloud.Services
         {
             return new Tuple<List<CloudFile?>, List<CloudFolder?>>(new(), new());
         }
+
+        public bool DirectoryExists(string? pathAndName)
+        {
+            if(pathAndName is null) return false;
+            return Directory.Exists(ParseRootName(pathAndName));
+        }
     }
 }
