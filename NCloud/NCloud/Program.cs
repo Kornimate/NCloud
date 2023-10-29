@@ -1,10 +1,12 @@
 using AspNetCoreHero.ToastNotification;
+using AspNetCoreHero.ToastNotification.Extensions;
 using DNTCaptcha.Core;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using NCloud.Models;
 using NCloud.Services;
 using NCloud.Users;
+using NToastNotify;
 
 namespace NCloud
 {
@@ -56,6 +58,12 @@ namespace NCloud
                 config.HasRippleEffect = true;
             });
 
+            builder.Services.AddMvc().AddNToastNotifyToastr(new ToastrOptions()
+            {
+                ProgressBar = false,
+                PositionClass = ToastPositions.BottomCenter
+            });
+
             builder.Services.AddSession(options =>
             {
                 options.IdleTimeout = TimeSpan.FromMinutes(10);
@@ -79,6 +87,10 @@ namespace NCloud
                 app.UseExceptionHandler("/Home/Error");
                 app.UseHsts();
             }
+
+            app.UseNToastNotify();
+            
+            app.UseNotyf();
 
             app.UseHttpsRedirection();
 

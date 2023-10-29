@@ -12,18 +12,25 @@ using System.Text.Json;
 using System.IO;
 using PathData = NCloud.Models.PathData;
 using System.IO.Compression;
+using Castle.Core;
+using NToastNotify;
 
 namespace NCloud.Controllers
 {
     public class DriveController : CloudControllerDefault
     {
-        public DriveController(ICloudService service, UserManager<CloudUser> userManager, SignInManager<CloudUser> signInManager, IWebHostEnvironment env, INotyfService notifier) : base(service, userManager, signInManager, env,notifier) { }
+        private readonly IToastNotification _toastNotification;
+        public DriveController(ICloudService service, UserManager<CloudUser> userManager, SignInManager<CloudUser> signInManager, IWebHostEnvironment env, INotyfService notifier, IToastNotification toastNotification) : base(service, userManager, signInManager, env, notifier)
+        {
+            _toastNotification = toastNotification;
+        }
 
         // GET: DriveController
         public ActionResult Index()
         {
             Task.Run(async () => await signInManager.PasswordSignInAsync("Admin", "Admin_1234", false, false)).Wait();
             var result = service.GetCurrentUserIndexData();
+            _toastNotification.AddInfoToastMessage("Hello");
             return View(new DriveIndexViewModel(result.Item1, result.Item2)
             {
                 //TestString = Url.Action("Index", "Drive",new { path="testpath" },Request.Scheme)
@@ -31,14 +38,15 @@ namespace NCloud.Controllers
         }
 
         // GET: DriveController/Details/5
-        public async Task<ActionResult> Details(string? folderName = null)
+        public async Task<ActionResult> Details(string? folderName = null, List<string>? notifications = null)
         {
+            HandleNotifications(notifications);
             PathData pathdata = null!;
             if (folderName is null)
             {
-                if (HttpContext.Session.Keys.Contains(COOKIENAME))
+                if (HttpContext.Session.Keys.Contains(USERCOOKIENAME))
                 {
-                    pathdata = JsonSerializer.Deserialize<PathData>(HttpContext.Session.GetString(COOKIENAME)!)!;
+                    pathdata = JsonSerializer.Deserialize<PathData>(HttpContext.Session.GetString(USERCOOKIENAME)!)!;
                 }
                 else
                 {
@@ -48,9 +56,9 @@ namespace NCloud.Controllers
             }
             else
             {
-                if (HttpContext.Session.Keys.Contains(COOKIENAME))
+                if (HttpContext.Session.Keys.Contains(USERCOOKIENAME))
                 {
-                    pathdata = JsonSerializer.Deserialize<PathData>(HttpContext.Session.GetString(COOKIENAME)!)!;
+                    pathdata = JsonSerializer.Deserialize<PathData>(HttpContext.Session.GetString(USERCOOKIENAME)!)!;
                 }
                 else
                 {
@@ -58,7 +66,7 @@ namespace NCloud.Controllers
                 }
             }
             string currentPath = pathdata.SetFolder(folderName);
-            HttpContext.Session.SetString(COOKIENAME, JsonSerializer.Serialize<PathData>(pathdata));
+            HttpContext.Session.SetString(USERCOOKIENAME, JsonSerializer.Serialize<PathData>(pathdata));
             ViewBag.CurrentPath = pathdata.CurrentPathShow;
             return View(new DriveDetailsViewModel(service.GetCurrentDeptFiles(currentPath),
                                                 service.GetCurrentDeptFolders(currentPath),
@@ -67,11 +75,11 @@ namespace NCloud.Controllers
 
         public IActionResult Back()
         {
-            PathData pathdata = JsonSerializer.Deserialize<PathData>(HttpContext.Session.GetString(COOKIENAME)!)!;
+            PathData pathdata = JsonSerializer.Deserialize<PathData>(HttpContext.Session.GetString(USERCOOKIENAME)!)!;
             if (pathdata.PreviousDirectories.Count > 2)
             {
                 pathdata.RemoveFolderFromPrevDirs();
-                HttpContext.Session.SetString(COOKIENAME, JsonSerializer.Serialize<PathData>(pathdata));
+                HttpContext.Session.SetString(USERCOOKIENAME, JsonSerializer.Serialize<PathData>(pathdata));
             }
             return RedirectToAction("Details", "Drive");
         }
@@ -80,24 +88,28 @@ namespace NCloud.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult AddNewFolder(string? folderName)
         {
+            CloudNotifierService nservice = new CloudNotifierService();
             try
             {
+                if(folderName == JSONCONTAINERNAME)
+                {
+                    throw new Exception("Invalid Folder Name!");
+                }
                 if (folderName is null || folderName == String.Empty)
                 {
                     throw new Exception("Folder name must be at least one charachter!");
                 }
-                if (!service.CreateDirectory(folderName!, GetSessionPathData().CurrentPath))
+                if (!service.CreateDirectory(folderName!, GetSessionUserPathData().CurrentPath))
                 {
                     throw new Exception("Unknown Error occured");
                 }
-                notifier.Success("Folder is created!");
+                nservice.AddNotification("Folder is created!", NotificationType.SUCCESS);
             }
             catch (Exception ex)
             {
-                TempData["FolderError"] = ex.Message;
-                notifier.Error("Failed to create Folder!");
+                nservice.AddNotification(ex.Message, NotificationType.ERROR);
             }
-            return RedirectToAction("Details");
+            return RedirectToAction("Details",new { notifications = nservice.Notifications });
         }
 
         [HttpPost]
@@ -110,9 +122,14 @@ namespace NCloud.Controllers
                 notifier.Warning("No Files were uploaded!");
                 return RedirectToAction("Details", "Drive");
             }
-            PathData pathData = GetSessionPathData();
+            PathData pathData = GetSessionUserPathData();
             for (int i = 0; i < files.Count; i++)
             {
+                if (files[i].FileName == JSONCONTAINERNAME)
+                {
+                    //TODO:notify
+                    continue;
+                }
                 FileInfo fi = new FileInfo(files[i].FileName);
                 // TODO: check if allowed filetype
 
@@ -145,7 +162,7 @@ namespace NCloud.Controllers
                 {
                     throw new Exception("Folder name must be at least one charachter!");
                 }
-                if (!service.RemoveDirectory(folderName!, GetSessionPathData().CurrentPath))
+                if (!service.RemoveDirectory(folderName!, GetSessionUserPathData().CurrentPath))
                 {
                     throw new Exception("Folder is System Folder!");
                 }
@@ -166,7 +183,7 @@ namespace NCloud.Controllers
                 {
                     throw new Exception("File name must be at least one charachter!");
                 }
-                if (!service.RemoveFile(fileName!, GetSessionPathData().CurrentPath))
+                if (!service.RemoveFile(fileName!, GetSessionUserPathData().CurrentPath))
                 {
                     throw new Exception("File is System Folder!");
                 }
@@ -181,7 +198,7 @@ namespace NCloud.Controllers
 
         public IActionResult DeleteItems()
         {
-            PathData pathData = GetSessionPathData();
+            PathData pathData = GetSessionUserPathData();
             var files = service.GetCurrentDeptFiles(pathData.CurrentPath);
             var folders = service.GetCurrentDeptFolders(pathData.CurrentPath);
             return View(new DriveDeleteViewModel
@@ -197,7 +214,7 @@ namespace NCloud.Controllers
         public IActionResult DeleteItemsFromForm([Bind("ItemsForDelete")] DriveDeleteViewModel vm)
         {
             bool noFail = true;
-            PathData pathData = GetSessionPathData();
+            PathData pathData = GetSessionUserPathData();
             foreach (string itemName in vm.ItemsForDelete!)
             {
                 if (itemName != "false")
@@ -248,7 +265,7 @@ namespace NCloud.Controllers
         }
         public IActionResult DownloadItems()
         {
-            PathData pathData = GetSessionPathData();
+            PathData pathData = GetSessionUserPathData();
             var files = service.GetCurrentDeptFiles(pathData.CurrentPath);
             //var folders = service.GetCurrentDeptFolders(pathData.CurrentPath); //later to be able to add folders to zp too
             var folders = new List<CloudFolder?>();
@@ -264,7 +281,7 @@ namespace NCloud.Controllers
         [ValidateAntiForgeryToken, ActionName("DownloadItems")]
         public IActionResult DownloadItemsFromForm([Bind("ItemsForDownload")] DriveDownloadViewModel vm)
         {
-            PathData pathData = GetSessionPathData();
+            PathData pathData = GetSessionUserPathData();
             string tempFile = Path.GetTempFileName();
             using var zipFile = System.IO.File.Create(tempFile);
             if (vm.ItemsForDownload is not null && vm.ItemsForDownload.Count != 0)
@@ -277,11 +294,10 @@ namespace NCloud.Controllers
                         {
                             if (itemName[0] == '_')
                             {
-                                string name = itemName[1..];
-                                archive.CreateEntryFromFile(Path.Combine(service.ReturnServerPath(pathData.CurrentPath), name), name);
                                 try
                                 {
-                                    ;
+                                    string name = itemName[1..];
+                                    archive.CreateEntryFromFile(Path.Combine(service.ReturnServerPath(pathData.CurrentPath), name), name);
                                 }
                                 catch (Exception ex)
                                 {
@@ -311,7 +327,7 @@ namespace NCloud.Controllers
 
         public IActionResult Terminal()
         {
-            PathData pathData = GetSessionPathData();
+            PathData pathData = GetSessionUserPathData();
             return View(new TerminalViewModel
             {
                 CurrentDirectory = pathData.CurrentPathShow

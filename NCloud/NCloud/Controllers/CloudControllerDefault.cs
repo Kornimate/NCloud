@@ -4,7 +4,9 @@ using Microsoft.AspNetCore.Mvc;
 using NCloud.Models;
 using NCloud.Services;
 using NCloud.Users;
+using System.Drawing.Drawing2D;
 using System.Text.Json;
+using PathData = NCloud.Models.PathData;
 
 namespace NCloud.Controllers
 {
@@ -16,10 +18,13 @@ namespace NCloud.Controllers
         protected readonly UserManager<CloudUser> userManager;
         protected readonly SignInManager<CloudUser> signInManager;
         protected const string FOLDERSEPARATOR = "//";
-        protected const string COOKIENAME = "pathData";
+        protected const string USERCOOKIENAME = "pathDataUser";
+        protected const string SHAREDCOOKIENAME = "pathDataShared";
         protected const string ROOTNAME = "@CLOUDROOT";
         protected const string APPNAME = "NCloudDrive";
         protected readonly List<string> ALLOWEDFILETYPES = new List<string>();
+
+        protected const string JSONCONTAINERNAME = "__JsonContainer__.json";
         public CloudControllerDefault(ICloudService service, UserManager<CloudUser> userManager, SignInManager<CloudUser> signInManager, IWebHostEnvironment env, INotyfService notifier)
         {
             this.service = service;
@@ -30,17 +35,33 @@ namespace NCloud.Controllers
         }
 
         [NonAction]
-        protected PathData GetSessionPathData()
+        protected PathData GetSessionUserPathData()
         {
             PathData data = null!;
-            if (HttpContext.Session.Keys.Contains(COOKIENAME))
+            if (HttpContext.Session.Keys.Contains(USERCOOKIENAME))
             {
-                data = JsonSerializer.Deserialize<PathData>(HttpContext.Session.GetString(COOKIENAME)!)!;
+                data = JsonSerializer.Deserialize<PathData>(HttpContext.Session.GetString(USERCOOKIENAME)!)!;
             }
             else
             {
                 data = new PathData();
-                HttpContext.Session.SetString(COOKIENAME, JsonSerializer.Serialize<PathData>(data));
+                HttpContext.Session.SetString(USERCOOKIENAME, JsonSerializer.Serialize<PathData>(data));
+            }
+            return data;
+        }
+
+        [NonAction]
+        protected PathData GetSessionSharedPathData()
+        {
+            PathData data = null!;
+            if (HttpContext.Session.Keys.Contains(SHAREDCOOKIENAME))
+            {
+                data = JsonSerializer.Deserialize<PathData>(HttpContext.Session.GetString(SHAREDCOOKIENAME)!)!;
+            }
+            else
+            {
+                data = new PathData();
+                HttpContext.Session.SetString(SHAREDCOOKIENAME, JsonSerializer.Serialize<PathData>(data));
             }
             return data;
         }
@@ -48,20 +69,31 @@ namespace NCloud.Controllers
         [NonAction]
         protected void CreateBaseDirectory(CloudUser cloudUser)
         {
-            string publicFolder = Path.Combine(env.WebRootPath, "CloudData", "Public");
-            if (!Directory.Exists(publicFolder))
-            {
-                Directory.CreateDirectory(publicFolder);
-            }
             string userFolderPath = Path.Combine(env.WebRootPath, "CloudData", "UserData", cloudUser.Id);
             if (!Directory.Exists(userFolderPath))
             {
                 Directory.CreateDirectory(userFolderPath);
+                CreateJsonConatinerFile(userFolderPath);
             }
-            Directory.CreateDirectory(Path.Combine(userFolderPath, "Documents"));
-            Directory.CreateDirectory(Path.Combine(userFolderPath, "Pictures"));
-            Directory.CreateDirectory(Path.Combine(userFolderPath, "Videos"));
-            Directory.CreateDirectory(Path.Combine(userFolderPath, "Music"));
+            string pathHelper = Path.Combine(env.WebRootPath, "CloudData", "Public");
+            if (!Directory.Exists(pathHelper))
+            {
+                Directory.CreateDirectory(pathHelper);
+                CreateJsonConatinerFile(pathHelper);
+            }
+            pathHelper = Path.Combine(env.WebRootPath, "CloudData", "Public",cloudUser.UserName);
+            if (!Directory.Exists(pathHelper))
+            {
+                Directory.CreateDirectory(pathHelper);
+                CreateJsonConatinerFile(pathHelper);
+            }
+            List<string> baseFolders = new List<string>() { "Documents", "Pictures", "Videos", "Music" };
+            foreach (string folder in baseFolders)
+            {
+                pathHelper = Path.Combine(userFolderPath, folder);
+                Directory.CreateDirectory(pathHelper);
+                CreateJsonConatinerFile(pathHelper); 
+            }
         }
 
         [NonAction]
@@ -74,6 +106,45 @@ namespace NCloud.Controllers
             else
             {
                 return RedirectToAction(nameof(HomeController.Index), "Home");
+            }
+        }
+
+        [NonAction]
+        protected void CreateJsonConatinerFile(string? path)
+        {
+            if (path is null) return;
+            JsonDataContainer container = new JsonDataContainer()
+            {
+                FolderName = path.Split(Path.PathSeparator, StringSplitOptions.RemoveEmptyEntries).Last()
+            };
+            System.IO.File.WriteAllText(Path.Combine(path, JSONCONTAINERNAME), JsonSerializer.Serialize<JsonDataContainer>(container));
+        }
+
+        [NonAction]
+        protected void HandleNotifications(List<string>? notifications)
+        {
+            if (notifications is null) return;
+            if (!notifications.Any()) return;
+            foreach(var notification in notifications)
+            {
+                string[] values = notification.Split("--", StringSplitOptions.RemoveEmptyEntries);
+                switch (Enum.Parse<NotificationType>(values[1]))
+                {
+                    case NotificationType.WARNING:
+                        notifier.Warning(values[0]);
+                        break;
+                    case NotificationType.ERROR:
+                        notifier.Error(values[0]);
+                        break;
+                    case NotificationType.INFO:
+                        notifier.Information(values[0]);
+                        break;
+                    case NotificationType.SUCCESS:
+                        notifier.Success(values[0]);
+                        break;
+                    default:
+                        break;
+                }
             }
         }
     }

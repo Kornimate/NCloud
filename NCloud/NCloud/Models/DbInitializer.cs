@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using NCloud.Users;
+using System.Text.Json;
 
 namespace NCloud.Models
 {
@@ -10,6 +11,7 @@ namespace NCloud.Models
         private static CloudDbContext context = null!;
         private static UserManager<CloudUser> userManager = null!;
         private static SignInManager<CloudUser> signInManager = null!;
+        private static readonly string JSONCONTAINERNAME = "__JsonContainer__.json";
         public static void Initialize(IServiceProvider serviceProvider, IWebHostEnvironment env)
         {
             context = serviceProvider.GetRequiredService<CloudDbContext>();
@@ -18,7 +20,7 @@ namespace NCloud.Models
 
             context.Database.Migrate();
 
-            var admin = new CloudUser { FullName = "Admin", UserName = "Admin" }; // Admin User : FullName: Admin, UserName: Admin
+            var admin = new CloudUser { FullName = "Admin", UserName = "Admin", Email="Admin@nclouddrive.hu" }; // Admin User : FullName: Admin, UserName: Admin
 
             if (!context.Users.Any())
             {
@@ -33,33 +35,21 @@ namespace NCloud.Models
                             if (!Directory.Exists(adminPath))
                             {
                                 Directory.CreateDirectory(adminPath);
+                                CreateJsonConatinerFile(adminPath);
                                 Directory.CreateDirectory(Path.Combine(adminPath,"Documents"));
+                                CreateJsonConatinerFile(Path.Combine(adminPath, "Documents"));
                                 Directory.CreateDirectory(Path.Combine(adminPath,"Pictures"));
+                                CreateJsonConatinerFile(Path.Combine(adminPath, "Pictures"));
                                 Directory.CreateDirectory(Path.Combine(adminPath,"Videos"));
+                                CreateJsonConatinerFile(Path.Combine(adminPath, "Videos"));
                                 Directory.CreateDirectory(Path.Combine(adminPath,"Music"));
+                                CreateJsonConatinerFile(Path.Combine(adminPath, "Music"));
                             }
                         }
 
                     }).Wait(); // Passwords is Admin_1234 beacuse of safety reasons
                 }
                 catch { }
-                //if (context.Entries.Any()) { return; }
-
-                //List<Entry> defFolders = new List<Entry>()
-                //{
-                //	new Entry
-                //	{
-                //		Name="Public Folder",
-                //		Size=0,
-                //		ParentId=0,
-                //		Type = EntryType.FOLDER,
-                //		CreatedDate= DateTime.Now,
-                //		IsVisibleForEveryOne = true,
-                //		CreatedBy = admin,
-                //	}
-                //};
-
-                //context.Entries.AddRange(defFolders);
             }
             if (!Directory.Exists(Path.Combine(env.WebRootPath,"CloudData","Public")))
             {
@@ -70,6 +60,16 @@ namespace NCloud.Models
                 Directory.CreateDirectory(Path.Combine(env.WebRootPath,"CloudData", "UserData"));
             }
             context.SaveChanges();
+        }
+
+        private static void CreateJsonConatinerFile(string? path)
+        {
+            if (path is null) return;
+            JsonDataContainer container = new JsonDataContainer()
+            {
+                FolderName = path.Split(Path.PathSeparator, StringSplitOptions.RemoveEmptyEntries).Last()
+            };
+            System.IO.File.WriteAllText(Path.Combine(path, JSONCONTAINERNAME), JsonSerializer.Serialize<JsonDataContainer>(container));
         }
     }
 }

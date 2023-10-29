@@ -14,6 +14,7 @@ namespace NCloud.Services
         private const int DISTANCE = 4;
         private readonly List<string> systemFolders;
         private const string FILENAMEDELIMITER = "_";
+        private const string JSONCONTAINERNAME = "__JsonContainer__.json";
 
         public CloudService(CloudDbContext context, IWebHostEnvironment env)
         {
@@ -72,7 +73,7 @@ namespace NCloud.Services
 
         public List<CloudFile?> GetCurrentDeptFiles(string currentPath)
         {
-            return Directory.GetFiles(ParseRootName(currentPath)).Select(x => new CloudFile(new FileInfo(x), icon: x)).ToList()!;
+            return Directory.GetFiles(ParseRootName(currentPath)).Where(x => !x.Contains(JSONCONTAINERNAME)).Select(x => new CloudFile(new FileInfo(x), icon: x)).ToList()!;
         }
         public List<CloudFolder?> GetCurrentDeptFolders(string currentPath)
         {
