@@ -31,7 +31,6 @@ namespace NCloud.Controllers
             await signInManager.PasswordSignInAsync("Admin", "Admin_1234", true, false);
             var result = service.GetCurrentUserIndexData();
             _toastNotification.AddInfoToastMessage("Hello");
-            notifier.Success("Hello");
             return View(new DriveIndexViewModel(result.Item1, result.Item2)
             {
                 //TestString = Url.Action("Index", "Drive",new { path="testpath" },Request.Scheme)
@@ -39,36 +38,12 @@ namespace NCloud.Controllers
         }
 
         // GET: DriveController/Details/5
-        public async Task<ActionResult> Details(string? folderName = null, List<string>? notifications = null)
+        public IActionResult Details(string? folderName = null, List<string>? notifications = null)
         {
             HandleNotifications(notifications);
-            PathData pathdata = null!;
-            if (folderName is null)
-            {
-                if (HttpContext.Session.Keys.Contains(USERCOOKIENAME))
-                {
-                    pathdata = JsonSerializer.Deserialize<PathData>(HttpContext.Session.GetString(USERCOOKIENAME)!)!;
-                }
-                else
-                {
-                    pathdata = new PathData();
-                    CloudUser user = await userManager.GetUserAsync(User);
-                    pathdata.SetDefaultPathData(user.Id.ToString());
-                }
-            }
-            else
-            {
-                if (HttpContext.Session.Keys.Contains(USERCOOKIENAME))
-                {
-                    pathdata = JsonSerializer.Deserialize<PathData>(HttpContext.Session.GetString(USERCOOKIENAME)!)!;
-                }
-                else
-                {
-                    return BadRequest();
-                }
-            }
+            PathData pathdata = GetSessionUserPathData();
             string currentPath = pathdata.SetFolder(folderName);
-            HttpContext.Session.SetString(USERCOOKIENAME, JsonSerializer.Serialize<PathData>(pathdata));
+            SetSessionUserPathData(pathdata);
             ViewBag.CurrentPath = pathdata.CurrentPathShow;
             return View(new DriveDetailsViewModel(service.GetCurrentDeptFiles(currentPath),
                                                 service.GetCurrentDeptFolders(currentPath),
@@ -76,6 +51,29 @@ namespace NCloud.Controllers
         }
 
         public IActionResult Back()
+        {
+            PathData pathdata = JsonSerializer.Deserialize<PathData>(HttpContext.Session.GetString(USERCOOKIENAME)!)!;
+            if (pathdata.PreviousDirectories.Count > 2)
+            {
+                pathdata.RemoveFolderFromPrevDirs();
+                HttpContext.Session.SetString(USERCOOKIENAME, JsonSerializer.Serialize<PathData>(pathdata));
+            }
+            return RedirectToAction("Details", "Drive");
+        }
+
+        public IActionResult SharedDetails(string? folderName = null, List<string>? notifications = null)
+        {
+            HandleNotifications(notifications);
+            PathData pathdata = GetSessionUserPathData();
+            string currentPath = pathdata.SetFolder(folderName);
+            SetSessionUserPathData(pathdata);
+            ViewBag.CurrentPath = pathdata.CurrentPathShow;
+            return View(new DriveDetailsViewModel(service.GetCurrentDeptFiles(currentPath),
+                                                service.GetCurrentDeptFolders(currentPath),
+                                                                              currentPath));
+        }
+
+        public IActionResult SharedBack()
         {
             PathData pathdata = JsonSerializer.Deserialize<PathData>(HttpContext.Session.GetString(USERCOOKIENAME)!)!;
             if (pathdata.PreviousDirectories.Count > 2)

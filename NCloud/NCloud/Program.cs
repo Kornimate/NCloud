@@ -61,7 +61,7 @@ namespace NCloud
             builder.Services.AddMvc().AddNToastNotifyToastr(new ToastrOptions()
             {
                 ProgressBar = false,
-                PositionClass = ToastPositions.BottomCenter
+                PositionClass = ToastPositions.BottomRight
             });
 
             builder.Services.AddSession(options =>
@@ -90,7 +90,7 @@ namespace NCloud
 
             app.UseNToastNotify();
             
-            app.UseNotyf();
+            //app.UseNotyf();
 
             app.UseHttpsRedirection();
 

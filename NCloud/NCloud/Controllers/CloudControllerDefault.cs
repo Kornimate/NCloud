@@ -43,9 +43,23 @@ namespace NCloud.Controllers
             else
             {
                 data = new PathData();
-                HttpContext.Session.SetString(USERCOOKIENAME, JsonSerializer.Serialize<PathData>(data));
+                CloudUser? user = null;
+                Task.Run(async () =>
+                {
+                    user = await userManager.GetUserAsync(User);
+                }).Wait();
+                data.SetDefaultPathData(user?.Id?.ToString());
+                SetSessionUserPathData(data);
             }
             return data;
+        }
+
+        [NonAction]
+
+        protected void SetSessionUserPathData(PathData pathData)
+        {
+            if (pathData == null) return;
+            HttpContext.Session.SetString(USERCOOKIENAME, JsonSerializer.Serialize<PathData>(pathData));
         }
 
         [NonAction]
