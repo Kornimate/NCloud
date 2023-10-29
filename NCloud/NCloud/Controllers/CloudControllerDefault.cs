@@ -17,10 +17,8 @@ namespace NCloud.Controllers
         protected readonly INotyfService notifier;
         protected readonly UserManager<CloudUser> userManager;
         protected readonly SignInManager<CloudUser> signInManager;
-        protected const string FOLDERSEPARATOR = "//";
         protected const string USERCOOKIENAME = "pathDataUser";
         protected const string SHAREDCOOKIENAME = "pathDataShared";
-        protected const string ROOTNAME = "@CLOUDROOT";
         protected const string APPNAME = "NCloudDrive";
         protected readonly List<string> ALLOWEDFILETYPES = new List<string>();
 
@@ -67,36 +65,6 @@ namespace NCloud.Controllers
         }
 
         [NonAction]
-        protected void CreateBaseDirectory(CloudUser cloudUser)
-        {
-            string userFolderPath = Path.Combine(env.WebRootPath, "CloudData", "UserData", cloudUser.Id);
-            if (!Directory.Exists(userFolderPath))
-            {
-                Directory.CreateDirectory(userFolderPath);
-                CreateJsonConatinerFile(userFolderPath);
-            }
-            string pathHelper = Path.Combine(env.WebRootPath, "CloudData", "Public");
-            if (!Directory.Exists(pathHelper))
-            {
-                Directory.CreateDirectory(pathHelper);
-                CreateJsonConatinerFile(pathHelper);
-            }
-            pathHelper = Path.Combine(env.WebRootPath, "CloudData", "Public",cloudUser.UserName);
-            if (!Directory.Exists(pathHelper))
-            {
-                Directory.CreateDirectory(pathHelper);
-                CreateJsonConatinerFile(pathHelper);
-            }
-            List<string> baseFolders = new List<string>() { "Documents", "Pictures", "Videos", "Music" };
-            foreach (string folder in baseFolders)
-            {
-                pathHelper = Path.Combine(userFolderPath, folder);
-                Directory.CreateDirectory(pathHelper);
-                CreateJsonConatinerFile(pathHelper); 
-            }
-        }
-
-        [NonAction]
         protected IActionResult RedirectToLocal(string? returnUrl)
         {
             if (Url.IsLocalUrl(returnUrl))
@@ -107,17 +75,6 @@ namespace NCloud.Controllers
             {
                 return RedirectToAction(nameof(HomeController.Index), "Home");
             }
-        }
-
-        [NonAction]
-        protected void CreateJsonConatinerFile(string? path)
-        {
-            if (path is null) return;
-            JsonDataContainer container = new JsonDataContainer()
-            {
-                FolderName = path.Split(Path.PathSeparator, StringSplitOptions.RemoveEmptyEntries).Last()
-            };
-            System.IO.File.WriteAllText(Path.Combine(path, JSONCONTAINERNAME), JsonSerializer.Serialize<JsonDataContainer>(container));
         }
 
         [NonAction]

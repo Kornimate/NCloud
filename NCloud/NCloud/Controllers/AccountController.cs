@@ -84,32 +84,38 @@ namespace ELTE.TodoList.Web.Controllers
             ViewBag.ReturnUrl = returnUrl;
             if (ModelState.IsValid)
             {
-                var existingUserName = await userManager.FindByNameAsync(vm.UserName);
-                if (existingUserName != null)
+                try
                 {
-                    ModelState.AddModelError("UserName", "This Username is already in use!");
-                    return View(vm);
-                }
-                var existingEmail = await userManager.FindByNameAsync(vm.Email);
-                if (existingEmail != null)
-                {
-                    ModelState.AddModelError("Email", "This Username is already in use!");
-                    return View(vm);
-                }
-                var user = new CloudUser { UserName = vm.UserName, FullName = vm.FullName,Email=vm.Email };
-                var result = await userManager.CreateAsync(user, vm.Password);
+                    var existingUserName = await userManager.FindByNameAsync(vm.UserName);
+                    if (existingUserName != null)
+                    {
+                        ModelState.AddModelError("UserName", "This Username is already in use!");
+                        return View(vm);
+                    }
+                    var existingEmail = await userManager.FindByNameAsync(vm.Email);
+                    if (existingEmail != null)
+                    {
+                        ModelState.AddModelError("Email", "This Username is already in use!");
+                        return View(vm);
+                    }
+                    var user = new CloudUser { UserName = vm.UserName, FullName = vm.FullName, Email = vm.Email };
+                    var result = await userManager.CreateAsync(user, vm.Password);
 
-                if (result.Succeeded)
-                {
-                    CloudUser newUser = await userManager.FindByNameAsync(vm.UserName);
-                    CreateBaseDirectory(newUser);
-                    await signInManager.SignInAsync(newUser,false);
-                    return RedirectToAction(nameof(Index), "Drive");
-                }
+                    if (result.Succeeded)
+                    {
+                        CloudUser newUser = await userManager.FindByNameAsync(vm.UserName);
+                        service.CreateBaseDirectory(newUser);
+                        await signInManager.SignInAsync(newUser, false);
+                        return RedirectToAction(nameof(Index), "Drive");
+                    }
 
-                ModelState.AddModelError("", "Failed to Register!");
+                    ModelState.AddModelError("", "Failed to Register!");
+                }
+                catch
+                {
+                    ModelState.AddModelError("", "Failed to Register!");
+                }
             }
-
             return View(vm);
         }
         public async Task<IActionResult> Logout()

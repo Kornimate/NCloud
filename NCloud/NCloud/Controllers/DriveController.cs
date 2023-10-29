@@ -26,11 +26,12 @@ namespace NCloud.Controllers
         }
 
         // GET: DriveController
-        public ActionResult Index()
+        public async Task<ActionResult> Index()
         {
-            Task.Run(async () => await signInManager.PasswordSignInAsync("Admin", "Admin_1234", false, false)).Wait();
+            await signInManager.PasswordSignInAsync("Admin", "Admin_1234", true, false);
             var result = service.GetCurrentUserIndexData();
             _toastNotification.AddInfoToastMessage("Hello");
+            notifier.Success("Hello");
             return View(new DriveIndexViewModel(result.Item1, result.Item2)
             {
                 //TestString = Url.Action("Index", "Drive",new { path="testpath" },Request.Scheme)
@@ -51,7 +52,8 @@ namespace NCloud.Controllers
                 else
                 {
                     pathdata = new PathData();
-                    pathdata.SetDefaultPathData((await userManager.GetUserAsync(User)).Id.ToString());
+                    CloudUser user = await userManager.GetUserAsync(User);
+                    pathdata.SetDefaultPathData(user.Id.ToString());
                 }
             }
             else
@@ -86,7 +88,7 @@ namespace NCloud.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult AddNewFolder(string? folderName)
+        public async Task<IActionResult> AddNewFolder(string? folderName)
         {
             CloudNotifierService nservice = new CloudNotifierService();
             try
@@ -99,7 +101,7 @@ namespace NCloud.Controllers
                 {
                     throw new Exception("Folder name must be at least one charachter!");
                 }
-                if (!service.CreateDirectory(folderName!, GetSessionUserPathData().CurrentPath))
+                if (!service.CreateDirectory(folderName!, GetSessionUserPathData().CurrentPath, (await userManager.GetUserAsync(User)).UserName))
                 {
                     throw new Exception("Unknown Error occured");
                 }
@@ -136,7 +138,7 @@ namespace NCloud.Controllers
             }
             for (int i = 0; i < files.Count; i++)
             {
-                int res = await service.CreateFile(files[i], pathData.CurrentPath);
+                int res = await service.CreateFile(files[i], pathData.CurrentPath,(await userManager.GetUserAsync(User)).UserName);
                 if (res == 0)
                 {
                     notifier.Warning($"A File has been renamed!");

@@ -6,7 +6,7 @@ namespace NCloud.Models
     public class PathData
     {
         private const string ROOTNAME = "@CLOUDROOT";
-        private const string SEPARATOR = "//";
+        private const string SEPARATOR = "/";
 
         public string CurrentDirectory { get; private set; }
         public List<string> PreviousDirectories { get; private set; }

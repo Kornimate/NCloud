@@ -8,8 +8,9 @@ namespace NCloud.Services
         public List<CloudFolder?> GetCurrentDeptFolders(string currentPath);
         public List<CloudFile?> GetCurrentDeptFiles(string currentPath);
         CloudUser GetAdmin();
-        bool CreateDirectory(string folderName, string currentPath);
-        Task<int> CreateFile(IFormFile file, string currentPath);
+        bool CreateBaseDirectory(CloudUser cloudUser);
+        bool CreateDirectory(string folderName, string currentPath, string owner);
+        Task<int> CreateFile(IFormFile file, string currentPath, string owner);
         bool RemoveDirectory(string folderName, string currentPath);
         bool RemoveFile(string fileName, string currentPath);
         string ReturnServerPath(string currentPath);

@@ -25,6 +25,14 @@
                                 <table class="table table-striped rounded">
                                     <tr>
                                         <td>
+                                            Created By
+                                        </td>
+                                        <td>
+                                            @item.Owner
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
                                             Created Time
                                         </td>
                                         <td>
@@ -33,10 +41,18 @@
                                     </tr>
                                     <tr>
                                         <td>
+                                            Last Modified Time
+                                        </td>
+                                        <td>
+                                            @item.Info.LastWriteTime
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
                                             Public
                                         </td>
                                         <td>
-                                            @if (false)
+                                            @if (item.IsShared)
                                             {
                                                 <span>✔</span>
                                             }
@@ -44,22 +60,6 @@
                                             {
                                                 <span>❌</span>
                                             }
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>
-                                            Last Accessed Time
-                                        </td>
-                                        <td>
-                                            @item.Info.LastAccessTime
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>
-                                            Created By
-                                        </td>
-                                        <td>
-                                            @User.Identity!.Name
                                         </td>
                                     </tr>
                                 </table>
@@ -94,10 +94,10 @@
                                 <table class="table table-striped rounded">
                                     <tr>
                                         <td>
-                                            Size
+                                            Created By
                                         </td>
                                         <td>
-                                            @item.Info.Length Bytes
+                                            @item.Owner
                                         </td>
                                     </tr>
                                     <tr>
@@ -110,10 +110,26 @@
                                     </tr>
                                     <tr>
                                         <td>
+                                            Last Modified Time
+                                        </td>
+                                        <td>
+                                            @item.Info.LastWriteTime
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            Size
+                                        </td>
+                                        <td>
+                                            @item.Info.Length Bytes
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
                                             Public
                                         </td>
                                         <td>
-                                            @if (false)
+                                            @if (item.IsShared)
                                             {
                                                 <span>✔</span>
                                             }
@@ -121,22 +137,6 @@
                                             {
                                                 <span>❌</span>
                                             }
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>
-                                            Last Accessed Time
-                                        </td>
-                                        <td>
-                                            @item.Info.LastAccessTime
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>
-                                            Created By
-                                        </td>
-                                        <td>
-                                            @User.Identity!.Name
                                         </td>
                                     </tr>
                                 </table>

@@ -1,4 +1,5 @@
 ﻿using System.Numerics;
+using System.Text.Json.Serialization;
 
 namespace NCloud.Models
 {
@@ -6,10 +7,10 @@ namespace NCloud.Models
     {
         public FileInfo Info { get; set; }
         public string? Owner { get; set; }
-        public BigInteger Size { get; set; } //in Bytes
-        public CloudFile(FileInfo info, string? icon = null) : base(icon)
+        public CloudFile(FileInfo Info, string? Owner,bool IsShared, string? icon = null) : base(IsShared,icon)
         {
-            Info = info;
+            this.Info = Info;
+            this.Owner = Owner;
         }
 
         public override bool IsFile()
