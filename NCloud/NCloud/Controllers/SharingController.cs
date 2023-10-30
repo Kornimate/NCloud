@@ -1,41 +1,29 @@
 ﻿using AspNetCoreHero.ToastNotification.Abstractions;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using NCloud.Models;
 using NCloud.Services;
 using NCloud.Users;
 using NCloud.ViewModels;
-using System.Drawing.Drawing2D;
-using System.Text.Json;
-using System.IO;
-using PathData = NCloud.Models.PathData;
-using System.IO.Compression;
-using Castle.Core;
 using NToastNotify;
+using System.IO.Compression;
+using System.Text.Json;
 
 namespace NCloud.Controllers
 {
-    public class DriveController : CloudControllerDefault
+    public class SharingController : CloudControllerDefault
     {
-        public DriveController(ICloudService service, UserManager<CloudUser> userManager, SignInManager<CloudUser> signInManager, IWebHostEnvironment env, INotyfService notifier, IToastNotification toastNotification) : base(service, userManager, signInManager, env, notifier) { }
-
-        // GET: DriveController/Details/5
+        public SharingController(ICloudService service, UserManager<CloudUser> userManager, SignInManager<CloudUser> signInManager, IWebHostEnvironment env, INotyfService notifier, IToastNotification toastNotification) : base(service, userManager, signInManager, env, notifier) { }
         public IActionResult Details(string? folderName = null, List<string>? notifications = null)
         {
             HandleNotifications(notifications);
-            PathData pathdata = GetSessionUserPathData();
-            string currentPath = String.Empty;
-            if (service.DirectoryExists(pathdata.TrySetFolder(folderName)))
+            SharedData pathdata = GetSessionSharedPathData();
+            string currentPath = pathdata.SetFolder(folderName);
+            SetSessionSharedPathData(pathdata);
+            if (pathdata.CurrentPath != SharedData.ROOTNAME)
             {
-                currentPath = pathdata.SetFolder(folderName);
+                ViewBag.CanUseActions = true;
             }
-            else
-            {
-                currentPath = pathdata.CurrentPath;
-            }
-            SetSessionUserPathData(pathdata);
             return View(new DriveDetailsViewModel(service.GetCurrentDeptFiles(currentPath),
                                                 service.GetCurrentDeptFolders(currentPath),
                                                                 pathdata.CurrentPathShow));
@@ -43,13 +31,10 @@ namespace NCloud.Controllers
 
         public IActionResult Back()
         {
-            PathData pathdata = GetSessionUserPathData();
-            if (pathdata.PreviousDirectories.Count > 2)
-            {
-                pathdata.RemoveFolderFromPrevDirs();
-                SetSessionUserPathData(pathdata);
-            }
-            return RedirectToAction("Details", "Drive");
+            SharedData pathdata = GetSessionSharedPathData();
+            pathdata.RemoveFolderFromPrevDirs();
+            SetSessionSharedPathData(pathdata);
+            return RedirectToAction("Details", "Sharing");
         }
 
         [HttpPost]
@@ -67,7 +52,7 @@ namespace NCloud.Controllers
                 {
                     throw new Exception("Folder name must be at least one charachter!");
                 }
-                if (!service.CreateDirectory(folderName!, GetSessionUserPathData().CurrentPath, (await userManager.GetUserAsync(User)).UserName))
+                if (!service.CreateDirectory(folderName!, GetSessionSharedPathData().CurrentPath, (await userManager.GetUserAsync(User)).UserName))
                 {
                     throw new Exception("Unknown Error occured");
                 }
@@ -88,9 +73,9 @@ namespace NCloud.Controllers
             if (files == null || files.Count == 0)
             {
                 notifier.Warning("No Files were uploaded!");
-                return RedirectToAction("Details", "Drive");
+                return RedirectToAction("Details", "Sharing");
             }
-            PathData pathData = GetSessionUserPathData();
+            SharedData pathData = GetSessionSharedPathData();
             for (int i = 0; i < files.Count; i++)
             {
                 if (files[i].FileName == JSONCONTAINERNAME)
@@ -119,7 +104,7 @@ namespace NCloud.Controllers
             {
                 notifier.Success($"File{(files.Count > 1 ? "s" : "")} added successfully!");
             }
-            return RedirectToAction("Details", "Drive");
+            return RedirectToAction("Details", "Sharing");
         }
 
         public IActionResult DeleteFolder(string folderName)
@@ -130,7 +115,7 @@ namespace NCloud.Controllers
                 {
                     throw new Exception("Folder name must be at least one charachter!");
                 }
-                if (!service.RemoveDirectory(folderName!, GetSessionUserPathData().CurrentPath))
+                if (!service.RemoveDirectory(folderName!, GetSessionSharedPathData().CurrentPath))
                 {
                     throw new Exception("Folder is System Folder!");
                 }
@@ -140,7 +125,7 @@ namespace NCloud.Controllers
             {
                 notifier.Error("Failed to remove Folder!");
             }
-            return RedirectToAction("Details", "Drive");
+            return RedirectToAction("Details", "Sharing");
         }
 
         public IActionResult DeleteFile(string fileName)
@@ -151,7 +136,7 @@ namespace NCloud.Controllers
                 {
                     throw new Exception("File name must be at least one charachter!");
                 }
-                if (!service.RemoveFile(fileName!, GetSessionUserPathData().CurrentPath))
+                if (!service.RemoveFile(fileName!, GetSessionSharedPathData().CurrentPath))
                 {
                     throw new Exception("File is System Folder!");
                 }
@@ -161,12 +146,17 @@ namespace NCloud.Controllers
             {
                 notifier.Error("Failed to remove Folder!");
             }
-            return RedirectToAction("Details", "Drive");
+            return RedirectToAction("Details", "Sharing");
         }
 
         public IActionResult DeleteItems()
         {
-            PathData pathData = GetSessionUserPathData();
+            SharedData pathData = GetSessionSharedPathData();
+            if (pathData.CurrentPath == SharedData.ROOTNAME)
+            {
+                //TODO: notification
+                return RedirectToAction("Details", "Sharing");
+            }
             var files = service.GetCurrentDeptFiles(pathData.CurrentPath);
             var folders = service.GetCurrentDeptFolders(pathData.CurrentPath);
             return View(new DriveDeleteViewModel
@@ -182,7 +172,7 @@ namespace NCloud.Controllers
         public IActionResult DeleteItemsFromForm([Bind("ItemsForDelete")] DriveDeleteViewModel vm)
         {
             bool noFail = true;
-            PathData pathData = GetSessionUserPathData();
+            SharedData pathData = GetSessionSharedPathData();
             foreach (string itemName in vm.ItemsForDelete!)
             {
                 if (itemName != "false")
@@ -229,11 +219,11 @@ namespace NCloud.Controllers
             {
                 notifier.Warning("Could not complete all item deletion!");
             }
-            return RedirectToAction("DeleteItems", "Drive");
+            return RedirectToAction("DeleteItems", "Sharing");
         }
         public IActionResult DownloadItems()
         {
-            PathData pathData = GetSessionUserPathData();
+            SharedData pathData = GetSessionSharedPathData();
             var files = service.GetCurrentDeptFiles(pathData.CurrentPath);
             //var folders = service.GetCurrentDeptFolders(pathData.CurrentPath); //later to be able to add folders to zp too
             var folders = new List<CloudFolder?>();
@@ -249,7 +239,7 @@ namespace NCloud.Controllers
         [ValidateAntiForgeryToken, ActionName("DownloadItems")]
         public IActionResult DownloadItemsFromForm([Bind("ItemsForDownload")] DriveDownloadViewModel vm)
         {
-            PathData pathData = GetSessionUserPathData();
+            SharedData pathData = GetSessionSharedPathData();
             string tempFile = Path.GetTempFileName();
             using var zipFile = System.IO.File.Create(tempFile);
             if (vm.ItemsForDownload is not null && vm.ItemsForDownload.Count != 0)

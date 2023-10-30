@@ -11,7 +11,8 @@ namespace NCloud.Services
 {
     public class CloudService : ICloudService
     {
-        private const string ROOTNAME = "@CLOUDROOT";
+        private const string USERROOTNAME = "@CLOUDROOT";
+        private const string SHAREDROOTNAME = "@SHAREDROOT";
         private readonly CloudDbContext context;
         private readonly IWebHostEnvironment env;
         private const int DISTANCE = 4;
@@ -187,7 +188,14 @@ namespace NCloud.Services
 
         private string ParseRootName(string currentPath)
         {
-            return currentPath.Replace(ROOTNAME, Path.Combine(env.WebRootPath, "CloudData", "UserData"));
+            if (currentPath.StartsWith(USERROOTNAME))
+            {
+                return currentPath.Replace(USERROOTNAME, Path.Combine(env.WebRootPath, "CloudData", "UserData"));
+            }
+            else
+            {
+                return currentPath.Replace(SHAREDROOTNAME, Path.Combine(env.WebRootPath, "CloudData", "Public"));
+            }
         }
 
         private bool IsSystemFolder(string path)
@@ -229,7 +237,7 @@ namespace NCloud.Services
 
         public bool DirectoryExists(string? pathAndName)
         {
-            if(pathAndName is null) return false;
+            if (pathAndName is null) return false;
             return Directory.Exists(ParseRootName(pathAndName));
         }
     }

@@ -62,26 +62,26 @@ namespace NCloud.Controllers
         }
 
         [NonAction]
-        protected PathData GetSessionSharedPathData()
+        protected SharedData GetSessionSharedPathData()
         {
-            PathData data = null!;
+            SharedData data = null!;
             if (HttpContext.Session.Keys.Contains(SHAREDCOOKIENAME))
             {
-                data = JsonSerializer.Deserialize<PathData>(HttpContext.Session.GetString(SHAREDCOOKIENAME)!)!;
+                data = JsonSerializer.Deserialize<SharedData>(HttpContext.Session.GetString(SHAREDCOOKIENAME)!)!;
             }
             else
             {
-                data = new PathData();
-                HttpContext.Session.SetString(SHAREDCOOKIENAME, JsonSerializer.Serialize<PathData>(data));
+                data = new SharedData();
+                HttpContext.Session.SetString(SHAREDCOOKIENAME, JsonSerializer.Serialize<SharedData>(data));
             }
             return data;
         }
 
         [NonAction]
-        protected void SetSessionSharedPathData(PathData pathData) //make it thread-safe
+        protected void SetSessionSharedPathData(SharedData pathData) //make it thread-safe
         {
             if (pathData == null) return;
-            HttpContext.Session.SetString(SHAREDCOOKIENAME, JsonSerializer.Serialize<PathData>(pathData));
+            HttpContext.Session.SetString(SHAREDCOOKIENAME, JsonSerializer.Serialize<SharedData>(pathData));
         }
 
         [NonAction]

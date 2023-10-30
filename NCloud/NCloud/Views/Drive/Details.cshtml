@@ -9,7 +9,7 @@
         <div class="background-color rounded w-100 px-3 pt-3" id="breadcrumbDiv">
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb">
-                    @foreach (string item in ViewBag.CurrentPath.Split("//", StringSplitOptions.RemoveEmptyEntries))
+                    @foreach (string item in Model.CurrentPath.Split("/", StringSplitOptions.RemoveEmptyEntries))
                     {
                         <li class="breadcrumb-item text-dark" aria-current="page">@item</li>
                     }
@@ -17,7 +17,7 @@
             </nav>
         </div>
         <div class="input-group hidden" id="fastInputDiv">
-            <input type="text" class="form-control py-3" name="filterString" id="currentPath" value="@ViewBag.CurrentPath" />
+            <input type="text" class="form-control py-3" name="commandLine" id="currentPath" value="@Model.CurrentPath" />
             <button type="submit" value="" class="btn btn-primary" form="pathform" id="fastInputBtn"><img src="~/utilities/arrow-right-circle.svg" width=" 20" height="20" class="rounded-circle align-middle" /></button>
         </div>
     </form>
@@ -27,11 +27,11 @@
         </div>
         <div class="">
             <div class="btn-group" role="group">
-                <button type="button" class="btn btn-primary" id="refreshBtn"><a asp-controller="Drive" asp-action="Details" asp-route-currentPath="@Model.CurrentPath"><img src="~/utilities/arrow-repeat.svg" width=" 20" height="20" class="rounded-circle align-middle" /></a></button>
+                <button type="button" class="btn btn-primary" id="refreshBtn"><a asp-controller="Drive" asp-action="Details" ><img src="~/utilities/arrow-repeat.svg" width=" 20" height="20" class="rounded-circle align-middle" /></a></button>
                 <button type="button" class="btn btn-secondary"><a asp-controller="Drive" asp-action="DownloadItems"><img src="~/utilities/cloud-download.svg" width=" 20" height="20" class="rounded-circle align-middle" /></a></button>
                 <button type="button" class="btn btn-secondary" id="addFileBtn"><img src="~/utilities/cloud-upload.svg" width=" 20" height="20" class="rounded-circle align-middle" /></button>
                 <button type="button" class="btn btn-secondary" id="addFolderBtn"><img src="~/utilities/folder-plus.svg" width=" 20" height="20" class="rounded align-middle" /></button>
-                <button type="button" class="btn btn-secondary" id="terminalBtn"><a asp-controller="Drive" asp-action="Terminal"><img src="~/utilities/terminal.svg" width=" 20" height="20" class="align-middle" /></a></button>
+                <button type="button" class="btn btn-secondary" id="terminalBtn"><a asp-controller="Terminal" asp-action="Index" asp-route-currentPath="@Model.CurrentPath"><img src="~/utilities/terminal.svg" width=" 20" height="20" class="align-middle" /></a></button>
                 <button type="button" class="btn btn-danger"><a asp-controller="Drive" asp-action="DeleteItems"><img src="~/utilities/trash.svg" width=" 20" height="20" class="rounded align-middle" /></a></button>
             </div>
         </div>

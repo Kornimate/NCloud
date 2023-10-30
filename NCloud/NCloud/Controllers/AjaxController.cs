@@ -7,9 +7,9 @@ using NCloud.ViewModels;
 
 namespace NCloud.Controllers
 {
-    public class DriveAjaxController : CloudControllerDefault
+    public class AjaxController : CloudControllerDefault
     {
-        public DriveAjaxController(ICloudService service, UserManager<CloudUser> userManager, SignInManager<CloudUser> signInManager, IWebHostEnvironment env, INotyfService notifier) : base(service, userManager, signInManager, env, notifier) { }
+        public AjaxController(ICloudService service, UserManager<CloudUser> userManager, SignInManager<CloudUser> signInManager, IWebHostEnvironment env, INotyfService notifier) : base(service, userManager, signInManager, env, notifier) { }
 
         public IActionResult DeleteItem()
         {

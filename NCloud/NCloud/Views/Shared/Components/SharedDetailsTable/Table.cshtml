@@ -1,0 +1,158 @@
+﻿@model DriveDetailsViewModel
+
+<table class="table">
+    <thead>
+        <tr>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (CloudFolder? item in Model.Folders)
+        {
+            if (item != null)
+            {
+                <tr>
+                    <td>
+                        <details>
+                            <summary>
+                                <span id="iconforitemtype">
+                                    <img src="@item.IconPath" width=" 20" height="20" class="item rounded align-bottom">
+                                </span>
+                                <a asp-action="Details" asp-route-folderName="@item.Info.Name" class="itemlink">@item.Info!.Name</a>
+                            </summary>
+                            <fieldset class="border border-dark p-2 m-2 rounded">
+                                <legend class="btn btn-outline-primary rounded-pill w-auto">Details</legend>
+                                <table class="table table-striped rounded">
+                                    <tr>
+                                        <td>
+                                            Created By
+                                        </td>
+                                        <td>
+                                            @item.Owner
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            Created Time
+                                        </td>
+                                        <td>
+                                            @item.Info.CreationTime
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            Last Modified Time
+                                        </td>
+                                        <td>
+                                            @item.Info.LastWriteTime
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            Public
+                                        </td>
+                                        <td>
+                                            @if (item.IsShared)
+                                            {
+                                                <span>✔</span>
+                                            }
+                                            else
+                                            {
+                                                <span>❌</span>
+                                            }
+                                        </td>
+                                    </tr>
+                                </table>
+                            </fieldset>
+                            <div class="d-flex justify-content-end">
+                                <div class="btn-group mx-2" role="group">
+                                    <button type="button" class="btn btn-primary"><a asp-controller="Drive" asp-action="PubliciseFolder" asp-route-id="@item.Info.Name"><img src="~/utilities/globe.svg" width=" 20" height="20" class="rounded-circle align-middle" /></a></button>
+                                    <button type="button" class="btn btn-secondary"><a asp-controller="Drive" asp-action="Settings" asp-route-id="@item.Info.Name"><img src="~/utilities/gear.svg" width=" 20" height="20" class="rounded-circle align-middle" /></a></button>
+                                    <button type="button" class="btn btn-danger"><a asp-controller="Drive" asp-action="DeleteFolder" asp-route-folderName="@item.Info.Name"><img src="~/utilities/trash.svg" width=" 20" height="20" class="rounded-circle align-middle" /></a></button>
+                                </div>
+                            </div>
+                        </details>
+                    </td>
+                </tr>
+            }
+        }
+        @foreach (CloudFile? item in Model.Files)
+        {
+            if (item != null)
+            {
+                <tr>
+                    <td>
+                        <details>
+                            <summary>
+                                <span id="iconforitemtype">
+                                    <img src="@item.IconPath" width=" 20" height="20" class="item rounded align-bottom">
+                                </span>
+                                <span class="itemlink">@item.Info!.Name</span>
+                            </summary>
+                            <fieldset class="border border-dark p-2 m-2 rounded">
+                                <legend class="btn btn-outline-primary rounded-pill w-auto">Details</legend>
+                                <table class="table table-striped rounded">
+                                    <tr>
+                                        <td>
+                                            Created By
+                                        </td>
+                                        <td>
+                                            @item.Owner
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            Created Time
+                                        </td>
+                                        <td>
+                                            @item.Info.CreationTime
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            Last Modified Time
+                                        </td>
+                                        <td>
+                                            @item.Info.LastWriteTime
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            Size
+                                        </td>
+                                        <td>
+                                            @item.Info.Length Bytes
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            Public
+                                        </td>
+                                        <td>
+                                            @if (item.IsShared)
+                                            {
+                                                <span>✔</span>
+                                            }
+                                            else
+                                            {
+                                                <span>❌</span>
+                                            }
+                                        </td>
+                                    </tr>
+                                </table>
+                            </fieldset>
+                            <div class="d-flex justify-content-end">
+                                <div class="btn-group mx-2" role="group">
+                                    <button type="button" class="btn btn-primary"><a asp-controller="Drive" asp-action="PubliciseFile" asp-route-id="@item.Info.Name"><img src="~/utilities/globe.svg" width=" 20" height="20" class="rounded-circle align-middle" /></a></button>
+                                    <button type="button" class="btn btn-secondary"><a asp-controller="Editor" asp-action="Index" asp-route-fileName="@item.Info.Name"><img src="~/utilities/code-slash.svg" width=" 20" height="20" class="rounded-circle align-middle" /></a></button>
+                                    <button type="button" class="btn btn-secondary"><a asp-controller="Drive" asp-action="Settings" asp-route-id="@item.Info.Name"><img src="~/utilities/gear.svg" width=" 20" height="20" class="rounded-circle align-middle" /></a></button>
+                                    <button type="button" class="btn btn-danger"><a asp-controller="Drive" asp-action="DeleteFile" asp-route-id="@item.Info.Name"><img src="~/utilities/trash.svg" width=" 20" height="20" class="rounded-circle align-middle" /></a></button>
+                                </div>
+                            </div>
+                        </details>
+                    </td>
+                </tr>
+            }
+        }
+    </tbody>
+</table>
