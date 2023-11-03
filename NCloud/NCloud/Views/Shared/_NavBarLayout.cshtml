@@ -63,10 +63,8 @@
             </div>
         </div>
     </div>
-    @* @await Component.InvokeAsync("Notyf") *@
+    @await Component.InvokeAsync("Notyf")
     @await Component.InvokeAsync("NToastNotify")
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>
-<base href="~/" />
-<script src="_framework/blazor.server.js"></script>

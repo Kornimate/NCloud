@@ -57,7 +57,7 @@ namespace ELTE.TodoList.Web.Controllers
                 {
                     if (returnUrl is null)
                     {
-                        return RedirectToAction("Index", "Drive");
+                        return RedirectToAction("Index", "DashBoard");
                     }
                     return RedirectToLocal(returnUrl);
                 }
@@ -106,7 +106,7 @@ namespace ELTE.TodoList.Web.Controllers
                         CloudUser newUser = await userManager.FindByNameAsync(vm.UserName);
                         service.CreateBaseDirectory(newUser);
                         await signInManager.SignInAsync(newUser, false);
-                        return RedirectToAction(nameof(Index), "Drive");
+                        return RedirectToAction(nameof(Index), "DashBoard");
                     }
 
                     ModelState.AddModelError("", "Failed to Register!");

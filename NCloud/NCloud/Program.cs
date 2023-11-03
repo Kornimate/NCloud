@@ -39,10 +39,6 @@ namespace NCloud
             builder.Services.AddTransient<ICloudTerminalService, CloudTerminalService>();
 
             builder.Services.AddTransient<ICloudShareService, CloudShareService>();
-
-            builder.Services.AddRazorPages();
-
-            builder.Services.AddServerSideBlazor();
           
             builder.Services.AddControllersWithViews();
 
@@ -89,8 +85,8 @@ namespace NCloud
             }
 
             app.UseNToastNotify();
-            
-            //app.UseNotyf();
+
+            app.UseNotyf();
 
             app.UseHttpsRedirection();
 
@@ -104,13 +100,9 @@ namespace NCloud
 
             app.UseAuthorization();
 
-            app.UseBlazorFrameworkFiles();
-
             app.MapControllerRoute(
                 name: "default",
-                pattern: "{controller=DashBoard}/{action=Index}/{id?}");
-
-            app.MapBlazorHub();
+                pattern: "{controller=Drive}/{action=Details}/{id?}");
 
             using (var serviceScope = app.Services.CreateScope())
             using (var context = serviceScope.ServiceProvider.GetRequiredService<CloudDbContext>())

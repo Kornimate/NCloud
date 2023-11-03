@@ -114,7 +114,7 @@
         input = document.getElementById("currentPath");
         input.focus();
         input.value = '';
-        input.value = "@ViewBag.CurrentPath";
+        input.value = "@Model.CurrentPath";
     }
     function InputFocusLost(e) {
         if (e.relatedTarget === null || e.relatedTarget.id !== "fastInputBtn") {

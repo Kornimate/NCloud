@@ -85,8 +85,14 @@
     window.onload = init;
 
     function init() {
-        document.getElementById("addFolderBtn").addEventListener("click", AddFolderClicked, false);
-        document.getElementById("addFileBtn").addEventListener("click", AddFileClicked, false);
+        const folderBtn = document.getElementById("addFolderBtn");
+        if(folderBtn !== null){
+            folderBtn.addEventListener("click", AddFolderClicked, false);
+        }
+        const fileBtn = document.getElementById("addFileBtn");
+        if(fileBtn !== null){
+            fileBtn.addEventListener("click", AddFileClicked, false);
+        }
         document.getElementById("refreshBtn").addEventListener("click", RefreshClicked, false);
         document.getElementById("breadcrumbDiv").addEventListener("click", CrumbClicked, false);
         document.getElementById("currentPath").addEventListener("focusout", InputFocusLost, false);
@@ -120,7 +126,7 @@
         input = document.getElementById("currentPath");
         input.focus();
         input.value = '';
-        input.value = "@ViewBag.CurrentPath";
+        input.value = "@Model.CurrentPath";
     }
     function InputFocusLost(e) {
         if (e.relatedTarget === null || e.relatedTarget.id !== "fastInputBtn") {

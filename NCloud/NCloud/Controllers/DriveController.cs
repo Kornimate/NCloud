@@ -19,13 +19,19 @@ namespace NCloud.Controllers
 {
     public class DriveController : CloudControllerDefault
     {
-        public DriveController(ICloudService service, UserManager<CloudUser> userManager, SignInManager<CloudUser> signInManager, IWebHostEnvironment env, INotyfService notifier, IToastNotification toastNotification) : base(service, userManager, signInManager, env, notifier) { }
+        private readonly IToastNotification notif;
+        public DriveController(ICloudService service, UserManager<CloudUser> userManager, SignInManager<CloudUser> signInManager, IWebHostEnvironment env, INotyfService notifier, IToastNotification toastNotification, IToastNotification notif) : base(service, userManager, signInManager, env, notifier)
+        {
+            this.notif = notif;
+        }
 
         // GET: DriveController/Details/5
         public IActionResult Details(string? folderName = null, List<string>? notifications = null)
         {
             HandleNotifications(notifications);
             PathData pathdata = GetSessionUserPathData();
+            notif.AddInfoToastMessage("Hello!");
+            notifier.Information("Hello!");
             string currentPath = String.Empty;
             if (service.DirectoryExists(pathdata.TrySetFolder(folderName)))
             {
@@ -291,6 +297,11 @@ namespace NCloud.Controllers
             }
             //warning implementation
             return RedirectToAction("DownloadItems");
+        }
+
+        public IActionResult ShareFolder(string folderName)
+        {
+            return RedirectToAction("Details", "Drive");
         }
     }
 }
