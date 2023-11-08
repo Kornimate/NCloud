@@ -56,10 +56,17 @@ namespace NCloud.Services
             List<string> baseFolders = new List<string>() { "Documents", "Pictures", "Videos", "Music" };
             foreach (string folder in baseFolders)
             {
-                pathHelper = Path.Combine(userFolderPath, folder);
-                Directory.CreateDirectory(pathHelper);
-                CreateJsonConatinerFile(pathHelper);
-                AddFolderToJsonContainerFile(userFolderPath, folder, cloudUser.UserName);
+                try
+                {
+                    pathHelper = Path.Combine(userFolderPath, folder);
+                    Directory.CreateDirectory(pathHelper);
+                    CreateJsonConatinerFile(pathHelper);
+                    AddFolderToJsonContainerFile(userFolderPath, folder, cloudUser.UserName);
+                }
+                catch
+                {
+                    return false; //TODO: handle this false in method that called this method
+                }
             }
             return true;
         }
@@ -100,7 +107,8 @@ namespace NCloud.Services
             if (folderName is null) return;
             string containerString = String.Empty;
             bool notRead = true;
-            while (notRead)
+            int counter = 0;
+            while (notRead && counter < 5)
             {
                 try
                 {
@@ -110,7 +118,12 @@ namespace NCloud.Services
                 catch
                 {
                     Thread.Sleep(300);
+                    ++counter
                 }
+            }
+            if (counter >= 5)
+            {
+                throw new Exception("Unable to read data!");
             }
             JsonDataContainer container = JsonSerializer.Deserialize<JsonDataContainer>(containerString)!;
             container.Folders?.Add(folderName, new JsonDetailsContainer
@@ -119,7 +132,8 @@ namespace NCloud.Services
                 IsShared = false
             });
             bool notWritten = true;
-            while (notWritten)
+            counter = 0;
+            while (notWritten && counter < 5)
             {
                 try
                 {
@@ -129,7 +143,12 @@ namespace NCloud.Services
                 catch (Exception)
                 {
                     Thread.Sleep(300);
+                    ++counter;
                 }
+            }
+            if (counter >= 5)
+            {
+                throw new Exception("Unable to write data!");
             }
         }
 
@@ -168,7 +187,8 @@ namespace NCloud.Services
             if (fileName is null) return;
             string containerString = String.Empty;
             bool notRead = true;
-            while (notRead)
+            int counter = 0;
+            while (notRead && counter < 5)
             {
                 try
                 {
@@ -178,7 +198,12 @@ namespace NCloud.Services
                 catch
                 {
                     Thread.Sleep(300);
+                    ++counter;
                 }
+            }
+            if (counter >= 5)
+            {
+                throw new Exception("Unable read data!");
             }
             JsonDataContainer container = JsonSerializer.Deserialize<JsonDataContainer>(containerString)!;
             container.Files?.Add(fileName, new JsonDetailsContainer
@@ -187,7 +212,8 @@ namespace NCloud.Services
                 IsShared = false
             });
             bool notWritten = true;
-            while (notWritten)
+            counter = 0;
+            while (notWritten && counter < 5)
             {
                 try
                 {
@@ -197,7 +223,12 @@ namespace NCloud.Services
                 catch (Exception)
                 {
                     Thread.Sleep(300);
+                    ++counter;
                 }
+            }
+            if (counter >= 5)
+            {
+                throw new Exception("Unable to write data!");
             }
         }
 
