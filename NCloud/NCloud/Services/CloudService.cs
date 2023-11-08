@@ -66,16 +66,23 @@ namespace NCloud.Services
 
         public bool CreateDirectory(string folderName, string currentPath, string owner)
         {
-            string path = ParseRootName(currentPath);
-            string pathAndName = Path.Combine(path, folderName);
-            if (Directory.Exists(pathAndName))
+            try
             {
-                throw new Exception("The Folder already exists!");
+                string path = ParseRootName(currentPath);
+                string pathAndName = Path.Combine(path, folderName);
+                if (Directory.Exists(pathAndName))
+                {
+                    throw new Exception("The Folder already exists!");
+                }
+                Directory.CreateDirectory(pathAndName);
+                CreateJsonConatinerFile(pathAndName);
+                AddFolderToJsonContainerFile(path, folderName, owner);
+                return true;
             }
-            Directory.CreateDirectory(pathAndName);
-            CreateJsonConatinerFile(pathAndName);
-            AddFolderToJsonContainerFile(path, folderName, owner);
-            return true;
+            catch
+            {
+                return false;
+            }
         }
         private void CreateJsonConatinerFile(string? path)
         {
@@ -91,13 +98,39 @@ namespace NCloud.Services
         {
             if (path is null) return;
             if (folderName is null) return;
-            JsonDataContainer container = JsonSerializer.Deserialize<JsonDataContainer>(System.IO.File.ReadAllText(Path.Combine(path, JSONCONTAINERNAME)))!;
+            string containerString = String.Empty;
+            bool notRead = true;
+            while (notRead)
+            {
+                try
+                {
+                    containerString = System.IO.File.ReadAllText(Path.Combine(path, JSONCONTAINERNAME));
+                    notRead = false;
+                }
+                catch
+                {
+                    Thread.Sleep(300);
+                }
+            }
+            JsonDataContainer container = JsonSerializer.Deserialize<JsonDataContainer>(containerString)!;
             container.Folders?.Add(folderName, new JsonDetailsContainer
             {
                 Owner = owner,
                 IsShared = false
             });
-            System.IO.File.WriteAllText(Path.Combine(path, JSONCONTAINERNAME), JsonSerializer.Serialize<JsonDataContainer>(container));
+            bool notWritten = true;
+            while (notWritten)
+            {
+                try
+                {
+                    System.IO.File.WriteAllText(Path.Combine(path, JSONCONTAINERNAME), JsonSerializer.Serialize<JsonDataContainer>(container));
+                    notWritten = false;
+                }
+                catch (Exception)
+                {
+                    Thread.Sleep(300);
+                }
+            }
         }
 
         public async Task<int> CreateFile(IFormFile file, string currentPath, string owner)
@@ -133,13 +166,39 @@ namespace NCloud.Services
         {
             if (path is null) return;
             if (fileName is null) return;
-            JsonDataContainer container = JsonSerializer.Deserialize<JsonDataContainer>(System.IO.File.ReadAllText(Path.Combine(path, JSONCONTAINERNAME)))!;
+            string containerString = String.Empty;
+            bool notRead = true;
+            while (notRead)
+            {
+                try
+                {
+                    containerString = System.IO.File.ReadAllText(Path.Combine(path, JSONCONTAINERNAME));
+                    notRead = false;
+                }
+                catch
+                {
+                    Thread.Sleep(300);
+                }
+            }
+            JsonDataContainer container = JsonSerializer.Deserialize<JsonDataContainer>(containerString)!;
             container.Files?.Add(fileName, new JsonDetailsContainer
             {
                 Owner = owner,
                 IsShared = false
             });
-            System.IO.File.WriteAllText(Path.Combine(path, JSONCONTAINERNAME), JsonSerializer.Serialize<JsonDataContainer>(container));
+            bool notWritten = true;
+            while (notWritten)
+            {
+                try
+                {
+                    System.IO.File.WriteAllText(Path.Combine(path, JSONCONTAINERNAME), JsonSerializer.Serialize<JsonDataContainer>(container));
+                    notWritten = false;
+                }
+                catch (Exception)
+                {
+                    Thread.Sleep(300);
+                }
+            }
         }
 
         public CloudUser GetAdmin()

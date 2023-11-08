@@ -28,7 +28,7 @@
         <div class="">
             <div class="btn-group" role="group">
                 <button type="button" class="btn btn-primary" id="refreshBtn"><a asp-controller="Sharing" asp-action="Details"><img src="~/utilities/arrow-repeat.svg" width=" 20" height="20" class="rounded-circle align-middle" /></a></button>
-                <button type="button" class="btn btn-secondary"><a asp-controller="Drive" asp-action="DownloadItems"><img src="~/utilities/cloud-download.svg" width=" 20" height="20" class="rounded-circle align-middle" /></a></button>
+                <button type="button" class="btn btn-secondary"><a asp-controller="Sharing" asp-action="DownloadItems"><img src="~/utilities/cloud-download.svg" width=" 20" height="20" class="rounded-circle align-middle" /></a></button>
                 @if (ViewBag.CanUseActions is not null && ViewBag.CanUseActions == true)
                 {
                     <button type="button" class="btn btn-secondary" id="addFileBtn"><img src="~/utilities/cloud-upload.svg" width=" 20" height="20" class="rounded-circle align-middle" /></button>
@@ -37,7 +37,7 @@
                 <button type="button" class="btn btn-secondary" id="terminalBtn"><a asp-controller="Terminal" asp-action="Index" asp-route-currentPath="@Model.CurrentPath"><img src="~/utilities/terminal.svg" width=" 20" height="20" class="align-middle" /></a></button>
                 @if (ViewBag.CanUseActions is not null && ViewBag.CanUseActions == true)
                 {
-                    <button type="button" class="btn btn-danger"><a asp-controller="Drive" asp-action="DeleteItems"><img src="~/utilities/trash.svg" width=" 20" height="20" class="rounded align-middle" /></a></button>
+                    <button type="button" class="btn btn-danger"><a asp-controller="Sharing" asp-action="DeleteItems"><img src="~/utilities/trash.svg" width=" 20" height="20" class="rounded align-middle" /></a></button>
                 }
             </div>
         </div>
