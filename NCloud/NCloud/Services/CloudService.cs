@@ -118,7 +118,7 @@ namespace NCloud.Services
                 catch
                 {
                     Thread.Sleep(300);
-                    ++counter
+                    ++counter;
                 }
             }
             if (counter >= 5)
