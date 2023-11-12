@@ -1,11 +1,9 @@
-﻿using AspNetCoreHero.ToastNotification.Abstractions;
-using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using NCloud.Models;
 using NCloud.Services;
 using NCloud.Users;
 using NCloud.ViewModels;
-using NToastNotify;
 using System.IO.Compression;
 using System.Text.Json;
 
@@ -13,10 +11,9 @@ namespace NCloud.Controllers
 {
     public class SharingController : CloudControllerDefault
     {
-        public SharingController(ICloudService service, UserManager<CloudUser> userManager, SignInManager<CloudUser> signInManager, IWebHostEnvironment env, INotyfService notifier, IToastNotification toastNotification) : base(service, userManager, signInManager, env, notifier) { }
-        public IActionResult Details(string? folderName = null, List<string>? notifications = null)
+        public SharingController(ICloudService service, UserManager<CloudUser> userManager, SignInManager<CloudUser> signInManager, IWebHostEnvironment env, ICloudNotificationService notifier) : base(service, userManager, signInManager, env, notifier) { }
+        public IActionResult Details(string? folderName = null)
         {
-            HandleNotifications(notifications);
             SharedData pathdata = GetSessionSharedPathData();
             string currentPath = pathdata.SetFolder(folderName);
             SetSessionSharedPathData(pathdata);
@@ -41,7 +38,6 @@ namespace NCloud.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AddNewFolder(string? folderName)
         {
-            CloudNotifierService nservice = new CloudNotifierService();
             try
             {
                 if (folderName == JSONCONTAINERNAME)
@@ -56,13 +52,13 @@ namespace NCloud.Controllers
                 {
                     throw new Exception("Unknown Error occured");
                 }
-                nservice.AddNotification("Folder is created!", NotificationType.SUCCESS);
+                AddNewNotification(new Success("Folder is created!"));
             }
             catch (Exception ex)
             {
-                nservice.AddNotification(ex.Message, NotificationType.ERROR);
+                AddNewNotification(new Error(ex.Message));
             }
-            return RedirectToAction("Details", new { notifications = nservice.Notifications });
+            return RedirectToAction("Details");
         }
 
         [HttpPost]
@@ -72,7 +68,7 @@ namespace NCloud.Controllers
             bool errorPresent = false;
             if (files == null || files.Count == 0)
             {
-                notifier.Warning("No Files were uploaded!");
+                AddNewNotification(new Warning("No Files were uploaded!"));
                 return RedirectToAction("Details", "Sharing");
             }
             SharedData pathData = GetSessionSharedPathData();
@@ -92,17 +88,17 @@ namespace NCloud.Controllers
                 int res = await service.CreateFile(files[i], pathData.CurrentPath, (await userManager.GetUserAsync(User)).UserName);
                 if (res == 0)
                 {
-                    notifier.Warning($"A File has been renamed!");
+                    AddNewNotification(new Warning($"A File has been renamed!"));
                 }
                 else if (res == -1)
                 {
                     errorPresent = true;
-                    notifier.Error($"There was error adding the file {files[i].FileName}!");
+                    AddNewNotification(new Error($"There was error adding the file {files[i].FileName}!"));
                 }
             }
             if (!errorPresent)
             {
-                notifier.Success($"File{(files.Count > 1 ? "s" : "")} added successfully!");
+                AddNewNotification(new Success($"File{(files.Count > 1 ? "s" : "")} added successfully!"));
             }
             return RedirectToAction("Details", "Sharing");
         }
@@ -119,11 +115,11 @@ namespace NCloud.Controllers
                 {
                     throw new Exception("Folder is System Folder!");
                 }
-                notifier.Success("Folder is removed!");
+                AddNewNotification(new Success("Folder is removed!"));
             }
             catch (Exception)
             {
-                notifier.Error("Failed to remove Folder!");
+                AddNewNotification(new Error("Failed to remove Folder!"));
             }
             return RedirectToAction("Details", "Sharing");
         }
@@ -140,11 +136,11 @@ namespace NCloud.Controllers
                 {
                     throw new Exception("File is System Folder!");
                 }
-                notifier.Success("File is removed!");
+                AddNewNotification(new Success("File is removed!"));
             }
             catch (Exception)
             {
-                notifier.Error("Failed to remove Folder!");
+                AddNewNotification(new Error("Failed to remove Folder!"));
             }
             return RedirectToAction("Details", "Sharing");
         }
@@ -183,13 +179,13 @@ namespace NCloud.Controllers
                         {
                             if (!service.RemoveFile(itemName[1..], pathData.CurrentPath))
                             {
-                                notifier.Error($"Error removing file {itemName}");
+                                AddNewNotification(new Error($"Error removing file {itemName}"));
                                 noFail = false;
                             }
                         }
                         catch (Exception ex)
                         {
-                            notifier.Error($"{ex.Message} ({itemName})");
+                            AddNewNotification(new Error($"{ex.Message} ({itemName})"));
                             noFail = false;
                         }
                     }
@@ -199,13 +195,13 @@ namespace NCloud.Controllers
                         {
                             if (!service.RemoveDirectory(itemName, pathData.CurrentPath))
                             {
-                                notifier.Error($"Error removing folder {itemName}");
+                                AddNewNotification(new Error($"Error removing folder {itemName}"));
                                 noFail = false;
                             }
                         }
                         catch (Exception ex)
                         {
-                            notifier.Error($"{ex.Message} ({itemName})");
+                            AddNewNotification(new Error($"{ex.Message} ({itemName})"));
                             noFail = false;
                         }
                     }
@@ -213,11 +209,11 @@ namespace NCloud.Controllers
             }
             if (noFail)
             {
-                notifier.Success("All Items removed successfully!");
+                AddNewNotification(new Success("All Items removed successfully!"));
             }
             else
             {
-                notifier.Warning("Could not complete all item deletion!");
+                AddNewNotification(new Warning("Could not complete all item deletion!"));
             }
             return RedirectToAction("DeleteItems", "Sharing");
         }
@@ -259,7 +255,7 @@ namespace NCloud.Controllers
                                 }
                                 catch (Exception ex)
                                 {
-                                    notifier.Error($"{ex.Message} ({itemName})");
+                                    AddNewNotification(new Error($"{ex.Message} ({itemName})"));
                                 }
                             }
                             else
@@ -270,7 +266,7 @@ namespace NCloud.Controllers
                                 }
                                 catch (Exception ex)
                                 {
-                                    notifier.Error($"{ex.Message} ({itemName})");
+                                    AddNewNotification(new Error($"{ex.Message} ({itemName})"));
                                 }
                             }
                         }

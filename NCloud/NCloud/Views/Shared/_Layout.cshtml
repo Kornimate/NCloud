@@ -10,15 +10,14 @@
 </head>
 <body class="background-color">
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
     <div class="">
         <main role="main" class="">
             @RenderBody()
         </main>
     </div>
-    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="~/js/site.js" asp-append-version="true"></script>
-    @await Component.InvokeAsync("Notyf")
-    @await Component.InvokeAsync("NToastNotify")
+    @await Component.InvokeAsync("CloudNotification")
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

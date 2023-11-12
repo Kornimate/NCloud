@@ -4,7 +4,6 @@ using NCloud.Services;
 using NCloud.Models;
 using System.Text.Json;
 using NCloud.ViewModels;
-using AspNetCoreHero.ToastNotification.Abstractions;
 using Microsoft.AspNetCore.Identity;
 using NCloud.Users;
 
@@ -12,7 +11,7 @@ namespace NCloud.Controllers
 {
     public class EditorController : CloudControllerDefault
     {
-        public EditorController(ICloudService service, UserManager<CloudUser> userManager, SignInManager<CloudUser> signInManager, IWebHostEnvironment env, INotyfService notifier) : base(service, userManager, signInManager, env, notifier) { }
+        public EditorController(ICloudService service, UserManager<CloudUser> userManager, SignInManager<CloudUser> signInManager, IWebHostEnvironment env, ICloudNotificationService notifier) : base(service, userManager, signInManager, env, notifier) { }
         
         // GET: EditorController
         public ActionResult Index(string? fileName = null)

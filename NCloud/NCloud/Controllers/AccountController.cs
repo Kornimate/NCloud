@@ -7,7 +7,6 @@ using NCloud.ViewModels;
 using NCloud.Controllers;
 using System.IO;
 using DNTCaptcha.Core;
-using AspNetCoreHero.ToastNotification.Abstractions;
 using NCloud.Services;
 
 namespace ELTE.TodoList.Web.Controllers
@@ -15,7 +14,7 @@ namespace ELTE.TodoList.Web.Controllers
     [Authorize]
     public class AccountController : CloudControllerDefault
     {
-        public AccountController(ICloudService service, UserManager<CloudUser> userManager, SignInManager<CloudUser> signInManager, IWebHostEnvironment env, INotyfService notifier) : base(service, userManager, signInManager, env, notifier) { }
+        public AccountController(ICloudService service, UserManager<CloudUser> userManager, SignInManager<CloudUser> signInManager, IWebHostEnvironment env, ICloudNotificationService notifier) : base(service, userManager, signInManager, env, notifier) { }
         public IActionResult Back(string returnUrl)
         {
             return Redirect(returnUrl);

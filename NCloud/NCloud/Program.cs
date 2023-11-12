@@ -1,12 +1,9 @@
-using AspNetCoreHero.ToastNotification;
-using AspNetCoreHero.ToastNotification.Extensions;
 using DNTCaptcha.Core;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using NCloud.Models;
 using NCloud.Services;
 using NCloud.Users;
-using NToastNotify;
 
 namespace NCloud
 {
@@ -39,26 +36,14 @@ namespace NCloud
             builder.Services.AddTransient<ICloudTerminalService, CloudTerminalService>();
 
             builder.Services.AddTransient<ICloudShareService, CloudShareService>();
+
+            builder.Services.AddTransient<ICloudNotificationService, CloudNotificationService>();
           
             builder.Services.AddControllersWithViews();
 
             builder.Services.AddDistributedMemoryCache();
 
             builder.Services.AddHttpContextAccessor();
-
-            builder.Services.AddNotyf(config =>
-            {
-                config.DurationInSeconds = 5;
-                config.IsDismissable = true;
-                config.Position = NotyfPosition.BottomRight;
-                config.HasRippleEffect = true;
-            });
-
-            builder.Services.AddMvc().AddNToastNotifyToastr(new ToastrOptions()
-            {
-                ProgressBar = false,
-                PositionClass = ToastPositions.BottomRight
-            });
 
             builder.Services.AddSession(options =>
             {
@@ -84,10 +69,6 @@ namespace NCloud
                 app.UseHsts();
             }
 
-            app.UseNToastNotify();
-
-            app.UseNotyf();
-
             app.UseHttpsRedirection();
 
             app.UseStaticFiles();
@@ -102,7 +83,7 @@ namespace NCloud
 
             app.MapControllerRoute(
                 name: "default",
-                pattern: "{controller=Home}/{action=Index}/{id?}");
+                pattern: "{controller=Dashboard}/{action=Index}/{id?}");
 
             using (var serviceScope = app.Services.CreateScope())
             using (var context = serviceScope.ServiceProvider.GetRequiredService<CloudDbContext>())
