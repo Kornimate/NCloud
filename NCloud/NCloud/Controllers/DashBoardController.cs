@@ -15,7 +15,6 @@ namespace NCloud.Controllers
         {
             await signInManager.PasswordSignInAsync("Admin", "Admin_1234", true, false);
             var result = service.GetCurrentUserIndexData();
-            AddNewNotification(new Information("Service is working!"));
             return View(new DriveIndexViewModel(result.Item1, result.Item2)
             {
                 //TestString = Url.Action("Index", "Drive",new { path="testpath" },Request.Scheme)

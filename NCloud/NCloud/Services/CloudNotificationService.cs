@@ -1,22 +1,23 @@
 ﻿using NCloud.Models;
+using NuGet.Protocol;
 
 namespace NCloud.Services
 {
     public class CloudNotificationService : ICloudNotificationService
     {
-        private readonly PriorityQueue<ACloudNotification, int> queue;
+        private readonly List<ACloudNotification> queue;
         public CloudNotificationService()
         {
-            queue = new PriorityQueue<ACloudNotification, int>();
+            queue = new List<ACloudNotification>();
         }
 
         public void AddNotification(ACloudNotification notification)
         {
-            queue.Enqueue(notification,notification.Priority);
+            queue.Add(notification);
         }
-        public PriorityQueue<ACloudNotification,int> GetNotificationQueue()
+        public string GetNotificationQueue()
         {
-            return queue;
+            return queue.OrderBy(x => x.Priority).ToJson();
         }
     }
 }

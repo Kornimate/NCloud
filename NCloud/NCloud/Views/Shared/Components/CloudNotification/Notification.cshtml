@@ -1,16 +1,16 @@
 ﻿@using Newtonsoft.Json;
 @{
-    PriorityQueue<ACloudNotification, int>? queue = null;
+    List<ACloudNotification>? queue = null;
     if (TempData["Notification"] is not null)
     {
-        queue = JsonConvert.DeserializeObject<PriorityQueue<ACloudNotification, int>>((string)TempData["Notification"]!);
+        queue = JsonConvert.DeserializeObject<List<ACloudNotification>>((string)TempData["Notification"]!);
     }
 }
 
 @if (queue is not null)
 {
     <div class="toast-container position-absolute bottom-0 end-0 p-3">
-        @while (queue.TryDequeue(out ACloudNotification? notification, out _))
+        @foreach(ACloudNotification notification in queue)
         {
             <div class="toast @(notification.Color)" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="5000">
                 <div class="toast-header @(notification.Color)">
@@ -37,6 +37,6 @@
             }
         }
 
-        ShowNotifications(700);
+        ShowNotifications(300);
     </script>
 }

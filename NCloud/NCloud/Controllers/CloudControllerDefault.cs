@@ -102,7 +102,7 @@ namespace NCloud.Controllers
         protected void AddNewNotification(ACloudNotification notification)
         {
             notifier.AddNotification(notification);
-            TempData[NOTIFICATIONKEY] = notifier.GetNotificationQueue().ToJson(); 
+            TempData[NOTIFICATIONKEY] = notifier.GetNotificationQueue(); 
         }
     }
 }
