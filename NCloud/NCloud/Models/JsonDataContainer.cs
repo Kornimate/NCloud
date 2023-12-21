@@ -8,5 +8,6 @@ namespace NCloud.Models
         public DateTime? CreatedDate { get; set; } = DateTime.Now;
         public Dictionary<string, JsonDetailsContainer>? Folders { get; set; } = new();
         public Dictionary<string, JsonDetailsContainer>? Files { get; set; } = new();
+        public bool StatusOK { get; set; } = true;
     }
 }

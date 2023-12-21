@@ -61,14 +61,14 @@ namespace NCloud.Controllers
                 {
                     throw new Exception("Invalid Folder Name!");
                 }
+
                 if (folderName is null || folderName == String.Empty)
                 {
                     throw new Exception("Folder name must be at least one charachter!");
                 }
-                if (!service.CreateDirectory(folderName!, GetSessionUserPathData().CurrentPath, (await userManager.GetUserAsync(User)).UserName))
-                {
-                    throw new Exception("Unknown Error occured");
-                }
+
+                service.CreateDirectory(folderName!, GetSessionUserPathData().CurrentPath, (await userManager.GetUserAsync(User)).UserName);
+ 
                 AddNewNotification(new Success("Folder is created!"));
             }
             catch (Exception ex)

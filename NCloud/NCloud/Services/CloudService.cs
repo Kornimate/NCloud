@@ -19,6 +19,7 @@ namespace NCloud.Services
         private readonly List<string> systemFolders;
         private const string FILENAMEDELIMITER = "_";
         private const string JSONCONTAINERNAME = "__JsonContainer__.json";
+        private readonly TimeSpan MAXWAITTIME = TimeSpan.FromSeconds(10);
 
         public CloudService(CloudDbContext context, IWebHostEnvironment env)
         {
@@ -71,12 +72,27 @@ namespace NCloud.Services
             return true;
         }
 
-        public bool CreateDirectory(string folderName, string currentPath, string owner)
+        public void CreateDirectory(string folderName, string currentPath, string owner)
         {
+            if (folderName == null || folderName == String.Empty)
+            {
+                throw new Exception("Invalid Folder Name!");
+            }
+
+            if (currentPath == null || currentPath == String.Empty)
+            {
+                throw new Exception("Invalid Path!");
+            }
+
+            if (owner == null || owner == String.Empty)
+            {
+                throw new Exception("Invalid Owner!");
+            }
+
+            string path = ParseRootName(currentPath);
+            string pathAndName = Path.Combine(path, folderName);
             try
             {
-                string path = ParseRootName(currentPath);
-                string pathAndName = Path.Combine(path, folderName);
                 if (Directory.Exists(pathAndName))
                 {
                     throw new Exception("The Folder already exists!");
@@ -84,11 +100,14 @@ namespace NCloud.Services
                 Directory.CreateDirectory(pathAndName);
                 CreateJsonConatinerFile(pathAndName);
                 AddFolderToJsonContainerFile(path, folderName, owner);
-                return true;
             }
             catch
             {
-                return false;
+                if (Directory.Exists(pathAndName)) // remove modifications if unable to add folder to JsonContainerFile
+                {
+                    Directory.Delete(pathAndName, true);
+                }
+                throw;
             }
         }
         private void CreateJsonConatinerFile(string? path)
@@ -96,59 +115,49 @@ namespace NCloud.Services
             if (path is null) return;
             JsonDataContainer container = new JsonDataContainer()
             {
-                FolderName = path
+                FolderName = path,
+                StatusOK = true
             };
-            System.IO.File.WriteAllText(Path.Combine(path, JSONCONTAINERNAME), JsonSerializer.Serialize<JsonDataContainer>(container));
+            string pathAndName = Path.Combine(path, JSONCONTAINERNAME);
+            if (File.Exists(pathAndName)) return; // just for safety reasons, not to overwrite existing files
+            System.IO.File.WriteAllText(pathAndName, JsonSerializer.Serialize<JsonDataContainer>(container));
         }
 
         private void AddFolderToJsonContainerFile(string? path, string? folderName, string owner)
         {
-            if (path is null) return;
-            if (folderName is null) return;
-            string containerString = String.Empty;
-            bool notRead = true;
-            int counter = 0;
-            while (notRead && counter < 5)
+            try
             {
-                try
+                Task task = Task.Run(async () =>
                 {
-                    containerString = System.IO.File.ReadAllText(Path.Combine(path, JSONCONTAINERNAME));
-                    notRead = false;
-                }
-                catch
+                    try
+                    {
+                        using FileStream fs = File.Open(Path.Combine(path!, JSONCONTAINERNAME), FileMode.Open, FileAccess.ReadWrite, FileShare.None);
+                        JsonDataContainer? container = await JsonSerializer.DeserializeAsync<JsonDataContainer>(fs) ?? throw new Exception("Erorr while reading json File!");
+                        container.Folders?.Add(folderName!, new JsonDetailsContainer
+                        {
+                            Owner = owner,
+                            IsShared = false
+                        });
+                        fs.Position = 0;
+                        await JsonSerializer.SerializeAsync(fs, container);
+                    }
+                    catch (IOException)
+                    {
+                        ; // keep trying until 10 seconds
+                    }
+                    catch
+                    {
+                        throw;
+                    }
+                });
+                if (!task.Wait(MAXWAITTIME))
                 {
-                    Thread.Sleep(300);
-                    ++counter;
-                }
-            }
-            if (counter >= 5)
-            {
-                throw new Exception("Unable to read data!");
-            }
-            JsonDataContainer container = JsonSerializer.Deserialize<JsonDataContainer>(containerString)!;
-            container.Folders?.Add(folderName, new JsonDetailsContainer
-            {
-                Owner = owner,
-                IsShared = false
-            });
-            bool notWritten = true;
-            counter = 0;
-            while (notWritten && counter < 5)
-            {
-                try
-                {
-                    System.IO.File.WriteAllText(Path.Combine(path, JSONCONTAINERNAME), JsonSerializer.Serialize<JsonDataContainer>(container));
-                    notWritten = false;
-                }
-                catch (Exception)
-                {
-                    Thread.Sleep(300);
-                    ++counter;
+                    throw new Exception("Unable to manage Container File!");
                 }
             }
-            if (counter >= 5)
+            catch
             {
-                throw new Exception("Unable to write data!");
+                throw new Exception("Error occured while adding Folder!");
             }
         }
 
@@ -176,7 +185,7 @@ namespace NCloud.Services
             }
             catch
             {
-                retNum = -1; //hibalépett fel
+                retNum = -1; //error occured
             }
             return retNum;
         }
@@ -302,7 +311,14 @@ namespace NCloud.Services
             {
                 throw new Exception("The File does not exists!");
             }
-            File.Delete(pathAndName);
+            try
+            {
+                File.Delete(pathAndName);
+            }
+            catch
+            {
+                throw new Exception("Could not remove file");
+            }
             RemoveFileFromJsonContainerFile(path, fileName);
             return true;
         }
