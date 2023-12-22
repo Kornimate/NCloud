@@ -21,9 +21,19 @@ namespace NCloud.Controllers
             {
                 ViewBag.CanUseActions = true;
             }
-            return View(new DriveDetailsViewModel(service.GetCurrentDeptFiles(currentPath),
+            try
+            {
+                return View(new DriveDetailsViewModel(service.GetCurrentDeptFiles(currentPath),
                                                 service.GetCurrentDeptFolders(currentPath),
                                                                 pathdata.CurrentPathShow));
+            }
+            catch (Exception ex)
+            {
+                AddNewNotification(new Error(ex.Message));
+                return View(new DriveDetailsViewModel(new List<CloudFile?>(),
+                                                    new List<CloudFolder?>(),
+                                                    pathdata.CurrentPathShow));
+            }
         }
 
         public IActionResult Back()
@@ -153,14 +163,27 @@ namespace NCloud.Controllers
                 //TODO: notification
                 return RedirectToAction("Details", "Sharing");
             }
-            var files = service.GetCurrentDeptFiles(pathData.CurrentPath);
-            var folders = service.GetCurrentDeptFolders(pathData.CurrentPath);
-            return View(new DriveDeleteViewModel
+            try
             {
-                Folders = folders,
-                Files = files,
-                ItemsForDelete = new string[files.Count + folders.Count].ToList()
-            });
+                var files = service.GetCurrentDeptFiles(pathData.CurrentPath);
+                var folders = service.GetCurrentDeptFolders(pathData.CurrentPath);
+                return View(new DriveDeleteViewModel
+                {
+                    Folders = folders,
+                    Files = files,
+                    ItemsForDelete = new string[files.Count + folders.Count].ToList()
+                });
+            }
+            catch (Exception ex)
+            {
+                AddNewNotification(new Error(ex.Message));
+                return View(new DriveDeleteViewModel
+                {
+                    Folders = new List<CloudFolder?>(),
+                    Files = new List<CloudFile?>(),
+                    ItemsForDelete = Array.Empty<string>().ToList()
+                });
+            }
         }
 
         [HttpPost]
@@ -220,15 +243,28 @@ namespace NCloud.Controllers
         public IActionResult DownloadItems()
         {
             SharedData pathData = GetSessionSharedPathData();
-            var files = service.GetCurrentDeptFiles(pathData.CurrentPath);
-            //var folders = service.GetCurrentDeptFolders(pathData.CurrentPath); //later to be able to add folders to zp too
-            var folders = new List<CloudFolder?>();
-            return View(new DriveDownloadViewModel
+            try
             {
-                Folders = folders,
-                Files = files,
-                ItemsForDownload = new string[files.Count + folders.Count].ToList()
-            });
+                var files = service.GetCurrentDeptFiles(pathData.CurrentPath);
+                //var folders = service.GetCurrentDeptFolders(pathData.CurrentPath); //later to be able to add folders to zp too
+                var folders = new List<CloudFolder?>();
+                return View(new DriveDownloadViewModel
+                {
+                    Folders = folders,
+                    Files = files,
+                    ItemsForDownload = new string[files.Count + folders.Count].ToList()
+                });
+            }
+            catch (Exception ex)
+            {
+                AddNewNotification(new Error(ex.Message));
+                return View(new DriveDownloadViewModel
+                {
+                    Folders = new List<CloudFolder?>(),
+                    Files = new List<CloudFile?>(),
+                    ItemsForDownload = Array.Empty<string>().ToList()
+                });
+            }
         }
 
         [HttpPost]

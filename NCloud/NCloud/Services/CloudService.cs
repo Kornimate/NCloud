@@ -6,6 +6,7 @@ using System.Drawing.Drawing2D;
 using System.Text.Json;
 using System.IO;
 using Microsoft.AspNetCore.Identity;
+using System.ComponentModel;
 
 namespace NCloud.Services
 {
@@ -110,11 +111,11 @@ namespace NCloud.Services
                 FolderName = path,
                 StatusOK = true
             };
-            if(!Directory.Exists(path))
+            if (File.Exists(pathAndName)) return; // just for safety reasons, not to overwrite existing files
+            if (!Directory.Exists(path))
             {
                 Directory.CreateDirectory(path);
             }
-            if (File.Exists(pathAndName)) return; // just for safety reasons, not to overwrite existing files
             System.IO.File.WriteAllText(pathAndName, JsonSerializer.Serialize<JsonDataContainer>(container));
         }
 
@@ -195,52 +196,47 @@ namespace NCloud.Services
 
         private void AddFileToJsonContainerFile(string? path, string? fileName, string owner)
         {
-            if (path is null) return;
-            if (fileName is null) return;
-            string containerString = String.Empty;
-            bool notRead = true;
-            int counter = 0;
-            while (notRead && counter < 5)
+            try
             {
-                try
+                Task task = Task.Run(async () =>
                 {
-                    containerString = System.IO.File.ReadAllText(Path.Combine(path, JSONCONTAINERNAME));
-                    notRead = false;
-                }
-                catch
+                    try
+                    {
+                        using FileStream fs = File.Open(Path.Combine(path!, JSONCONTAINERNAME), FileMode.Open, FileAccess.ReadWrite, FileShare.None);
+                        JsonDataContainer? container = await JsonSerializer.DeserializeAsync<JsonDataContainer>(fs) ?? throw new Exception("Erorr while importing Folder Data!");
+                        if (container.Files!.ContainsKey(fileName!)) //just for safety, but controller ensures no same file name
+                        {
+                            throw new ArgumentException("The File already exists!");
+                        }
+                        container.Files?.Add(fileName!, new JsonDetailsContainer
+                        {
+                            Owner = owner,
+                            IsShared = false
+                        });
+                        fs.Position = 0;
+                        await JsonSerializer.SerializeAsync(fs, container);
+                    }
+                    catch (IOException)
+                    {
+                        ; // keep trying until 10 seconds
+                    }
+                    catch
+                    {
+                        throw;
+                    }
+                });
+                if (!task.Wait(MAXWAITTIME))
                 {
-                    Thread.Sleep(300);
-                    ++counter;
-                }
-            }
-            if (counter >= 5)
-            {
-                throw new Exception("Unable read data!");
-            }
-            JsonDataContainer container = JsonSerializer.Deserialize<JsonDataContainer>(containerString)!;
-            container.Files?.Add(fileName, new JsonDetailsContainer
-            {
-                Owner = owner,
-                IsShared = false
-            });
-            bool notWritten = true;
-            counter = 0;
-            while (notWritten && counter < 5)
-            {
-                try
-                {
-                    System.IO.File.WriteAllText(Path.Combine(path, JSONCONTAINERNAME), JsonSerializer.Serialize<JsonDataContainer>(container));
-                    notWritten = false;
-                }
-                catch (Exception)
-                {
-                    Thread.Sleep(300);
-                    ++counter;
+                    throw new TimeoutException("Unable to manage Container File!");
                 }
             }
-            if (counter >= 5)
+            catch (Exception ex) when (ex.InnerException is ArgumentException || ex.InnerException is TimeoutException)
             {
-                throw new Exception("Unable to write data!");
+                throw;
+            }
+            catch
+            {
+                throw new Exception("Error occured while adding Folder!");
             }
         }
 
@@ -252,9 +248,44 @@ namespace NCloud.Services
         public List<CloudFile?> GetCurrentDeptFiles(string currentPath)
         {
             string path = ParseRootName(currentPath);
-            JsonDataContainer container = JsonSerializer.Deserialize<JsonDataContainer>(System.IO.File.ReadAllText(Path.Combine(path, JSONCONTAINERNAME)))!;
-            return container.Files!.Select(x => new CloudFile(new FileInfo(Path.Combine(path, x.Key)), x.Value.Owner, x.Value.IsShared, x.Key)).ToList()!;
+            try
+            {
+                Task<JsonDataContainer?> task = Task.Run(() => ReadJsonContainerFileFiles(path));
+                if (task.Wait(MAXWAITTIME))
+                {
+                    if (task.Result is null) throw new Exception("Invalid reuturn value");
+                    return task.Result?.Files!.Select(x => new CloudFile(new FileInfo(Path.Combine(path, x.Key)), x.Value.Owner, x.Value.IsShared, x.Key)).ToList()!;
+                }
+                else
+                {
+                    throw new TimeoutException("Unable to manage Container File!");
+                }
+            }
+            catch
+            {
+                throw new Exception("Error occured while getting Files!");
+            }
         }
+
+        private async Task<JsonDataContainer?> ReadJsonContainerFileFiles(string path)
+        {
+            try
+            {
+                using FileStream fs = File.Open(Path.Combine(path!, JSONCONTAINERNAME), FileMode.Open, FileAccess.Read, FileShare.Read);
+                JsonDataContainer? container = await JsonSerializer.DeserializeAsync<JsonDataContainer>(fs) ?? throw new Exception("Erorr while importing Folders!");
+                return container;
+            }
+            catch (IOException)
+            {
+                ; // keep trying until 10 seconds
+            }
+            catch
+            {
+                throw;
+            }
+            return null;
+        }
+
         public List<CloudFolder?> GetCurrentDeptFolders(string currentPath)
         {
             string path = ParseRootName(currentPath);
