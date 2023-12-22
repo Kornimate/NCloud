@@ -93,32 +93,27 @@ namespace NCloud.Services
             string pathAndName = Path.Combine(path, folderName);
             try
             {
-                if (Directory.Exists(pathAndName))
-                {
-                    throw new Exception("The Folder already exists!");
-                }
-                Directory.CreateDirectory(pathAndName);
-                CreateJsonConatinerFile(pathAndName);
                 AddFolderToJsonContainerFile(path, folderName, owner);
+                CreateJsonConatinerFile(pathAndName);
             }
             catch
             {
-                if (Directory.Exists(pathAndName)) // remove modifications if unable to add folder to JsonContainerFile
-                {
-                    Directory.Delete(pathAndName, true);
-                }
                 throw;
             }
         }
         private void CreateJsonConatinerFile(string? path)
         {
             if (path is null) return;
+            string pathAndName = Path.Combine(path, JSONCONTAINERNAME);
             JsonDataContainer container = new JsonDataContainer()
             {
                 FolderName = path,
                 StatusOK = true
             };
-            string pathAndName = Path.Combine(path, JSONCONTAINERNAME);
+            if(!Directory.Exists(path))
+            {
+                Directory.CreateDirectory(path);
+            }
             if (File.Exists(pathAndName)) return; // just for safety reasons, not to overwrite existing files
             System.IO.File.WriteAllText(pathAndName, JsonSerializer.Serialize<JsonDataContainer>(container));
         }
@@ -132,7 +127,11 @@ namespace NCloud.Services
                     try
                     {
                         using FileStream fs = File.Open(Path.Combine(path!, JSONCONTAINERNAME), FileMode.Open, FileAccess.ReadWrite, FileShare.None);
-                        JsonDataContainer? container = await JsonSerializer.DeserializeAsync<JsonDataContainer>(fs) ?? throw new Exception("Erorr while reading json File!");
+                        JsonDataContainer? container = await JsonSerializer.DeserializeAsync<JsonDataContainer>(fs) ?? throw new Exception("Erorr while importing Folder Data!");
+                        if (container.Folders!.ContainsKey(folderName!))
+                        {
+                            throw new ArgumentException("The Folder already exists!");
+                        }
                         container.Folders?.Add(folderName!, new JsonDetailsContainer
                         {
                             Owner = owner,
@@ -152,8 +151,12 @@ namespace NCloud.Services
                 });
                 if (!task.Wait(MAXWAITTIME))
                 {
-                    throw new Exception("Unable to manage Container File!");
+                    throw new TimeoutException("Unable to manage Container File!");
                 }
+            }
+            catch (Exception ex) when (ex.InnerException is ArgumentException || ex.InnerException is TimeoutException)
+            {
+                throw;
             }
             catch
             {
