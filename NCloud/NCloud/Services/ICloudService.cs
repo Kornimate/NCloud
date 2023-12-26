@@ -5,9 +5,9 @@ namespace NCloud.Services
 {
     public interface ICloudService
     {
-        public List<CloudFolder?> GetCurrentDeptFolders(string currentPath);
-        public List<CloudFile?> GetCurrentDeptFiles(string currentPath);
-        CloudUser GetAdmin();
+        public List<CloudFolder?> GetCurrentDepthFolders(string currentPath);
+        public List<CloudFile?> GetCurrentDepthFiles(string currentPath);
+        Task<CloudUser?> GetAdmin();
         bool CreateBaseDirectory(CloudUser cloudUser);
         void CreateDirectory(string folderName, string currentPath, string owner);
         Task<int> CreateFile(IFormFile file, string currentPath, string owner);

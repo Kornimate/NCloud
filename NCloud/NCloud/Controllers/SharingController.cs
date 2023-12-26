@@ -23,8 +23,8 @@ namespace NCloud.Controllers
             }
             try
             {
-                return View(new DriveDetailsViewModel(service.GetCurrentDeptFiles(currentPath),
-                                                service.GetCurrentDeptFolders(currentPath),
+                return View(new DriveDetailsViewModel(service.GetCurrentDepthFiles(currentPath),
+                                                service.GetCurrentDepthFolders(currentPath),
                                                                 pathdata.CurrentPathShow));
             }
             catch (Exception ex)
@@ -57,7 +57,7 @@ namespace NCloud.Controllers
 
                 if (folderName is null || folderName == String.Empty)
                 {
-                    throw new Exception("Folder name must be at least one charachter!");
+                    throw new Exception("Folder name must be at least one character!");
                 }
 
                 service.CreateDirectory(folderName!, GetSessionSharedPathData().CurrentPath, (await userManager.GetUserAsync(User)).UserName);
@@ -119,7 +119,7 @@ namespace NCloud.Controllers
             {
                 if (folderName is null || folderName == String.Empty)
                 {
-                    throw new Exception("Folder name must be at least one charachter!");
+                    throw new Exception("Folder name must be at least one character!");
                 }
                 if (!service.RemoveDirectory(folderName!, GetSessionSharedPathData().CurrentPath))
                 {
@@ -140,7 +140,7 @@ namespace NCloud.Controllers
             {
                 if (fileName is null || fileName == String.Empty)
                 {
-                    throw new Exception("File name must be at least one charachter!");
+                    throw new Exception("File name must be at least one character!");
                 }
                 if (!service.RemoveFile(fileName!, GetSessionSharedPathData().CurrentPath))
                 {
@@ -165,8 +165,8 @@ namespace NCloud.Controllers
             }
             try
             {
-                var files = service.GetCurrentDeptFiles(pathData.CurrentPath);
-                var folders = service.GetCurrentDeptFolders(pathData.CurrentPath);
+                var files = service.GetCurrentDepthFiles(pathData.CurrentPath);
+                var folders = service.GetCurrentDepthFolders(pathData.CurrentPath);
                 return View(new DriveDeleteViewModel
                 {
                     Folders = folders,
@@ -245,8 +245,8 @@ namespace NCloud.Controllers
             SharedData pathData = GetSessionSharedPathData();
             try
             {
-                var files = service.GetCurrentDeptFiles(pathData.CurrentPath);
-                //var folders = service.GetCurrentDeptFolders(pathData.CurrentPath); //later to be able to add folders to zp too
+                var files = service.GetCurrentDepthFiles(pathData.CurrentPath);
+                //var folders = service.GetCurrentDepthFolders(pathData.CurrentPath); //later to be able to add folders to zp too
                 var folders = new List<CloudFolder?>();
                 return View(new DriveDownloadViewModel
                 {

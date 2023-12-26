@@ -38,8 +38,8 @@ namespace NCloud.Controllers
             SetSessionUserPathData(pathdata);
             try
             {
-                return View(new DriveDetailsViewModel(service.GetCurrentDeptFiles(currentPath),
-                                                service.GetCurrentDeptFolders(currentPath),
+                return View(new DriveDetailsViewModel(service.GetCurrentDepthFiles(currentPath),
+                                                service.GetCurrentDepthFolders(currentPath),
                                                                 pathdata.CurrentPathShow));
             }
             catch (Exception ex)
@@ -178,8 +178,8 @@ namespace NCloud.Controllers
             PathData pathData = GetSessionUserPathData();
             try
             {
-                var files = service.GetCurrentDeptFiles(pathData.CurrentPath);
-                var folders = service.GetCurrentDeptFolders(pathData.CurrentPath);
+                var files = service.GetCurrentDepthFiles(pathData.CurrentPath);
+                var folders = service.GetCurrentDepthFolders(pathData.CurrentPath);
                 return View(new DriveDeleteViewModel
                 {
                     Folders = folders,
@@ -258,7 +258,7 @@ namespace NCloud.Controllers
             PathData pathData = GetSessionUserPathData();
             try
             {
-                var files = service.GetCurrentDeptFiles(pathData.CurrentPath);
+                var files = service.GetCurrentDepthFiles(pathData.CurrentPath);
                 //var folders = service.GetCurrentDeptFolders(pathData.CurrentPath); //later to be able to add folders to zp too
                 var folders = new List<CloudFolder?>();
                 return View(new DriveDownloadViewModel
