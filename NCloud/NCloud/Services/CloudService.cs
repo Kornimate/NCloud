@@ -139,7 +139,7 @@ namespace NCloud.Services
                             Owner = owner,
                             IsShared = false
                         });
-                        fs.Position = 0;
+                        fs.SetLength(0);
                         await JsonSerializer.SerializeAsync(fs, container);
                     }
                     catch (IOException)
@@ -214,7 +214,7 @@ namespace NCloud.Services
                             Owner = owner,
                             IsShared = false
                         });
-                        fs.Position = 0;
+                        fs.SetLength(0);
                         await JsonSerializer.SerializeAsync(fs, container);
                     }
                     catch (IOException)
@@ -336,10 +336,40 @@ namespace NCloud.Services
 
         private void RemoveFolderFromJsonContainerFile(string path, string folderName)
         {
-            JsonDataContainer container = JsonSerializer.Deserialize<JsonDataContainer>(System.IO.File.ReadAllText(Path.Combine(path, JSONCONTAINERNAME)))!;
-            container.Folders?.Remove(folderName!);
-            System.IO.File.WriteAllText(Path.Combine(path, JSONCONTAINERNAME), JsonSerializer.Serialize<JsonDataContainer>(container));
-            //TODO: rewrite to max 10 seconds
+            try
+            {
+                Task task = Task.Run(async () =>
+                {
+                    try
+                    {
+                        using FileStream fs = File.Open(Path.Combine(path!, JSONCONTAINERNAME), FileMode.Open, FileAccess.ReadWrite, FileShare.None);
+                        JsonDataContainer? container = await JsonSerializer.DeserializeAsync<JsonDataContainer>(fs) ?? throw new Exception("Error while importing Folder Data!");
+                        container.Folders?.Remove(folderName!);
+                        fs.SetLength(0);
+                        await JsonSerializer.SerializeAsync(fs, container);
+                    }
+                    catch (IOException)
+                    {
+                        ; // keep trying until 10 seconds
+                    }
+                    catch
+                    {
+                        throw;
+                    }
+                });
+                if (!task.Wait(MAXWAITTIME))
+                {
+                    throw new TimeoutException("Unable to manage Container File!");
+                }
+            }
+            catch (Exception ex) when (ex.InnerException is ArgumentException || ex.InnerException is TimeoutException)
+            {
+                throw;
+            }
+            catch
+            {
+                throw new Exception("Error occurred while removing Folder!");
+            }
         }
 
 
@@ -372,10 +402,40 @@ namespace NCloud.Services
         }
         private void RemoveFileFromJsonContainerFile(string path, string fileName)
         {
-            JsonDataContainer container = JsonSerializer.Deserialize<JsonDataContainer>(System.IO.File.ReadAllText(Path.Combine(path, JSONCONTAINERNAME)))!;
-            container.Files?.Remove(fileName!);
-            System.IO.File.WriteAllText(Path.Combine(path, JSONCONTAINERNAME), JsonSerializer.Serialize<JsonDataContainer>(container));
-            //TODO: rewrite to max 10 seconds
+            try
+            {
+                Task task = Task.Run(async () =>
+                {
+                    try
+                    {
+                        using FileStream fs = File.Open(Path.Combine(path!, JSONCONTAINERNAME), FileMode.Open, FileAccess.ReadWrite, FileShare.None);
+                        JsonDataContainer? container = await JsonSerializer.DeserializeAsync<JsonDataContainer>(fs) ?? throw new Exception("Error while importing File Data!");
+                        container.Files?.Remove(fileName!);
+                        fs.SetLength(0);
+                        await JsonSerializer.SerializeAsync(fs, container);
+                    }
+                    catch (IOException)
+                    {
+                        ; // keep trying until 10 seconds
+                    }
+                    catch
+                    {
+                        throw;
+                    }
+                });
+                if (!task.Wait(MAXWAITTIME))
+                {
+                    throw new TimeoutException("Unable to manage Container File!");
+                }
+            }
+            catch (Exception ex) when (ex.InnerException is ArgumentException || ex.InnerException is TimeoutException)
+            {
+                throw;
+            }
+            catch
+            {
+                throw new Exception("Error occurred while removing Folder!");
+            }
         }
         private string ParseRootName(string currentPath)
         {

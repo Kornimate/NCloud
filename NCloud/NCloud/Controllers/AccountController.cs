@@ -9,7 +9,7 @@ using System.IO;
 using DNTCaptcha.Core;
 using NCloud.Services;
 
-namespace ELTE.TodoList.Web.Controllers
+namespace NCloud.Controllers
 {
     [Authorize]
     public class AccountController : CloudControllerDefault

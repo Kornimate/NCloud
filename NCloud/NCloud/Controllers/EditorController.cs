@@ -11,10 +11,25 @@ namespace NCloud.Controllers
 {
     public class EditorController : CloudControllerDefault
     {
+        private readonly HashSet<string> codingExtensions = new HashSet<string>();
+
         public EditorController(ICloudService service, UserManager<CloudUser> userManager, SignInManager<CloudUser> signInManager, IWebHostEnvironment env, ICloudNotificationService notifier) : base(service, userManager, signInManager, env, notifier) { }
         
         // GET: EditorController
-        public ActionResult Index(string? fileName = null)
+        public IActionResult Index(string fileName)
+        {
+            FileInfo fi = new FileInfo(fileName);
+            if (codingExtensions.Contains(fi.Extension))
+            {
+                return RedirectToAction("CodeEditor", new { fileName = fileName });
+            }
+            else
+            {
+                return RedirectToAction("TextEditor", new { fileName = fileName });
+            }
+        }
+
+        public ActionResult CodeEditor(string? fileName = null)
         {
             if (fileName == null)
             {
@@ -24,16 +39,16 @@ namespace NCloud.Controllers
             return View(new CodeEditorViewModel { FilePath = service.ReturnServerPath(Path.Combine(pathData.CurrentPath, fileName)) });
         }
 
-        public IActionResult IndexText()
+        public IActionResult TextEditor(string? fileName = null)
         {
             //TODO: implement with file input
             return View(new TextEditorViewModel());
         }
 
         [HttpPost]
-        [ActionName("IndexText")]
+        [ActionName("TextEditor")]
         [ValidateAntiForgeryToken]
-        public IActionResult IndexTextPost(string? fileNameAndPath = null)
+        public IActionResult TextEditorPost(string? fileNameAndPath = null)
         {
             //TODO: implement save file or create new file
             return View(new TextEditorViewModel());

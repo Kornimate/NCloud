@@ -11,8 +11,9 @@ namespace NCloud.Controllers
     {
         public TerminalController(ICloudService service, UserManager<CloudUser> userManager, SignInManager<CloudUser> signInManager, IWebHostEnvironment env, ICloudNotificationService notifier) : base(service, userManager, signInManager, env, notifier) { }
 
-        public IActionResult Index(string currentPath)
+        public IActionResult Index(string? currentPath = null)
         {
+            currentPath ??= GetSessionUserPathData().CurrentPathShow;
             return View(new TerminalViewModel
             {
                 CurrentDirectory = currentPath
