@@ -35,7 +35,7 @@ namespace NCloud.Controllers
             {
                 return View(new CodeEditorViewModel());
             }
-            PathData pathData = GetSessionUserPathData();
+            CloudPathData pathData = GetSessionUserPathData();
             return View(new CodeEditorViewModel { FilePath = service.ReturnServerPath(Path.Combine(pathData.CurrentPath, fileName)) });
         }
 

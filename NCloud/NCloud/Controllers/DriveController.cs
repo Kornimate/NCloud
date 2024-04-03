@@ -9,7 +9,7 @@ using NCloud.ViewModels;
 using System.Drawing.Drawing2D;
 using System.Text.Json;
 using System.IO;
-using PathData = NCloud.Models.PathData;
+using CloudPathData = NCloud.Models.CloudPathData;
 using System.IO.Compression;
 using Castle.Core;
 using static NuGet.Packaging.PackagingConstants;
@@ -25,7 +25,7 @@ namespace NCloud.Controllers
         // GET: DriveController/Details/5
         public IActionResult Details(string? folderName = null)
         {
-            PathData pathdata = GetSessionUserPathData();
+            CloudPathData pathdata = GetSessionUserPathData();
             string currentPath = String.Empty;
             if (service.DirectoryExists(pathdata.TrySetFolder(folderName)))
             {
@@ -53,7 +53,7 @@ namespace NCloud.Controllers
 
         public IActionResult Back()
         {
-            PathData pathdata = GetSessionUserPathData();
+            CloudPathData pathdata = GetSessionUserPathData();
             if (pathdata.PreviousDirectories.Count > 2)
             {
                 pathdata.RemoveFolderFromPrevDirs();
@@ -99,7 +99,7 @@ namespace NCloud.Controllers
                 AddNewNotification(new Warning("No Files were uploaded!"));
                 return RedirectToAction("Details", "Drive");
             }
-            PathData pathData = GetSessionUserPathData();
+            CloudPathData pathData = GetSessionUserPathData();
             for (int i = 0; i < files.Count; i++)
             {
                 if (files[i].FileName == JSONCONTAINERNAME)
@@ -175,7 +175,7 @@ namespace NCloud.Controllers
 
         public IActionResult DeleteItems()
         {
-            PathData pathData = GetSessionUserPathData();
+            CloudPathData pathData = GetSessionUserPathData();
             try
             {
                 var files = service.GetCurrentDepthFiles(pathData.CurrentPath);
@@ -204,7 +204,7 @@ namespace NCloud.Controllers
         public IActionResult DeleteItemsFromForm([Bind("ItemsForDelete")] DriveDeleteViewModel vm)
         {
             bool noFail = true;
-            PathData pathData = GetSessionUserPathData();
+            CloudPathData pathData = GetSessionUserPathData();
             foreach (string itemName in vm.ItemsForDelete!)
             {
                 if (itemName != "false")
@@ -255,7 +255,7 @@ namespace NCloud.Controllers
         }
         public IActionResult DownloadItems()
         {
-            PathData pathData = GetSessionUserPathData();
+            CloudPathData pathData = GetSessionUserPathData();
             try
             {
                 var files = service.GetCurrentDepthFiles(pathData.CurrentPath);
@@ -284,7 +284,7 @@ namespace NCloud.Controllers
         [ValidateAntiForgeryToken, ActionName("DownloadItems")]
         public IActionResult DownloadItemsFromForm([Bind("ItemsForDownload")] DriveDownloadViewModel vm)
         {
-            PathData pathData = GetSessionUserPathData();
+            CloudPathData pathData = GetSessionUserPathData();
             string tempFile = Path.GetTempFileName();
             using var zipFile = System.IO.File.Create(tempFile);
             if (vm.ItemsForDownload is not null && vm.ItemsForDownload.Count != 0)

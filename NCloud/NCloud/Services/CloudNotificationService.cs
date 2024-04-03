@@ -5,13 +5,13 @@ namespace NCloud.Services
 {
     public class CloudNotificationService : ICloudNotificationService
     {
-        private readonly List<ACloudNotification> queue;
+        private readonly List<CloudNotificationAbstarct> queue;
         public CloudNotificationService()
         {
-            queue = new List<ACloudNotification>();
+            queue = new List<CloudNotificationAbstarct>();
         }
 
-        public void AddNotification(ACloudNotification notification)
+        public void AddNotification(CloudNotificationAbstarct notification)
         {
             queue.Add(notification);
         }

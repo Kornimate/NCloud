@@ -14,10 +14,10 @@ namespace NCloud.Controllers
         public SharingController(ICloudService service, UserManager<CloudUser> userManager, SignInManager<CloudUser> signInManager, IWebHostEnvironment env, ICloudNotificationService notifier) : base(service, userManager, signInManager, env, notifier) { }
         public IActionResult Details(string? folderName = null)
         {
-            SharedData pathdata = GetSessionSharedPathData();
+            SharedPathData pathdata = GetSessionSharedPathData();
             string currentPath = pathdata.SetFolder(folderName);
             SetSessionSharedPathData(pathdata);
-            if (pathdata.CurrentPath != SharedData.ROOTNAME)
+            if (pathdata.CurrentPath != SharedPathData.ROOTNAME)
             {
                 ViewBag.CanUseActions = true;
             }
@@ -38,7 +38,7 @@ namespace NCloud.Controllers
 
         public IActionResult Back()
         {
-            SharedData pathdata = GetSessionSharedPathData();
+            SharedPathData pathdata = GetSessionSharedPathData();
             pathdata.RemoveFolderFromPrevDirs();
             SetSessionSharedPathData(pathdata);
             return RedirectToAction("Details", "Sharing");
@@ -81,7 +81,7 @@ namespace NCloud.Controllers
                 AddNewNotification(new Warning("No Files were uploaded!"));
                 return RedirectToAction("Details", "Sharing");
             }
-            SharedData pathData = GetSessionSharedPathData();
+            SharedPathData pathData = GetSessionSharedPathData();
             for (int i = 0; i < files.Count; i++)
             {
                 if (files[i].FileName == JSONCONTAINERNAME)
@@ -157,8 +157,8 @@ namespace NCloud.Controllers
 
         public IActionResult DeleteItems()
         {
-            SharedData pathData = GetSessionSharedPathData();
-            if (pathData.CurrentPath == SharedData.ROOTNAME)
+            SharedPathData pathData = GetSessionSharedPathData();
+            if (pathData.CurrentPath == SharedPathData.ROOTNAME)
             {
                 //TODO: notification
                 return RedirectToAction("Details", "Sharing");
@@ -191,7 +191,7 @@ namespace NCloud.Controllers
         public IActionResult DeleteItemsFromForm([Bind("ItemsForDelete")] DriveDeleteViewModel vm)
         {
             bool noFail = true;
-            SharedData pathData = GetSessionSharedPathData();
+            SharedPathData pathData = GetSessionSharedPathData();
             foreach (string itemName in vm.ItemsForDelete!)
             {
                 if (itemName != "false")
@@ -242,7 +242,7 @@ namespace NCloud.Controllers
         }
         public IActionResult DownloadItems()
         {
-            SharedData pathData = GetSessionSharedPathData();
+            SharedPathData pathData = GetSessionSharedPathData();
             try
             {
                 var files = service.GetCurrentDepthFiles(pathData.CurrentPath);
@@ -271,7 +271,7 @@ namespace NCloud.Controllers
         [ValidateAntiForgeryToken, ActionName("DownloadItems")]
         public IActionResult DownloadItemsFromForm([Bind("ItemsForDownload")] DriveDownloadViewModel vm)
         {
-            SharedData pathData = GetSessionSharedPathData();
+            SharedPathData pathData = GetSessionSharedPathData();
             string tempFile = Path.GetTempFileName();
             using var zipFile = System.IO.File.Create(tempFile);
             if (vm.ItemsForDownload is not null && vm.ItemsForDownload.Count != 0)

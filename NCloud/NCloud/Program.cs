@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using NCloud.Models;
 using NCloud.Services;
 using NCloud.Users;
+using NCloud.Users.Roles;
 
 namespace NCloud
 {
@@ -20,7 +21,9 @@ namespace NCloud
                 options.UseLazyLoadingProxies();
             });
 
-            builder.Services.AddIdentity<CloudUser, IdentityRole>(options =>
+            builder.Services.AddDatabaseDeveloperPageExceptionFilter();
+
+            builder.Services.AddIdentity<CloudUser, CloudRole>(options =>
             {
                 options.Password.RequireDigit = true;
                 options.Password.RequiredLength = 8;

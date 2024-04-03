@@ -4,7 +4,7 @@ namespace NCloud.Services
 {
     public interface ICloudNotificationService
     {
-        void AddNotification(ACloudNotification notification);
+        void AddNotification(CloudNotificationAbstarct notification);
         string GetNotificationQueue();
     }
 }
