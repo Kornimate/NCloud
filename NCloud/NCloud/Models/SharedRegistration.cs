@@ -23,6 +23,14 @@ namespace NCloud.Models
         [NotNull]
         public virtual CloudUser? Owner { get; set; }
 
+        [Required]
+        [NotNull]
+        public bool PublicShared { get; set; }
+
+        [Required]
+        [NotNull]
+        public bool InnerShared { get; set; }
+
         public virtual bool IsFile() { return false; }
         public virtual bool IsFolder() { return false; }
     }

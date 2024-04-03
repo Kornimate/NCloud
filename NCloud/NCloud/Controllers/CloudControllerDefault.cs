@@ -43,7 +43,7 @@ namespace NCloud.Controllers
             }
             else
             {
-                data = new PathData();
+                data = new CloudPathData();
                 CloudUser? user = null;
                 Task.Run(async () =>
                 {

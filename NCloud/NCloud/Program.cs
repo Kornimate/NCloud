@@ -16,8 +16,7 @@ namespace NCloud
 
             builder.Services.AddDbContext<CloudDbContext>(options =>
             {
-                IConfigurationRoot configuration = builder.Configuration;
-                options.UseSqlServer(configuration.GetConnectionString("SqlServerConnection"));
+                options.UseSqlite(builder.Configuration.GetConnectionString("SQLiteConnection"));
                 options.UseLazyLoadingProxies();
             });
 
