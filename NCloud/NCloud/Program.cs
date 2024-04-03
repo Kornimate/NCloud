@@ -1,5 +1,6 @@
 using DNTCaptcha.Core;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using NCloud.Models;
 using NCloud.Services;
@@ -46,6 +47,8 @@ namespace NCloud
             builder.Services.AddDistributedMemoryCache();
 
             builder.Services.AddHttpContextAccessor();
+
+            builder.Services.AddAntiforgery(x => x.HeaderName = "X-CSRF-TOKEN");
 
             builder.Services.AddSession(options =>
             {

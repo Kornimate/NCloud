@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace NCloud.Users
 {
-    public class CloudUser : IdentityUser
+    public class CloudUser : IdentityUser<Guid>
     {
         public string? FullName { get; set; }
         public virtual ICollection<SharedFolder> SharedFolders { get; set; }

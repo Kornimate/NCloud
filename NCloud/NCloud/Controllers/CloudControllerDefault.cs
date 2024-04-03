@@ -49,7 +49,7 @@ namespace NCloud.Controllers
                 {
                     user = await userManager.GetUserAsync(User);
                 }).Wait();
-                data.SetDefaultPathData(user?.Id?.ToString());
+                data.SetDefaultPathData(user?.Id.ToString());
                 SetSessionUserPathData(data);
             }
             return data;

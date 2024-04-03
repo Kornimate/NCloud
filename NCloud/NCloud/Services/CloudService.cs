@@ -37,7 +37,7 @@ namespace NCloud.Services
         }
         public bool CreateBaseDirectory(CloudUser cloudUser)
         {
-            string userFolderPath = Path.Combine(env.WebRootPath, "CloudData", "UserData", cloudUser.Id);
+            string userFolderPath = Path.Combine(env.WebRootPath, "CloudData", "UserData", cloudUser.Id.ToString());
             if (!Directory.Exists(userFolderPath))
             {
                 Directory.CreateDirectory(userFolderPath);

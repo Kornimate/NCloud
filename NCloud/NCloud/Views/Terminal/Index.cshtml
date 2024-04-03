@@ -11,6 +11,7 @@
             <div class="title">CloudShell</div>
         </div>
         <div class="body h-100" id="terminal"></div>
+        @Html.AntiForgeryToken()
     </div>
 </div>
 
@@ -27,7 +28,7 @@
                     return;
                 }
                 terminal = new TerminalCommand;
-                var result = await terminal.eval(command.toLowerCase(), "@Url.Action("Evaluate","Terminal",new { input="@"})");
+                var result = await terminal.eval(command.toLowerCase(), "@Url.Action("Evaluate","Terminal")", document.querySelector('input[name="__RequestVerificationToken"]').value)
                 this.echo(result)
             }
         }, {

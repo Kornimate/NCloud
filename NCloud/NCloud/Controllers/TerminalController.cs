@@ -20,8 +20,13 @@ namespace NCloud.Controllers
             });
         }
 
-        public IActionResult EvaluateSingleLine(string? commandLine)
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult Evaluate([FromBody]string command)
         {
+            if (command is null)
+                return BadRequest();
+
             return Content("Success");
         }
     }
