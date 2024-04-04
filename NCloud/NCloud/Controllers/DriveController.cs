@@ -23,9 +23,9 @@ namespace NCloud.Controllers
         }
 
         // GET: DriveController/Details/5
-        public IActionResult Details(string? folderName = null)
+        public async Task<IActionResult> Details(string? folderName = null)
         {
-            CloudPathData pathdata = GetSessionUserPathData();
+            CloudPathData pathdata = await GetSessionUserPathData();
             string currentPath = String.Empty;
             if (service.DirectoryExists(pathdata.TrySetFolder(folderName)))
             {
@@ -35,7 +35,7 @@ namespace NCloud.Controllers
             {
                 currentPath = pathdata.CurrentPath;
             }
-            SetSessionUserPathData(pathdata);
+            await SetSessionUserPathData(pathdata);
             try
             {
                 return View(new DriveDetailsViewModel(service.GetCurrentDepthFiles(currentPath),
@@ -51,13 +51,13 @@ namespace NCloud.Controllers
             }
         }
 
-        public IActionResult Back()
+        public async Task<IActionResult> Back()
         {
-            CloudPathData pathdata = GetSessionUserPathData();
+            CloudPathData pathdata = await GetSessionUserPathData();
             if (pathdata.PreviousDirectories.Count > 2)
             {
                 pathdata.RemoveFolderFromPrevDirs();
-                SetSessionUserPathData(pathdata);
+                await SetSessionUserPathData(pathdata);
             }
             return RedirectToAction("Details", "Drive");
         }
@@ -78,7 +78,7 @@ namespace NCloud.Controllers
                     throw new Exception("Folder name must be at least one charachter!");
                 }
 
-                service.CreateDirectory(folderName!, GetSessionUserPathData().CurrentPath, (await userManager.GetUserAsync(User)).UserName);
+                service.CreateDirectory(folderName!, (await GetSessionUserPathData()).CurrentPath, (await userManager.GetUserAsync(User)).UserName);
 
                 AddNewNotification(new Success("Folder is created!"));
             }
@@ -99,7 +99,7 @@ namespace NCloud.Controllers
                 AddNewNotification(new Warning("No Files were uploaded!"));
                 return RedirectToAction("Details", "Drive");
             }
-            CloudPathData pathData = GetSessionUserPathData();
+            CloudPathData pathData = await GetSessionUserPathData();
             for (int i = 0; i < files.Count; i++)
             {
                 if (files[i].FileName == JSONCONTAINERNAME)
@@ -139,7 +139,7 @@ namespace NCloud.Controllers
                 {
                     throw new Exception("Folder name must be at least one charachter!");
                 }
-                if (!service.RemoveDirectory(folderName!, GetSessionUserPathData().CurrentPath))
+                if (!service.RemoveDirectory(folderName!, (await GetSessionUserPathData()).CurrentPath))
                 {
                     throw new Exception("Folder is System Folder!");
                 }
@@ -152,7 +152,7 @@ namespace NCloud.Controllers
             return RedirectToAction("Details", "Drive");
         }
 
-        public IActionResult DeleteFile(string fileName)
+        public async Task<IActionResult> DeleteFile(string fileName)
         {
             try
             {
@@ -160,7 +160,7 @@ namespace NCloud.Controllers
                 {
                     throw new Exception("File name must be at least one charachter!");
                 }
-                if (!service.RemoveFile(fileName!, GetSessionUserPathData().CurrentPath))
+                if (!service.RemoveFile(fileName!, (await GetSessionUserPathData()).CurrentPath))
                 {
                     throw new Exception("File is System Folder!");
                 }
@@ -173,9 +173,9 @@ namespace NCloud.Controllers
             return RedirectToAction("Details", "Drive");
         }
 
-        public IActionResult DeleteItems()
+        public async Task<IActionResult> DeleteItems()
         {
-            CloudPathData pathData = GetSessionUserPathData();
+            CloudPathData pathData = await GetSessionUserPathData();
             try
             {
                 var files = service.GetCurrentDepthFiles(pathData.CurrentPath);
@@ -201,10 +201,10 @@ namespace NCloud.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken, ActionName("DeleteItems")]
-        public IActionResult DeleteItemsFromForm([Bind("ItemsForDelete")] DriveDeleteViewModel vm)
+        public async Task<IActionResult> DeleteItemsFromForm([Bind("ItemsForDelete")] DriveDeleteViewModel vm)
         {
             bool noFail = true;
-            CloudPathData pathData = GetSessionUserPathData();
+            CloudPathData pathData = await GetSessionUserPathData();
             foreach (string itemName in vm.ItemsForDelete!)
             {
                 if (itemName != "false")
@@ -253,9 +253,9 @@ namespace NCloud.Controllers
             }
             return RedirectToAction("DeleteItems", "Drive");
         }
-        public IActionResult DownloadItems()
+        public async Task<IActionResult> DownloadItems()
         {
-            CloudPathData pathData = GetSessionUserPathData();
+            CloudPathData pathData = await GetSessionUserPathData();
             try
             {
                 var files = service.GetCurrentDepthFiles(pathData.CurrentPath);
@@ -282,9 +282,9 @@ namespace NCloud.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken, ActionName("DownloadItems")]
-        public IActionResult DownloadItemsFromForm([Bind("ItemsForDownload")] DriveDownloadViewModel vm)
+        public async Task<IActionResult> DownloadItemsFromForm([Bind("ItemsForDownload")] DriveDownloadViewModel vm)
         {
-            CloudPathData pathData = GetSessionUserPathData();
+            CloudPathData pathData = await GetSessionUserPathData();
             string tempFile = Path.GetTempFileName();
             using var zipFile = System.IO.File.Create(tempFile);
             if (vm.ItemsForDownload is not null && vm.ItemsForDownload.Count != 0)
@@ -328,9 +328,9 @@ namespace NCloud.Controllers
             return RedirectToAction("DownloadItems");
         }
 
-        public IActionResult ShareFolder(string folderName)
+        public async Task<IActionResult> ShareFolder(string folderName)
         {
-            return RedirectToAction("Details", "Drive");
+            return await Task.FromResult<IActionResult>(RedirectToAction("Details", "Drive"));
         }
     }
 }

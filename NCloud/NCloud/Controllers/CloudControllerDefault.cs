@@ -34,7 +34,7 @@ namespace NCloud.Controllers
         }
 
         [NonAction]
-        protected CloudPathData GetSessionUserPathData()
+        protected async Task<CloudPathData> GetSessionUserPathData()
         {
             CloudPathData data = null!;
             if (HttpContext.Session.Keys.Contains(USERCOOKIENAME))
@@ -43,66 +43,89 @@ namespace NCloud.Controllers
             }
             else
             {
+                CloudUser? user = await userManager.GetUserAsync(User);
                 data = new CloudPathData();
-                CloudUser? user = null;
-                Task.Run(async () =>
-                {
-                    user = await userManager.GetUserAsync(User);
-                }).Wait();
                 data.SetDefaultPathData(user?.Id.ToString());
-                SetSessionUserPathData(data);
+                await SetSessionUserPathData(data);
             }
             return data;
         }
 
         [NonAction]
-        protected void SetSessionUserPathData(CloudPathData pathData)
+        protected Task SetSessionUserPathData(CloudPathData pathData)
         {
-            if (pathData == null) return;
-            HttpContext.Session.SetString(USERCOOKIENAME, JsonSerializer.Serialize<CloudPathData>(pathData));
-        }
-
-        [NonAction]
-        protected SharedPathData GetSessionSharedPathData()
-        {
-            SharedPathData data = null!;
-            if (HttpContext.Session.Keys.Contains(SHAREDCOOKIENAME))
+            return Task.Run(() =>
             {
-                data = JsonSerializer.Deserialize<SharedPathData>(HttpContext.Session.GetString(SHAREDCOOKIENAME)!)!;
-            }
-            else
-            {
-                data = new SharedPathData();
-                HttpContext.Session.SetString(SHAREDCOOKIENAME, JsonSerializer.Serialize<SharedPathData>(data));
-            }
-            return data;
+                if (pathData == null) return;
+                HttpContext.Session.SetString(USERCOOKIENAME, JsonSerializer.Serialize<CloudPathData>(pathData));
+            });
         }
 
         [NonAction]
-        protected void SetSessionSharedPathData(SharedPathData pathData) //make it thread-safe
+        protected async Task<SharedPathData> GetSessionSharedPathData()
         {
-            if (pathData == null) return;
-            HttpContext.Session.SetString(SHAREDCOOKIENAME, JsonSerializer.Serialize<SharedPathData>(pathData));
+            return await Task.Run(() =>
+            {
+                SharedPathData data = null!;
+                if (HttpContext.Session.Keys.Contains(SHAREDCOOKIENAME))
+                {
+                    data = JsonSerializer.Deserialize<SharedPathData>(HttpContext.Session.GetString(SHAREDCOOKIENAME)!)!;
+                }
+                else
+                {
+                    data = new SharedPathData();
+                    HttpContext.Session.SetString(SHAREDCOOKIENAME, JsonSerializer.Serialize<SharedPathData>(data));
+                }
+                return data;
+            });
         }
 
         [NonAction]
-        protected IActionResult RedirectToLocal(string? returnUrl)
+        protected Task<bool> SetSessionSharedPathData(SharedPathData pathData) //make it thread-safe
+        {
+            return Task.Run(() =>
+            {
+                try
+                {
+                    pathData ??= new SharedPathData();
+                    HttpContext.Session.SetString(SHAREDCOOKIENAME, JsonSerializer.Serialize<SharedPathData>(pathData));
+
+                    return true;
+                }
+                catch (Exception)
+                {
+                    return false;
+                }
+            });
+        }
+
+        [NonAction]
+        protected async Task<IActionResult> RedirectToLocal(string? returnUrl)
         {
             if (Url.IsLocalUrl(returnUrl))
             {
-                return Redirect(returnUrl);
+                return await Task.FromResult<IActionResult>(Redirect(returnUrl));
             }
             else
             {
-                return RedirectToAction(nameof(HomeController.Index), "Home");
+                return await Task.FromResult<IActionResult>(RedirectToAction(nameof(HomeController.Index), "Home"));
             }
         }
 
         [NonAction]
-        protected void AddNewNotification(CloudNotificationAbstarct notification)
+        protected bool AddNewNotification(CloudNotificationAbstarct notification)
         {
-            notifier.AddNotification(notification);
-            TempData[NOTIFICATIONKEY] = notifier.GetNotificationQueue(); 
+            try
+            {
+                notifier.AddNotification(notification);
+                TempData[NOTIFICATIONKEY] = notifier.GetNotificationQueue();
+
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
         }
     }
 }
