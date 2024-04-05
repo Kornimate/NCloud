@@ -131,7 +131,7 @@ namespace NCloud.Controllers
             return RedirectToAction("Details", "Drive");
         }
 
-        public IActionResult DeleteFolder(string folderName)
+        public async Task<IActionResult> DeleteFolder(string folderName)
         {
             try
             {

@@ -58,7 +58,7 @@ namespace NCloud.Controllers
                     {
                         return RedirectToAction("Index", "DashBoard");
                     }
-                    return RedirectToLocal(returnUrl);
+                    return await RedirectToLocal(returnUrl);
                 }
 
                 ModelState.AddModelError("", "Failed to Login!");

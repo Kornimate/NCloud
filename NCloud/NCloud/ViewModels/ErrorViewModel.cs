@@ -1,4 +1,4 @@
-namespace NCloud.Models
+namespace NCloud.ViewModels
 {
     public class ErrorViewModel
     {

@@ -34,28 +34,34 @@ namespace NCloud.Models
                 roleManager.CreateAsync(new CloudRole(userRole, 1)).Wait();
             }
 
-            if (!context.Users.Any())
-            {
-                try
-                {
-                    var adminUser = new CloudUser { FullName = "Admin", UserName = "Admin", Email = "Admin@nclouddrive.hu" };
-
-                    userManager.CreateAsync(adminUser, "Admin_1234").Wait();  // Passwords is Admin_1234 beacuse of safety reasons
-                    userManager.AddToRoleAsync(adminUser, adminRole);
-
-                    service.CreateBaseDirectory(adminUser);
-                }
-                catch { }
-            }
-
             if (!Directory.Exists(Path.Combine(env.WebRootPath, "CloudData", "Public")))
             {
                 Directory.CreateDirectory(Path.Combine(env.WebRootPath, "CloudData", "Public"));
             }
-            if (!Directory.Exists(Path.Combine(env.WebRootPath, "CloudData", "UserData")))
+
+            if (!Directory.Exists(Path.Combine(env.WebRootPath, "CloudData", "Private")))
             {
-                Directory.CreateDirectory(Path.Combine(env.WebRootPath, "CloudData", "UserData"));
+                Directory.CreateDirectory(Path.Combine(env.WebRootPath, "CloudData", "Private"));
             }
+
+            if (!context.Users.Any())
+            {
+                var adminUser = new CloudUser { FullName = "Admin", UserName = "Admin", Email = "Admin@nclouddrive.hu" };
+
+                try
+                {
+                    userManager.CreateAsync(adminUser, "Admin_1234").Wait();  // Passwords is Admin_1234 beacuse of safety reasons
+                    userManager.AddToRoleAsync(adminUser, adminRole);
+
+                }
+                catch (Exception) { }
+
+                if (!service.CreateBaseDirectory(adminUser))
+                {
+                    throw new Exception("App unable to create base resources!");
+                }
+            }
+
             //Just sure to be created
             context.SaveChanges();
         }
