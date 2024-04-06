@@ -46,20 +46,24 @@ namespace NCloud.Models
 
             if (!context.Users.Any())
             {
-                var adminUser = new CloudUser { FullName = "Admin", UserName = "Admin", Email = "Admin@nclouddrive.hu" };
+                var adminUser = new CloudUser { FullName = "Admin", UserName = "Admin", Email = "admin@nclouddrive.hu" };
 
                 try
                 {
-                    userManager.CreateAsync(adminUser, "Admin_1234").Wait();  // Passwords is Admin_1234 beacuse of safety reasons
+                    userManager.CreateAsync(adminUser, "Admin_1234").Wait();  // Passwords is Admin_1234 because of safety reasons
                     userManager.AddToRoleAsync(adminUser, adminRole);
 
                 }
                 catch (Exception) { }
 
-                if (!service.CreateBaseDirectory(adminUser))
+
+                Task.Run(async () =>
                 {
-                    throw new Exception("App unable to create base resources!");
-                }
+                    if (!(await service.CreateBaseDirectory(adminUser)))
+                    {
+                        throw new Exception("App unable to create base resources!");
+                    }
+                }).Wait();
             }
 
             //Just sure to be created

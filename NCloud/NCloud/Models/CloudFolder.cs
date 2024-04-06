@@ -6,11 +6,9 @@ namespace NCloud.Models
     public class CloudFolder : CloudRegistration
     {
         public DirectoryInfo Info { get; set; }
-        public string? Owner { get; set; }
-        public CloudFolder(DirectoryInfo Info, string? Owner, bool IsShared, string? icon = null) : base(IsShared, icon)
+        public CloudFolder(DirectoryInfo Info, bool isSharedInApp, bool isPublic, string? icon = null) : base(isSharedInApp,isPublic, icon)
         {
             this.Info = Info;
-            this.Owner = Owner;
         }
 
         public override bool IsFile()

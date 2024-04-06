@@ -60,7 +60,7 @@ namespace NCloud.Controllers
                     throw new Exception("Folder name must be at least one character!");
                 }
 
-                service.CreateDirectory(folderName!, (await GetSessionSharedPathData()).CurrentPath, (await userManager.GetUserAsync(User)).UserName);
+                await service.CreateDirectory(folderName!, (await GetSessionSharedPathData()).CurrentPath);
                 
                 AddNewNotification(new Success("Folder is created!"));
             }
@@ -95,7 +95,7 @@ namespace NCloud.Controllers
             }
             for (int i = 0; i < files.Count; i++)
             {
-                int res = await service.CreateFile(files[i], pathData.CurrentPath, (await userManager.GetUserAsync(User)).UserName);
+                int res = await service.CreateFile(files[i], pathData.CurrentPath);
                 if (res == 0)
                 {
                     AddNewNotification(new Warning($"A File has been renamed!"));
@@ -287,7 +287,7 @@ namespace NCloud.Controllers
                                 try
                                 {
                                     string name = itemName[1..];
-                                    archive.CreateEntryFromFile(Path.Combine(service.ReturnServerPath(pathData.CurrentPath), name), name);
+                                    archive.CreateEntryFromFile(Path.Combine(service.ServerPath(pathData.CurrentPath), name), name);
                                 }
                                 catch (Exception ex)
                                 {

@@ -3,11 +3,13 @@
     public abstract class CloudRegistration
     {
         public string? IconPath { get; set; }
-        public bool IsShared { get; set; }
-        public CloudRegistration(bool isShared, string? fileName = null)
+        public bool IsSharedInApp { get; set; }
+        public bool IsPublic { get; set; }
+        public CloudRegistration(bool isSharedInApp, bool isPublic, string? fileName = null)
         {
             IconPath = ImageLoader.Load(fileName);
-            IsShared = isShared;
+            IsSharedInApp = isSharedInApp;
+            IsPublic = isPublic;
         }
 
         public abstract bool IsFile();

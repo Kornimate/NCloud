@@ -96,6 +96,7 @@ namespace NCloud.Controllers
                     {
                         ModelState.AddModelError("Email", "This Username is already in use!");
                         return View(vm);
+                   
                     }
                     var user = new CloudUser { UserName = vm.UserName, FullName = vm.FullName, Email = vm.Email };
                     var result = await userManager.CreateAsync(user, vm.Password);
@@ -103,8 +104,11 @@ namespace NCloud.Controllers
                     if (result.Succeeded)
                     {
                         CloudUser newUser = await userManager.FindByNameAsync(vm.UserName);
+                        
                         service.CreateBaseDirectory(newUser);
+                        
                         await signInManager.SignInAsync(newUser, false);
+                        
                         return RedirectToAction(nameof(Index), "DashBoard");
                     }
 

@@ -28,7 +28,7 @@
                                             Created By
                                         </td>
                                         <td>
-                                            @item.Owner
+                                            No Data
                                         </td>
                                     </tr>
                                     <tr>
@@ -47,24 +47,9 @@
                                             @item.Info.LastWriteTime
                                         </td>
                                     </tr>
-                                    <tr>
-                                        <td>
-                                            Public
-                                        </td>
-                                        <td>
-                                            @if (item.IsShared)
-                                            {
-                                                <span>✔</span>
-                                            }
-                                            else
-                                            {
-                                                <span>❌</span>
-                                            }
-                                        </td>
-                                    </tr>
                                 </table>
                             </fieldset>
-                            @if (item.Owner == User.Identity!.Name&& ViewBag.CanUseActions is not null && ViewBag.CanUseActions == true)
+                            @* @if (item.Owner == User.Identity!.Name&& ViewBag.CanUseActions is not null && ViewBag.CanUseActions == true)
                             {
                                 <div class="d-flex justify-content-end">
                                     <div class="btn-group mx-2" role="group">
@@ -72,7 +57,7 @@
                                         <button type="button" class="btn btn-danger"><a asp-controller="Sharing" asp-action="HideFolder" asp-route-id="@item.Info.Name"><img src="~/utilities/disconnect.svg" width=" 20" height="20" class="rounded-circle align-middle" /></a></button>
                                     </div>
                                 </div>
-                            }
+                            } *@
                         </details>
                     </td>
                 </tr>
@@ -99,7 +84,7 @@
                                             Created By
                                         </td>
                                         <td>
-                                            @item.Owner
+                                            No Data
                                         </td>
                                     </tr>
                                     <tr>
@@ -131,7 +116,7 @@
                                             Public
                                         </td>
                                         <td>
-                                            @if (item.IsShared)
+                                            @if (item.IsSharedInApp)
                                             {
                                                 <span>✔</span>
                                             }
@@ -143,7 +128,7 @@
                                     </tr>
                                 </table>
                             </fieldset>
-                            @if (item.Owner == User.Identity!.Name && ViewBag.CanUseActions is not null && ViewBag.CanUseActions == true)
+                            @* @if (item.Owner == User.Identity!.Name && ViewBag.CanUseActions is not null && ViewBag.CanUseActions == true)
                             {
                                 <div class="d-flex justify-content-end">
                                     <div class="btn-group mx-2" role="group">
@@ -151,7 +136,7 @@
                                         <button type="button" class="btn btn-danger"><a asp-controller="Sharing" asp-action="HideFile" asp-route-id="@item.Info.Name"><img src="~/utilities/disconnect.svg" width=" 20" height="20" class="rounded-circle align-middle" /></a></button>
                                     </div>
                                 </div>
-                            }
+                            } *@
                         </details>
                     </td>
                 </tr>

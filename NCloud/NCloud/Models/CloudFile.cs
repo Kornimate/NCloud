@@ -6,11 +6,9 @@ namespace NCloud.Models
     public class CloudFile : CloudRegistration
     {
         public FileInfo Info { get; set; }
-        public string? Owner { get; set; }
-        public CloudFile(FileInfo Info, string? Owner,bool IsShared, string? icon = null) : base(IsShared,icon)
+        public CloudFile(FileInfo Info, bool IsSharedInApp, bool isPublic, string? icon = null) : base(IsSharedInApp, isPublic, icon)
         {
             this.Info = Info;
-            this.Owner = Owner;
         }
 
         public override bool IsFile()

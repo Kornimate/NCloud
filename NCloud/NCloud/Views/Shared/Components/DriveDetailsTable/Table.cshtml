@@ -28,7 +28,7 @@
                                             Created By
                                         </td>
                                         <td>
-                                            @item.Owner
+                                            @User.Identity?.Name
                                         </td>
                                     </tr>
                                     <tr>
@@ -49,10 +49,25 @@
                                     </tr>
                                     <tr>
                                         <td>
+                                            Shared in @Constants.AppName
+                                        </td>
+                                        <td>
+                                            @if (item.IsSharedInApp)
+                                            {
+                                                <span>✔</span>
+                                            }
+                                            else
+                                            {
+                                                <span>❌</span>
+                                            }
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
                                             Public
                                         </td>
                                         <td>
-                                            @if (item.IsShared)
+                                            @if (item.IsPublic)
                                             {
                                                 <span>✔</span>
                                             }
@@ -97,7 +112,7 @@
                                             Created By
                                         </td>
                                         <td>
-                                            @item.Owner
+                                            @User.Identity?.Name
                                         </td>
                                     </tr>
                                     <tr>
@@ -121,7 +136,22 @@
                                             Size
                                         </td>
                                         <td>
-                                            @item.Info.Length Bytes
+                                            @item.Info.Length Byte(s)
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            Shared in @Constants.AppName
+                                        </td>
+                                        <td>
+                                            @if (item.IsSharedInApp)
+                                            {
+                                                <span>✔</span>
+                                            }
+                                            else
+                                            {
+                                                <span>❌</span>
+                                            }
                                         </td>
                                     </tr>
                                     <tr>
@@ -129,7 +159,7 @@
                                             Public
                                         </td>
                                         <td>
-                                            @if (item.IsShared)
+                                            @if (item.IsPublic)
                                             {
                                                 <span>✔</span>
                                             }

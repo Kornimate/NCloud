@@ -8,66 +8,54 @@ using System.IO;
 using Microsoft.AspNetCore.Identity;
 using System.ComponentModel;
 using static NuGet.Packaging.PackagingConstants;
+using NCloud.ConstantData;
 
 namespace NCloud.Services
 {
     public class CloudService : ICloudService
     {
-        private const string USERROOTNAME = "@CLOUDROOT";
-        private const string SHAREDROOTNAME = "@SHAREDROOT";
         private readonly CloudDbContext context;
         private readonly IWebHostEnvironment env;
         private const int DISTANCE = 4;
-        private readonly List<string> systemFolders;
         private const string FILENAMEDELIMITER = "_";
-        private const string JSONCONTAINERNAME = "__JsonContainer__.json";
         private readonly TimeSpan MAXWAITTIME = TimeSpan.FromSeconds(10);
 
         public CloudService(CloudDbContext context, IWebHostEnvironment env)
         {
             this.context = context;
             this.env = env;
-            systemFolders = new List<string>()
-            {
-                "Music",
-                "Documents",
-                "Videos",
-                "Pictures"
-            };
+
         }
-        public bool CreateBaseDirectory(CloudUser cloudUser)
+        public async Task<bool> CreateBaseDirectory(CloudUser cloudUser)
         {
+            string privateFolderPath = Path.Combine(env.WebRootPath, "CloudData", "Private", cloudUser.Id.ToString());
+            string publicFolderPath = Path.Combine(env.WebRootPath, "CloudData", "Public");
+            string pathHelper = Path.Combine(env.WebRootPath, "CloudData", "Public", cloudUser.UserName);
+
             try
             {
-                string userFolderPath = Path.Combine(env.WebRootPath, "CloudData", "Private", cloudUser.Id.ToString());
-
-                if (!Directory.Exists(userFolderPath))
+                if (!Directory.Exists(privateFolderPath))
                 {
-                    Directory.CreateDirectory(userFolderPath);
+                    Directory.CreateDirectory(privateFolderPath);
                 }
 
-                string sharedFolderPath = Path.Combine(env.WebRootPath, "CloudData", "Public");
-
-                if (!Directory.Exists(sharedFolderPath))
+                if (!Directory.Exists(publicFolderPath))
                 {
-                    Directory.CreateDirectory(sharedFolderPath);
+                    Directory.CreateDirectory(publicFolderPath);
                 }
-
-                string pathHelper = Path.Combine(env.WebRootPath, "CloudData", "Public", cloudUser.UserName);
 
                 if (!Directory.Exists(pathHelper))
                 {
                     Directory.CreateDirectory(pathHelper);
                 }
 
-                List<string> baseFolders = new List<string>() { "Documents", "Pictures", "Videos", "Music" };
-
-                foreach (string folder in baseFolders)
+                foreach (string folder in Constants.SystemFolders)
                 {
-                    pathHelper = Path.Combine(userFolderPath, folder);
+                    pathHelper = Path.Combine(privateFolderPath, folder);
+
                     if (!Directory.Exists(pathHelper))
                     {
-                        Directory.CreateDirectory(pathHelper); 
+                        Directory.CreateDirectory(pathHelper);
                     }
                 }
 
@@ -75,12 +63,53 @@ namespace NCloud.Services
             }
             catch (Exception)
             {
-                //TODO: reverse the directories
+                if (!await DeleteDirectoriesForUser(publicFolderPath, privateFolderPath, pathHelper))
+                {
+                    //TODO: logging for failed clean up
+                }
+
                 return false; //if anything can not be created -> fail the whole task
             }
         }
 
-        public void CreateDirectory(string folderName, string currentPath, string owner)
+        private Task<bool> DeleteDirectoriesForUser(string publicFolderPath, string privateFolderPath, string pathHelper)
+        {
+            try
+            {
+                if (!Directory.Exists(privateFolderPath))
+                {
+                    Directory.Delete(privateFolderPath, true);
+                }
+
+                if (!Directory.Exists(publicFolderPath))
+                {
+                    Directory.Delete(publicFolderPath, true);
+                }
+
+                if (!Directory.Exists(pathHelper))
+                {
+                    Directory.Delete(pathHelper);
+                }
+
+                foreach (string folder in Constants.SystemFolders)
+                {
+                    pathHelper = Path.Combine(privateFolderPath, folder);
+
+                    if (!Directory.Exists(pathHelper))
+                    {
+                        Directory.Delete(pathHelper, true);
+                    }
+                }
+
+                return Task.FromResult<bool>(true);
+            }
+            catch (Exception)
+            {
+                return Task.FromResult<bool>(false);
+            }
+        }
+
+        public async Task CreateDirectory(string folderName, string currentPath)
         {
             if (folderName == null || folderName == String.Empty)
             {
@@ -92,95 +121,43 @@ namespace NCloud.Services
                 throw new Exception("Invalid Path!");
             }
 
-            if (owner == null || owner == String.Empty)
-            {
-                throw new Exception("Invalid Owner!");
-            }
-
             string path = ParseRootName(currentPath);
             string pathAndName = Path.Combine(path, folderName);
-            try
-            {
-                AddFolderToJsonContainerFile(path, folderName, owner);
-                CreateJsonContainerFile(pathAndName);
-            }
-            catch
-            {
-                throw;
-            }
-        }
-        private void CreateJsonContainerFile(string? path)
-        {
-            if (path is null) return;
-            string pathAndName = Path.Combine(path, JSONCONTAINERNAME);
-            JsonDataContainer container = new JsonDataContainer()
-            {
-                FolderName = path,
-                StatusOK = true
-            };
-            if (File.Exists(pathAndName)) return; // just for safety reasons, not to overwrite existing files
-            if (!Directory.Exists(path))
-            {
-                Directory.CreateDirectory(path);
-            }
-            System.IO.File.WriteAllText(pathAndName, JsonSerializer.Serialize<JsonDataContainer>(container));
-        }
 
-        private void AddFolderToJsonContainerFile(string? path, string? folderName, string owner)
-        {
             try
             {
-                Task task = Task.Run(async () =>
+                if (!DirectoryExists(pathAndName))
                 {
-                    try
-                    {
-                        using FileStream fs = File.Open(Path.Combine(path!, JSONCONTAINERNAME), FileMode.Open, FileAccess.ReadWrite, FileShare.None);
-                        JsonDataContainer? container = await JsonSerializer.DeserializeAsync<JsonDataContainer>(fs) ?? throw new Exception("Error while importing Folder Data!");
-                        if (container.Folders!.ContainsKey(folderName!))
-                        {
-                            throw new ArgumentException("The Folder already exists!");
-                        }
-                        container.Folders?.Add(folderName!, new JsonDetailsContainer
-                        {
-                            Owner = owner,
-                            IsShared = false
-                        });
-                        fs.SetLength(0);
-                        await JsonSerializer.SerializeAsync(fs, container);
-                    }
-                    catch (IOException)
-                    {
-                        ; // keep trying until 10 seconds
-                    }
-                    catch
-                    {
-                        throw;
-                    }
-                });
-                if (!task.Wait(MAXWAITTIME))
+                    await Task.Run(() => Directory.CreateDirectory(pathAndName));
+                }
+                else
                 {
-                    throw new TimeoutException("Unable to manage Container File!");
+                    throw new Exception("Folder already exists!");
                 }
             }
-            catch (Exception ex) when (ex.InnerException is ArgumentException || ex.InnerException is TimeoutException)
-            {
-                throw;
-            }
             catch
             {
-                throw new Exception("Error occurred while adding Folder!");
+                if (!(await RemoveDirectory(folderName, currentPath)))
+                {
+                    //TODO: logging action
+                }
+
+                throw;
             }
         }
 
-        public async Task<int> CreateFile(IFormFile file, string currentPath, string owner)
+        public async Task<int> CreateFile(IFormFile file, string currentPath)
         {
             int retNum = 1;
+            
+            string path = ParseRootName(currentPath);
+            string newName = file.FileName;
+            string pathAndName = Path.Combine(path, newName);
+            
             try
             {
-                string path = ParseRootName(currentPath);
-                string pathAndName = Path.Combine(path, file.FileName);
-                string newName = file.FileName;
                 int counter = 0;
+
                 while (System.IO.File.Exists(pathAndName))
                 {
                     FileInfo fi = new FileInfo(file.FileName);
@@ -188,7 +165,7 @@ namespace NCloud.Services
                     pathAndName = Path.Combine(path, newName);
                     retNum = 0;
                 }
-                AddFileToJsonContainerFile(path, newName, owner);
+
                 using (FileStream stream = new FileStream(pathAndName, FileMode.Create))
                 {
                     await file.CopyToAsync(stream);
@@ -196,68 +173,29 @@ namespace NCloud.Services
             }
             catch
             {
+                if (!(await RemoveFile(path, newName)))
+                {
+                    //TODO: logging action
+                }
+
                 retNum = -1; //error occurred
             }
-            return retNum;
-        }
 
-        private void AddFileToJsonContainerFile(string? path, string? fileName, string owner)
-        {
-            try
-            {
-                Task task = Task.Run(async () =>
-                {
-                    try
-                    {
-                        using FileStream fs = File.Open(Path.Combine(path!, JSONCONTAINERNAME), FileMode.Open, FileAccess.ReadWrite, FileShare.None);
-                        JsonDataContainer? container = await JsonSerializer.DeserializeAsync<JsonDataContainer>(fs) ?? throw new Exception("Error while importing File Data!");
-                        if (container.Files!.ContainsKey(fileName!)) //just for safety, but controller ensures no same file name
-                        {
-                            throw new ArgumentException("The File already exists!");
-                        }
-                        container.Files?.Add(fileName!, new JsonDetailsContainer
-                        {
-                            Owner = owner,
-                            IsShared = false
-                        });
-                        fs.SetLength(0);
-                        await JsonSerializer.SerializeAsync(fs, container);
-                    }
-                    catch (IOException)
-                    {
-                        ; // keep trying until 10 seconds
-                    }
-                    catch
-                    {
-                        throw;
-                    }
-                });
-                if (!task.Wait(MAXWAITTIME))
-                {
-                    throw new TimeoutException("Unable to manage Container File!");
-                }
-            }
-            catch (Exception ex) when (ex.InnerException is ArgumentException || ex.InnerException is TimeoutException)
-            {
-                throw;
-            }
-            catch
-            {
-                throw new Exception("Error occurred while adding Folder!");
-            }
+            return retNum;
         }
 
         public async Task<CloudUser?> GetAdmin()
         {
-            return await context.Users.FirstOrDefaultAsync(x => x.UserName == "Admin");
+            return await context.Users.FirstOrDefaultAsync(x => x.UserName == Constants.AdminUserName);
         }
 
-        public List<CloudFile> GetCurrentDepthFiles(string currentPath)
+        public async Task<List<CloudFile>> GetCurrentDepthFiles(string currentPath)
         {
             string path = ParseRootName(currentPath);
+
             try
             {
-                return Directory.GetFiles(path).Select(x => new CloudFile(new FileInfo(Path.Combine(path, x)), "Nobody", false)).ToList();
+                return await Task.FromResult<List<CloudFile>>(Directory.GetFiles(path).Select(x => new CloudFile(new FileInfo(Path.Combine(path, x)), false, false)).ToList());
             }
             catch
             {
@@ -265,31 +203,12 @@ namespace NCloud.Services
             }
         }
 
-        private async Task<JsonDataContainer?> ReadJsonContainerFileContent(string path)
-        {
-            try
-            {
-                using FileStream fs = File.Open(Path.Combine(path!, JSONCONTAINERNAME), FileMode.Open, FileAccess.Read, FileShare.Read);
-                JsonDataContainer? container = await JsonSerializer.DeserializeAsync<JsonDataContainer>(fs) ?? throw new Exception("Error while importing Folders!");
-                return container;
-            }
-            catch (IOException)
-            {
-                ; // keep trying until 10 seconds
-            }
-            catch
-            {
-                throw;
-            }
-            return null;
-        }
-
-        public List<CloudFolder> GetCurrentDepthFolders(string currentPath)
+        public async Task<List<CloudFolder>> GetCurrentDepthFolders(string currentPath)
         {
             string path = ParseRootName(currentPath);
             try
             {
-                return Directory.GetDirectories(path).Select(x => new CloudFolder(new DirectoryInfo(Path.Combine(path,x)),"Nobody",false)).ToList(); 
+                return await Task.FromResult<List<CloudFolder>>(Directory.GetDirectories(path).Select(x => new CloudFolder(new DirectoryInfo(Path.Combine(path, x)), false, false)).ToList());
             }
             catch
             {
@@ -297,71 +216,37 @@ namespace NCloud.Services
             }
         }
 
-        public bool RemoveDirectory(string folderName, string currentPath)
+        public async Task<bool> RemoveDirectory(string folderName, string currentPath)
         {
             string path = ParseRootName(currentPath);
             string pathAndName = Path.Combine(path, folderName);
+
             if (!Directory.Exists(pathAndName))
             {
                 throw new Exception("The Folder does not exists!");
             }
+
             if (IsSystemFolder(pathAndName))
             {
                 return false;
             }
+
             if (path is null || path == String.Empty)
             {
                 throw new ArgumentException("Invalid path!");
             }
+
             if (folderName is null || folderName == String.Empty)
             {
                 throw new ArgumentException("Invalid Folder Name!");
             }
-            RemoveFolderFromJsonContainerFile(path, folderName);
-            Directory.Delete(pathAndName, true);
+
+            await Task.Run(() => Directory.Delete(pathAndName, true));
+
             return true;
         }
 
-        private void RemoveFolderFromJsonContainerFile(string path, string folderName)
-        {
-            try
-            {
-                Task task = Task.Run(async () =>
-                {
-                    try
-                    {
-                        using FileStream fs = File.Open(Path.Combine(path!, JSONCONTAINERNAME), FileMode.Open, FileAccess.ReadWrite, FileShare.None);
-                        JsonDataContainer? container = await JsonSerializer.DeserializeAsync<JsonDataContainer>(fs) ?? throw new Exception("Error while importing Folder Data!");
-                        container.Folders?.Remove(folderName!);
-                        fs.SetLength(0);
-                        await JsonSerializer.SerializeAsync(fs, container);
-                    }
-                    catch (IOException)
-                    {
-                        ; // keep trying until 10 seconds
-                    }
-                    catch
-                    {
-                        throw;
-                    }
-                });
-                if (!task.Wait(MAXWAITTIME))
-                {
-                    throw new TimeoutException("Unable to manage Container File!");
-                }
-            }
-            catch (Exception ex) when (ex.InnerException is ArgumentException || ex.InnerException is TimeoutException)
-            {
-                throw;
-            }
-            catch
-            {
-                throw new Exception("Error occurred while removing Folder!");
-            }
-        }
-
-
-        public bool RemoveFile(string fileName, string currentPath)
+        public async Task<bool> RemoveFile(string fileName, string currentPath)
         {
             string path = ParseRootName(currentPath);
             string pathAndName = Path.Combine(path, fileName);
@@ -379,8 +264,7 @@ namespace NCloud.Services
             }
             try
             {
-                RemoveFileFromJsonContainerFile(path, fileName);
-                File.Delete(pathAndName);
+                await Task.Run(() => File.Delete(pathAndName));
             }
             catch
             {
@@ -388,62 +272,26 @@ namespace NCloud.Services
             }
             return true;
         }
-        private void RemoveFileFromJsonContainerFile(string path, string fileName)
-        {
-            try
-            {
-                Task task = Task.Run(async () =>
-                {
-                    try
-                    {
-                        using FileStream fs = File.Open(Path.Combine(path!, JSONCONTAINERNAME), FileMode.Open, FileAccess.ReadWrite, FileShare.None);
-                        JsonDataContainer? container = await JsonSerializer.DeserializeAsync<JsonDataContainer>(fs) ?? throw new Exception("Error while importing File Data!");
-                        container.Files?.Remove(fileName!);
-                        fs.SetLength(0);
-                        await JsonSerializer.SerializeAsync(fs, container);
-                    }
-                    catch (IOException)
-                    {
-                        ; // keep trying until 10 seconds
-                    }
-                    catch
-                    {
-                        throw;
-                    }
-                });
-                if (!task.Wait(MAXWAITTIME))
-                {
-                    throw new TimeoutException("Unable to manage Container File!");
-                }
-            }
-            catch (Exception ex) when (ex.InnerException is ArgumentException || ex.InnerException is TimeoutException)
-            {
-                throw;
-            }
-            catch
-            {
-                throw new Exception("Error occurred while removing Folder!");
-            }
-        }
+
         private string ParseRootName(string currentPath)
         {
-            if (currentPath.StartsWith(USERROOTNAME))
+            if (currentPath.StartsWith(Constants.PrivateRootName))
             {
-                return currentPath.Replace(USERROOTNAME, Path.Combine(env.WebRootPath, "CloudData", "Private"));
+                return currentPath.Replace(Constants.PrivateRootName, Path.Combine(env.WebRootPath, "CloudData", "Private"));
             }
             else
             {
-                return currentPath.Replace(SHAREDROOTNAME, Path.Combine(env.WebRootPath, "CloudData", "Public"));
+                return currentPath.Replace(Constants.PublicRootName, Path.Combine(env.WebRootPath, "CloudData", "Public"));
             }
         }
 
         private bool IsSystemFolder(string path)
         {
             List<string> pathFolders = path.Split('\\').ToList();
-            return systemFolders.Contains(pathFolders[pathFolders.FindIndex(x => x == "wwwroot") + DISTANCE]);
+            return Constants.SystemFolders.Contains(pathFolders[pathFolders.FindIndex(x => x == "wwwroot") + DISTANCE]);
         }
 
-        public string ReturnServerPath(string currentPath)
+        public string ServerPath(string currentPath)
         {
             return ParseRootName(currentPath);
         }
