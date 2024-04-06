@@ -224,6 +224,8 @@ namespace NCloud.Controllers
         public async Task<IActionResult> DeleteItemsFromForm([Bind("ItemsForDelete")] DriveDeleteViewModel vm)
         {
             bool noFail = true;
+
+            int falseCounter = 0;
             
             CloudPathData pathData = await GetSessionUserPathData();
             
@@ -249,7 +251,7 @@ namespace NCloud.Controllers
                             noFail = false;
                         }
                     }
-                    else
+                    else if(itemName[0] == Constants.SelectedFolderStarterSymbol)
                     {
                         try
                         {
@@ -268,7 +270,19 @@ namespace NCloud.Controllers
                         }
                     }
                 }
+                else
+                {
+                    falseCounter++;
+                }
             }
+
+            if(falseCounter == vm.ItemsForDelete.Count)
+            {
+                AddNewNotification(new Warning($"No files were chosen for deletion"));
+
+                return RedirectToAction("DeleteItems", "Drive");
+            }
+            
             if (noFail)
             {
                 AddNewNotification(new Success("All Items removed successfully!"));
@@ -277,6 +291,7 @@ namespace NCloud.Controllers
             {
                 AddNewNotification(new Warning("Could not complete all item deletion!"));
             }
+
             return RedirectToAction("DeleteItems", "Drive");
         }
         public async Task<IActionResult> DownloadItems()

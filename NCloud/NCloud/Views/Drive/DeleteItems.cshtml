@@ -59,7 +59,7 @@
     <div class="d-flex w-100 justify-content-center">
         <button type="button" class="btn btn-outline-danger border border-danger border-3" id="modalLaunchBtn"><img src="~/utilities/trash.svg" width=" 20" height="20" class="rounded align-middle" /></button>
     </div>
-    
+
     <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
@@ -80,7 +80,11 @@
 </form>
 
 <script type="text/javascript">
-    var modal = new bootstrap.Modal(document.getElementById('deleteModal'), options);
+    document.getElementById("modalLaunchBtn").addEventListener("click", LaunchModal, false);
 
-    modal.show();
+    function LaunchModal() {
+        var modal = new bootstrap.Modal(document.getElementById('deleteModal'));
+
+        modal.show();
+    }
 </script>
