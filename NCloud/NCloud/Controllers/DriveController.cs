@@ -75,7 +75,7 @@ namespace NCloud.Controllers
 
                 if (folderName is null || folderName == String.Empty)
                 {
-                    throw new Exception("Folder name must be at least one charachter!");
+                    throw new Exception("Folder name must be at least one character!");
                 }
 
                 service.CreateDirectory(folderName!, GetSessionUserPathData().CurrentPath, (await userManager.GetUserAsync(User)).UserName);
@@ -137,7 +137,7 @@ namespace NCloud.Controllers
             {
                 if (folderName is null || folderName == String.Empty)
                 {
-                    throw new Exception("Folder name must be at least one charachter!");
+                    throw new Exception("Folder name must be at least one character!");
                 }
                 if (!service.RemoveDirectory(folderName!, GetSessionUserPathData().CurrentPath))
                 {
@@ -158,7 +158,7 @@ namespace NCloud.Controllers
             {
                 if (fileName is null || fileName == String.Empty)
                 {
-                    throw new Exception("File name must be at least one charachter!");
+                    throw new Exception("File name must be at least one character!");
                 }
                 if (!service.RemoveFile(fileName!, GetSessionUserPathData().CurrentPath))
                 {
@@ -259,7 +259,7 @@ namespace NCloud.Controllers
             try
             {
                 var files = service.GetCurrentDepthFiles(pathData.CurrentPath);
-                //var folders = service.GetCurrentDeptFolders(pathData.CurrentPath); //later to be able to add folders to zp too
+                //var folders = service.GetCurrentDepthFolders(pathData.CurrentPath); //later to be able to add folders to zp too
                 var folders = new List<CloudFolder?>();
                 return View(new DriveDownloadViewModel
                 {
@@ -328,7 +328,12 @@ namespace NCloud.Controllers
             return RedirectToAction("DownloadItems");
         }
 
-        public IActionResult ShareFolder(string folderName)
+        public IActionResult PubliciseFolder(string folderName)
+        {
+            return RedirectToAction("Details", "Drive");
+        }
+
+        public IActionResult PubliciseFile(string fileName)
         {
             return RedirectToAction("Details", "Drive");
         }
