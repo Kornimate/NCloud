@@ -200,7 +200,7 @@ namespace NCloud.Services
             }
         }
 
-        public async Task<List<CloudFolder>> GetCurrentDepthFolders(string currentPath)
+        public async Task<List<CloudFolder>> GetCurrentDepthDirectories(string currentPath)
         {
             string path = ParseRootName(currentPath);
             try
@@ -302,6 +302,11 @@ namespace NCloud.Services
         {
             if (pathAndName is null) return false;
             return Directory.Exists(ParseRootName(pathAndName));
+        }
+
+        public async Task<DirectoryInfo> GetFolderByPath(string serverPath, string folderName)
+        {
+            return await Task.FromResult<DirectoryInfo>(new DirectoryInfo(Directory.GetDirectories(serverPath,folderName).First()));
         }
     }
 }

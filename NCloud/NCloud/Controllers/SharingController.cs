@@ -24,7 +24,7 @@ namespace NCloud.Controllers
             try
             {
                 return View(new DriveDetailsViewModel(await service.GetCurrentDepthFiles(currentPath),
-                                                      await service.GetCurrentDepthFolders(currentPath),
+                                                      await service.GetCurrentDepthDirectories(currentPath),
                                                       pathdata.CurrentPathShow));
             }
             catch (Exception ex)
@@ -166,7 +166,7 @@ namespace NCloud.Controllers
             try
             {
                 var files = await service.GetCurrentDepthFiles(pathData.CurrentPath);
-                var folders = await service.GetCurrentDepthFolders(pathData.CurrentPath);
+                var folders = await service.GetCurrentDepthDirectories(pathData.CurrentPath);
                 return View(new DriveDeleteViewModel
                 {
                     Folders = folders,
@@ -246,7 +246,7 @@ namespace NCloud.Controllers
             try
             {
                 var files = await service.GetCurrentDepthFiles(pathData.CurrentPath);
-                var folders = await service.GetCurrentDepthFolders(pathData.CurrentPath); //later to be able to add folders to zp too
+                var folders = await service.GetCurrentDepthDirectories(pathData.CurrentPath); //later to be able to add folders to zp too
                
                 return View(new DriveDownloadViewModel
                 {

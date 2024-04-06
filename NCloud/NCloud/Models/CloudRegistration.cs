@@ -14,5 +14,6 @@
 
         public abstract bool IsFile();
         public abstract bool IsFolder();
+        public abstract string ReturnName();
     }
 }

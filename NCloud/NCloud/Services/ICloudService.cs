@@ -5,7 +5,7 @@ namespace NCloud.Services
 {
     public interface ICloudService
     {
-        Task<List<CloudFolder>> GetCurrentDepthFolders(string currentPath);
+        Task<List<CloudFolder>> GetCurrentDepthDirectories(string currentPath);
         Task<List<CloudFile>> GetCurrentDepthFiles(string currentPath);
         Task<CloudUser?> GetAdmin();
         Task<bool> CreateBaseDirectory(CloudUser cloudUser);
@@ -16,5 +16,6 @@ namespace NCloud.Services
         string ServerPath(string currentPath);
         Tuple<List<CloudFile?>, List<CloudFolder?>> GetCurrentUserIndexData();
         bool DirectoryExists(string? pathAndName);
+        Task<DirectoryInfo> GetFolderByPath(string path, string folderName);
     }
 }

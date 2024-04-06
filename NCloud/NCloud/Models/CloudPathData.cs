@@ -1,12 +1,10 @@
-﻿using System.Text.Json.Serialization;
+﻿using NCloud.ConstantData;
+using System.Text.Json.Serialization;
 
 namespace NCloud.Models
 {
     public class CloudPathData
     {
-        public static string ROOTNAME { get => "@CLOUDROOT"; }
-        private const string SEPARATOR = "/";
-
         public string CurrentDirectory { get; private set; }
         public List<string> PreviousDirectories { get; private set; }
         public string CurrentPath { get; private set; }
@@ -24,27 +22,30 @@ namespace NCloud.Models
         {
             PreviousDirectories = new List<string>();
             CurrentDirectory = String.Empty;
-            CurrentPath = ROOTNAME;
-            CurrentPathShow = ROOTNAME;
+            CurrentPath = Constants.PrivateRootName;
+            CurrentPathShow = Constants.PrivateRootName;
         }
 
         public void SetDefaultPathData(string? id)
         {
             if (id is null) return;
+            
             CurrentPath = Path.Combine(CurrentPath, id);
             PreviousDirectories.Clear();
-            PreviousDirectories.Add(ROOTNAME);
+            PreviousDirectories.Add(Constants.PrivateRootName);
             PreviousDirectories.Add(id);
         }
         public string? TrySetFolder(string? folderName)
         {
             if (folderName is null) return null;
+            
             return Path.Combine(CurrentPath, folderName);
         }
 
         public string SetFolder(string? folderName)
         {
             string currentPath = String.Empty;
+
             if (folderName == null || folderName == String.Empty)
             {
                 currentPath = CurrentPath;
@@ -52,29 +53,36 @@ namespace NCloud.Models
             else
             {
                 currentPath = Path.Combine(CurrentPath, folderName);
+                
                 PreviousDirectories.Add(folderName);
                 CurrentPath = $@"{currentPath}"; //for security reasons
                 CurrentDirectory = folderName!;
-                CurrentPathShow += SEPARATOR + folderName;
+                CurrentPathShow += Constants.PathSeparator + folderName;
             }
+            
             return currentPath;
         }
 
         public string? RemoveFolderFromPrevDirs()
         {
             PreviousDirectories.RemoveAt(PreviousDirectories.Count - 1);
+            
             string? folder = PreviousDirectories.Last();
+            
             CurrentDirectory = folder;
             CurrentPath = Path.Combine(PreviousDirectories.ToArray());
-            string end = String.Join(SEPARATOR, PreviousDirectories.Skip(2).ToArray());
+            
+            string end = String.Join(Constants.PathSeparator, PreviousDirectories.Skip(2).ToArray());
+            
             if (end == String.Empty)
             {
-                CurrentPathShow = ROOTNAME;
+                CurrentPathShow = Constants.PrivateRootName;
             }
             else
             {
-                CurrentPathShow = String.Join(SEPARATOR, ROOTNAME,end);
+                CurrentPathShow = String.Join(Constants.PathSeparator, Constants.PrivateRootName, end);
             }
+            
             return folder;
         }
     }

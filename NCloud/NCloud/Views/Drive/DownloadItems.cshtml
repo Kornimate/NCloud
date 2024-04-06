@@ -23,8 +23,10 @@
                 <tr>
                     <td>
                         <div class="d-flex-inline align-middle">
-                            <input type="checkbox" class="form-check-input" id="selectAll" />
-                            <label class="form-check-label ms-2">Select All</label>
+                            <div class="input-group">
+                                <span class="btn btn-outline-secondary" id="selectAll"><img src="~/utilities/check.svg" width=" 20" height="20" class="rounded align-middle" /></span>
+                                <span class="btn btn-outline-secondary" id="deselectAll"><img src="~/utilities/ban.svg" width=" 20" height="20" class="rounded align-middle" /></span>
+                            </div>
                         </div>
                     </td>
                 </tr>
@@ -73,21 +75,13 @@
 </form>
 <script type="text/javascript">
     function StartFunction() {
-        document.getElementById("selectAll").addEventListener("click", SelectAllClicked, false)
+        document.getElementById("selectAll").addEventListener("click", SelectAll, false)
+        document.getElementById("deselectAll").addEventListener("click", DeselectAll, false)
         document.getElementById("downloadBtn").addEventListener("click", CallDeselect, false)
     }
 
-    function SelectAllClicked(e) {
-        console.log("belep");
-        if (document.getElementById("selectAll").checked) {
-            SelectAll();
-        } else {
-            DeselectAll();
-        }
-    }
-
-    function CallDeselect(e){
-        setTimeout(DeselectAll,1);
+    function CallDeselect(e) {
+        setTimeout(DeselectAll, 1);
     }
 
     function SelectAll() {

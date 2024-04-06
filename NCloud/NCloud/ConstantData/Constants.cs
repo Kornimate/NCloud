@@ -18,7 +18,9 @@
         public static string NotSelectedResult { get => "false"; }
         public static char SelectedFileStarterSymbol { get => '_'; }
         public static char SelectedFolderStarterSymbol { get => '&'; }
-        public static int DistanceToRootFolder { get => 4; }
         public static char FileNameDelimiter { get => '_'; }
+        public static char PathSeparator { get => '/'; }
+        public static int DistanceToRootFolder { get => 4; }
+        public static int EmptyFolderAttributeNumber { get => 16; }
     }
 }

@@ -27,9 +27,9 @@ namespace NCloud.Controllers
         public async Task<IActionResult> Details(string? folderName = null)
         {
             CloudPathData pathdata = await GetSessionUserPathData();
-            
+
             string currentPath = String.Empty;
-            
+
             if (service.DirectoryExists(pathdata.TrySetFolder(folderName)))
             {
                 currentPath = pathdata.SetFolder(folderName);
@@ -38,13 +38,13 @@ namespace NCloud.Controllers
             {
                 currentPath = pathdata.CurrentPath;
             }
-            
+
             await SetSessionUserPathData(pathdata);
-            
+
             try
             {
                 return View(new DriveDetailsViewModel(await service.GetCurrentDepthFiles(currentPath),
-                                                      await service.GetCurrentDepthFolders(currentPath),
+                                                      await service.GetCurrentDepthDirectories(currentPath),
                                                       pathdata.CurrentPathShow));
             }
             catch (Exception ex)
@@ -59,14 +59,14 @@ namespace NCloud.Controllers
         public async Task<IActionResult> Back()
         {
             CloudPathData pathdata = await GetSessionUserPathData();
-           
+
             if (pathdata.PreviousDirectories.Count > 2)
             {
                 pathdata.RemoveFolderFromPrevDirs();
-                
+
                 await SetSessionUserPathData(pathdata);
             }
-            
+
             return RedirectToAction("Details", "Drive");
         }
 
@@ -94,7 +94,7 @@ namespace NCloud.Controllers
             {
                 AddNewNotification(new Error(ex.Message));
             }
-            
+
             return RedirectToAction("Details");
         }
 
@@ -103,26 +103,26 @@ namespace NCloud.Controllers
         public async Task<IActionResult> AddNewFiles(List<IFormFile>? files = null)
         {
             bool errorPresent = false;
-            
+
             if (files == null || files.Count == 0)
             {
                 AddNewNotification(new Warning("No Files were uploaded!"));
                 return RedirectToAction("Details", "Drive");
             }
-            
+
             CloudPathData pathData = await GetSessionUserPathData();
-            
+
             for (int i = 0; i < files.Count; i++)
             {
                 FileInfo fi = new FileInfo(files[i].FileName);
                 // TODO: check if allowed filetype
 
             }
-            
+
             for (int i = 0; i < files.Count; i++)
             {
                 int res = await service.CreateFile(files[i], pathData.CurrentPath);
-                
+
                 if (res == 0)
                 {
                     AddNewNotification(new Warning($"A File has been renamed!"));
@@ -130,16 +130,16 @@ namespace NCloud.Controllers
                 else if (res == -1)
                 {
                     errorPresent = true;
-                    
+
                     AddNewNotification(new Error($"There was error adding the file {files[i].FileName}!"));
                 }
             }
-            
+
             if (!errorPresent)
             {
                 AddNewNotification(new Success($"File{(files.Count > 1 ? "s" : "")} added successfully!"));
             }
-            
+
             return RedirectToAction("Details", "Drive");
         }
 
@@ -151,19 +151,19 @@ namespace NCloud.Controllers
                 {
                     throw new Exception("Folder name must be at least one character!");
                 }
-                
+
                 if (!(await service.RemoveDirectory(folderName!, (await GetSessionUserPathData()).CurrentPath)))
                 {
                     throw new Exception("Folder is System Folder!");
                 }
-                
+
                 AddNewNotification(new Success("Folder is removed!"));
             }
             catch (Exception)
             {
                 AddNewNotification(new Error("Failed to remove Folder!"));
             }
-            
+
             return RedirectToAction("Details", "Drive");
         }
 
@@ -175,19 +175,19 @@ namespace NCloud.Controllers
                 {
                     throw new Exception("File name must be at least one character!");
                 }
-                
+
                 if (!(await service.RemoveFile(fileName!, (await GetSessionUserPathData()).CurrentPath)))
                 {
                     throw new Exception("File is System Folder!");
                 }
-                
+
                 AddNewNotification(new Success("File is removed!"));
             }
             catch (Exception)
             {
                 AddNewNotification(new Error("Failed to remove Folder!"));
             }
-            
+
             return RedirectToAction("Details", "Drive");
         }
 
@@ -197,8 +197,8 @@ namespace NCloud.Controllers
             try
             {
                 var files = await service.GetCurrentDepthFiles(pathData.CurrentPath);
-                var folders = await service.GetCurrentDepthFolders(pathData.CurrentPath);
-                
+                var folders = await service.GetCurrentDepthDirectories(pathData.CurrentPath);
+
                 return View(new DriveDeleteViewModel
                 {
                     Folders = folders,
@@ -206,10 +206,10 @@ namespace NCloud.Controllers
                     ItemsForDelete = new string[files.Count + folders.Count].ToList()
                 });
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 AddNewNotification(new Error(ex.Message));
-                
+
                 return View(new DriveDeleteViewModel
                 {
                     Folders = new List<CloudFolder>(),
@@ -226,9 +226,9 @@ namespace NCloud.Controllers
             bool noFail = true;
 
             int falseCounter = 0;
-            
+
             CloudPathData pathData = await GetSessionUserPathData();
-            
+
             foreach (string itemName in vm.ItemsForDelete ?? new())
             {
                 if (itemName != Constants.NotSelectedResult)
@@ -240,32 +240,32 @@ namespace NCloud.Controllers
                             if (!(await service.RemoveFile(itemName[1..], pathData.CurrentPath)))
                             {
                                 AddNewNotification(new Error($"Error removing file {itemName}"));
-                                
+
                                 noFail = false;
                             }
                         }
                         catch (Exception ex)
                         {
                             AddNewNotification(new Error($"{ex.Message} ({itemName})"));
-                            
+
                             noFail = false;
                         }
                     }
-                    else if(itemName[0] == Constants.SelectedFolderStarterSymbol)
+                    else if (itemName[0] == Constants.SelectedFolderStarterSymbol)
                     {
                         try
                         {
                             if (!(await service.RemoveDirectory(itemName, pathData.CurrentPath)))
                             {
                                 AddNewNotification(new Error($"Error removing folder {itemName}"));
-                                
+
                                 noFail = false;
                             }
                         }
                         catch (Exception ex)
                         {
                             AddNewNotification(new Error($"{ex.Message} ({itemName})"));
-                            
+
                             noFail = false;
                         }
                     }
@@ -276,13 +276,13 @@ namespace NCloud.Controllers
                 }
             }
 
-            if(falseCounter == vm.ItemsForDelete?.Count)
+            if (falseCounter == vm.ItemsForDelete?.Count)
             {
                 AddNewNotification(new Warning($"No files were chosen for deletion"));
 
                 return RedirectToAction("DeleteItems", "Drive");
             }
-            
+
             if (noFail)
             {
                 AddNewNotification(new Success("All Items removed successfully!"));
@@ -297,12 +297,12 @@ namespace NCloud.Controllers
         public async Task<IActionResult> DownloadItems()
         {
             CloudPathData pathData = await GetSessionUserPathData();
-            
+
             try
             {
                 var files = await service.GetCurrentDepthFiles(pathData.CurrentPath);
-                var folders = await service.GetCurrentDepthFolders(pathData.CurrentPath);
-                
+                var folders = await service.GetCurrentDepthDirectories(pathData.CurrentPath);
+
                 return View(new DriveDownloadViewModel
                 {
                     Folders = folders,
@@ -326,13 +326,15 @@ namespace NCloud.Controllers
         [ValidateAntiForgeryToken, ActionName("DownloadItems")]
         public async Task<IActionResult> DownloadItemsFromForm([Bind("ItemsForDownload")] DriveDownloadViewModel vm)
         {
-            
+
             CloudPathData pathData = await GetSessionUserPathData();
-            
+
             string tempFile = Path.GetTempFileName();
-            
+
+            //TODO: add to clean up process the path
+
             using var zipFile = System.IO.File.Create(tempFile);
-            
+
             if (vm.ItemsForDownload is not null && vm.ItemsForDownload.Count != 0)
             {
                 using (ZipArchive archive = new ZipArchive(zipFile, ZipArchiveMode.Create))
@@ -346,7 +348,7 @@ namespace NCloud.Controllers
                                 try
                                 {
                                     string name = itemName[1..];
-                                    
+
                                     archive.CreateEntryFromFile(Path.Combine(service.ServerPath(pathData.CurrentPath), name), name);
                                 }
                                 catch (Exception ex)
@@ -354,11 +356,43 @@ namespace NCloud.Controllers
                                     AddNewNotification(new Error($"{ex.Message} ({itemName})"));
                                 }
                             }
-                            else
+                            else if (itemName[0] == Constants.SelectedFolderStarterSymbol)
                             {
                                 try
                                 {
-                                    // TODO: here comes folder zipping
+                                    string name = itemName[1..];
+                                    string serverPathStart = service.ServerPath(pathData.CurrentPath);
+                                    string currentRelativePath = String.Empty;
+
+                                    Queue<Pair<string, DirectoryInfo>> directories = new(new List<Pair<string, DirectoryInfo>>() { new Pair<string, DirectoryInfo>(currentRelativePath, await service.GetFolderByPath(serverPathStart, name)) });
+
+                                    while (directories.Any())
+                                    {
+                                        var directoryInfo = directories.Dequeue();
+
+                                        int counter = 0;
+
+                                        currentRelativePath = Path.Combine(directoryInfo.First, directoryInfo.Second.Name);
+
+                                        foreach (CloudFile file in await service.GetCurrentDepthFiles(Path.Combine(serverPathStart, currentRelativePath)))
+                                        {
+                                            archive.CreateEntryFromFile(Path.Combine(serverPathStart, currentRelativePath, file.Info.Name), Path.Combine(currentRelativePath, file.Info.Name));
+
+                                            ++counter;
+                                        }
+
+                                        foreach (CloudFolder folder in await service.GetCurrentDepthDirectories(Path.Combine(serverPathStart, currentRelativePath)))
+                                        {
+                                            directories.Enqueue(new Pair<string, DirectoryInfo>(currentRelativePath, folder.Info));
+
+                                            ++counter;
+                                        }
+
+                                        if (counter == 0)
+                                        {
+                                            archive.CreateEntry(currentRelativePath).ExternalAttributes = Constants.EmptyFolderAttributeNumber;
+                                        }
+                                    }
                                 }
                                 catch (Exception ex)
                                 {
@@ -368,10 +402,10 @@ namespace NCloud.Controllers
                         }
                     }
                 }
-                
+
                 FileStream stream = new FileStream(tempFile, FileMode.Open, FileAccess.Read, FileShare.Read, 4096, FileOptions.DeleteOnClose);
-                
-                return File(stream, "application/zip", $"{APPNAME}_{DateTime.Now:yyyy'-'MM'-'dd'T'HH':'mm':'ss}.{Constants.CompressedArchiveFileType}");
+
+                return File(stream, "application/zip", $"{APPNAME}_{DateTime.Now:yyyy'-'MM'-'dd'T'HH'-'mm'-'ss}.{Constants.CompressedArchiveFileType}");
             }
 
             AddNewNotification(new Warning($"No files were chosen for download"));

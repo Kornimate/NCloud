@@ -17,6 +17,19 @@
             </tr>
         </thead>
         <tbody>
+            @if (Model.ItemsForDelete?.Count > 0)
+            {
+                <tr>
+                    <td>
+                        <div class="d-flex-inline align-middle">
+                            <div class="input-group">
+                                <span class="btn btn-outline-danger" id="selectAll"><img src="~/utilities/check.svg" width=" 20" height="20" class="rounded align-middle" /></span>
+                                <span class="btn btn-outline-danger" id="deselectAll"><img src="~/utilities/ban.svg" width=" 20" height="20" class="rounded align-middle" /></span>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+            }
             @foreach (CloudFolder? item in Model.Folders)
             {
                 if (item != null)
@@ -72,7 +85,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-outline-danger">Delete</button>
+                    <button type="submit" class="btn btn-outline-danger" id="deleteBtn">Delete</button>
                 </div>
             </div>
         </div>
@@ -87,4 +100,36 @@
 
         modal.show();
     }
+</script>
+
+<script type="text/javascript">
+    function StartFunction() {
+        document.getElementById("selectAll").addEventListener("click", SelectAll, false)
+        document.getElementById("deselectAll").addEventListener("click", DeselectAll, false)
+        document.getElementById("deleteBtn").addEventListener("click", CallDeselect, false)
+    }
+
+    function CallDeselect(e) {
+        setTimeout(DeselectAll, 1);
+    }
+
+    function SelectAll() {
+        const checkboxes = document.getElementsByTagName("input");
+        for (let e of checkboxes) {
+            if (!e.checked) {
+                e.checked = true;
+            }
+        }
+    }
+
+    function DeselectAll() {
+        let checkboxes = document.getElementsByTagName("input");
+        for (let e of checkboxes) {
+            if (e.checked) {
+                e.checked = false;
+            }
+        }
+    }
+
+    StartFunction();
 </script>

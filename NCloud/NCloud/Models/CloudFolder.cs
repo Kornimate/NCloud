@@ -20,5 +20,10 @@ namespace NCloud.Models
         {
             return true;
         }
+
+        public override string ReturnName()
+        {
+            return Info.Name;
+        }
     }
 }
