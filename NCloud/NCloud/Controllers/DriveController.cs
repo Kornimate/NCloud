@@ -229,7 +229,7 @@ namespace NCloud.Controllers
             
             CloudPathData pathData = await GetSessionUserPathData();
             
-            foreach (string itemName in vm.ItemsForDelete!)
+            foreach (string itemName in vm.ItemsForDelete ?? new())
             {
                 if (itemName != Constants.NotSelectedResult)
                 {
@@ -276,7 +276,7 @@ namespace NCloud.Controllers
                 }
             }
 
-            if(falseCounter == vm.ItemsForDelete.Count)
+            if(falseCounter == vm.ItemsForDelete?.Count)
             {
                 AddNewNotification(new Warning($"No files were chosen for deletion"));
 
@@ -292,7 +292,7 @@ namespace NCloud.Controllers
                 AddNewNotification(new Warning("Could not complete all item deletion!"));
             }
 
-            return RedirectToAction("DeleteItems", "Drive");
+            return RedirectToAction("DeleteItems");
         }
         public async Task<IActionResult> DownloadItems()
         {
@@ -373,13 +373,15 @@ namespace NCloud.Controllers
                 
                 return File(stream, "application/zip", $"{APPNAME}_{DateTime.Now:yyyy'-'MM'-'dd'T'HH':'mm':'ss}.{Constants.CompressedArchiveFileType}");
             }
-            //warning implementation
+
+            AddNewNotification(new Warning($"No files were chosen for download"));
+
             return RedirectToAction("DownloadItems");
         }
 
         public async Task<IActionResult> ShareFolder(string folderName)
         {
-            return await Task.FromResult<IActionResult>(RedirectToAction("Details", "Drive"));
+            return await Task.FromResult<IActionResult>(RedirectToAction("Details"));
         }
     }
 }
