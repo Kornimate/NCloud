@@ -10,6 +10,9 @@
             "Pictures"
         };
 
+        public static string FolderIcon { get => "/utilities/folder.svg"; }
+        public static string PrefixForIcons { get => "/utilities/filetype-"; }
+        public static string SuffixForIcons { get => ".svg"; }
         public static string AdminUserName { get => "Admin"; }
         public static string AppName { get => "NCloudDrive"; }
         public static string PrivateRootName { get => "@CLOUDROOT"; }

@@ -1,25 +1,31 @@
-﻿using System.Collections.Generic;
+﻿using NCloud.ConstantData;
+using System.Collections.Generic;
 
 namespace NCloud.Models
 {
     public class ImageLoader
     {
-        public static string Load(string? fileName = null)
+        public static string Load(bool isDirectory, string name)
         {
-            if (Path.GetExtension(fileName) == null)
+            if (isDirectory)
             {
-                return iconPaths["Folder"];
+                return LoadDirectoryIcon();
             }
-            else
-            {
-                return iconPaths["File"]; // @todo, get file icons and implement them to this
-            }
-        }
 
-        private static Dictionary<string, string> iconPaths = new Dictionary<string, string>()
+            return LoadFileIcon(name);
+        }
+        private static string LoadDirectoryIcon()
         {
-            {"Folder",@"/utilities/folder.svg" },
-            {"File",@"/utilities/file.svg" }
-        };
+            return Constants.FolderIcon;
+        }
+        private static string LoadFileIcon(string? fileName = null)
+        {
+            if (fileName == null) { return string.Empty; }
+
+            string extension = Path.GetExtension(fileName).ToLower()?[1..] ?? "general";
+
+            return $"{Constants.PrefixForIcons}{extension}{Constants.SuffixForIcons}";
+            //return Constants.IconPaths[extension!]; //uncomment if filetypes added to Contants.IconPaths
+        }
     }
 }

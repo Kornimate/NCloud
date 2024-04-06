@@ -146,11 +146,11 @@ namespace NCloud.Services
         public async Task<int> CreateFile(IFormFile file, string currentPath)
         {
             int retNum = 1;
-            
+
             string path = ParseRootName(currentPath);
             string newName = file.FileName;
             string pathAndName = Path.Combine(path, newName);
-            
+
             try
             {
                 int counter = 0;
@@ -306,7 +306,7 @@ namespace NCloud.Services
 
         public async Task<DirectoryInfo> GetFolderByPath(string serverPath, string folderName)
         {
-            return await Task.FromResult<DirectoryInfo>(new DirectoryInfo(Directory.GetDirectories(serverPath,folderName).First()));
+            return await Task.FromResult<DirectoryInfo>(new DirectoryInfo(Directory.GetDirectories(serverPath, folderName).First()));
         }
     }
 }

@@ -65,7 +65,7 @@
 	  <Content Update="wwwroot\utilities\download.svg">
 	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 	  </Content>
-	  <Content Update="wwwroot\utilities\file.svg">
+	  <Content Update="wwwroot\utilities\filetype-general.svg">
 	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 	  </Content>
 	  <Content Update="wwwroot\utilities\files.svg">

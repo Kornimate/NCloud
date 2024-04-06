@@ -7,7 +7,7 @@
         public bool IsPublic { get; set; }
         public CloudRegistration(bool isSharedInApp, bool isPublic, string? fileName = null)
         {
-            IconPath = ImageLoader.Load(fileName);
+            IconPath = null!;
             IsSharedInApp = isSharedInApp;
             IsPublic = isPublic;
         }
