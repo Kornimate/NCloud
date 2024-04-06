@@ -36,7 +36,7 @@
                     <tr>
                         <td>
                             <div class="d-flex-inline">
-                                <input type="checkbox" asp-for="ItemsForDownload![i]" class="form-check-input" value="@item.Info.Name" />
+                                <input type="checkbox" asp-for="ItemsForDownload![i]" class="form-check-input" value="@($"{Constants.SelectedFolderStarterSymbol}{item.Info.Name}")" />
                                 <span id="iconforitemtype ms-2">
                                     <img src="@item.IconPath" width=" 20" height="20" class="item rounded align-bottom">
                                 </span>
@@ -54,7 +54,7 @@
                     <tr>
                         <td>
                             <div class="d-flex-inline">
-                                <input type="checkbox" asp-for="ItemsForDownload![i]" class="form-check-input" value="@($"_{item.Info.Name}")" />
+                                <input type="checkbox" asp-for="ItemsForDownload![i]" class="form-check-input" value="@($"{Constants.SelectedFileStarterSymbol}{item.Info.Name}")" />
                                 <span id="iconforitemtype ms-2">
                                     <img src="@item.IconPath" width=" 20" height="20" class="item rounded align-bottom">
                                 </span>

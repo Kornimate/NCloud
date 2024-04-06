@@ -19,6 +19,7 @@ namespace NCloud.Controllers
         public IActionResult Index(string fileName)
         {
             FileInfo fi = new FileInfo(fileName);
+
             if (codingExtensions.Contains(fi.Extension))
             {
                 return RedirectToAction("CodeEditor", new { fileName = fileName });
@@ -29,13 +30,15 @@ namespace NCloud.Controllers
             }
         }
 
-        public ActionResult CodeEditor(string? fileName = null)
+        public async Task<ActionResult> CodeEditor(string? fileName = null)
         {
             if (fileName == null)
             {
                 return View(new CodeEditorViewModel());
             }
-            PathData pathData = GetSessionUserPathData();
+            
+            CloudPathData pathData = await GetSessionUserPathData();
+            
             return View(new CodeEditorViewModel { FilePath = service.ServerPath(Path.Combine(pathData.CurrentPath, fileName)) });
         }
 

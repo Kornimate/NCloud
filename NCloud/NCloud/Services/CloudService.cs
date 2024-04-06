@@ -16,9 +16,6 @@ namespace NCloud.Services
     {
         private readonly CloudDbContext context;
         private readonly IWebHostEnvironment env;
-        private const int DISTANCE = 4;
-        private const string FILENAMEDELIMITER = "_";
-        private readonly TimeSpan MAXWAITTIME = TimeSpan.FromSeconds(10);
 
         public CloudService(CloudDbContext context, IWebHostEnvironment env)
         {
@@ -161,7 +158,7 @@ namespace NCloud.Services
                 while (System.IO.File.Exists(pathAndName))
                 {
                     FileInfo fi = new FileInfo(file.FileName);
-                    newName = fi.Name.Split('.')[0] + FILENAMEDELIMITER + $"{++counter}" + fi.Extension;
+                    newName = fi.Name.Split('.')[0] + Constants.FileNameDelimiter + $"{++counter}" + fi.Extension;
                     pathAndName = Path.Combine(path, newName);
                     retNum = 0;
                 }
@@ -288,7 +285,7 @@ namespace NCloud.Services
         private bool IsSystemFolder(string path)
         {
             List<string> pathFolders = path.Split('\\').ToList();
-            return Constants.SystemFolders.Contains(pathFolders[pathFolders.FindIndex(x => x == "wwwroot") + DISTANCE]);
+            return Constants.SystemFolders.Contains(pathFolders[pathFolders.FindIndex(x => x == "wwwroot") + Constants.DistanceToRootFolder]);
         }
 
         public string ServerPath(string currentPath)

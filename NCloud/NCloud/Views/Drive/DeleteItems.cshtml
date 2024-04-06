@@ -17,14 +17,14 @@
             </tr>
         </thead>
         <tbody>
-            @foreach(CloudFolder? item in Model.Folders)
+            @foreach (CloudFolder? item in Model.Folders)
             {
                 if (item != null)
                 {
                     <tr>
                         <td>
                             <div class="d-flex-inline">
-                                <input type="checkbox" asp-for="ItemsForDelete![i]" class="form-check-input" value="@item.Info.Name"/>
+                                <input type="checkbox" asp-for="ItemsForDelete![i]" class="form-check-input" value="@($"{Constants.SelectedFolderStarterSymbol}{item.Info.Name}")" />
                                 <span id="iconforitemtype ms-2">
                                     <img src="@item.IconPath" width=" 20" height="20" class="item rounded align-bottom">
                                 </span>
@@ -42,7 +42,7 @@
                     <tr>
                         <td>
                             <div class="d-flex-inline">
-                                <input type="checkbox" asp-for="ItemsForDelete![i]" class="form-check-input" value="@($"_{item.Info.Name}")" />
+                                <input type="checkbox" asp-for="ItemsForDelete![i]" class="form-check-input" value="@($"{Constants.SelectedFileStarterSymbol}{item.Info.Name}")" />
                                 <span id="iconforitemtype ms-2">
                                     <img src="@item.IconPath" width=" 20" height="20" class="item rounded align-bottom">
                                 </span>
@@ -55,7 +55,32 @@
             }
         </tbody>
     </table>
+
     <div class="d-flex w-100 justify-content-center">
-        <button type="submit" class="btn btn-outline-danger border border-danger border-3"><img src="~/utilities/trash.svg" width=" 20" height="20" class="rounded align-middle" /></button>
+        <button type="button" class="btn btn-outline-danger border border-danger border-3" id="modalLaunchBtn"><img src="~/utilities/trash.svg" width=" 20" height="20" class="rounded align-middle" /></button>
+    </div>
+    
+    <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-dark">
+                    <h5 class="modal-title" id="deleteModalLabel">Delete items</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    Are you sure you want to delete these items?
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-outline-danger">Delete</button>
+                </div>
+            </div>
+        </div>
     </div>
 </form>
+
+<script type="text/javascript">
+    var modal = new bootstrap.Modal(document.getElementById('deleteModal'), options);
+
+    modal.show();
+</script>

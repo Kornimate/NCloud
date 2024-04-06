@@ -23,16 +23,16 @@ namespace NCloud.Controllers
             }
             try
             {
-                return View(new DriveDetailsViewModel(service.GetCurrentDepthFiles(currentPath),
-                                                service.GetCurrentDepthFolders(currentPath),
-                                                                pathdata.CurrentPathShow));
+                return View(new DriveDetailsViewModel(await service.GetCurrentDepthFiles(currentPath),
+                                                      await service.GetCurrentDepthFolders(currentPath),
+                                                      pathdata.CurrentPathShow));
             }
             catch (Exception ex)
             {
                 AddNewNotification(new Error(ex.Message));
-                return View(new DriveDetailsViewModel(new List<CloudFile?>(),
-                                                    new List<CloudFolder?>(),
-                                                    pathdata.CurrentPathShow));
+                return View(new DriveDetailsViewModel(new List<CloudFile>(),
+                                                      new List<CloudFolder>(),
+                                                      pathdata.CurrentPathShow));
             }
         }
 
@@ -121,7 +121,7 @@ namespace NCloud.Controllers
                 {
                     throw new Exception("Folder name must be at least one character!");
                 }
-                if (!service.RemoveDirectory(folderName!, (await GetSessionSharedPathData()).CurrentPath))
+                if (!(await service.RemoveDirectory(folderName!, (await GetSessionSharedPathData()).CurrentPath)))
                 {
                     throw new Exception("Folder is System Folder!");
                 }
@@ -142,7 +142,7 @@ namespace NCloud.Controllers
                 {
                     throw new Exception("File name must be at least one character!");
                 }
-                if (!service.RemoveFile(fileName!, (await GetSessionSharedPathData()).CurrentPath))
+                if (!(await service.RemoveFile(fileName!, (await GetSessionSharedPathData()).CurrentPath)))
                 {
                     throw new Exception("File is System Folder!");
                 }
@@ -165,8 +165,8 @@ namespace NCloud.Controllers
             }
             try
             {
-                var files = service.GetCurrentDepthFiles(pathData.CurrentPath);
-                var folders = service.GetCurrentDepthFolders(pathData.CurrentPath);
+                var files = await service.GetCurrentDepthFiles(pathData.CurrentPath);
+                var folders = await service.GetCurrentDepthFolders(pathData.CurrentPath);
                 return View(new DriveDeleteViewModel
                 {
                     Folders = folders,
@@ -179,8 +179,8 @@ namespace NCloud.Controllers
                 AddNewNotification(new Error(ex.Message));
                 return View(new DriveDeleteViewModel
                 {
-                    Folders = new List<CloudFolder?>(),
-                    Files = new List<CloudFile?>(),
+                    Folders = new List<CloudFolder>(),
+                    Files = new List<CloudFile>(),
                     ItemsForDelete = Array.Empty<string>().ToList()
                 });
             }
@@ -200,7 +200,7 @@ namespace NCloud.Controllers
                     {
                         try
                         {
-                            if (!service.RemoveFile(itemName[1..], pathData.CurrentPath))
+                            if (!(await service.RemoveFile(itemName[1..], pathData.CurrentPath)))
                             {
                                 AddNewNotification(new Error($"Error removing file {itemName}"));
                                 noFail = false;
@@ -216,7 +216,7 @@ namespace NCloud.Controllers
                     {
                         try
                         {
-                            if (!service.RemoveDirectory(itemName, pathData.CurrentPath))
+                            if (!(await service.RemoveDirectory(itemName, pathData.CurrentPath)))
                             {
                                 AddNewNotification(new Error($"Error removing folder {itemName}"));
                                 noFail = false;
@@ -245,9 +245,9 @@ namespace NCloud.Controllers
             SharedPathData pathData = await GetSessionSharedPathData();
             try
             {
-                var files = service.GetCurrentDepthFiles(pathData.CurrentPath);
-                //var folders = service.GetCurrentDepthFolders(pathData.CurrentPath); //later to be able to add folders to zp too
-                var folders = new List<CloudFolder?>();
+                var files = await service.GetCurrentDepthFiles(pathData.CurrentPath);
+                var folders = await service.GetCurrentDepthFolders(pathData.CurrentPath); //later to be able to add folders to zp too
+               
                 return View(new DriveDownloadViewModel
                 {
                     Folders = folders,
@@ -260,8 +260,8 @@ namespace NCloud.Controllers
                 AddNewNotification(new Error(ex.Message));
                 return View(new DriveDownloadViewModel
                 {
-                    Folders = new List<CloudFolder?>(),
-                    Files = new List<CloudFile?>(),
+                    Folders = new List<CloudFolder>(),
+                    Files = new List<CloudFile>(),
                     ItemsForDownload = Array.Empty<string>().ToList()
                 });
             }
