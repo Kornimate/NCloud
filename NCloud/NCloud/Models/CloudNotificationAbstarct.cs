@@ -2,7 +2,7 @@
 
 namespace NCloud.Models
 {
-    public class ACloudNotification
+    public class CloudNotificationAbstarct
     {
         public string? Color { get; private set; }
         public string? Image { get; private set; }
@@ -11,7 +11,7 @@ namespace NCloud.Models
         public int Priority { get; private set; }
 
         [JsonConstructor]
-        public ACloudNotification(string? color, string? image, string? title, int priority, string? text)
+        public CloudNotificationAbstarct(string? color, string? image, string? title, int priority, string? text)
         {
             Color = color;
             Image = image;

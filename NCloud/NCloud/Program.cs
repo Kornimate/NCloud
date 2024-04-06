@@ -1,9 +1,11 @@
 using DNTCaptcha.Core;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using NCloud.Models;
 using NCloud.Services;
 using NCloud.Users;
+using NCloud.Users.Roles;
 
 namespace NCloud
 {
@@ -15,12 +17,13 @@ namespace NCloud
 
             builder.Services.AddDbContext<CloudDbContext>(options =>
             {
-                IConfigurationRoot configuration = builder.Configuration;
-                options.UseSqlServer(configuration.GetConnectionString("SqlServerConnection"));
+                options.UseSqlite(builder.Configuration.GetConnectionString("SQLiteConnection"));
                 options.UseLazyLoadingProxies();
             });
 
-            builder.Services.AddIdentity<CloudUser, IdentityRole>(options =>
+            builder.Services.AddDatabaseDeveloperPageExceptionFilter();
+
+            builder.Services.AddIdentity<CloudUser, CloudRole>(options =>
             {
                 options.Password.RequireDigit = true;
                 options.Password.RequiredLength = 8;
@@ -44,6 +47,8 @@ namespace NCloud
             builder.Services.AddDistributedMemoryCache();
 
             builder.Services.AddHttpContextAccessor();
+
+            builder.Services.AddAntiforgery(x => x.HeaderName = "X-CSRF-TOKEN");
 
             builder.Services.AddSession(options =>
             {

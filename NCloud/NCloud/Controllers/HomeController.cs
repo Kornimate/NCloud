@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using NCloud.Models;
 using NCloud.Services;
 using NCloud.Users;
+using NCloud.ViewModels;
 using System.Diagnostics;
 
 namespace NCloud.Controllers
@@ -11,15 +12,15 @@ namespace NCloud.Controllers
     {
         public HomeController(ICloudService service, UserManager<CloudUser> userManager, SignInManager<CloudUser> signInManager, IWebHostEnvironment env, ICloudNotificationService notifier) : base(service, userManager, signInManager, env, notifier) { }
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
-            return View();
+            return await Task.FromResult<IActionResult>(View());
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-        public IActionResult Error()
+        public async Task<IActionResult> Error()
         {
-            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+            return await Task.FromResult<IActionResult>(View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier }));
         }
     }
 }

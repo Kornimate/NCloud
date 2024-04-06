@@ -11,18 +11,23 @@ namespace NCloud.Controllers
     {
         public TerminalController(ICloudService service, UserManager<CloudUser> userManager, SignInManager<CloudUser> signInManager, IWebHostEnvironment env, ICloudNotificationService notifier) : base(service, userManager, signInManager, env, notifier) { }
 
-        public IActionResult Index(string? currentPath = null)
+        public async Task<IActionResult> Index(string? currentPath = null)
         {
-            currentPath ??= GetSessionUserPathData().CurrentPathShow;
+            currentPath ??= (await GetSessionUserPathData()).CurrentPathShow;
             return View(new TerminalViewModel
             {
                 CurrentDirectory = currentPath
             });
         }
 
-        public IActionResult EvaluateSingleLine(string? commandLine)
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Evaluate([FromBody]string command)
         {
-            return Content("Success");
+            if (command is null)
+                return BadRequest();
+
+            return await Task.FromResult<IActionResult>(Content("Success"));
         }
     }
 }

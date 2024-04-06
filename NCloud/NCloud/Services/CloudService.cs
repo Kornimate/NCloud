@@ -37,41 +37,47 @@ namespace NCloud.Services
         }
         public bool CreateBaseDirectory(CloudUser cloudUser)
         {
-            string userFolderPath = Path.Combine(env.WebRootPath, "CloudData", "UserData", cloudUser.Id);
-            if (!Directory.Exists(userFolderPath))
+            try
             {
-                Directory.CreateDirectory(userFolderPath);
-                CreateJsonContainerFile(userFolderPath);
-            }
-            string sharedFolderPath = Path.Combine(env.WebRootPath, "CloudData", "Public");
-            if (!Directory.Exists(sharedFolderPath))
-            {
-                Directory.CreateDirectory(sharedFolderPath);
-                CreateJsonContainerFile(sharedFolderPath);
-            }
-            string pathHelper = Path.Combine(env.WebRootPath, "CloudData", "Public", cloudUser.UserName);
-            if (!Directory.Exists(pathHelper))
-            {
-                Directory.CreateDirectory(pathHelper);
-                CreateJsonContainerFile(pathHelper);
-                AddFolderToJsonContainerFile(sharedFolderPath, cloudUser.UserName, cloudUser.UserName);
-            }
-            List<string> baseFolders = new List<string>() { "Documents", "Pictures", "Videos", "Music" };
-            foreach (string folder in baseFolders)
-            {
-                try
+                string userFolderPath = Path.Combine(env.WebRootPath, "CloudData", "Private", cloudUser.Id.ToString());
+
+                if (!Directory.Exists(userFolderPath))
+                {
+                    Directory.CreateDirectory(userFolderPath);
+                }
+
+                string sharedFolderPath = Path.Combine(env.WebRootPath, "CloudData", "Public");
+
+                if (!Directory.Exists(sharedFolderPath))
+                {
+                    Directory.CreateDirectory(sharedFolderPath);
+                }
+
+                string pathHelper = Path.Combine(env.WebRootPath, "CloudData", "Public", cloudUser.UserName);
+
+                if (!Directory.Exists(pathHelper))
+                {
+                    Directory.CreateDirectory(pathHelper);
+                }
+
+                List<string> baseFolders = new List<string>() { "Documents", "Pictures", "Videos", "Music" };
+
+                foreach (string folder in baseFolders)
                 {
                     pathHelper = Path.Combine(userFolderPath, folder);
-                    Directory.CreateDirectory(pathHelper);
-                    CreateJsonContainerFile(pathHelper);
-                    AddFolderToJsonContainerFile(userFolderPath, folder, cloudUser.UserName);
+                    if (!Directory.Exists(pathHelper))
+                    {
+                        Directory.CreateDirectory(pathHelper); 
+                    }
                 }
-                catch
-                {
-                    return false; //TODO: handle this false in method that called this method
-                }
+
+                return true;
             }
-            return true;
+            catch (Exception)
+            {
+                //TODO: reverse the directories
+                return false; //if anything can not be created -> fail the whole task
+            }
         }
 
         public void CreateDirectory(string folderName, string currentPath, string owner)
@@ -246,21 +252,12 @@ namespace NCloud.Services
             return await context.Users.FirstOrDefaultAsync(x => x.UserName == "Admin");
         }
 
-        public List<CloudFile?> GetCurrentDepthFiles(string currentPath)
+        public List<CloudFile> GetCurrentDepthFiles(string currentPath)
         {
             string path = ParseRootName(currentPath);
             try
             {
-                Task<JsonDataContainer?> task = Task.Run(() => ReadJsonContainerFileContent(path));
-                if (task.Wait(MAXWAITTIME))
-                {
-                    if (task.Result is null) throw new Exception("Invalid return value");
-                    return task.Result?.Files!.Select(x => new CloudFile(new FileInfo(Path.Combine(path, x.Key)), x.Value.Owner, x.Value.IsShared, x.Key)).ToList()!;
-                }
-                else
-                {
-                    throw new TimeoutException("Unable to manage Container File!");
-                }
+                return Directory.GetFiles(path).Select(x => new CloudFile(new FileInfo(Path.Combine(path, x)), "Nobody", false)).ToList();
             }
             catch
             {
@@ -287,21 +284,12 @@ namespace NCloud.Services
             return null;
         }
 
-        public List<CloudFolder?> GetCurrentDepthFolders(string currentPath)
+        public List<CloudFolder> GetCurrentDepthFolders(string currentPath)
         {
             string path = ParseRootName(currentPath);
             try
             {
-                Task<JsonDataContainer?> task = Task.Run(() => ReadJsonContainerFileContent(path));
-                if (task.Wait(MAXWAITTIME))
-                {
-                    if (task.Result is null) throw new Exception("Invalid return value");
-                    return task.Result?.Folders!.Select(x => new CloudFolder(new DirectoryInfo(Path.Combine(path, x.Key)), x.Value.Owner, x.Value.IsShared)).ToList()!;
-                }
-                else
-                {
-                    throw new TimeoutException("Unable to manage Container File!");
-                }
+                return Directory.GetDirectories(path).Select(x => new CloudFolder(new DirectoryInfo(Path.Combine(path,x)),"Nobody",false)).ToList(); 
             }
             catch
             {
@@ -441,7 +429,7 @@ namespace NCloud.Services
         {
             if (currentPath.StartsWith(USERROOTNAME))
             {
-                return currentPath.Replace(USERROOTNAME, Path.Combine(env.WebRootPath, "CloudData", "UserData"));
+                return currentPath.Replace(USERROOTNAME, Path.Combine(env.WebRootPath, "CloudData", "Private"));
             }
             else
             {

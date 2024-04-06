@@ -2,9 +2,9 @@
 
 namespace NCloud.Models
 {
-    public class PathData
+    public class SharedPathData
     {
-        public static string ROOTNAME { get => "@CLOUDROOT"; }
+        public static string ROOTNAME { get => "@SHAREDROOT"; }
         private const string SEPARATOR = "/";
 
         public string CurrentDirectory { get; private set; }
@@ -13,28 +13,19 @@ namespace NCloud.Models
         public string CurrentPathShow { get; private set; }
 
         [JsonConstructor]
-        public PathData(string currentDirectory, List<string> previousDirectories, string currentPath, string currentPathShow)
+        public SharedPathData(string currentDirectory, List<string> previousDirectories, string currentPath, string currentPathShow)
         {
             CurrentDirectory = currentDirectory;
             PreviousDirectories = previousDirectories;
             CurrentPath = currentPath;
             CurrentPathShow = currentPathShow;
         }
-        public PathData()
+        public SharedPathData()
         {
-            PreviousDirectories = new List<string>();
+            PreviousDirectories = new List<string>() { ROOTNAME };
             CurrentDirectory = String.Empty;
             CurrentPath = ROOTNAME;
             CurrentPathShow = ROOTNAME;
-        }
-
-        public void SetDefaultPathData(string? id)
-        {
-            if (id is null) return;
-            CurrentPath = Path.Combine(CurrentPath, id);
-            PreviousDirectories.Clear();
-            PreviousDirectories.Add(ROOTNAME);
-            PreviousDirectories.Add(id);
         }
         public string? TrySetFolder(string? folderName)
         {
@@ -62,19 +53,15 @@ namespace NCloud.Models
 
         public string? RemoveFolderFromPrevDirs()
         {
-            PreviousDirectories.RemoveAt(PreviousDirectories.Count - 1);
-            string? folder = PreviousDirectories.Last();
+            string? folder = ROOTNAME;
+            if (PreviousDirectories.Count > 1)
+            {
+                PreviousDirectories.RemoveAt(PreviousDirectories.Count - 1);
+                folder = PreviousDirectories.Last();
+            }
             CurrentDirectory = folder;
             CurrentPath = Path.Combine(PreviousDirectories.ToArray());
-            string end = String.Join(SEPARATOR, PreviousDirectories.Skip(2).ToArray());
-            if (end == String.Empty)
-            {
-                CurrentPathShow = ROOTNAME;
-            }
-            else
-            {
-                CurrentPathShow = String.Join(SEPARATOR, ROOTNAME,end);
-            }
+            CurrentPathShow = String.Join(SEPARATOR, PreviousDirectories.ToArray());
             return folder;
         }
     }

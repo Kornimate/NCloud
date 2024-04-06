@@ -6,7 +6,7 @@ using NCloud.Users;
 using NuGet.Protocol;
 using System.Drawing.Drawing2D;
 using System.Text.Json;
-using PathData = NCloud.Models.PathData;
+using CloudPathData = NCloud.Models.CloudPathData;
 
 namespace NCloud.Controllers
 {
@@ -34,75 +34,98 @@ namespace NCloud.Controllers
         }
 
         [NonAction]
-        protected PathData GetSessionUserPathData()
+        protected async Task<CloudPathData> GetSessionUserPathData()
         {
-            PathData data = null!;
+            CloudPathData data = null!;
             if (HttpContext.Session.Keys.Contains(USERCOOKIENAME))
             {
-                data = JsonSerializer.Deserialize<PathData>(HttpContext.Session.GetString(USERCOOKIENAME)!)!;
+                data = JsonSerializer.Deserialize<CloudPathData>(HttpContext.Session.GetString(USERCOOKIENAME)!)!;
             }
             else
             {
-                data = new PathData();
-                CloudUser? user = null;
-                Task.Run(async () =>
+                CloudUser? user = await userManager.GetUserAsync(User);
+                data = new CloudPathData();
+                data.SetDefaultPathData(user?.Id.ToString());
+                await SetSessionUserPathData(data);
+            }
+            return data;
+        }
+
+        [NonAction]
+        protected Task SetSessionUserPathData(CloudPathData pathData)
+        {
+            return Task.Run(() =>
+            {
+                if (pathData == null) return;
+                HttpContext.Session.SetString(USERCOOKIENAME, JsonSerializer.Serialize<CloudPathData>(pathData));
+            });
+        }
+
+        [NonAction]
+        protected async Task<SharedPathData> GetSessionSharedPathData()
+        {
+            return await Task.Run(() =>
+            {
+                SharedPathData data = null!;
+                if (HttpContext.Session.Keys.Contains(SHAREDCOOKIENAME))
                 {
-                    user = await userManager.GetUserAsync(User);
-                }).Wait();
-                data.SetDefaultPathData(user?.Id?.ToString());
-                SetSessionUserPathData(data);
-            }
-            return data;
+                    data = JsonSerializer.Deserialize<SharedPathData>(HttpContext.Session.GetString(SHAREDCOOKIENAME)!)!;
+                }
+                else
+                {
+                    data = new SharedPathData();
+                    HttpContext.Session.SetString(SHAREDCOOKIENAME, JsonSerializer.Serialize<SharedPathData>(data));
+                }
+                return data;
+            });
         }
 
         [NonAction]
-        protected void SetSessionUserPathData(PathData pathData)
+        protected Task<bool> SetSessionSharedPathData(SharedPathData pathData) //make it thread-safe
         {
-            if (pathData == null) return;
-            HttpContext.Session.SetString(USERCOOKIENAME, JsonSerializer.Serialize<PathData>(pathData));
-        }
-
-        [NonAction]
-        protected SharedData GetSessionSharedPathData()
-        {
-            SharedData data = null!;
-            if (HttpContext.Session.Keys.Contains(SHAREDCOOKIENAME))
+            return Task.Run(() =>
             {
-                data = JsonSerializer.Deserialize<SharedData>(HttpContext.Session.GetString(SHAREDCOOKIENAME)!)!;
-            }
-            else
-            {
-                data = new SharedData();
-                HttpContext.Session.SetString(SHAREDCOOKIENAME, JsonSerializer.Serialize<SharedData>(data));
-            }
-            return data;
+                try
+                {
+                    pathData ??= new SharedPathData();
+                    HttpContext.Session.SetString(SHAREDCOOKIENAME, JsonSerializer.Serialize<SharedPathData>(pathData));
+
+                    return true;
+                }
+                catch (Exception)
+                {
+                    return false;
+                }
+            });
         }
 
         [NonAction]
-        protected void SetSessionSharedPathData(SharedData pathData) //make it thread-safe
-        {
-            if (pathData == null) return;
-            HttpContext.Session.SetString(SHAREDCOOKIENAME, JsonSerializer.Serialize<SharedData>(pathData));
-        }
-
-        [NonAction]
-        protected IActionResult RedirectToLocal(string? returnUrl)
+        protected async Task<IActionResult> RedirectToLocal(string? returnUrl)
         {
             if (Url.IsLocalUrl(returnUrl))
             {
-                return Redirect(returnUrl);
+                return await Task.FromResult<IActionResult>(Redirect(returnUrl));
             }
             else
             {
-                return RedirectToAction(nameof(HomeController.Index), "Home");
+                return await Task.FromResult<IActionResult>(RedirectToAction(nameof(HomeController.Index), "Home"));
             }
         }
 
         [NonAction]
-        protected void AddNewNotification(ACloudNotification notification)
+        protected bool AddNewNotification(CloudNotificationAbstarct notification)
         {
-            notifier.AddNotification(notification);
-            TempData[NOTIFICATIONKEY] = notifier.GetNotificationQueue(); 
+            try
+            {
+                notifier.AddNotification(notification);
+                TempData[NOTIFICATIONKEY] = notifier.GetNotificationQueue();
+
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
         }
     }
 }

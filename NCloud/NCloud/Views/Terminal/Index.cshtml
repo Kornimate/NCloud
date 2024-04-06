@@ -10,23 +10,16 @@
             </div>
             <div class="title">CloudShell</div>
         </div>
-        <div class="body h-100" id="terminal">
-            @*< div id="prev-text" class="w-100"></div>
-            <div class="d-inline-flex w-100">
-            <span class="d-inline">Cloudroot/HelloWorld/Macska></span>
-            <input type="text" class="terminalinput d-inline" />
-            </div> *@
-        </div>
+        <div class="body h-100" id="terminal"></div>
+        @Html.AntiForgeryToken()
     </div>
 </div>
 
+<link rel="stylesheet" href="~/lib/jquery.terminal/css/jquery.terminal.min.css" />
 <script src="~/lib/jquery.terminal/js/jquery.terminal.min.js"></script>
 <script src="~/js/terminal.js"></script>
-<link rel="stylesheet" href="~/lib/jquery.terminal/css/jquery.terminal.min.css" />
 
 <script>
-    terminal = new TerminalCommand;
-
     jQuery(function ($, undefined) {
         $('#terminal').terminal(async function (command) {
             if (command !== '') {
@@ -34,7 +27,8 @@
                     window.open('@Url.Action("Details","Drive")','_self');
                     return;
                 }
-                var result = await terminal.eval(command.toLowerCase(), "@Url.Action("Evaluate","Terminal",new { input="@"})");
+                terminal = new TerminalCommand;
+                var result = await terminal.eval(command.toLowerCase(), "@Url.Action("Evaluate","Terminal")", document.querySelector('input[name="__RequestVerificationToken"]').value)
                 this.echo(result)
             }
         }, {
