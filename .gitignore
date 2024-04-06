@@ -77,3 +77,5 @@ _[Ss]cripts
 /NCloud/NCloud/wwwroot/CloudData
 *.db
 /NCloud/NCloud/TextFile.txt
+/NCloud/NCloud/database.db-shm
+/NCloud/NCloud/database.db-wal
