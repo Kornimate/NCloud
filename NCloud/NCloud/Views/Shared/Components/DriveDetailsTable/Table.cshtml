@@ -16,7 +16,7 @@
                         <details>
                             <summary>
                                 <span id="iconforitemtype">
-                                    <img src="@item.IconPath" width=" 20" height="20" class="item align-bottom">
+                                    <img src="@item.IconPath" width=" 20" height="20" class="item rounded align-center">
                                 </span>
                                 <a asp-action="Details" asp-route-folderName="@item.Info.Name" class="itemlink">@item.Info!.Name</a>
                             </summary>
@@ -81,9 +81,10 @@
                             </fieldset>
                             <div class="d-flex justify-content-end">
                                 <div class="btn-group mx-2" role="group">
-                                    <button type="button" class="btn btn-primary"><a asp-controller="Drive" asp-action="PubliciseFolder" asp-route-id="@item.Info.Name"><img src="~/utilities/globe.svg" width=" 20" height="20" class="rounded-circle align-middle" /></a></button>
-                                    <button type="button" class="btn btn-secondary"><a asp-controller="Drive" asp-action="Settings" asp-route-id="@item.Info.Name"><img src="~/utilities/gear.svg" width=" 20" height="20" class="rounded-circle align-middle" /></a></button>
-                                    <button type="button" class="btn btn-danger"><a asp-controller="Drive" asp-action="DeleteFolder" asp-route-folderName="@item.Info.Name"><img src="~/utilities/trash.svg" width=" 20" height="20" class="rounded-circle align-middle" /></a></button>
+                                    <button type="button" class="btn btn-primary"><a asp-controller="Drive" asp-action="PubliciseFolder" asp-route-id="@item.Info.Name"><img src="~/utilities/globe.svg" width=" 20" height="20" class="rounded align-middle" /></a></button>
+                                    <button type="button" class="btn btn-secondary"><a asp-controller="Drive" asp-action="ShareInAppFolder" asp-route-id="@item.Info.Name"><img src="~/utilities/share.svg" width=" 20" height="20" class="rounded align-middle" /></a></button>
+                                    <button type="button" class="btn btn-secondary"><a asp-controller="Drive" asp-action="Settings" asp-route-id="@item.Info.Name"><img src="~/utilities/gear.svg" width=" 20" height="20" class="rounded align-middle" /></a></button>
+                                    <button type="button" class="btn btn-danger"><a asp-controller="Drive" asp-action="DeleteFolder" asp-route-folderName="@item.Info.Name"><img src="~/utilities/trash.svg" width=" 20" height="20" class="rounded align-middle" /></a></button>
                                 </div>
                             </div>
                         </details>
@@ -100,7 +101,7 @@
                         <details>
                             <summary>
                                 <span id="iconforitemtype">
-                                    <img src="@item.IconPath" width=" 20" height="20" class="item align-bottom">
+                                    <img src="@item.IconPath" width=" 20" height="20" class="item rounded align-center">
                                 </span>
                                 <span class="itemlink">@item.Info!.Name</span>
                             </summary>
@@ -173,10 +174,11 @@
                             </fieldset>
                             <div class="d-flex justify-content-end">
                                 <div class="btn-group mx-2" role="group">
-                                    <button type="button" class="btn btn-primary"><a asp-controller="Drive" asp-action="PubliciseFile" asp-route-id="@item.Info.Name"><img src="~/utilities/globe.svg" width=" 20" height="20" class="rounded-circle align-middle" /></a></button>
-                                    <button type="button" class="btn btn-secondary"><a asp-controller="Editor" asp-action="Index" asp-route-fileName="@item.Info.Name"><img src="~/utilities/code-slash.svg" width=" 20" height="20" class="rounded-circle align-middle" /></a></button>
-                                    <button type="button" class="btn btn-secondary"><a asp-controller="Drive" asp-action="Settings" asp-route-id="@item.Info.Name"><img src="~/utilities/gear.svg" width=" 20" height="20" class="rounded-circle align-middle" /></a></button>
-                                    <button type="button" class="btn btn-danger"><a asp-controller="Drive" asp-action="DeleteFile" asp-route-id="@item.Info.Name"><img src="~/utilities/trash.svg" width=" 20" height="20" class="rounded-circle align-middle" /></a></button>
+                                    <button type="button" class="btn btn-primary"><a asp-controller="Drive" asp-action="PubliciseFile" asp-route-id="@item.Info.Name"><img src="~/utilities/globe.svg" width=" 20" height="20" class="rounded align-middle" /></a></button>
+                                    <button type="button" class="btn btn-secondary"><a asp-controller="Drive" asp-action="ShareInAppFile" asp-route-id="@item.Info.Name"><img src="~/utilities/share.svg" width=" 20" height="20" class="rounded align-middle" /></a></button>
+                                    <button type="button" class="btn btn-secondary"><a asp-controller="Editor" asp-action="Index" asp-route-fileName="@item.Info.Name"><img src="~/utilities/code-slash.svg" width=" 20" height="20" class="rounded align-middle" /></a></button>
+                                    <button type="button" class="btn btn-secondary"><a asp-controller="Drive" asp-action="Settings" asp-route-id="@item.Info.Name"><img src="~/utilities/gear.svg" width=" 20" height="20" class="rounded align-middle" /></a></button>
+                                    <button type="button" class="btn btn-danger"><a asp-controller="Drive" asp-action="DeleteFile" asp-route-id="@item.Info.Name"><img src="~/utilities/trash.svg" width=" 20" height="20" class="rounded align-middle" /></a></button>
                                 </div>
                             </div>
                         </details>

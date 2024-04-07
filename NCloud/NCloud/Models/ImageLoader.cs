@@ -22,7 +22,9 @@ namespace NCloud.Models
         {
             if (fileName == null) { return string.Empty; }
 
-            string extension = Path.GetExtension(fileName).ToLower()?[1..] ?? Constants.NoFileType;
+            string extensionFilter = Path.GetExtension(fileName).ToLower();
+
+            string extension =  extensionFilter != String.Empty ? extensionFilter[1..] : Constants.NoFileType;
 
             if (File.Exists(Path.Combine(Constants.IconsBasePath, $"{Constants.FileTypePrefix}{extension}{Constants.SuffixForIcons}")))
             {
