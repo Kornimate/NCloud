@@ -413,9 +413,24 @@ namespace NCloud.Controllers
             return RedirectToAction("DownloadItems");
         }
 
-        public async Task<IActionResult> ShareFolder(string folderName)
+        public async Task<IActionResult> ShareInAppDirectory(string directoryName)
         {
-            return await Task.FromResult<IActionResult>(RedirectToAction("Details"));
+            return Content("Succeess");
+        }
+
+        public async Task<IActionResult> PubliciseDirectory(string directoryName)
+        {
+            return Content("Succeess");
+        }
+
+        public async Task<IActionResult> ShareInAppFile(string fileName)
+        {
+            return Content("Succeess");
+        }
+
+        public async Task<IActionResult> PubliciseFile(string fileName)
+        {
+            return Content("Succeess");
         }
     }
 }

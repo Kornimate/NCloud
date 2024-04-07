@@ -81,8 +81,8 @@
                             </fieldset>
                             <div class="d-flex justify-content-end">
                                 <div class="btn-group mx-2" role="group">
-                                    <button type="button" class="btn btn-primary"><a asp-controller="Drive" asp-action="PubliciseFolder" asp-route-id="@item.Info.Name"><img src="~/utilities/globe.svg" width=" 20" height="20" class="rounded align-middle" /></a></button>
-                                    <button type="button" class="btn btn-secondary"><a asp-controller="Drive" asp-action="ShareInAppFolder" asp-route-id="@item.Info.Name"><img src="~/utilities/share.svg" width=" 20" height="20" class="rounded align-middle" /></a></button>
+                                    <button type="button" class="btn btn-primary"><a asp-controller="Drive" asp-action="PubliciseDirectory" asp-route-id="@item.Info.Name"><img src="~/utilities/globe.svg" width=" 20" height="20" class="rounded align-middle" /></a></button>
+                                    <button type="button" class="btn btn-secondary"><a asp-controller="Drive" asp-action="ShareInAppDirectory" asp-route-id="@item.Info.Name"><img src="~/utilities/share.svg" width=" 20" height="20" class="rounded align-middle" /></a></button>
                                     <button type="button" class="btn btn-secondary"><a asp-controller="Drive" asp-action="Settings" asp-route-id="@item.Info.Name"><img src="~/utilities/gear.svg" width=" 20" height="20" class="rounded align-middle" /></a></button>
                                     <button type="button" class="btn btn-danger"><a asp-controller="Drive" asp-action="DeleteFolder" asp-route-folderName="@item.Info.Name"><img src="~/utilities/trash.svg" width=" 20" height="20" class="rounded align-middle" /></a></button>
                                 </div>
