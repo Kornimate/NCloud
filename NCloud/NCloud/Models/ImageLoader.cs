@@ -22,10 +22,14 @@ namespace NCloud.Models
         {
             if (fileName == null) { return string.Empty; }
 
-            string extension = Path.GetExtension(fileName).ToLower()?[1..] ?? "general";
+            string extension = Path.GetExtension(fileName).ToLower()?[1..] ?? Constants.NoFileType;
 
-            return $"{Constants.PrefixForIcons}{extension}{Constants.SuffixForIcons}";
-            //return Constants.IconPaths[extension!]; //uncomment if filetypes added to Contants.IconPaths
+            if (File.Exists(Path.Combine(Constants.IconsBasePath, $"{Constants.FileTypePrefix}{extension}{Constants.SuffixForIcons}")))
+            {
+                return $"{Constants.PrefixForIcons}{extension}{Constants.SuffixForIcons}";
+            }
+
+            return $"{Constants.PrefixForIcons}{Constants.UnkownFileType}{Constants.SuffixForIcons}";
         }
     }
 }

@@ -65,6 +65,9 @@
 	  <Content Update="wwwroot\utilities\download.svg">
 	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 	  </Content>
+	  <Content Update="wwwroot\utilities\filetype-notype.svg">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </Content>
 	  <Content Update="wwwroot\utilities\filetype-general.svg">
 	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 	  </Content>
@@ -176,6 +179,9 @@
 	  <Content Update="wwwroot\utilities\filetype-txt.svg">
 	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 	  </Content>
+	  <Content Update="wwwroot\utilities\filetype-unknown.svg">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </Content>
 	  <Content Update="wwwroot\utilities\filetype-wav.svg">
 	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 	  </Content>
@@ -197,9 +203,6 @@
 	  <Content Update="wwwroot\utilities\folder.svg">
 	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 	  </Content>
-	  <Content Update="wwwroot\utilities\folder2.svg">
-	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-	  </Content>
 	  <Content Update="wwwroot\utilities\forward.svg">
 	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 	  </Content>
@@ -209,13 +212,16 @@
 	  <Content Update="wwwroot\utilities\globe.svg">
 	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 	  </Content>
-	  <Content Update="wwwroot\utilities\patch-plus.svg">
-	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-	  </Content>
 	  <Content Update="wwwroot\utilities\person-bounding-box.svg">
 	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 	  </Content>
 	  <Content Update="wwwroot\utilities\person-circle.svg">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </Content>
+	  <Content Update="wwwroot\utilities\qr-code.svg">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </Content>
+	  <Content Update="wwwroot\utilities\share.svg">
 	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 	  </Content>
 	  <Content Update="wwwroot\utilities\soundwave.svg">
