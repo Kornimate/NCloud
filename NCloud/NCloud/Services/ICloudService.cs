@@ -1,5 +1,6 @@
 ﻿using NCloud.Models;
 using NCloud.Users;
+using System.Security.Claims;
 
 namespace NCloud.Services
 {
@@ -17,5 +18,6 @@ namespace NCloud.Services
         Tuple<List<CloudFile?>, List<CloudFolder?>> GetCurrentUserIndexData();
         bool DirectoryExists(string? pathAndName);
         Task<DirectoryInfo> GetFolderByPath(string path, string folderName);
+        Task<bool> ConnectDirectoryToWeb(string currentPath, string directoryName, ClaimsPrincipal userPrincipal);
     }
 }

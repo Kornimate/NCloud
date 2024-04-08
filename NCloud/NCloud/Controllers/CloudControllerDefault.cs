@@ -34,7 +34,7 @@ namespace NCloud.Controllers
         }
 
         [NonAction]
-        protected async Task<CloudPathData> GetSessionUserPathData()
+        protected async Task<CloudPathData> GetSessionCloudPathData()
         {
             CloudPathData data = null!;
             if (HttpContext.Session.Keys.Contains(USERCOOKIENAME))
@@ -46,13 +46,13 @@ namespace NCloud.Controllers
                 CloudUser? user = await userManager.GetUserAsync(User);
                 data = new CloudPathData();
                 data.SetDefaultPathData(user?.Id.ToString());
-                await SetSessionUserPathData(data);
+                await SetSessionCloudPathData(data);
             }
             return data;
         }
 
         [NonAction]
-        protected Task SetSessionUserPathData(CloudPathData pathData)
+        protected Task SetSessionCloudPathData(CloudPathData pathData)
         {
             return Task.Run(() =>
             {

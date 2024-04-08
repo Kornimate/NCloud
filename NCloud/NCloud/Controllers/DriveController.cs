@@ -26,7 +26,7 @@ namespace NCloud.Controllers
         // GET: DriveController/Details/5
         public async Task<IActionResult> Details(string? folderName = null)
         {
-            CloudPathData pathdata = await GetSessionUserPathData();
+            CloudPathData pathdata = await GetSessionCloudPathData();
 
             string currentPath = String.Empty;
 
@@ -39,7 +39,7 @@ namespace NCloud.Controllers
                 currentPath = pathdata.CurrentPath;
             }
 
-            await SetSessionUserPathData(pathdata);
+            await SetSessionCloudPathData(pathdata);
 
             try
             {
@@ -58,13 +58,13 @@ namespace NCloud.Controllers
 
         public async Task<IActionResult> Back()
         {
-            CloudPathData pathdata = await GetSessionUserPathData();
+            CloudPathData pathdata = await GetSessionCloudPathData();
 
             if (pathdata.PreviousDirectories.Count > 2)
             {
                 pathdata.RemoveFolderFromPrevDirs();
 
-                await SetSessionUserPathData(pathdata);
+                await SetSessionCloudPathData(pathdata);
             }
 
             return RedirectToAction("Details", "Drive");
@@ -86,7 +86,7 @@ namespace NCloud.Controllers
                     throw new Exception("Folder name must be at least one character!");
                 }
 
-                await service.CreateDirectory(folderName!, (await GetSessionUserPathData()).CurrentPath);
+                await service.CreateDirectory(folderName!, (await GetSessionCloudPathData()).CurrentPath);
 
                 AddNewNotification(new Success("Folder is created!"));
             }
@@ -110,7 +110,7 @@ namespace NCloud.Controllers
                 return RedirectToAction("Details", "Drive");
             }
 
-            CloudPathData pathData = await GetSessionUserPathData();
+            CloudPathData pathData = await GetSessionCloudPathData();
 
             for (int i = 0; i < files.Count; i++)
             {
@@ -152,7 +152,7 @@ namespace NCloud.Controllers
                     throw new Exception("Folder name must be at least one character!");
                 }
 
-                if (!(await service.RemoveDirectory(folderName!, (await GetSessionUserPathData()).CurrentPath)))
+                if (!(await service.RemoveDirectory(folderName!, (await GetSessionCloudPathData()).CurrentPath)))
                 {
                     throw new Exception("Folder is System Folder!");
                 }
@@ -176,7 +176,7 @@ namespace NCloud.Controllers
                     throw new Exception("File name must be at least one character!");
                 }
 
-                if (!(await service.RemoveFile(fileName!, (await GetSessionUserPathData()).CurrentPath)))
+                if (!(await service.RemoveFile(fileName!, (await GetSessionCloudPathData()).CurrentPath)))
                 {
                     throw new Exception("File is System Folder!");
                 }
@@ -193,7 +193,7 @@ namespace NCloud.Controllers
 
         public async Task<IActionResult> DeleteItems()
         {
-            CloudPathData pathData = await GetSessionUserPathData();
+            CloudPathData pathData = await GetSessionCloudPathData();
             try
             {
                 var files = await service.GetCurrentDepthFiles(pathData.CurrentPath);
@@ -227,7 +227,7 @@ namespace NCloud.Controllers
 
             int falseCounter = 0;
 
-            CloudPathData pathData = await GetSessionUserPathData();
+            CloudPathData pathData = await GetSessionCloudPathData();
 
             foreach (string itemName in vm.ItemsForDelete ?? new())
             {
@@ -296,7 +296,7 @@ namespace NCloud.Controllers
         }
         public async Task<IActionResult> DownloadItems()
         {
-            CloudPathData pathData = await GetSessionUserPathData();
+            CloudPathData pathData = await GetSessionCloudPathData();
 
             try
             {
@@ -327,7 +327,7 @@ namespace NCloud.Controllers
         public async Task<IActionResult> DownloadItemsFromForm([Bind("ItemsForDownload")] DriveDownloadViewModel vm)
         {
 
-            CloudPathData pathData = await GetSessionUserPathData();
+            CloudPathData pathData = await GetSessionCloudPathData();
 
             string tempFile = Path.GetTempFileName();
 
@@ -413,22 +413,52 @@ namespace NCloud.Controllers
             return RedirectToAction("DownloadItems");
         }
 
-        public async Task<IActionResult> ShareInAppDirectory(string directoryName)
+        public async Task<IActionResult> ConnectDirectoryToApp(string directoryName)
         {
             return Content("Succeess");
         }
 
-        public async Task<IActionResult> PubliciseDirectory(string directoryName)
+        public async Task<IActionResult> ConnectDirectoryToWeb(string directoryName)
+        {
+            CloudPathData session = await GetSessionCloudPathData();
+            if (await service.ConnectDirectoryToWeb(session.CurrentPath, directoryName, User))
+            {
+                AddNewNotification(new Success("Directory connected to web"));
+            }
+            else
+            {
+                AddNewNotification(new Success("Unable to connect directory to web!"));
+            }
+
+            return RedirectToAction(nameof(Details));
+        }
+
+        public async Task<IActionResult> ConnectFileToApp(string fileName)
         {
             return Content("Succeess");
         }
 
-        public async Task<IActionResult> ShareInAppFile(string fileName)
+        public async Task<IActionResult> ConnectFileToWeb(string fileName)
         {
             return Content("Succeess");
         }
 
-        public async Task<IActionResult> PubliciseFile(string fileName)
+        public async Task<IActionResult> DisonnectDirectoryFromApp(string directoryName)
+        {
+            return Content("Succeess");
+        }
+
+        public async Task<IActionResult> DisconnectDirectoryFromWeb(string directoryName)
+        {
+            return Content("Succeess");
+        }
+
+        public async Task<IActionResult> DisconnectFileFromApp(string fileName)
+        {
+            return Content("Succeess");
+        }
+
+        public async Task<IActionResult> DisconnectFileFromWeb(string fileName)
         {
             return Content("Succeess");
         }

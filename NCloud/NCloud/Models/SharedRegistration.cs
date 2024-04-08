@@ -25,11 +25,11 @@ namespace NCloud.Models
 
         [Required]
         [NotNull]
-        public bool PublicShared { get; set; }
+        public bool ConnectedToWeb { get; set; }
 
         [Required]
         [NotNull]
-        public bool InnerShared { get; set; }
+        public bool ConnectedToApp { get; set; }
 
         public virtual bool IsFile() { return false; }
         public virtual bool IsFolder() { return false; }

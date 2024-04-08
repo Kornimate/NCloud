@@ -209,7 +209,7 @@
 	  <Content Update="wwwroot\utilities\gear.svg">
 	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 	  </Content>
-	  <Content Update="wwwroot\utilities\globe.svg">
+	  <Content Update="wwwroot\utilities\public.svg">
 	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 	  </Content>
 	  <Content Update="wwwroot\utilities\person-bounding-box.svg">

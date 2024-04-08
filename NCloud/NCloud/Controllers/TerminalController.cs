@@ -13,7 +13,7 @@ namespace NCloud.Controllers
 
         public async Task<IActionResult> Index(string? currentPath = null)
         {
-            currentPath ??= (await GetSessionUserPathData()).CurrentPathShow;
+            currentPath ??= (await GetSessionCloudPathData()).CurrentPathShow;
             return View(new TerminalViewModel
             {
                 CurrentDirectory = currentPath

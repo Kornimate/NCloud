@@ -52,7 +52,7 @@
                                             Shared in @Constants.AppName
                                         </td>
                                         <td>
-                                            @if (item.IsSharedInApp)
+                                            @if (item.IsConnectedToApp)
                                             {
                                                 <span>✔</span>
                                             }
@@ -67,7 +67,7 @@
                                             Public
                                         </td>
                                         <td>
-                                            @if (item.IsPublic)
+                                            @if (item.IsConnectedToWeb)
                                             {
                                                 <span>✔</span>
                                             }
@@ -81,10 +81,24 @@
                             </fieldset>
                             <div class="d-flex justify-content-end">
                                 <div class="btn-group mx-2" role="group">
-                                    <button type="button" class="btn btn-primary"><a asp-controller="Drive" asp-action="PubliciseDirectory" asp-route-id="@item.Info.Name"><img src="~/utilities/globe.svg" width=" 20" height="20" class="rounded align-middle" /></a></button>
-                                    <button type="button" class="btn btn-secondary"><a asp-controller="Drive" asp-action="ShareInAppDirectory" asp-route-id="@item.Info.Name"><img src="~/utilities/share.svg" width=" 20" height="20" class="rounded align-middle" /></a></button>
-                                    <button type="button" class="btn btn-secondary"><a asp-controller="Drive" asp-action="Settings" asp-route-id="@item.Info.Name"><img src="~/utilities/gear.svg" width=" 20" height="20" class="rounded align-middle" /></a></button>
-                                    <button type="button" class="btn btn-danger"><a asp-controller="Drive" asp-action="DeleteFolder" asp-route-folderName="@item.Info.Name"><img src="~/utilities/trash.svg" width=" 20" height="20" class="rounded align-middle" /></a></button>
+                                    @if (item.IsConnectedToWeb)
+                                    {
+                                        <a asp-controller="Drive" class="btn btn-primary "asp-action="DisconnectDirectoryFromWeb" asp-route-directoryName="@item.Info.Name"><img src="~/utilities/nopublic.svg" width=" 20" height="20" class="rounded align-middle" /></a>
+                                    }
+                                    else
+                                    {
+                                        <a asp-controller="Drive" class="btn btn-primary "asp-action="ConnectDirectoryToWeb" asp-route-directoryName="@item.Info.Name"><img src="~/utilities/public.svg" width=" 20" height="20" class="rounded align-middle" /></a>
+                                    }
+                                    @if (item.IsConnectedToApp)
+                                    {
+                                        <a asp-controller="Drive" class="btn btn-secondary "asp-action="DisconnectDirectoryToApp" asp-route-directoryName="@item.Info.Name"><img src="~/utilities/noshare.svg" width=" 20" height="20" class="rounded align-middle" /></a>   
+                                    }
+                                    else
+                                    {
+                                        <a asp-controller="Drive" class="btn btn-secondary "asp-action="ConnectDirectoryToApp" asp-route-directoryName="@item.Info.Name"><img src="~/utilities/share.svg" width=" 20" height="20" class="rounded align-middle" /></a>  
+                                    }
+                                    <a asp-controller="Drive" class="btn btn-secondary "asp-action="Settings" asp-route-id="@item.Info.Name"><img src="~/utilities/gear.svg" width=" 20" height="20" class="rounded align-middle" /></a>
+                                    <a asp-controller="Drive" class="btn btn-danger "asp-action="DeleteFolder" asp-route-folderName="@item.Info.Name"><img src="~/utilities/trash.svg" width=" 20" height="20" class="rounded align-middle" /></a>
                                 </div>
                             </div>
                         </details>
@@ -145,7 +159,7 @@
                                             Shared in @Constants.AppName
                                         </td>
                                         <td>
-                                            @if (item.IsSharedInApp)
+                                            @if (item.IsConnectedToApp)
                                             {
                                                 <span>✔</span>
                                             }
@@ -160,7 +174,7 @@
                                             Public
                                         </td>
                                         <td>
-                                            @if (item.IsPublic)
+                                            @if (item.IsConnectedToWeb)
                                             {
                                                 <span>✔</span>
                                             }
@@ -174,11 +188,25 @@
                             </fieldset>
                             <div class="d-flex justify-content-end">
                                 <div class="btn-group mx-2" role="group">
-                                    <button type="button" class="btn btn-primary"><a asp-controller="Drive" asp-action="PubliciseFile" asp-route-id="@item.Info.Name"><img src="~/utilities/globe.svg" width=" 20" height="20" class="rounded align-middle" /></a></button>
-                                    <button type="button" class="btn btn-secondary"><a asp-controller="Drive" asp-action="ShareInAppFile" asp-route-id="@item.Info.Name"><img src="~/utilities/share.svg" width=" 20" height="20" class="rounded align-middle" /></a></button>
-                                    <button type="button" class="btn btn-secondary"><a asp-controller="Editor" asp-action="Index" asp-route-fileName="@item.Info.Name"><img src="~/utilities/code-slash.svg" width=" 20" height="20" class="rounded align-middle" /></a></button>
-                                    <button type="button" class="btn btn-secondary"><a asp-controller="Drive" asp-action="Settings" asp-route-id="@item.Info.Name"><img src="~/utilities/gear.svg" width=" 20" height="20" class="rounded align-middle" /></a></button>
-                                    <button type="button" class="btn btn-danger"><a asp-controller="Drive" asp-action="DeleteFile" asp-route-id="@item.Info.Name"><img src="~/utilities/trash.svg" width=" 20" height="20" class="rounded align-middle" /></a></button>
+                                    @if (item.IsConnectedToWeb)
+                                    {
+                                        <a asp-controller="Drive" class="btn btn-primary "asp-action="DisconnectFileFromWeb" asp-route-fileName="@item.Info.Name"><img src="~/utilities/nopublic.svg" width=" 20" height="20" class="rounded align-middle" /></a>
+                                    }
+                                    else
+                                    {
+                                        <a asp-controller="Drive" class="btn btn-primary "asp-action="ConnectFileToWeb" asp-route-fileName="@item.Info.Name"><img src="~/utilities/public.svg" width=" 20" height="20" class="rounded align-middle" /></a>
+                                    }
+                                    @if (item.IsConnectedToApp)
+                                    {
+                                        <a asp-controller="Drive" class="btn btn-secondary "asp-action="DisconnectFileToApp" asp-route-fileName="@item.Info.Name"><img src="~/utilities/noshare.svg" width=" 20" height="20" class="rounded align-middle" /></a>   
+                                    }
+                                    else
+                                    {
+                                        <a asp-controller="Drive" class="btn btn-secondary "asp-action="ConnectFileToApp" asp-route-fileName="@item.Info.Name"><img src="~/utilities/share.svg" width=" 20" height="20" class="rounded align-middle" /></a>  
+                                    }
+                                    <a asp-controller="Editor" class="btn btn-secondary" asp-action="Index" asp-route-fileName="@item.Info.Name"><img src="~/utilities/code-slash.svg" width=" 20" height="20" class="rounded align-middle" /></a>
+                                    <a asp-controller="Drive" class="btn btn-secondary"asp-action="Settings" asp-route-id="@item.Info.Name"><img src="~/utilities/gear.svg" width=" 20" height="20" class="rounded align-middle" /></a>
+                                    <a asp-controller="Drive" class="btn btn-danger"asp-action="DeleteFile" asp-route-id="@item.Info.Name"><img src="~/utilities/trash.svg" width=" 20" height="20" class="rounded align-middle" /></a>
                                 </div>
                             </div>
                         </details>

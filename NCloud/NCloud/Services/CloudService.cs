@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Identity;
 using System.ComponentModel;
 using static NuGet.Packaging.PackagingConstants;
 using NCloud.ConstantData;
+using System.Security.Claims;
 
 namespace NCloud.Services
 {
@@ -16,11 +17,13 @@ namespace NCloud.Services
     {
         private readonly CloudDbContext context;
         private readonly IWebHostEnvironment env;
+        private readonly UserManager<CloudUser> userManager;
 
-        public CloudService(CloudDbContext context, IWebHostEnvironment env)
+        public CloudService(CloudDbContext context, IWebHostEnvironment env, UserManager<CloudUser> userManager)
         {
             this.context = context;
             this.env = env;
+            this.userManager = userManager;
 
         }
         public async Task<bool> CreateBaseDirectory(CloudUser cloudUser)
@@ -192,7 +195,7 @@ namespace NCloud.Services
 
             try
             {
-                return await Task.FromResult<List<CloudFile>>(Directory.GetFiles(path).Select(x => new CloudFile(new FileInfo(Path.Combine(path, x)), false, false)).ToList());
+                return await Task.FromResult<List<CloudFile>>(Directory.GetFiles(path).Select(x => new CloudFile(new FileInfo(Path.Combine(path, x)), false, false)).OrderBy(x => x.Info.Name).ToList());
             }
             catch
             {
@@ -203,9 +206,14 @@ namespace NCloud.Services
         public async Task<List<CloudFolder>> GetCurrentDepthDirectories(string currentPath)
         {
             string path = ParseRootName(currentPath);
+
+            CloudUser? user = await GetAdmin();
+
+            var websharedfolders = user?.SharedFolders.Where(x => x.ConnectedToWeb && x.PathFromRoot == currentPath).Select(x => x.Name).ToList() ?? new();
+
             try
             {
-                return await Task.FromResult<List<CloudFolder>>(Directory.GetDirectories(path).Select(x => new CloudFolder(new DirectoryInfo(Path.Combine(path, x)), false, false)).ToList());
+                return await Task.FromResult<List<CloudFolder>>(Directory.GetDirectories(path).Select(x => new CloudFolder(new DirectoryInfo(Path.Combine(path, x)), false, websharedfolders.Contains(Path.GetFileName(x)!))).OrderBy(x => x.Info.Name).ToList());
             }
             catch
             {
@@ -307,6 +315,42 @@ namespace NCloud.Services
         public async Task<DirectoryInfo> GetFolderByPath(string serverPath, string folderName)
         {
             return await Task.FromResult<DirectoryInfo>(new DirectoryInfo(Directory.GetDirectories(serverPath, folderName).First()));
+        }
+
+        public async Task<bool> ConnectDirectoryToWeb(string currentPath, string directoryName, ClaimsPrincipal userPrincipal)
+        {
+            try
+            {
+                CloudUser user = await userManager.GetUserAsync(userPrincipal);
+
+                SharedFolder? sharedFolder = await context.SharedFolders.FirstOrDefaultAsync(x => x.PathFromRoot == currentPath && x.Name == directoryName && x.Owner == user);
+
+                if (sharedFolder is null)
+                {
+                    context.SharedFolders.Add(new SharedFolder
+                    {
+                        Name = directoryName,
+                        PathFromRoot = currentPath,
+                        Owner = user,
+                        ConnectedToWeb = true,
+                        ConnectedToApp = false
+                    });
+                }
+                else
+                {
+                    sharedFolder.ConnectedToWeb = true;
+
+                    context.SharedFolders.Update(sharedFolder);
+                }
+
+                await context.SaveChangesAsync();
+
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
         }
     }
 }

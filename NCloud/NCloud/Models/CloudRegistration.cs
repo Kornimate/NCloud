@@ -3,13 +3,13 @@
     public abstract class CloudRegistration
     {
         public string? IconPath { get; set; }
-        public bool IsSharedInApp { get; set; }
-        public bool IsPublic { get; set; }
+        public bool IsConnectedToApp { get; set; }
+        public bool IsConnectedToWeb { get; set; }
         public CloudRegistration(bool isSharedInApp, bool isPublic, string? fileName = null)
         {
             IconPath = null!;
-            IsSharedInApp = isSharedInApp;
-            IsPublic = isPublic;
+            IsConnectedToApp = isSharedInApp;
+            IsConnectedToWeb = isPublic;
         }
 
         public abstract bool IsFile();
