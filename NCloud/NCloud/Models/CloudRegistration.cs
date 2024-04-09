@@ -3,6 +3,7 @@
     public abstract class CloudRegistration
     {
         public string? IconPath { get; set; }
+        public string? SharedName { get; set; }
         public bool IsConnectedToApp { get; set; }
         public bool IsConnectedToWeb { get; set; }
         public CloudRegistration(bool isSharedInApp, bool isPublic, string? fileName = null)

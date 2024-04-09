@@ -18,7 +18,7 @@
                                 <span id="iconforitemtype">
                                     <img src="@item.IconPath" width=" 20" height="20" class="item align-bottom">
                                 </span>
-                                <a asp-action="Details" asp-route-folderName="@item.Info.Name" class="itemlink">@item.Info!.Name</a>
+                                <a asp-action="Details" asp-route-folderName="@item.SharedName" class="itemlink">@item.SharedName</a>
                             </summary>
                             <fieldset class="border border-dark p-2 m-2 rounded">
                                 <legend class="btn btn-outline-primary rounded-pill w-auto">Details</legend>
@@ -36,7 +36,7 @@
                                             Created Time
                                         </td>
                                         <td>
-                                            @item.Info.CreationTime
+                                            @* @item.Info.CreationTime *@
                                         </td>
                                     </tr>
                                     <tr>
@@ -44,7 +44,7 @@
                                             Last Modified Time
                                         </td>
                                         <td>
-                                            @item.Info.LastWriteTime
+                                            @* @item.Info.LastWriteTime *@
                                         </td>
                                     </tr>
                                 </table>
@@ -74,7 +74,7 @@
                                 <span id="iconforitemtype">
                                     <img src="@item.IconPath" width=" 20" height="20" class="item align-bottom">
                                 </span>
-                                <span class="itemlink">@item.Info!.Name</span>
+                                <span class="itemlink">@item.SharedName</span>
                             </summary>
                             <fieldset class="border border-dark p-2 m-2 rounded">
                                 <legend class="btn btn-outline-primary rounded-pill w-auto">Details</legend>
@@ -92,7 +92,7 @@
                                             Created Time
                                         </td>
                                         <td>
-                                            @item.Info.CreationTime
+                                            @* @item.Info.CreationTime *@
                                         </td>
                                     </tr>
                                     <tr>
@@ -100,7 +100,7 @@
                                             Last Modified Time
                                         </td>
                                         <td>
-                                            @item.Info.LastWriteTime
+                                            @* @item.Info.LastWriteTime *@
                                         </td>
                                     </tr>
                                     <tr>
@@ -108,7 +108,7 @@
                                             Size
                                         </td>
                                         <td>
-                                            @item.Info.Length Bytes
+                                            @* @item.Info.Length Bytes *@
                                         </td>
                                     </tr>
                                     <tr>

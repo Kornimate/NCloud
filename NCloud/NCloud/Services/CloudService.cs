@@ -189,7 +189,7 @@ namespace NCloud.Services
             return await context.Users.FirstOrDefaultAsync(x => x.UserName == Constants.AdminUserName);
         }
 
-        public async Task<List<CloudFile>> GetCurrentDepthFiles(string currentPath)
+        public async Task<List<CloudFile>> GetCurrentDepthCloudFiles(string currentPath)
         {
             string path = ParseRootName(currentPath);
 
@@ -203,17 +203,18 @@ namespace NCloud.Services
             }
         }
 
-        public async Task<List<CloudFolder>> GetCurrentDepthDirectories(string currentPath)
+        public async Task<List<CloudFolder>> GetCurrentDepthCloudDirectories(string currentPath)
         {
             string path = ParseRootName(currentPath);
 
             CloudUser? user = await GetAdmin();
 
             var websharedfolders = user?.SharedFolders.Where(x => x.ConnectedToWeb && x.PathFromRoot == currentPath).Select(x => x.Name).ToList() ?? new();
+            var appsharedfolders = user?.SharedFolders.Where(x => x.ConnectedToApp && x.PathFromRoot == currentPath).Select(x => x.Name).ToList() ?? new();
 
             try
             {
-                return await Task.FromResult<List<CloudFolder>>(Directory.GetDirectories(path).Select(x => new CloudFolder(new DirectoryInfo(Path.Combine(path, x)), false, websharedfolders.Contains(Path.GetFileName(x)!))).OrderBy(x => x.Info.Name).ToList());
+                return await Task.FromResult<List<CloudFolder>>(Directory.GetDirectories(path).Select(x => new CloudFolder(new DirectoryInfo(Path.Combine(path, x)), appsharedfolders.Contains(Path.GetFileName(x)!), websharedfolders.Contains(Path.GetFileName(x)!))).OrderBy(x => x.Info.Name).ToList());
             }
             catch
             {
@@ -351,6 +352,255 @@ namespace NCloud.Services
             {
                 return false;
             }
+        }
+
+        public async Task<bool> ConnectDirectoryToApp(string currentPath, string directoryName, ClaimsPrincipal userPrincipal)
+        {
+            try
+            {
+                CloudUser user = await userManager.GetUserAsync(userPrincipal);
+
+                SharedFolder? sharedFolder = await context.SharedFolders.FirstOrDefaultAsync(x => x.PathFromRoot == currentPath && x.Name == directoryName && x.Owner == user);
+
+                if (sharedFolder is null)
+                {
+                    context.SharedFolders.Add(new SharedFolder
+                    {
+                        Name = directoryName,
+                        PathFromRoot = currentPath,
+                        Owner = user,
+                        ConnectedToWeb = false,
+                        ConnectedToApp = true
+                    });
+                }
+                else
+                {
+                    sharedFolder.ConnectedToApp = true;
+
+                    context.SharedFolders.Update(sharedFolder);
+                }
+
+                await context.SaveChangesAsync();
+
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
+        public async Task<bool> DisonnectDirectoryFromApp(string currentPath, string directoryName, ClaimsPrincipal userPrincipal)
+        {
+            try
+            {
+                CloudUser user = await userManager.GetUserAsync(userPrincipal);
+
+                SharedFolder? sharedFolder = await context.SharedFolders.FirstOrDefaultAsync(x => x.PathFromRoot == currentPath && x.Name == directoryName && x.Owner == user);
+
+                if (sharedFolder is null)
+                {
+                    return false;
+                }
+
+                if (sharedFolder.ConnectedToWeb)
+                {
+                    sharedFolder.ConnectedToApp = false;
+
+                    await context.SaveChangesAsync();
+
+                    return true;
+                }
+
+                context.SharedFolders.Remove(sharedFolder);
+
+                await context.SaveChangesAsync();
+
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
+        public async Task<bool> DisonnectDirectoryFromWeb(string currentPath, string directoryName, ClaimsPrincipal userPrincipal)
+        {
+            try
+            {
+                CloudUser user = await userManager.GetUserAsync(userPrincipal);
+
+                SharedFolder? sharedFolder = await context.SharedFolders.FirstOrDefaultAsync(x => x.PathFromRoot == currentPath && x.Name == directoryName && x.Owner == user);
+
+                if (sharedFolder is null)
+                {
+                    return false;
+                }
+
+                if (sharedFolder.ConnectedToApp)
+                {
+                    sharedFolder.ConnectedToWeb = false;
+
+                    await context.SaveChangesAsync();
+
+                    return true;
+                }
+
+                context.SharedFolders.Remove(sharedFolder);
+
+                await context.SaveChangesAsync();
+
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
+        public async Task<bool> ConnectFileToApp(string currentPath, string fileName, ClaimsPrincipal userPrincipal)
+        {
+            try
+            {
+                CloudUser user = await userManager.GetUserAsync(userPrincipal);
+
+                SharedFile? sharedFile = await context.SharedFiles.FirstOrDefaultAsync(x => x.PathFromRoot == currentPath && x.Name == fileName && x.Owner == user);
+
+                if (sharedFile is null)
+                {
+                    context.SharedFiles.Add(new SharedFile
+                    {
+                        Name = fileName,
+                        PathFromRoot = currentPath,
+                        Owner = user,
+                        ConnectedToWeb = false,
+                        ConnectedToApp = true
+                    });
+                }
+                else
+                {
+                    sharedFile.ConnectedToApp = true;
+
+                    context.SharedFiles.Update(sharedFile);
+                }
+
+                await context.SaveChangesAsync();
+
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
+        public async Task<bool> ConnectFileToWeb(string currentPath, string fileName, ClaimsPrincipal userPrincipal)
+        {
+            try
+            {
+                CloudUser user = await userManager.GetUserAsync(userPrincipal);
+
+                SharedFile? sharedFile = await context.SharedFiles.FirstOrDefaultAsync(x => x.PathFromRoot == currentPath && x.Name == fileName && x.Owner == user);
+
+                if (sharedFile is null)
+                {
+                    context.SharedFiles.Add(new SharedFile
+                    {
+                        Name = fileName,
+                        PathFromRoot = currentPath,
+                        Owner = user,
+                        ConnectedToWeb = true,
+                        ConnectedToApp = false
+                    });
+                }
+                else
+                {
+                    sharedFile.ConnectedToWeb = true;
+
+                    context.SharedFiles.Update(sharedFile);
+                }
+
+                await context.SaveChangesAsync();
+
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
+        public async Task<bool> DisonnectFileFromApp(string currentPath, string fileName, ClaimsPrincipal userPrincipal)
+        {
+            try
+            {
+                CloudUser user = await userManager.GetUserAsync(userPrincipal);
+
+                SharedFile? sharedFile = await context.SharedFiles.FirstOrDefaultAsync(x => x.PathFromRoot == currentPath && x.Name == fileName && x.Owner == user);
+
+                if (sharedFile is null)
+                {
+                    return false;
+                }
+
+                if (sharedFile.ConnectedToWeb)
+                {
+                    sharedFile.ConnectedToApp = false;
+
+                    await context.SaveChangesAsync();
+
+                    return true;
+                }
+
+                context.SharedFiles.Remove(sharedFile);
+
+                await context.SaveChangesAsync();
+
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
+        public async Task<bool> DisonnectFileFromWeb(string currentPath, string fileName, ClaimsPrincipal userPrincipal)
+        {
+            try
+            {
+                CloudUser user = await userManager.GetUserAsync(userPrincipal);
+
+                SharedFile? sharedFile = await context.SharedFiles.FirstOrDefaultAsync(x => x.PathFromRoot == currentPath && x.Name == fileName && x.Owner == user);
+
+                if (sharedFile is null)
+                {
+                    return false;
+                }
+
+                if (sharedFile.ConnectedToApp)
+                {
+                    sharedFile.ConnectedToWeb = false;
+
+                    await context.SaveChangesAsync();
+
+                    return true;
+                }
+
+                context.SharedFiles.Remove(sharedFile);
+
+                await context.SaveChangesAsync();
+
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
+        public Task<List<CloudFolder>> GetSharingUsersSharedDirectories(string currentPath)
+        {
+            return context.Users.Where(x => x.SharedFiles.Count > 0 || x.SharedFolders.Count > 0).Select(x => new CloudFolder(x.UserName,null)).ToListAsync();
         }
     }
 }

@@ -36,6 +36,7 @@ namespace NCloud.Models
         public string SetFolder(string? folderName)
         {
             string currentPath = String.Empty;
+            
             if (folderName == null || folderName == String.Empty)
             {
                 currentPath = CurrentPath;
@@ -43,11 +44,13 @@ namespace NCloud.Models
             else
             {
                 currentPath = Path.Combine(CurrentPath, folderName);
+                
                 PreviousDirectories.Add(folderName);
                 CurrentPath = $@"{currentPath}"; //for security reasons
                 CurrentDirectory = folderName!;
                 CurrentPathShow += SEPARATOR + folderName;
             }
+            
             return currentPath;
         }
 

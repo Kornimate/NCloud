@@ -91,7 +91,7 @@
                                     }
                                     @if (item.IsConnectedToApp)
                                     {
-                                        <a asp-controller="Drive" class="btn btn-secondary "asp-action="DisconnectDirectoryToApp" asp-route-directoryName="@item.Info.Name"><img src="~/utilities/noshare.svg" width=" 20" height="20" class="rounded align-middle" /></a>   
+                                        <a asp-controller="Drive" class="btn btn-secondary "asp-action="DisconnectDirectoryFromApp" asp-route-directoryName="@item.Info.Name"><img src="~/utilities/noshare.svg" width=" 20" height="20" class="rounded align-middle" /></a>   
                                     }
                                     else
                                     {
@@ -198,7 +198,7 @@
                                     }
                                     @if (item.IsConnectedToApp)
                                     {
-                                        <a asp-controller="Drive" class="btn btn-secondary "asp-action="DisconnectFileToApp" asp-route-fileName="@item.Info.Name"><img src="~/utilities/noshare.svg" width=" 20" height="20" class="rounded align-middle" /></a>   
+                                        <a asp-controller="Drive" class="btn btn-secondary "asp-action="DisconnectFileFromApp" asp-route-fileName="@item.Info.Name"><img src="~/utilities/noshare.svg" width=" 20" height="20" class="rounded align-middle" /></a>   
                                     }
                                     else
                                     {

@@ -43,8 +43,8 @@ namespace NCloud.Controllers
 
             try
             {
-                return View(new DriveDetailsViewModel(await service.GetCurrentDepthFiles(currentPath),
-                                                      await service.GetCurrentDepthDirectories(currentPath),
+                return View(new DriveDetailsViewModel(await service.GetCurrentDepthCloudFiles(currentPath),
+                                                      await service.GetCurrentDepthCloudDirectories(currentPath),
                                                       pathdata.CurrentPathShow));
             }
             catch (Exception ex)
@@ -196,8 +196,8 @@ namespace NCloud.Controllers
             CloudPathData pathData = await GetSessionCloudPathData();
             try
             {
-                var files = await service.GetCurrentDepthFiles(pathData.CurrentPath);
-                var folders = await service.GetCurrentDepthDirectories(pathData.CurrentPath);
+                var files = await service.GetCurrentDepthCloudFiles(pathData.CurrentPath);
+                var folders = await service.GetCurrentDepthCloudDirectories(pathData.CurrentPath);
 
                 return View(new DriveDeleteViewModel
                 {
@@ -300,8 +300,8 @@ namespace NCloud.Controllers
 
             try
             {
-                var files = await service.GetCurrentDepthFiles(pathData.CurrentPath);
-                var folders = await service.GetCurrentDepthDirectories(pathData.CurrentPath);
+                var files = await service.GetCurrentDepthCloudFiles(pathData.CurrentPath);
+                var folders = await service.GetCurrentDepthCloudDirectories(pathData.CurrentPath);
 
                 return View(new DriveDownloadViewModel
                 {
@@ -374,14 +374,14 @@ namespace NCloud.Controllers
 
                                         currentRelativePath = Path.Combine(directoryInfo.First, directoryInfo.Second.Name);
 
-                                        foreach (CloudFile file in await service.GetCurrentDepthFiles(Path.Combine(serverPathStart, currentRelativePath)))
+                                        foreach (CloudFile file in await service.GetCurrentDepthCloudFiles(Path.Combine(serverPathStart, currentRelativePath)))
                                         {
                                             archive.CreateEntryFromFile(Path.Combine(serverPathStart, currentRelativePath, file.Info.Name), Path.Combine(currentRelativePath, file.Info.Name));
 
                                             ++counter;
                                         }
 
-                                        foreach (CloudFolder folder in await service.GetCurrentDepthDirectories(Path.Combine(serverPathStart, currentRelativePath)))
+                                        foreach (CloudFolder folder in await service.GetCurrentDepthCloudDirectories(Path.Combine(serverPathStart, currentRelativePath)))
                                         {
                                             directories.Enqueue(new Pair<string, DirectoryInfo>(currentRelativePath, folder.Info));
 
@@ -415,12 +415,24 @@ namespace NCloud.Controllers
 
         public async Task<IActionResult> ConnectDirectoryToApp(string directoryName)
         {
-            return Content("Succeess");
+            CloudPathData session = await GetSessionCloudPathData();
+            
+            if (await service.ConnectDirectoryToApp(session.CurrentPath, directoryName, User))
+            {
+                AddNewNotification(new Success("Directory connected to application"));
+            }
+            else
+            {
+                AddNewNotification(new Success("Unable to connect directory to application!"));
+            }
+
+            return RedirectToAction(nameof(Details));
         }
 
         public async Task<IActionResult> ConnectDirectoryToWeb(string directoryName)
         {
             CloudPathData session = await GetSessionCloudPathData();
+            
             if (await service.ConnectDirectoryToWeb(session.CurrentPath, directoryName, User))
             {
                 AddNewNotification(new Success("Directory connected to web"));
@@ -435,32 +447,98 @@ namespace NCloud.Controllers
 
         public async Task<IActionResult> ConnectFileToApp(string fileName)
         {
-            return Content("Succeess");
+            CloudPathData session = await GetSessionCloudPathData();
+            
+            if (await service.ConnectFileToApp(session.CurrentPath, fileName, User))
+            {
+                AddNewNotification(new Success("File connected to application"));
+            }
+            else
+            {
+                AddNewNotification(new Success("Unable to connect file to application!"));
+            }
+
+            return RedirectToAction(nameof(Details));
         }
 
         public async Task<IActionResult> ConnectFileToWeb(string fileName)
         {
-            return Content("Succeess");
+            CloudPathData session = await GetSessionCloudPathData();
+            
+            if (await service.ConnectFileToWeb(session.CurrentPath, fileName, User))
+            {
+                AddNewNotification(new Success("File connected to web"));
+            }
+            else
+            {
+                AddNewNotification(new Success("Unable to connect file to web!"));
+            }
+
+            return RedirectToAction(nameof(Details));
         }
 
-        public async Task<IActionResult> DisonnectDirectoryFromApp(string directoryName)
+        public async Task<IActionResult> DisconnectDirectoryFromApp(string directoryName)
         {
-            return Content("Succeess");
+            CloudPathData session = await GetSessionCloudPathData();
+            
+            if (await service.DisonnectDirectoryFromApp(session.CurrentPath, directoryName, User))
+            {
+                AddNewNotification(new Success("Directory disconnected from app"));
+            }
+            else
+            {
+                AddNewNotification(new Success("Unable to disconnect directory from app!"));
+            }
+
+            return RedirectToAction(nameof(Details));
         }
 
         public async Task<IActionResult> DisconnectDirectoryFromWeb(string directoryName)
         {
-            return Content("Succeess");
+            CloudPathData session = await GetSessionCloudPathData();
+            
+            if (await service.DisonnectDirectoryFromWeb(session.CurrentPath, directoryName, User))
+            {
+                AddNewNotification(new Success("Directory disconnected from web"));
+            }
+            else
+            {
+                AddNewNotification(new Success("Unable to disconnect directory from web!"));
+            }
+
+            return RedirectToAction(nameof(Details));
         }
 
         public async Task<IActionResult> DisconnectFileFromApp(string fileName)
         {
-            return Content("Succeess");
+            CloudPathData session = await GetSessionCloudPathData();
+            
+            if (await service.DisonnectFileFromApp(session.CurrentPath, fileName, User))
+            {
+                AddNewNotification(new Success("File disconnected from app"));
+            }
+            else
+            {
+                AddNewNotification(new Success("Unable to disconnect file from app!"));
+            }
+
+            return RedirectToAction(nameof(Details));
         }
 
         public async Task<IActionResult> DisconnectFileFromWeb(string fileName)
         {
-            return Content("Succeess");
+            CloudPathData session = await GetSessionCloudPathData();
+            
+            if (await service.DisonnectFileFromWeb(session.CurrentPath, fileName, User))
+            {
+                AddNewNotification(new Success("File disconnected from web"));
+            }
+            else
+            {
+                AddNewNotification(new Success("Unable to disconnect file from web!"));
+            }
+
+            return RedirectToAction(nameof(Details));
         }
     }
 }

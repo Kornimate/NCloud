@@ -9,7 +9,7 @@ namespace NCloud.Models
         public CloudFile(FileInfo Info, bool IsSharedInApp, bool isPublic, string? icon = null) : base(IsSharedInApp, isPublic, icon)
         {
             this.Info = Info;
-            this.IconPath = ImageLoader.Load(IsFolder(), Info.Name);
+            this.IconPath = icon is null ? ImageLoader.Load(IsFolder(), Info.Name) : icon;
         }
 
         public override bool IsFile()

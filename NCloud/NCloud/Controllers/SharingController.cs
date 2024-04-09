@@ -12,24 +12,36 @@ namespace NCloud.Controllers
     public class SharingController : CloudControllerDefault
     {
         public SharingController(ICloudService service, UserManager<CloudUser> userManager, SignInManager<CloudUser> signInManager, IWebHostEnvironment env, ICloudNotificationService notifier) : base(service, userManager, signInManager, env, notifier) { }
+        
         public async Task<IActionResult> Details(string? folderName = null)
         {
             SharedPathData pathdata = await GetSessionSharedPathData();
+            
             string currentPath = pathdata.SetFolder(folderName);
+            
             await SetSessionSharedPathData(pathdata);
+            
             if (pathdata.CurrentPath != SharedPathData.ROOTNAME)
             {
                 ViewBag.CanUseActions = true;
+            } 
+            else
+            {
+                return View(new DriveDetailsViewModel(new List<CloudFile>(),
+                                                      await service.GetSharingUsersSharedDirectories(currentPath),
+                                                      pathdata.CurrentPathShow));
             }
+            
             try
             {
-                return View(new DriveDetailsViewModel(await service.GetCurrentDepthFiles(currentPath),
-                                                      await service.GetCurrentDepthDirectories(currentPath),
+                return View(new DriveDetailsViewModel(await service.GetCurrentDepthCloudFiles(currentPath),
+                                                      await service.GetCurrentDepthCloudDirectories(currentPath),
                                                       pathdata.CurrentPathShow));
             }
             catch (Exception ex)
             {
                 AddNewNotification(new Error(ex.Message));
+
                 return View(new DriveDetailsViewModel(new List<CloudFile>(),
                                                       new List<CloudFolder>(),
                                                       pathdata.CurrentPathShow));
@@ -39,8 +51,11 @@ namespace NCloud.Controllers
         public async Task<IActionResult> Back()
         {
             SharedPathData pathdata = await GetSessionSharedPathData();
+            
             pathdata.RemoveFolderFromPrevDirs();
+            
             await SetSessionSharedPathData(pathdata);
+            
             return RedirectToAction("Details", "Sharing");
         }
 
@@ -165,8 +180,8 @@ namespace NCloud.Controllers
             }
             try
             {
-                var files = await service.GetCurrentDepthFiles(pathData.CurrentPath);
-                var folders = await service.GetCurrentDepthDirectories(pathData.CurrentPath);
+                var files = await service.GetCurrentDepthCloudFiles(pathData.CurrentPath);
+                var folders = await service.GetCurrentDepthCloudDirectories(pathData.CurrentPath);
                 return View(new DriveDeleteViewModel
                 {
                     Folders = folders,
@@ -245,8 +260,8 @@ namespace NCloud.Controllers
             SharedPathData pathData = await GetSessionSharedPathData();
             try
             {
-                var files = await service.GetCurrentDepthFiles(pathData.CurrentPath);
-                var folders = await service.GetCurrentDepthDirectories(pathData.CurrentPath); //later to be able to add folders to zp too
+                var files = await service.GetCurrentDepthCloudFiles(pathData.CurrentPath);
+                var folders = await service.GetCurrentDepthCloudDirectories(pathData.CurrentPath); //later to be able to add folders to zp too
                
                 return View(new DriveDownloadViewModel
                 {
