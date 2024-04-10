@@ -29,7 +29,8 @@ namespace NCloud.Models
         public void SetDefaultPathData(string? id)
         {
             if (id is null) return;
-            
+
+            CurrentPath = Constants.PrivateRootName;
             CurrentPath = Path.Combine(CurrentPath, id);
             PreviousDirectories.Clear();
             PreviousDirectories.Add(Constants.PrivateRootName);

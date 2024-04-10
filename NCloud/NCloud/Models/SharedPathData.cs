@@ -20,14 +20,15 @@ namespace NCloud.Models
         }
         public SharedPathData()
         {
-            PreviousDirectories = new List<string>() { Constants.PrivateRootName };
+            PreviousDirectories = new List<string>() { Constants.PublicRootName };
             CurrentDirectory = String.Empty;
-            CurrentPath = Constants.PrivateRootName;
-            CurrentPathShow = Constants.PrivateRootName;
+            CurrentPath = Constants.PublicRootName;
+            CurrentPathShow = Constants.PublicRootName;
         }
         public string? TrySetFolder(string? folderName)
         {
             if (folderName is null) return null;
+            
             return Path.Combine(CurrentPath, folderName);
         }
 
@@ -54,15 +55,19 @@ namespace NCloud.Models
 
         public string? RemoveFolderFromPrevDirs()
         {
-            string? folder = Constants.PrivateRootName;
+            string? folder = Constants.PublicRootName;
+            
             if (PreviousDirectories.Count > 1)
             {
                 PreviousDirectories.RemoveAt(PreviousDirectories.Count - 1);
+                
                 folder = PreviousDirectories.Last();
             }
+            
             CurrentDirectory = folder;
             CurrentPath = Path.Combine(PreviousDirectories.ToArray());
             CurrentPathShow = String.Join(Constants.PathSeparator, PreviousDirectories.ToArray());
+            
             return folder;
         }
     }

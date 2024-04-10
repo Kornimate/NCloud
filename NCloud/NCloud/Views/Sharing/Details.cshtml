@@ -53,7 +53,7 @@
         </div>
     </fieldset>
     <!------------------------------------------------------------->
-    <fieldset class="bg-secondary border border-4 border-dark p-2 m-2 rounded" id="addFileField">
+    <fieldset class="bg-secondary border border-4 border-dark p-2 m-2 rounded hidden" id="addFileField">
         <legend class="btn btn-outline-dark rounded-pill w-auto">Add Files</legend>
         <div class="d-flex justify-content-center w-100">
             <form asp-action="AddNewFiles" class="w-100" enctype="multipart/form-data">
@@ -67,7 +67,7 @@
 </div>
 
 <div class="w-100" id="itemsTable">
-    @await Component.InvokeAsync("SharedDetailsTable",new{ vm = Model })
+    @await Component.InvokeAsync("SharingDetailsTable",new{ vm = Model })
 </div>
 
 <hr class="separator" />

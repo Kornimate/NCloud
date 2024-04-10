@@ -18,7 +18,7 @@
                                 <span id="iconforitemtype">
                                     <img src="@item.IconPath" width="20" height="20" class="item align-bottom">
                                 </span>
-                                <a asp-action="Details" asp-route-folderName="@(item.Info is not null ? item.Info.Name : item.SharedName)" class="itemlink">@item.SharedName</a>
+                                <a asp-action="Details" asp-route-folderName="@(item.Info is not null ? item.Info.Name : item.SharedName)" class="itemlink">@(item.Info is not null ? item.Info.Name : item.SharedName)</a>
                             </summary>
                             @if (item.Info is not null)
                             {

@@ -18,10 +18,10 @@ namespace NCloud.Services
         Tuple<List<CloudFile?>, List<CloudFolder?>> GetCurrentUserIndexData();
         bool DirectoryExists(string? pathAndName);
         Task<DirectoryInfo> GetFolderByPath(string path, string folderName);
-        Task<bool> ConnectDirectoryToWeb(string currentPath, string directoryName, ClaimsPrincipal userPrincipal);
-        Task<bool> ConnectDirectoryToApp(string currentPath, string directoryName, ClaimsPrincipal userPrincipal);
-        Task<bool> DisonnectDirectoryFromApp(string currentPath, string directoryName, ClaimsPrincipal userPrincipal);
-        Task<bool> DisonnectDirectoryFromWeb(string currentPath, string directoryName, ClaimsPrincipal userPrincipal);
+        Task<int> ConnectDirectoryToWeb(string currentPath, string directoryName, ClaimsPrincipal userPrincipal);
+        Task<int> ConnectDirectoryToApp(string currentPath, string directoryName, ClaimsPrincipal userPrincipal);
+        Task<int> DisonnectDirectoryFromApp(string currentPath, string directoryName, ClaimsPrincipal userPrincipal);
+        Task<int> DisconnectDirectoryFromWeb(string currentPath, string directoryName, ClaimsPrincipal userPrincipal);
         Task<bool> ConnectFileToApp(string currentPath, string fileName, ClaimsPrincipal userPrincipal);
         Task<bool> ConnectFileToWeb(string currentPath, string fileName, ClaimsPrincipal userPrincipal);
         Task<bool> DisonnectFileFromApp(string currentPath, string fileName, ClaimsPrincipal userPrincipal);

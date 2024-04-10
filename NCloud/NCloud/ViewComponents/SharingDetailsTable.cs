@@ -3,11 +3,11 @@ using NCloud.ViewModels;
 
 namespace NCloud.ViewComponents
 {
-    public class SharedDetailsTable : ViewComponent
+    public class SharingDetailsTable : ViewComponent
     {
-        public SharedDetailsTable() { }
+        public SharingDetailsTable() { }
 
-        public async Task<IViewComponentResult> InvokeAsync(DriveDetailsViewModel vm)
+        public async Task<IViewComponentResult> InvokeAsync(SharingDetailsViewModel vm)
         {
             return await Task.FromResult(View("Table",vm));
         }

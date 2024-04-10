@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using NCloud.ConstantData;
 using NCloud.Models;
 using NCloud.Services;
 using NCloud.Users;
@@ -21,7 +22,7 @@ namespace NCloud.Controllers
             
             await SetSessionSharedPathData(pathdata);
             
-            if(pathdata.CurrentPath == )
+            if(pathdata.CurrentPath == Constants.PublicRootName)
             {
                 return View(new SharingDetailsViewModel(new List<CloudFile>(),
                                                       await service.GetSharingUsersSharingDirectories(currentPath),
@@ -172,7 +173,7 @@ namespace NCloud.Controllers
         public async Task<IActionResult> DeleteItems()
         {
             SharedPathData pathData = await GetSessionSharedPathData();
-            if (pathData.CurrentPath == SharedPathData.ROOTNAME)
+            if (pathData.CurrentPath == Constants.PublicRootName)
             {
                 //TODO: notification
                 return RedirectToAction("Details", "Sharing");

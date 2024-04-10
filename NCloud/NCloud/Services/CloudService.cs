@@ -10,6 +10,7 @@ using System.ComponentModel;
 using static NuGet.Packaging.PackagingConstants;
 using NCloud.ConstantData;
 using System.Security.Claims;
+using Microsoft.Build.Evaluation;
 
 namespace NCloud.Services
 {
@@ -247,7 +248,16 @@ namespace NCloud.Services
                 throw new ArgumentException("Invalid Folder Name!");
             }
 
-            await Task.Run(() => Directory.Delete(pathAndName, true));
+            try
+            {
+                await Task.Run(() => Directory.Delete(pathAndName, true));
+            }
+            catch (Exception)
+            {
+                throw new Exception("Could not remove directory");
+            }
+
+            //TODO: implement to remove it from db if exists
 
             return true;
         }
@@ -256,18 +266,22 @@ namespace NCloud.Services
         {
             string path = ParseRootName(currentPath);
             string pathAndName = Path.Combine(path, fileName);
+            
             if (!File.Exists(pathAndName))
             {
                 throw new Exception("The File does not exists!");
             }
+            
             if (path is null || path == String.Empty)
             {
                 throw new ArgumentException("Invalid path!");
             }
+            
             if (fileName is null || fileName == String.Empty)
             {
                 throw new ArgumentException("Invalid Folder Name!");
             }
+            
             try
             {
                 await Task.Run(() => File.Delete(pathAndName));
@@ -276,6 +290,9 @@ namespace NCloud.Services
             {
                 throw new Exception("Could not remove file");
             }
+
+            //TODO: implement to remove it from db if exists
+
             return true;
         }
 
@@ -297,7 +314,7 @@ namespace NCloud.Services
             {
                 return currentPath.Replace(Constants.PrivateRootName, Constants.PublicRootName);
             }
-            else if(currentPath.StartsWith(Constants.PublicRootName))
+            else if (currentPath.StartsWith(Constants.PublicRootName))
             {
                 return currentPath.Replace(Constants.PublicRootName, Constants.PrivateRootName);
             }
@@ -332,8 +349,10 @@ namespace NCloud.Services
             return await Task.FromResult<DirectoryInfo>(new DirectoryInfo(Directory.GetDirectories(serverPath, folderName).First()));
         }
 
-        public async Task<bool> ConnectDirectoryToWeb(string currentPath, string directoryName, ClaimsPrincipal userPrincipal)
+        public async Task<int> ConnectDirectoryToWeb(string currentPath, string directoryName, ClaimsPrincipal userPrincipal)
         {
+
+            //TODO: implement itreative function to add underlying objects
             try
             {
                 CloudUser user = await userManager.GetUserAsync(userPrincipal);
@@ -360,15 +379,15 @@ namespace NCloud.Services
 
                 await context.SaveChangesAsync();
 
-                return true;
+                return 0;
             }
             catch (Exception)
             {
-                return false;
+                return 0;
             }
         }
 
-        public async Task<bool> ConnectDirectoryToApp(string currentPath, string directoryName, ClaimsPrincipal userPrincipal)
+        public async Task<int> ConnectDirectoryToApp(string currentPath, string directoryName, ClaimsPrincipal userPrincipal)
         {
             try
             {
@@ -396,15 +415,15 @@ namespace NCloud.Services
 
                 await context.SaveChangesAsync();
 
-                return true;
+                return 0;
             }
             catch (Exception)
             {
-                return false;
+                return 0;
             }
         }
 
-        public async Task<bool> DisonnectDirectoryFromApp(string currentPath, string directoryName, ClaimsPrincipal userPrincipal)
+        public async Task<int> DisonnectDirectoryFromApp(string currentPath, string directoryName, ClaimsPrincipal userPrincipal)
         {
             try
             {
@@ -414,7 +433,7 @@ namespace NCloud.Services
 
                 if (sharedFolder is null)
                 {
-                    return false;
+                    return 0;
                 }
 
                 if (sharedFolder.ConnectedToWeb)
@@ -423,22 +442,22 @@ namespace NCloud.Services
 
                     await context.SaveChangesAsync();
 
-                    return true;
+                    return 0;
                 }
 
                 context.SharedFolders.Remove(sharedFolder);
 
                 await context.SaveChangesAsync();
 
-                return true;
+                return 0;
             }
             catch (Exception)
             {
-                return false;
+                return 0;
             }
         }
 
-        public async Task<bool> DisonnectDirectoryFromWeb(string currentPath, string directoryName, ClaimsPrincipal userPrincipal)
+        public async Task<int> DisconnectDirectoryFromWeb(string currentPath, string directoryName, ClaimsPrincipal userPrincipal)
         {
             try
             {
@@ -448,7 +467,7 @@ namespace NCloud.Services
 
                 if (sharedFolder is null)
                 {
-                    return false;
+                    return 0;
                 }
 
                 if (sharedFolder.ConnectedToApp)
@@ -457,18 +476,18 @@ namespace NCloud.Services
 
                     await context.SaveChangesAsync();
 
-                    return true;
+                    return 0;
                 }
 
                 context.SharedFolders.Remove(sharedFolder);
 
                 await context.SaveChangesAsync();
 
-                return true;
+                return 0;
             }
             catch (Exception)
             {
-                return false;
+                return 0;
             }
         }
 
@@ -614,27 +633,38 @@ namespace NCloud.Services
 
         public Task<List<CloudFolder>> GetSharingUsersSharingDirectories(string currentPath)
         {
-            return context.Users.Where(x => x.SharedFiles.Count > 0 || x.SharedFolders.Count > 0).Select(x => new CloudFolder(x.UserName,null)).ToListAsync();
+            return context.Users.Where(x => x.SharedFiles.Count > 0 || x.SharedFolders.Count > 0).Select(x => new CloudFolder(x.UserName, null)).ToListAsync();
         }
 
         public async Task<List<CloudFile>> GetCurrentDepthSharingFiles(string currentPath, ClaimsPrincipal userPrincipal)
         {
-            string path = ChangeRootName(currentPath);
+            CloudUser? user = await context.Users.FirstOrDefaultAsync(x => x.UserName == GetSharedPathOwnerUser(currentPath));
 
-            string[] pathElements = path.Split(Constants.PathSeparator, StringSplitOptions.RemoveEmptyEntries);
+            string path = ChangeUserNameToId(ChangeRootName(currentPath), user?.Id.ToString(), user?.UserName);
 
-            CloudUser? user = await GetAdmin();
-
-            if (pathElements.Length == 3)
-            {
-                //return user?.SharedFolders.Where(x => x.ConnectedToApp && x.PathFromRoot == path).Select(x => x.Name).ToList() ?? new();
-            }
-            return null!;
+            return (await context.SharedFiles.Where(x => x.ConnectedToApp && x.Owner == user && x.PathFromRoot == path).ToListAsync()).Select(x => new CloudFile(new FileInfo(ParseRootName(x.PathFromRoot)), x.ConnectedToApp, x.ConnectedToWeb)).ToList() ?? new();
         }
 
         public async Task<List<CloudFolder>> GetCurrentDepthSharingDirectories(string currentPath, ClaimsPrincipal userPrincipal)
         {
-            throw new NotImplementedException();
+            CloudUser? user = await context.Users.FirstOrDefaultAsync(x => x.UserName == GetSharedPathOwnerUser(currentPath));
+
+            string path = ChangeUserNameToId(ChangeRootName(currentPath), user?.Id.ToString(), user?.UserName);
+
+            return (await context.SharedFolders.Where(x => x.ConnectedToApp && x.Owner == user && x.PathFromRoot == path).ToListAsync()).Select(x => new CloudFolder(new DirectoryInfo(Path.Combine(ParseRootName(x.PathFromRoot), x.Name)), x.ConnectedToApp, x.ConnectedToWeb)).ToList() ?? new();
+        }
+
+        private string ChangeUserNameToId(string path, string? id, string? userName)
+        {
+            if (id is null || userName is null)
+                return path;
+
+            return path.Replace(userName, id);
+        }
+
+        private string GetSharedPathOwnerUser(string currentPath)
+        {
+            return currentPath.Contains(Path.DirectorySeparatorChar) ? currentPath.Split(Path.DirectorySeparatorChar, StringSplitOptions.RemoveEmptyEntries)[1] : String.Empty;
         }
     }
 }

@@ -416,10 +416,16 @@ namespace NCloud.Controllers
         public async Task<IActionResult> ConnectDirectoryToApp(string directoryName)
         {
             CloudPathData session = await GetSessionCloudPathData();
-            
-            if (await service.ConnectDirectoryToApp(session.CurrentPath, directoryName, User))
+
+            int result = await service.ConnectDirectoryToApp(session.CurrentPath, directoryName, User);
+
+            if (result == 1)
             {
-                AddNewNotification(new Success("Directory connected to application"));
+                AddNewNotification(new Success("Directory and the items inside connected application"));
+            }
+            else if (result == 0)
+            {
+                AddNewNotification(new Warning("Not every item could be connected to application"));
             }
             else
             {
@@ -432,10 +438,16 @@ namespace NCloud.Controllers
         public async Task<IActionResult> ConnectDirectoryToWeb(string directoryName)
         {
             CloudPathData session = await GetSessionCloudPathData();
-            
-            if (await service.ConnectDirectoryToWeb(session.CurrentPath, directoryName, User))
+
+            int result = await service.ConnectDirectoryToWeb(session.CurrentPath, directoryName, User);
+
+            if (result == 1)
             {
-                AddNewNotification(new Success("Directory connected to web"));
+                AddNewNotification(new Success("Directory and the items inside connected web"));
+            }
+            else if (result == 0)
+            {
+                AddNewNotification(new Warning("Not every item could be connected to web"));
             }
             else
             {
@@ -480,14 +492,20 @@ namespace NCloud.Controllers
         public async Task<IActionResult> DisconnectDirectoryFromApp(string directoryName)
         {
             CloudPathData session = await GetSessionCloudPathData();
-            
-            if (await service.DisonnectDirectoryFromApp(session.CurrentPath, directoryName, User))
+
+            int result = await service.DisonnectDirectoryFromApp(session.CurrentPath, directoryName, User);
+
+            if (result == 1)
             {
-                AddNewNotification(new Success("Directory disconnected from app"));
+                AddNewNotification(new Success("Directory and the items inside disconnected from application"));
+            }
+            else if (result == 0)
+            {
+                AddNewNotification(new Warning("Not every item could be disconnected from application"));
             }
             else
             {
-                AddNewNotification(new Success("Unable to disconnect directory from app!"));
+                AddNewNotification(new Success("Unable to disconnect directory from application"));
             }
 
             return RedirectToAction(nameof(Details));
@@ -496,10 +514,16 @@ namespace NCloud.Controllers
         public async Task<IActionResult> DisconnectDirectoryFromWeb(string directoryName)
         {
             CloudPathData session = await GetSessionCloudPathData();
-            
-            if (await service.DisonnectDirectoryFromWeb(session.CurrentPath, directoryName, User))
+
+            int result = await service.DisconnectDirectoryFromWeb(session.CurrentPath, directoryName, User);
+
+            if (result == 1)
             {
-                AddNewNotification(new Success("Directory disconnected from web"));
+                AddNewNotification(new Success("Directory and the items inside disconnected from web"));
+            }
+            else if (result == 0)
+            {
+                AddNewNotification(new Warning("Not every item could be disconnected from web"));
             }
             else
             {
@@ -515,11 +539,11 @@ namespace NCloud.Controllers
             
             if (await service.DisonnectFileFromApp(session.CurrentPath, fileName, User))
             {
-                AddNewNotification(new Success("File disconnected from app"));
+                AddNewNotification(new Success("File disconnected from application"));
             }
             else
             {
-                AddNewNotification(new Success("Unable to disconnect file from app!"));
+                AddNewNotification(new Success("Unable to disconnect file from application!"));
             }
 
             return RedirectToAction(nameof(Details));
