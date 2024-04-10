@@ -26,6 +26,8 @@ namespace NCloud.Services
         Task<bool> ConnectFileToWeb(string currentPath, string fileName, ClaimsPrincipal userPrincipal);
         Task<bool> DisonnectFileFromApp(string currentPath, string fileName, ClaimsPrincipal userPrincipal);
         Task<bool> DisonnectFileFromWeb(string currentPath, string fileName, ClaimsPrincipal userPrincipal);
-        Task<List<CloudFolder>> GetSharingUsersSharedDirectories(string currentPath);
+        Task<List<CloudFolder>> GetSharingUsersSharingDirectories(string currentPath);
+        Task<List<CloudFile>> GetCurrentDepthSharingFiles(string currentPath, ClaimsPrincipal userPrincipal);
+        Task<List<CloudFolder>> GetCurrentDepthSharingDirectories(string currentPath, ClaimsPrincipal userPrincipal);
     }
 }

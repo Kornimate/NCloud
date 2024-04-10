@@ -1,12 +1,10 @@
-﻿using System.Text.Json.Serialization;
+﻿using NCloud.ConstantData;
+using System.Text.Json.Serialization;
 
 namespace NCloud.Models
 {
     public class SharedPathData
     {
-        public static string ROOTNAME { get => "@SHAREDROOT"; }
-        private const string SEPARATOR = "/";
-
         public string CurrentDirectory { get; private set; }
         public List<string> PreviousDirectories { get; private set; }
         public string CurrentPath { get; private set; }
@@ -22,10 +20,10 @@ namespace NCloud.Models
         }
         public SharedPathData()
         {
-            PreviousDirectories = new List<string>() { ROOTNAME };
+            PreviousDirectories = new List<string>() { Constants.PrivateRootName };
             CurrentDirectory = String.Empty;
-            CurrentPath = ROOTNAME;
-            CurrentPathShow = ROOTNAME;
+            CurrentPath = Constants.PrivateRootName;
+            CurrentPathShow = Constants.PrivateRootName;
         }
         public string? TrySetFolder(string? folderName)
         {
@@ -48,7 +46,7 @@ namespace NCloud.Models
                 PreviousDirectories.Add(folderName);
                 CurrentPath = $@"{currentPath}"; //for security reasons
                 CurrentDirectory = folderName!;
-                CurrentPathShow += SEPARATOR + folderName;
+                CurrentPathShow += Constants.PathSeparator + folderName;
             }
             
             return currentPath;
@@ -56,7 +54,7 @@ namespace NCloud.Models
 
         public string? RemoveFolderFromPrevDirs()
         {
-            string? folder = ROOTNAME;
+            string? folder = Constants.PrivateRootName;
             if (PreviousDirectories.Count > 1)
             {
                 PreviousDirectories.RemoveAt(PreviousDirectories.Count - 1);
@@ -64,7 +62,7 @@ namespace NCloud.Models
             }
             CurrentDirectory = folder;
             CurrentPath = Path.Combine(PreviousDirectories.ToArray());
-            CurrentPathShow = String.Join(SEPARATOR, PreviousDirectories.ToArray());
+            CurrentPathShow = String.Join(Constants.PathSeparator, PreviousDirectories.ToArray());
             return folder;
         }
     }

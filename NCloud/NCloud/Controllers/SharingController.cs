@@ -21,30 +21,29 @@ namespace NCloud.Controllers
             
             await SetSessionSharedPathData(pathdata);
             
-            if (pathdata.CurrentPath != SharedPathData.ROOTNAME)
+            if(pathdata.CurrentPath == )
             {
-                ViewBag.CanUseActions = true;
-            } 
-            else
-            {
-                return View(new DriveDetailsViewModel(new List<CloudFile>(),
-                                                      await service.GetSharingUsersSharedDirectories(currentPath),
-                                                      pathdata.CurrentPathShow));
+                return View(new SharingDetailsViewModel(new List<CloudFile>(),
+                                                      await service.GetSharingUsersSharingDirectories(currentPath),
+                                                      pathdata.CurrentPathShow,
+                                                      "Admin")); //change
             }
             
             try
             {
-                return View(new DriveDetailsViewModel(await service.GetCurrentDepthCloudFiles(currentPath),
-                                                      await service.GetCurrentDepthCloudDirectories(currentPath),
-                                                      pathdata.CurrentPathShow));
+                return View(new SharingDetailsViewModel(await service.GetCurrentDepthSharingFiles(currentPath,User),
+                                                      await service.GetCurrentDepthSharingDirectories(currentPath,User),
+                                                      pathdata.CurrentPathShow,
+                                                      "Admin"));//change
             }
             catch (Exception ex)
             {
                 AddNewNotification(new Error(ex.Message));
 
-                return View(new DriveDetailsViewModel(new List<CloudFile>(),
+                return View(new SharingDetailsViewModel(new List<CloudFile>(),
                                                       new List<CloudFolder>(),
-                                                      pathdata.CurrentPathShow));
+                                                      pathdata.CurrentPathShow,
+                                                      "Admin")); //change
             }
         }
 

@@ -1,4 +1,4 @@
-﻿@model DriveDetailsViewModel
+﻿@model SharingDetailsViewModel
 
 @{
     ViewData["Title"] = "Shared";
@@ -27,18 +27,14 @@
         </div>
         <div class="">
             <div class="btn-group" role="group">
-                <button type="button" class="btn btn-primary" id="refreshBtn"><a asp-controller="Sharing" asp-action="Details"><img src="~/utilities/arrow-repeat.svg" width=" 20" height="20" class="rounded-circle align-middle" /></a></button>
-                <button type="button" class="btn btn-secondary"><a asp-controller="Sharing" asp-action="DownloadItems"><img src="~/utilities/cloud-download.svg" width=" 20" height="20" class="rounded-circle align-middle" /></a></button>
+                <a class="btn btn-primary" id="refreshBtn" asp-controller="Sharing" asp-action="Details"><img src="~/utilities/arrow-repeat.svg" width=" 20" height="20" class="rounded-circle align-middle" /></a>
+                <a class="btn btn-secondary" asp-controller="Sharing" asp-action="DownloadItems"><img src="~/utilities/cloud-download.svg" width=" 20" height="20" class="rounded-circle align-middle" /></a>
                 @if (ViewBag.CanUseActions is not null && ViewBag.CanUseActions == true)
                 {
                     <button type="button" class="btn btn-secondary" id="addFileBtn"><img src="~/utilities/cloud-upload.svg" width=" 20" height="20" class="rounded-circle align-middle" /></button>
                     <button type="button" class="btn btn-secondary" id="addFolderBtn"><img src="~/utilities/folder-plus.svg" width=" 20" height="20" class="rounded align-middle" /></button>
                 }
-                <button type="button" class="btn btn-secondary" id="terminalBtn"><a asp-controller="Terminal" asp-action="Index" asp-route-currentPath="@Model.CurrentPath"><img src="~/utilities/terminal.svg" width=" 20" height="20" class="align-middle" /></a></button>
-                @if (ViewBag.CanUseActions is not null && ViewBag.CanUseActions == true)
-                {
-                    <button type="button" class="btn btn-danger"><a asp-controller="Sharing" asp-action="DeleteItems"><img src="~/utilities/trash.svg" width=" 20" height="20" class="rounded align-middle" /></a></button>
-                }
+                <a class="btn btn-primary" id="terminalBtn" asp-controller="Terminal" asp-action="Index" asp-route-currentPath="@Model.CurrentPath"><img src="~/utilities/terminal.svg" width=" 20" height="20" class="align-middle" /></a>
             </div>
         </div>
     </div>
@@ -57,7 +53,7 @@
         </div>
     </fieldset>
     <!------------------------------------------------------------->
-    <fieldset class="bg-secondary border border-4 border-dark p-2 m-2 rounded @(TempData["FileError"] is null ? "hiddenfield" : "")" id="addFileField">
+    <fieldset class="bg-secondary border border-4 border-dark p-2 m-2 rounded" id="addFileField">
         <legend class="btn btn-outline-dark rounded-pill w-auto">Add Files</legend>
         <div class="d-flex justify-content-center w-100">
             <form asp-action="AddNewFiles" class="w-100" enctype="multipart/form-data">
@@ -86,11 +82,11 @@
 
     function init() {
         const folderBtn = document.getElementById("addFolderBtn");
-        if(folderBtn !== null){
+        if (folderBtn !== null) {
             folderBtn.addEventListener("click", AddFolderClicked, false);
         }
         const fileBtn = document.getElementById("addFileBtn");
-        if(fileBtn !== null){
+        if (fileBtn !== null) {
             fileBtn.addEventListener("click", AddFileClicked, false);
         }
         document.getElementById("refreshBtn").addEventListener("click", RefreshClicked, false);

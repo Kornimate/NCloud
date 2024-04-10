@@ -291,6 +291,20 @@ namespace NCloud.Services
             }
         }
 
+        private string ChangeRootName(string currentPath)
+        {
+            if (currentPath.StartsWith(Constants.PrivateRootName))
+            {
+                return currentPath.Replace(Constants.PrivateRootName, Constants.PublicRootName);
+            }
+            else if(currentPath.StartsWith(Constants.PublicRootName))
+            {
+                return currentPath.Replace(Constants.PublicRootName, Constants.PrivateRootName);
+            }
+
+            return currentPath;
+        }
+
         private bool IsSystemFolder(string path)
         {
             List<string> pathFolders = path.Split('\\').ToList();
@@ -598,9 +612,29 @@ namespace NCloud.Services
             }
         }
 
-        public Task<List<CloudFolder>> GetSharingUsersSharedDirectories(string currentPath)
+        public Task<List<CloudFolder>> GetSharingUsersSharingDirectories(string currentPath)
         {
             return context.Users.Where(x => x.SharedFiles.Count > 0 || x.SharedFolders.Count > 0).Select(x => new CloudFolder(x.UserName,null)).ToListAsync();
+        }
+
+        public async Task<List<CloudFile>> GetCurrentDepthSharingFiles(string currentPath, ClaimsPrincipal userPrincipal)
+        {
+            string path = ChangeRootName(currentPath);
+
+            string[] pathElements = path.Split(Constants.PathSeparator, StringSplitOptions.RemoveEmptyEntries);
+
+            CloudUser? user = await GetAdmin();
+
+            if (pathElements.Length == 3)
+            {
+                //return user?.SharedFolders.Where(x => x.ConnectedToApp && x.PathFromRoot == path).Select(x => x.Name).ToList() ?? new();
+            }
+            return null!;
+        }
+
+        public async Task<List<CloudFolder>> GetCurrentDepthSharingDirectories(string currentPath, ClaimsPrincipal userPrincipal)
+        {
+            throw new NotImplementedException();
         }
     }
 }
