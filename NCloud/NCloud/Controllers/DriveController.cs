@@ -43,8 +43,8 @@ namespace NCloud.Controllers
 
             try
             {
-                return View(new DriveDetailsViewModel(await service.GetCurrentDepthCloudFiles(currentPath),
-                                                      await service.GetCurrentDepthCloudDirectories(currentPath),
+                return View(new DriveDetailsViewModel(await service.GetCurrentDepthCloudFiles(currentPath,User),
+                                                      await service.GetCurrentDepthCloudDirectories(currentPath, User),
                                                       pathdata.CurrentPathShow));
             }
             catch (Exception ex)
@@ -86,7 +86,7 @@ namespace NCloud.Controllers
                     throw new Exception("Folder name must be at least one character!");
                 }
 
-                await service.CreateDirectory(folderName!, (await GetSessionCloudPathData()).CurrentPath);
+                await service.CreateDirectory(folderName!, (await GetSessionCloudPathData()).CurrentPath, User);
 
                 AddNewNotification(new Success("Folder is created!"));
             }
@@ -121,7 +121,7 @@ namespace NCloud.Controllers
 
             for (int i = 0; i < files.Count; i++)
             {
-                int res = await service.CreateFile(files[i], pathData.CurrentPath);
+                int res = await service.CreateFile(files[i], pathData.CurrentPath, User);
 
                 if (res == 0)
                 {
@@ -152,7 +152,7 @@ namespace NCloud.Controllers
                     throw new Exception("Folder name must be at least one character!");
                 }
 
-                if (!(await service.RemoveDirectory(folderName!, (await GetSessionCloudPathData()).CurrentPath)))
+                if (!(await service.RemoveDirectory(folderName!, (await GetSessionCloudPathData()).CurrentPath, User)))
                 {
                     throw new Exception("Folder is System Folder!");
                 }
@@ -176,7 +176,7 @@ namespace NCloud.Controllers
                     throw new Exception("File name must be at least one character!");
                 }
 
-                if (!(await service.RemoveFile(fileName!, (await GetSessionCloudPathData()).CurrentPath)))
+                if (!(await service.RemoveFile(fileName!, (await GetSessionCloudPathData()).CurrentPath, User)))
                 {
                     throw new Exception("File is System Folder!");
                 }
@@ -196,8 +196,8 @@ namespace NCloud.Controllers
             CloudPathData pathData = await GetSessionCloudPathData();
             try
             {
-                var files = await service.GetCurrentDepthCloudFiles(pathData.CurrentPath);
-                var folders = await service.GetCurrentDepthCloudDirectories(pathData.CurrentPath);
+                var files = await service.GetCurrentDepthCloudFiles(pathData.CurrentPath, User);
+                var folders = await service.GetCurrentDepthCloudDirectories(pathData.CurrentPath, User);
 
                 return View(new DriveDeleteViewModel
                 {
@@ -237,7 +237,7 @@ namespace NCloud.Controllers
                     {
                         try
                         {
-                            if (!(await service.RemoveFile(itemName[1..], pathData.CurrentPath)))
+                            if (!(await service.RemoveFile(itemName[1..], pathData.CurrentPath, User)))
                             {
                                 AddNewNotification(new Error($"Error removing file {itemName}"));
 
@@ -255,7 +255,7 @@ namespace NCloud.Controllers
                     {
                         try
                         {
-                            if (!(await service.RemoveDirectory(itemName, pathData.CurrentPath)))
+                            if (!(await service.RemoveDirectory(itemName, pathData.CurrentPath, User)))
                             {
                                 AddNewNotification(new Error($"Error removing folder {itemName}"));
 
@@ -300,8 +300,8 @@ namespace NCloud.Controllers
 
             try
             {
-                var files = await service.GetCurrentDepthCloudFiles(pathData.CurrentPath);
-                var folders = await service.GetCurrentDepthCloudDirectories(pathData.CurrentPath);
+                var files = await service.GetCurrentDepthCloudFiles(pathData.CurrentPath, User);
+                var folders = await service.GetCurrentDepthCloudDirectories(pathData.CurrentPath, User);
 
                 return View(new DriveDownloadViewModel
                 {
@@ -374,14 +374,14 @@ namespace NCloud.Controllers
 
                                         currentRelativePath = Path.Combine(directoryInfo.First, directoryInfo.Second.Name);
 
-                                        foreach (CloudFile file in await service.GetCurrentDepthCloudFiles(Path.Combine(serverPathStart, currentRelativePath)))
+                                        foreach (CloudFile file in await service.GetCurrentDepthCloudFiles(Path.Combine(serverPathStart, currentRelativePath), User))
                                         {
                                             archive.CreateEntryFromFile(Path.Combine(serverPathStart, currentRelativePath, file.Info.Name), Path.Combine(currentRelativePath, file.Info.Name));
 
                                             ++counter;
                                         }
 
-                                        foreach (CloudFolder folder in await service.GetCurrentDepthCloudDirectories(Path.Combine(serverPathStart, currentRelativePath)))
+                                        foreach (CloudFolder folder in await service.GetCurrentDepthCloudDirectories(Path.Combine(serverPathStart, currentRelativePath), User))
                                         {
                                             directories.Enqueue(new Pair<string, DirectoryInfo>(currentRelativePath, folder.Info));
 

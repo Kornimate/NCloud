@@ -6,14 +6,14 @@ namespace NCloud.Services
 {
     public interface ICloudService
     {
-        Task<List<CloudFolder>> GetCurrentDepthCloudDirectories(string currentPath);
-        Task<List<CloudFile>> GetCurrentDepthCloudFiles(string currentPath);
+        Task<List<CloudFolder>> GetCurrentDepthCloudDirectories(string currentPath, ClaimsPrincipal userPrincipal);
+        Task<List<CloudFile>> GetCurrentDepthCloudFiles(string currentPath, ClaimsPrincipal userPrincipal);
         Task<CloudUser?> GetAdmin();
         Task<bool> CreateBaseDirectory(CloudUser cloudUser);
-        Task CreateDirectory(string folderName, string currentPath);
-        Task<int> CreateFile(IFormFile file, string currentPath);
-        Task<bool> RemoveDirectory(string folderName, string currentPath);
-        Task<bool> RemoveFile(string fileName, string currentPath);
+        Task CreateDirectory(string folderName, string currentPath, ClaimsPrincipal userPrincipal);
+        Task<int> CreateFile(IFormFile file, string currentPath, ClaimsPrincipal userPrincipal);
+        Task<bool> RemoveDirectory(string folderName, string currentPath, ClaimsPrincipal userPrincipal);
+        Task<bool> RemoveFile(string fileName, string currentPath, ClaimsPrincipal userPrincipal);
         string ServerPath(string currentPath);
         Tuple<List<CloudFile?>, List<CloudFolder?>> GetCurrentUserIndexData();
         bool DirectoryExists(string? pathAndName);

@@ -75,7 +75,7 @@ namespace NCloud.Controllers
                     throw new Exception("Folder name must be at least one character!");
                 }
 
-                await service.CreateDirectory(folderName!, (await GetSessionSharedPathData()).CurrentPath);
+                await service.CreateDirectory(folderName!, (await GetSessionSharedPathData()).CurrentPath, User);
                 
                 AddNewNotification(new Success("Folder is created!"));
             }
@@ -110,7 +110,7 @@ namespace NCloud.Controllers
             }
             for (int i = 0; i < files.Count; i++)
             {
-                int res = await service.CreateFile(files[i], pathData.CurrentPath);
+                int res = await service.CreateFile(files[i], pathData.CurrentPath, User);
                 if (res == 0)
                 {
                     AddNewNotification(new Warning($"A File has been renamed!"));
@@ -136,7 +136,7 @@ namespace NCloud.Controllers
                 {
                     throw new Exception("Folder name must be at least one character!");
                 }
-                if (!(await service.RemoveDirectory(folderName!, (await GetSessionSharedPathData()).CurrentPath)))
+                if (!(await service.RemoveDirectory(folderName!, (await GetSessionSharedPathData()).CurrentPath, User)))
                 {
                     throw new Exception("Folder is System Folder!");
                 }
@@ -157,7 +157,7 @@ namespace NCloud.Controllers
                 {
                     throw new Exception("File name must be at least one character!");
                 }
-                if (!(await service.RemoveFile(fileName!, (await GetSessionSharedPathData()).CurrentPath)))
+                if (!(await service.RemoveFile(fileName!, (await GetSessionSharedPathData()).CurrentPath, User)))
                 {
                     throw new Exception("File is System Folder!");
                 }
@@ -180,8 +180,8 @@ namespace NCloud.Controllers
             }
             try
             {
-                var files = await service.GetCurrentDepthCloudFiles(pathData.CurrentPath);
-                var folders = await service.GetCurrentDepthCloudDirectories(pathData.CurrentPath);
+                var files = await service.GetCurrentDepthCloudFiles(pathData.CurrentPath, User);
+                var folders = await service.GetCurrentDepthCloudDirectories(pathData.CurrentPath, User);
                 return View(new DriveDeleteViewModel
                 {
                     Folders = folders,
@@ -215,7 +215,7 @@ namespace NCloud.Controllers
                     {
                         try
                         {
-                            if (!(await service.RemoveFile(itemName[1..], pathData.CurrentPath)))
+                            if (!(await service.RemoveFile(itemName[1..], pathData.CurrentPath, User)))
                             {
                                 AddNewNotification(new Error($"Error removing file {itemName}"));
                                 noFail = false;
@@ -231,7 +231,7 @@ namespace NCloud.Controllers
                     {
                         try
                         {
-                            if (!(await service.RemoveDirectory(itemName, pathData.CurrentPath)))
+                            if (!(await service.RemoveDirectory(itemName, pathData.CurrentPath, User)))
                             {
                                 AddNewNotification(new Error($"Error removing folder {itemName}"));
                                 noFail = false;
@@ -260,8 +260,8 @@ namespace NCloud.Controllers
             SharedPathData pathData = await GetSessionSharedPathData();
             try
             {
-                var files = await service.GetCurrentDepthCloudFiles(pathData.CurrentPath);
-                var folders = await service.GetCurrentDepthCloudDirectories(pathData.CurrentPath); //later to be able to add folders to zp too
+                var files = await service.GetCurrentDepthCloudFiles(pathData.CurrentPath, User);
+                var folders = await service.GetCurrentDepthCloudDirectories(pathData.CurrentPath, User); //later to be able to add folders to zp too
                
                 return View(new DriveDownloadViewModel
                 {
