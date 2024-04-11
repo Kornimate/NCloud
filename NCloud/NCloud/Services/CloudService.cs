@@ -238,8 +238,8 @@ namespace NCloud.Services
 
             CloudUser? user = await userManager.GetUserAsync(userPrincipal);
 
-            var appsharedfiles = user?.SharedFiles.Where(x => x.ConnectedToApp && x.PathFromRoot == currentPath).Select(x => x.Name).ToList() ?? new();
-            var websharedfiles = user?.SharedFiles.Where(x => x.ConnectedToWeb && x.PathFromRoot == currentPath).Select(x => x.Name).ToList() ?? new();
+            var appsharedfiles = user?.SharedFiles.Where(x => x.ConnectedToApp && (x.PathFromRoot == currentPath || x.PathFromRoot == Constants.GetSharingRootPathInDatabase(user.Id))).Select(x => x.Name).ToList() ?? new();
+            var websharedfiles = user?.SharedFiles.Where(x => x.ConnectedToWeb && (x.PathFromRoot == currentPath || x.PathFromRoot == Constants.GetSharingRootPathInDatabase(user.Id))).Select(x => x.Name).ToList() ?? new();
 
             try
             {
@@ -257,8 +257,8 @@ namespace NCloud.Services
 
             CloudUser? user = await userManager.GetUserAsync(userPrincipal);
 
-            var appsharedfolders = user?.SharedFolders.Where(x => x.ConnectedToApp && x.PathFromRoot == currentPath).Select(x => x.Name).ToList() ?? new();
-            var websharedfolders = user?.SharedFolders.Where(x => x.ConnectedToWeb && x.PathFromRoot == currentPath).Select(x => x.Name).ToList() ?? new();
+            var appsharedfolders = user?.SharedFolders.Where(x => x.ConnectedToApp && (x.PathFromRoot == currentPath || x.PathFromRoot == Constants.GetSharingRootPathInDatabase(user.Id))).Select(x => x.Name).ToList() ?? new();
+            var websharedfolders = user?.SharedFolders.Where(x => x.ConnectedToWeb && (x.PathFromRoot == currentPath || x.PathFromRoot == Constants.GetSharingRootPathInDatabase(user.Id))).Select(x => x.Name).ToList() ?? new();
 
             try
             {
@@ -425,7 +425,7 @@ namespace NCloud.Services
                         sharedFolder.ConnectedToApp = connectToApp.Value;
                     }
 
-                    if (sharedFolder.ConnectedToWeb != false && sharedFolder.ConnectedToApp != false)
+                    if (sharedFolder.ConnectedToWeb != false || sharedFolder.ConnectedToApp != false)
                     {
                         await context.SharedFolders.AddAsync(sharedFolder);
                     }
@@ -461,13 +461,11 @@ namespace NCloud.Services
             }
         }
 
-        private async Task<int> SetObjectAndUnderlyingObjectsState(string currentPath, string directoryName, CloudUser user, bool? connectToApp = null, bool? connectToWeb = null)
+        private async Task<bool> SetObjectAndUnderlyingObjectsState(string currentPath, string directoryName, CloudUser user, bool? connectToApp = null, bool? connectToWeb = null)
         {
             try
             {
-                string currentServerPath = ParseRootName(currentPath);
-
-                Queue<Pair<string, DirectoryInfo>> underlyingDirectories = new Queue<Pair<string, DirectoryInfo>>(new List<Pair<string, DirectoryInfo>>() { new Pair<string, DirectoryInfo>(currentPath, new DirectoryInfo(Path.Combine(currentServerPath, directoryName))) });
+                Queue<Pair<string, DirectoryInfo>> underlyingDirectories = new Queue<Pair<string, DirectoryInfo>>(new List<Pair<string, DirectoryInfo>>() { new Pair<string, DirectoryInfo>(currentPath, new DirectoryInfo(Path.Combine(ParseRootName(currentPath), directoryName))) });
 
                 while (underlyingDirectories.Any())
                 {
@@ -488,19 +486,19 @@ namespace NCloud.Services
 
                     foreach (string subFile in Directory.GetFiles(dir.Second.FullName))
                     {
-                        await SetDirectoryConnectedState(path, Path.GetFileName(subFile), user, connectToApp, connectToWeb);
+                        await SetFileConnectedState(path, Path.GetFileName(subFile), user, connectToApp, connectToWeb);
                     }
                 }
 
-                return 1;
+                return true;
             }
             catch (Exception)
             {
-                return -1;
+                return false;
             }
         }
 
-        public async Task<int> ConnectDirectoryToWeb(string currentPath, string directoryName, ClaimsPrincipal userPrincipal)
+        public async Task<bool> ConnectDirectoryToWeb(string currentPath, string directoryName, ClaimsPrincipal userPrincipal)
         {
 
             try
@@ -511,11 +509,11 @@ namespace NCloud.Services
             }
             catch (Exception)
             {
-                return -1;
+                return false;
             }
         }
 
-        public async Task<int> ConnectDirectoryToApp(string currentPath, string directoryName, ClaimsPrincipal userPrincipal)
+        public async Task<bool> ConnectDirectoryToApp(string currentPath, string directoryName, ClaimsPrincipal userPrincipal)
         {
             try
             {
@@ -525,11 +523,11 @@ namespace NCloud.Services
             }
             catch (Exception)
             {
-                return -1;
+                return false;
             }
         }
 
-        public async Task<int> DisonnectDirectoryFromApp(string currentPath, string directoryName, ClaimsPrincipal userPrincipal)
+        public async Task<bool> DisonnectDirectoryFromApp(string currentPath, string directoryName, ClaimsPrincipal userPrincipal)
         {
             try
             {
@@ -539,11 +537,11 @@ namespace NCloud.Services
             }
             catch (Exception)
             {
-                return -1;
+                return false;
             }
         }
 
-        public async Task<int> DisconnectDirectoryFromWeb(string currentPath, string directoryName, ClaimsPrincipal userPrincipal)
+        public async Task<bool> DisconnectDirectoryFromWeb(string currentPath, string directoryName, ClaimsPrincipal userPrincipal)
         {
             try
             {
@@ -553,7 +551,7 @@ namespace NCloud.Services
             }
             catch (Exception)
             {
-                return -1;
+                return false;
             }
         }
 
@@ -581,7 +579,7 @@ namespace NCloud.Services
                         sharedFile.ConnectedToApp = connectToApp.Value;
                     }
 
-                    if (sharedFile.ConnectedToWeb != false && sharedFile.ConnectedToApp != false)
+                    if (sharedFile.ConnectedToWeb != false || sharedFile.ConnectedToApp != false)
                     {
                         await context.SharedFiles.AddAsync(sharedFile);
                     }

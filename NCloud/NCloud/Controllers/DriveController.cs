@@ -19,11 +19,9 @@ namespace NCloud.Controllers
 {
     public class DriveController : CloudControllerDefault
     {
-        public DriveController(ICloudService service, UserManager<CloudUser> userManager, SignInManager<CloudUser> signInManager, IWebHostEnvironment env, ICloudNotificationService notifier) : base(service, userManager, signInManager, env, notifier)
-        {
-        }
+        public DriveController(ICloudService service, UserManager<CloudUser> userManager, SignInManager<CloudUser> signInManager, IWebHostEnvironment env, ICloudNotificationService notifier) : base(service, userManager, signInManager, env, notifier) { }
 
-        // GET: DriveController/Details/5
+        // GET: DriveController/Details/Documents
         public async Task<IActionResult> Details(string? folderName = null)
         {
             CloudPathData pathdata = await GetSessionCloudPathData();
@@ -329,7 +327,7 @@ namespace NCloud.Controllers
 
             CloudPathData pathData = await GetSessionCloudPathData();
 
-            string tempFile = Path.GetTempFileName();
+            string tempFile = Path.GetTempFileName(); //may need to chnage to specific
 
             //TODO: add to clean up process the path
 
@@ -417,19 +415,13 @@ namespace NCloud.Controllers
         {
             CloudPathData session = await GetSessionCloudPathData();
 
-            int result = await service.ConnectDirectoryToApp(session.CurrentPath, directoryName, User);
-
-            if (result == 1)
+            if (await service.ConnectDirectoryToApp(session.CurrentPath, directoryName, User))
             {
-                AddNewNotification(new Success("Directory and the items inside connected application"));
-            }
-            else if (result == 0)
-            {
-                AddNewNotification(new Warning("Not every item could be connected to application"));
+                AddNewNotification(new Success("Directory and items inside connected to application"));
             }
             else
             {
-                AddNewNotification(new Success("Unable to connect directory to application!"));
+                AddNewNotification(new Success("Error while connecting directory to application!"));
             }
 
             return RedirectToAction(nameof(Details));
@@ -439,19 +431,13 @@ namespace NCloud.Controllers
         {
             CloudPathData session = await GetSessionCloudPathData();
 
-            int result = await service.ConnectDirectoryToWeb(session.CurrentPath, directoryName, User);
-
-            if (result == 1)
+            if (await service.ConnectDirectoryToWeb(session.CurrentPath, directoryName, User))
             {
-                AddNewNotification(new Success("Directory and the items inside connected web"));
-            }
-            else if (result == 0)
-            {
-                AddNewNotification(new Warning("Not every item could be connected to web"));
+                AddNewNotification(new Success("Directory and items inside connected to web"));
             }
             else
             {
-                AddNewNotification(new Success("Unable to connect directory to web!"));
+                AddNewNotification(new Success("Error while connecting directory to web!"));
             }
 
             return RedirectToAction(nameof(Details));
@@ -467,7 +453,7 @@ namespace NCloud.Controllers
             }
             else
             {
-                AddNewNotification(new Success("Unable to connect file to application!"));
+                AddNewNotification(new Success("Error while connecting file to application!"));
             }
 
             return RedirectToAction(nameof(Details));
@@ -483,7 +469,7 @@ namespace NCloud.Controllers
             }
             else
             {
-                AddNewNotification(new Success("Unable to connect file to web!"));
+                AddNewNotification(new Success("Error while connecting file to web!"));
             }
 
             return RedirectToAction(nameof(Details));
@@ -493,19 +479,13 @@ namespace NCloud.Controllers
         {
             CloudPathData session = await GetSessionCloudPathData();
 
-            int result = await service.DisonnectDirectoryFromApp(session.CurrentPath, directoryName, User);
-
-            if (result == 1)
+            if (await service.DisonnectDirectoryFromApp(session.CurrentPath, directoryName, User))
             {
-                AddNewNotification(new Success("Directory and the items inside disconnected from application"));
-            }
-            else if (result == 0)
-            {
-                AddNewNotification(new Warning("Not every item could be disconnected from application"));
+                AddNewNotification(new Success("Directory and items inside disconnected from application"));
             }
             else
             {
-                AddNewNotification(new Success("Unable to disconnect directory from application"));
+                AddNewNotification(new Success("Error while disconnecting directory from application"));
             }
 
             return RedirectToAction(nameof(Details));
@@ -515,19 +495,13 @@ namespace NCloud.Controllers
         {
             CloudPathData session = await GetSessionCloudPathData();
 
-            int result = await service.DisconnectDirectoryFromWeb(session.CurrentPath, directoryName, User);
-
-            if (result == 1)
+            if (await service.DisconnectDirectoryFromWeb(session.CurrentPath, directoryName, User))
             {
-                AddNewNotification(new Success("Directory and the items inside disconnected from web"));
-            }
-            else if (result == 0)
-            {
-                AddNewNotification(new Warning("Not every item could be disconnected from web"));
+                AddNewNotification(new Success("Directory and items inside disconnected from web"));
             }
             else
             {
-                AddNewNotification(new Success("Unable to disconnect directory from web!"));
+                AddNewNotification(new Success("Error while disconnecting directory from web!"));
             }
 
             return RedirectToAction(nameof(Details));
@@ -543,7 +517,7 @@ namespace NCloud.Controllers
             }
             else
             {
-                AddNewNotification(new Success("Unable to disconnect file from application!"));
+                AddNewNotification(new Success("Error while disconnecting file from application!"));
             }
 
             return RedirectToAction(nameof(Details));
@@ -559,7 +533,7 @@ namespace NCloud.Controllers
             }
             else
             {
-                AddNewNotification(new Success("Unable to disconnect file from web!"));
+                AddNewNotification(new Success("Error while disconnecting file from web!"));
             }
 
             return RedirectToAction(nameof(Details));

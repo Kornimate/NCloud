@@ -29,5 +29,10 @@
         public static char PathSeparator { get => '/'; }
         public static int DistanceToRootFolder { get => 4; }
         public static int EmptyFolderAttributeNumber { get => 16; }
+
+        public static string GetSharingRootPathInDatabase(Guid id)
+        {
+            return Path.Combine(PrivateRootName, id.ToString());
+        }
     }
 }
