@@ -7,8 +7,8 @@ namespace NCloud.ViewModels
         public List<CloudFile> Files { get; set; }
         public List<CloudFolder> Folders { get; set; }
         public string CurrentPath { get; set; }
-        public string Owner { get; set; }
-        public SharingDetailsViewModel(List<CloudFile> files, List<CloudFolder> folders, string currentPath, string owner)
+        public bool Owner { get; set; } = false;
+        public SharingDetailsViewModel(List<CloudFile> files, List<CloudFolder> folders, string currentPath, bool owner)
         {
             Files = files;
             Folders = folders;

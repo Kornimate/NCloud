@@ -376,7 +376,7 @@ namespace NCloud.Services
 
         private bool IsSystemFolder(string path)
         {
-            List<string> pathFolders = path.Split('\\').ToList();
+            List<string> pathFolders = path.Split(Path.DirectorySeparatorChar).ToList();
             return Constants.SystemFolders.Contains(pathFolders[pathFolders.FindIndex(x => x == "wwwroot") + Constants.DistanceToRootFolder]);
         }
 
@@ -708,7 +708,7 @@ namespace NCloud.Services
 
             string path = ChangeUserNameToId(ChangeRootName(currentPath), user?.Id.ToString(), user?.UserName);
 
-            return (await context.SharedFiles.Where(x => x.ConnectedToApp && x.Owner == user && x.PathFromRoot == path).ToListAsync()).Select(x => new CloudFile(new FileInfo(Path.Combine(ParseRootName(x.PathFromRoot),x.Name)), x.ConnectedToApp, x.ConnectedToWeb)).ToList() ?? new();
+            return (await context.SharedFiles.Where(x => x.ConnectedToApp && x.Owner == user && x.PathFromRoot == path).ToListAsync()).Select(x => new CloudFile(x.Name)).ToList() ?? new();
         }
 
         public async Task<List<CloudFolder>> GetCurrentDepthSharingDirectories(string currentPath, ClaimsPrincipal userPrincipal)
@@ -717,15 +717,24 @@ namespace NCloud.Services
 
             string path = ChangeUserNameToId(ChangeRootName(currentPath), user?.Id.ToString(), user?.UserName);
 
-            return (await context.SharedFolders.Where(x => x.ConnectedToApp && x.Owner == user && x.PathFromRoot == path).ToListAsync()).Select(x => new CloudFolder(new DirectoryInfo(Path.Combine(ParseRootName(x.PathFromRoot), x.Name)), x.ConnectedToApp, x.ConnectedToWeb)).ToList() ?? new();
+            return (await context.SharedFolders.Where(x => x.ConnectedToApp && x.Owner == user && x.PathFromRoot == path).ToListAsync()).Select(x => new CloudFolder(x.Name)).ToList() ?? new();
         }
 
-        private string ChangeUserNameToId(string path, string? id, string? userName)
+        private string ChangeUserNameToId(string sharingPath, string? id, string? userName)
         {
             if (id is null || userName is null)
-                return path;
+                return sharingPath;
 
-            return path.Replace(userName, id);
+            try
+            {
+                var data = sharingPath.Split(Path.DirectorySeparatorChar, StringSplitOptions.RemoveEmptyEntries);
+                data[1] = id;
+                return Path.Combine(data);
+            }
+            catch
+            {
+                return sharingPath;
+            }
         }
 
         private string GetSharedPathOwnerUser(string currentPath)
@@ -741,6 +750,23 @@ namespace NCloud.Services
             catch (Exception)
             {
                 throw;
+            }
+        }
+
+        public async Task<bool> OwnerOfPathIsActualUser(string sharingCurrentPath, ClaimsPrincipal userPrincipal)
+        {
+            CloudUser? user = await userManager.GetUserAsync(userPrincipal);
+
+            if (user is null)
+                return false;
+
+            try
+            {
+                return GetSharedPathOwnerUser(sharingCurrentPath) == user.UserName;
+            }
+            catch
+            {
+                return false;
             }
         }
     }

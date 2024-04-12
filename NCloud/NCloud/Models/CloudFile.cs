@@ -11,6 +11,12 @@ namespace NCloud.Models
             this.Info = Info;
             this.IconPath = icon is null ? ImageLoader.Load(IsFolder(), Info.Name) : icon;
         }
+        public CloudFile(string sharedName, string? icon = null) : base(true, false, icon)
+        {
+            SharedName = sharedName;
+            this.IconPath = icon is null ? ImageLoader.Load(IsFolder(), sharedName) : icon;
+            Info = null!;
+        }
 
         public override bool IsFile()
         {

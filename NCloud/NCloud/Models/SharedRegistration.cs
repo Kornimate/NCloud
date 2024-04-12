@@ -18,10 +18,6 @@ namespace NCloud.Models
         [Required]
         [NotNull]
         public string? PathFromRoot { get; set; }
-        
-        [Required]
-        [NotNull]
-        public string? CloudPathFromRoot { get; set; }
 
         [Required]
         [NotNull]

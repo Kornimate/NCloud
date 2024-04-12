@@ -25,26 +25,26 @@ namespace NCloud.Controllers
             if(pathdata.CurrentPath == Constants.PublicRootName)
             {
                 return View(new SharingDetailsViewModel(new List<CloudFile>(),
-                                                      await service.GetSharingUsersSharingDirectories(currentPath),
-                                                      pathdata.CurrentPathShow,
-                                                      "Admin")); //change
+                                                        await service.GetSharingUsersSharingDirectories(currentPath),
+                                                        pathdata.CurrentPathShow,
+                                                        false));
             }
             
             try
             {
                 return View(new SharingDetailsViewModel(await service.GetCurrentDepthSharingFiles(currentPath,User),
-                                                      await service.GetCurrentDepthSharingDirectories(currentPath,User),
-                                                      pathdata.CurrentPathShow,
-                                                      "Admin"));//change
+                                                        await service.GetCurrentDepthSharingDirectories(currentPath,User),
+                                                        pathdata.CurrentPathShow,
+                                                        await service.OwnerOfPathIsActualUser(currentPath,User)));
             }
             catch (Exception ex)
             {
                 AddNewNotification(new Error(ex.Message));
 
                 return View(new SharingDetailsViewModel(new List<CloudFile>(),
-                                                      new List<CloudFolder>(),
-                                                      pathdata.CurrentPathShow,
-                                                      "Admin")); //change
+                                                        new List<CloudFolder>(),
+                                                        pathdata.CurrentPathShow,
+                                                        false));
             }
         }
 
