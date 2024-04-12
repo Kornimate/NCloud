@@ -17,7 +17,11 @@ namespace NCloud.Models
 
         [Required]
         [NotNull]
-        public string? PathFromRoot { get; set; }
+        public string? SharedPathFromRoot { get; set; }
+
+        [Required]
+        [NotNull]
+        public string? CloudPathFromRoot { get; set; }
 
         [Required]
         [NotNull]
