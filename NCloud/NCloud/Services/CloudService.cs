@@ -132,7 +132,7 @@ namespace NCloud.Services
 
                     CloudUser user = await userManager.GetUserAsync(userPrincipal);
 
-                    Pair<string, string> parentPathAndName = GetParentPathAndName(currentPath);
+                    Pair<string, string> parentPathAndName = GetParentPathAndName(ChangeOwnerIdentification(ChangeRootName(currentPath), user.UserName));
 
                     Pair<bool, bool> connections = await FolderIsSharedInAppInWeb(parentPathAndName.First, parentPathAndName.Second, user);
 
@@ -182,7 +182,7 @@ namespace NCloud.Services
 
                 CloudUser user = await userManager.GetUserAsync(userPrincipal);
 
-                Pair<string, string> parentPathAndName = GetParentPathAndName(currentPath);
+                Pair<string, string> parentPathAndName = GetParentPathAndName(ChangeOwnerIdentification(ChangeRootName(currentPath), user.UserName));
 
                 Pair<bool, bool> connections = await FolderIsSharedInAppInWeb(parentPathAndName.First, parentPathAndName.Second, user);
 
@@ -201,9 +201,9 @@ namespace NCloud.Services
             return retNum;
         }
 
-        private async Task<Pair<bool, bool>> FolderIsSharedInAppInWeb(string currentPath, string directoryName, CloudUser user)
+        private async Task<Pair<bool, bool>> FolderIsSharedInAppInWeb(string sharingPath, string directoryName, CloudUser user)
         {
-            SharedFolder? sharedFolder = await context.SharedFolders.FirstOrDefaultAsync(x => x.SharedPathFromRoot == currentPath && x.Name == directoryName && x.Owner == user);
+            SharedFolder? sharedFolder = await context.SharedFolders.FirstOrDefaultAsync(x => x.SharedPathFromRoot == sharingPath && x.Name == directoryName && x.Owner == user);
 
             if (sharedFolder is null)
             {
@@ -238,8 +238,8 @@ namespace NCloud.Services
 
             CloudUser? user = await userManager.GetUserAsync(userPrincipal);
 
-            var appsharedfiles = user?.SharedFiles.Where(x => x.ConnectedToApp && x.SharedPathFromRoot == currentPath ).Select(x => x.Name).ToList() ?? new();
-            var websharedfiles = user?.SharedFiles.Where(x => x.ConnectedToWeb && x.SharedPathFromRoot == currentPath ).Select(x => x.Name).ToList() ?? new();
+            var appsharedfiles = user?.SharedFiles.Where(x => x.ConnectedToApp && x.SharedPathFromRoot == currentPath).Select(x => x.Name).ToList() ?? new();
+            var websharedfiles = user?.SharedFiles.Where(x => x.ConnectedToWeb && x.SharedPathFromRoot == currentPath).Select(x => x.Name).ToList() ?? new();
 
             try
             {
@@ -424,6 +424,8 @@ namespace NCloud.Services
                     if (connectToApp is not null)
                     {
                         sharedFolder.ConnectedToApp = connectToApp.Value;
+                        sharedFolder.SharedPathFromRoot = sharingPath;
+
                     }
 
                     if (sharedFolder.ConnectedToWeb != false || sharedFolder.ConnectedToApp != false)
@@ -440,6 +442,7 @@ namespace NCloud.Services
                     if (connectToApp is not null)
                     {
                         sharedFolder.ConnectedToApp = connectToApp.Value;
+                        sharedFolder.SharedPathFromRoot = sharingPath;
                     }
 
                     if (sharedFolder.ConnectedToWeb == false && sharedFolder.ConnectedToApp == false)
@@ -521,18 +524,18 @@ namespace NCloud.Services
             {
                 CloudUser user = await userManager.GetUserAsync(userPrincipal);
 
-                Pair<string, string> parentPathAndName = GetParentPathAndName(currentPath);
+                Pair<string, string> parentPathAndName = GetParentPathAndName(ChangeOwnerIdentification(ChangeRootName(currentPath), user.UserName));
 
                 Pair<bool, bool> connections = await FolderIsSharedInAppInWeb(parentPathAndName.First, parentPathAndName.Second, user);
 
-                if (connections.First && currentPath != Constants.GetSharingRootPathInDatabase(user.Id))
+                if (connections.First && currentPath != Constants.GetCloudRootPathInDatabase(user.Id))
                 {
                     return await SetObjectAndUnderlyingObjectsState(currentPath, directoryName, ChangeOwnerIdentification(ChangeRootName(currentPath), user.UserName), user, connectToApp: true)
-                        && await SetObjectAndUnderlyingObjectsState(currentPath, directoryName, ChangeOwnerIdentification(ChangeRootName(currentPath), user.UserName), user, connectToApp: true);
+                        && await SetObjectAndUnderlyingObjectsState(currentPath, directoryName, Constants.GetSharingRootPathInDatabase(user.UserName), user, connectToApp: true);
                 }
                 else
                 {
-                    return await SetObjectAndUnderlyingObjectsState(currentPath, directoryName, ChangeOwnerIdentification(ChangeRootName(currentPath), user.UserName), user, connectToApp: true);
+                    return await SetObjectAndUnderlyingObjectsState(currentPath, directoryName, Constants.GetSharingRootPathInDatabase(user.UserName), user, connectToApp: true);
                 }
             }
             catch (Exception)
@@ -548,7 +551,7 @@ namespace NCloud.Services
                 CloudUser user = await userManager.GetUserAsync(userPrincipal);
 
                 return await SetObjectAndUnderlyingObjectsState(currentPath, directoryName, ChangeOwnerIdentification(ChangeRootName(currentPath), user.UserName), user, connectToApp: false)
-                    && await SetObjectAndUnderlyingObjectsState(currentPath, directoryName, ChangeOwnerIdentification(ChangeRootName(currentPath), user.UserName), user, connectToApp: false);
+                    && await SetObjectAndUnderlyingObjectsState(currentPath, directoryName, Constants.GetSharingRootPathInDatabase(user.UserName), user, connectToApp: false);
             }
             catch (Exception)
             {
@@ -593,6 +596,7 @@ namespace NCloud.Services
                     if (connectToApp is not null)
                     {
                         sharedFile.ConnectedToApp = connectToApp.Value;
+                        sharedFile.SharedPathFromRoot = sharingPath;
                     }
 
                     if (sharedFile.ConnectedToWeb != false || sharedFile.ConnectedToApp != false)
@@ -609,6 +613,7 @@ namespace NCloud.Services
                     if (connectToApp is not null)
                     {
                         sharedFile.ConnectedToApp = connectToApp.Value;
+                        sharedFile.SharedPathFromRoot = sharingPath;
                     }
 
                     if (sharedFile.ConnectedToWeb != false && sharedFile.ConnectedToApp != false)
@@ -637,18 +642,18 @@ namespace NCloud.Services
             {
                 CloudUser user = await userManager.GetUserAsync(userPrincipal);
 
-                Pair<string, string> parentPathAndName = GetParentPathAndName(currentPath);
+                Pair<string, string> parentPathAndName = GetParentPathAndName(ChangeOwnerIdentification(ChangeRootName(currentPath), user.UserName));
 
                 Pair<bool, bool> connections = await FolderIsSharedInAppInWeb(parentPathAndName.First, parentPathAndName.Second, user);
 
-                if (connections.First && currentPath != Constants.GetSharingRootPathInDatabase(user.Id))
+                if (connections.First && currentPath != Constants.GetCloudRootPathInDatabase(user.Id))
                 {
                     return await SetFileConnectedState(currentPath, fileName, ChangeOwnerIdentification(ChangeRootName(currentPath), user.UserName), user, connectToApp: true)
-                        && await SetFileConnectedState(Constants.GetSharingRootPathInDatabase(user.Id), fileName, ChangeOwnerIdentification(ChangeRootName(currentPath), user.UserName), user, connectToApp: true);
+                        && await SetFileConnectedState(currentPath, fileName, Constants.GetSharingRootPathInDatabase(user.UserName), user, connectToApp: true);
                 }
                 else
                 {
-                    return await SetFileConnectedState(Constants.GetSharingRootPathInDatabase(user.Id), fileName, ChangeOwnerIdentification(ChangeRootName(currentPath), user.UserName), user, connectToApp: true);
+                    return await SetFileConnectedState(currentPath, fileName, Constants.GetSharingRootPathInDatabase(user.UserName), user, connectToApp: true);
                 }
             }
             catch (Exception)
@@ -663,7 +668,7 @@ namespace NCloud.Services
             {
                 CloudUser user = await userManager.GetUserAsync(userPrincipal);
 
-                return await SetFileConnectedState(currentPath, fileName, ChangeOwnerIdentification(ChangeRootName(currentPath), user.UserName), user, connectToWeb: true);
+                return await SetFileConnectedState(currentPath, fileName, currentPath, user, connectToWeb: true);
             }
             catch (Exception)
             {
@@ -678,7 +683,7 @@ namespace NCloud.Services
                 CloudUser user = await userManager.GetUserAsync(userPrincipal);
 
                 return await SetFileConnectedState(currentPath, fileName, ChangeOwnerIdentification(ChangeRootName(currentPath), user.UserName), user, connectToApp: false)
-                    && await SetFileConnectedState(Constants.GetSharingRootPathInDatabase(user.Id), fileName, ChangeOwnerIdentification(ChangeRootName(currentPath), user.UserName), user, connectToApp: false);
+                    && await SetFileConnectedState(currentPath, fileName, Constants.GetSharingRootPathInDatabase(user.UserName), user, connectToApp: false);
             }
             catch (Exception)
             {
@@ -692,7 +697,7 @@ namespace NCloud.Services
             {
                 CloudUser user = await userManager.GetUserAsync(userPrincipal);
 
-                return await SetFileConnectedState(currentPath, fileName, ChangeOwnerIdentification(ChangeRootName(currentPath), user.UserName), user, connectToWeb: false);
+                return await SetFileConnectedState(currentPath, fileName, currentPath, user, connectToWeb: false);
             }
             catch (Exception)
             {
@@ -709,17 +714,17 @@ namespace NCloud.Services
         {
             CloudUser? user = await context.Users.FirstOrDefaultAsync(x => x.UserName == GetSharedPathOwnerUser(currentPath));
 
-            return (await context.SharedFiles.Where(x => x.ConnectedToApp && x.Owner == user && x.SharedPathFromRoot == currentPath).ToListAsync()).Select(x => new CloudFile(x.Name)).ToList() ?? new();
+            return (await context.SharedFiles.Where(x => x.ConnectedToApp && x.Owner == user && x.SharedPathFromRoot == currentPath).ToListAsync()).Select(x => new CloudFile(new FileInfo(Path.Combine(ParseRootName(x.CloudPathFromRoot), x.Name)), x.ConnectedToApp, x.ConnectedToWeb)).ToList() ?? new();
         }
 
         public async Task<List<CloudFolder>> GetCurrentDepthSharingDirectories(string currentPath, ClaimsPrincipal userPrincipal)
         {
             CloudUser? user = await context.Users.FirstOrDefaultAsync(x => x.UserName == GetSharedPathOwnerUser(currentPath));
 
-            return (await context.SharedFolders.Where(x => x.ConnectedToApp && x.Owner == user && x.SharedPathFromRoot == currentPath).ToListAsync()).Select(x => new CloudFolder(x.Name)).ToList() ?? new();
+            return (await context.SharedFolders.Where(x => x.ConnectedToApp && x.Owner == user && x.SharedPathFromRoot == currentPath).ToListAsync()).Select(x => new CloudFolder(new DirectoryInfo(Path.Combine(ParseRootName(x.CloudPathFromRoot), x.Name)), x.ConnectedToApp, x.ConnectedToWeb)).ToList() ?? new();
         }
 
-        private string ChangeOwnerIdentification(string path, string? itemForChange)
+        private static string ChangeOwnerIdentification(string path, string? itemForChange)
         {
             if (itemForChange is null)
                 return path;
@@ -736,7 +741,7 @@ namespace NCloud.Services
             }
         }
 
-        private string GetSharedPathOwnerUser(string currentPath)
+        private static string GetSharedPathOwnerUser(string currentPath)
         {
             try
             {

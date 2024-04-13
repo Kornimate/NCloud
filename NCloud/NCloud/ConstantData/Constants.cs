@@ -31,9 +31,14 @@
         public static int EmptyFolderAttributeNumber { get => 16; }
         public static int OwnerPlaceInPath { get => 1; }
 
-        public static string GetSharingRootPathInDatabase(Guid id)
+        public static string GetCloudRootPathInDatabase(Guid id)
         {
             return Path.Combine(PrivateRootName, id.ToString());
+        }
+
+        public static string GetSharingRootPathInDatabase(string userName)
+        {
+            return Path.Combine(PublicRootName, userName);
         }
     }
 }
