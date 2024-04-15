@@ -6,12 +6,12 @@ namespace NCloud.Models
     public class CloudFile : CloudRegistration
     {
         public FileInfo Info { get; set; }
-        public CloudFile(FileInfo Info, bool IsSharedInApp, bool isPublic, string? icon = null) : base(IsSharedInApp, isPublic, icon)
+        public CloudFile(FileInfo Info, bool IsSharedInApp, bool isPublic,string currentPath, string? icon = null) : base(IsSharedInApp, isPublic, currentPath)
         {
             this.Info = Info;
             this.IconPath = icon is null ? ImageLoader.Load(IsFolder(), Info.Name) : icon;
         }
-        public CloudFile(string sharedName, string? icon = null) : base(true, false, icon)
+        public CloudFile(string sharedName, string? icon = null) : base(true, false,String.Empty)
         {
             SharedName = sharedName;
             this.IconPath = icon is null ? ImageLoader.Load(IsFolder(), sharedName) : icon;

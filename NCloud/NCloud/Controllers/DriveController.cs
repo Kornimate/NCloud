@@ -43,14 +43,20 @@ namespace NCloud.Controllers
             {
                 return View(new DriveDetailsViewModel(await service.GetCurrentDepthCloudFiles(currentPath,User),
                                                       await service.GetCurrentDepthCloudDirectories(currentPath, User),
-                                                      pathdata.CurrentPathShow));
+                                                      pathdata.CurrentPathShow,
+                                                      pathdata.CurrentPath,
+                                                      Constants.GetWebControllerAndActionForDetails(),
+                                                      Constants.GetWebControllerAndActionForDownload()));
             }
             catch (Exception ex)
             {
                 AddNewNotification(new Error(ex.Message));
                 return View(new DriveDetailsViewModel(new List<CloudFile>(),
                                                       new List<CloudFolder>(),
-                                                      pathdata.CurrentPathShow));
+                                                      pathdata.CurrentPathShow,
+                                                      String.Empty,
+                                                      null!,
+                                                      null!));
             }
         }
 

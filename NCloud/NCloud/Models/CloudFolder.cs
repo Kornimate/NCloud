@@ -6,7 +6,7 @@ namespace NCloud.Models
     public class CloudFolder : CloudRegistration
     {
         public DirectoryInfo Info { get; set; }
-        public CloudFolder(DirectoryInfo Info, bool isSharedInApp, bool isPublic, string? icon = null) : base(isSharedInApp, isPublic, icon)
+        public CloudFolder(DirectoryInfo Info, bool isSharedInApp, bool isPublic, string currentPath, string? icon = null) : base(isSharedInApp, isPublic, currentPath)
         {
             this.Info = Info;
             this.IconPath = icon is null ? ImageLoader.Load(IsFolder(), Info.Name) : icon;

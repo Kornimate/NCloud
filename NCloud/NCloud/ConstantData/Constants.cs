@@ -1,4 +1,6 @@
-﻿namespace NCloud.ConstantData
+﻿using Castle.Core;
+
+namespace NCloud.ConstantData
 {
     public static class Constants
     {
@@ -10,6 +12,7 @@
             "Pictures"
         };
 
+        public static string HashingKey { get => ""; } //TODO: get a hasing key
         public static string NoFileType { get => "notype"; }
         public static string UnkownFileType { get => "unknown"; }
         public static string FileTypePrefix { get => "filetype-"; }
@@ -30,6 +33,16 @@
         public static int DistanceToRootFolder { get => 4; }
         public static int EmptyFolderAttributeNumber { get => 16; }
         public static int OwnerPlaceInPath { get => 1; }
+
+        public static Pair<string,string> GetWebControllerAndActionForDetails()
+        {
+            return new Pair<string, string>("Web","Details");
+        }
+
+        public static Pair<string, string> GetWebControllerAndActionForDownload()
+        {
+            return new Pair<string, string>("Web", "Download");
+        }
 
         public static string GetCloudRootPathInDatabase(Guid id)
         {
