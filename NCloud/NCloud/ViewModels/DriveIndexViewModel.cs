@@ -6,15 +6,15 @@ namespace NCloud.ViewModels
     {
         public List<CloudFolder?> recentFolders { get; set; }
         public List<CloudFile?> recentFiles { get; set; }
-        public List<string> SharedFoldersUrls { get; set; }
-        public List<string> SharedFilesUrls { get; set; }
+        public List<string> SharedFolderUrls { get; set; }
+        public List<string> SharedFileUrls { get; set; }
 
         public DriveIndexViewModel(List<CloudFile?> recFiles,List<CloudFolder?> recFolders, List<string> sharedFoldersUrls, List<string> sharedFilesUrls)
         {
             recentFiles = recFiles;
             recentFolders = recFolders;
-            SharedFoldersUrls = sharedFoldersUrls;
-            SharedFilesUrls = sharedFilesUrls;
+            SharedFolderUrls = sharedFoldersUrls;
+            SharedFileUrls = sharedFilesUrls;
         }
     }
 }

@@ -30,5 +30,7 @@ namespace NCloud.Services
         Task<List<CloudFile>> GetCurrentDepthSharingFiles(string currentPath, ClaimsPrincipal userPrincipal);
         Task<List<CloudFolder>> GetCurrentDepthSharingDirectories(string currentPath, ClaimsPrincipal userPrincipal);
         Task<bool> OwnerOfPathIsActualUser(string currentPath, ClaimsPrincipal userPrincipal);
+        Task<List<string>> GetUserSharedFolderUrls(ClaimsPrincipal userPrincipal);
+        Task<List<string>> GetUserSharedFileUrls(ClaimsPrincipal userPrincipal);
     }
 }

@@ -3,4 +3,41 @@
 @{
     ViewData["Title"] = "DashBoard";
 }
-<span> <i class="bi bi-person-circle"></i></span>
+<div>
+    <h1>Available Space</h1>
+    <div></div>
+</div>
+<div>
+    <h1>Recent Folders</h1>
+    <div></div>
+</div>
+<div>
+    <h1>Recent Files</h1>
+    <div></div>
+</div>
+<div>
+    <h1>Shared Folders</h1>
+    <div class="list-group">
+        @foreach (var folderUrl in Model.SharedFolderUrls)
+        {
+            <a href="@folderUrl" class="list-group-item list-group-item-action">@folderUrl</a>
+        }
+    </div>
+</div>
+<div>
+    <h1>Shared Files</h1>
+        @foreach (var fileUrl in Model.SharedFileUrls)
+        {
+        string? url = Url.Action(Model.WebControllerAndActionForDownload.Second, Model.WebControllerAndActionForDownload.First, new { path = System.IO.Path.Combine(Model.CurrentPath, item.Info.Name) }, Context.Request.Scheme);
+            <div class="list-group list-group-horizontal">
+            <button type="button" class="btn btn-outline-dark" onclick="copyToClipBoard(@fileUrl)"><img src="/utilities/link.svg" width=" 20" height="20" class="ms-2 item rounded align-center"></button>
+                <a href="@fileUrl" class="list-group-item list-group-item-action">@fileUrl</a>
+            </div>
+        }
+</div>
+
+<script type="text/javascript">
+    function copyToClipBoard(url) {
+        navigator.clipboard.writeText(url);
+    }
+</script>

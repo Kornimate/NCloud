@@ -14,11 +14,10 @@ namespace NCloud.Controllers
         public async Task<ActionResult> Index()
         {
             await signInManager.PasswordSignInAsync("Admin", "Admin_1234", true, false);
-            var result = service.GetCurrentUserIndexData();
-            return View(new DriveIndexViewModel(result.Item1, result.Item2)
-            {
-                //TestString = Url.Action("Index", "Drive",new { path="testpath" },Request.Scheme)
-            });
+
+            var result = service.GetCurrentUserIndexData(); //TODO: implement function
+
+            return View(new DriveIndexViewModel(result.Item1, result.Item2, await service.GetUserSharedFolderUrls(User), await service.GetUserSharedFileUrls(User)));
         }
     }
 }

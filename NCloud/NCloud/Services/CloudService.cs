@@ -773,5 +773,15 @@ namespace NCloud.Services
                 return false;
             }
         }
+
+        public Task<List<string>> GetUserSharedFolderUrls(ClaimsPrincipal userPrincipal)
+        {
+            return null;
+        }
+
+        public Task<List<string>> GetUserSharedFileUrls(ClaimsPrincipal userPrincipal)
+        {
+            return null;
+        }
     }
 }
