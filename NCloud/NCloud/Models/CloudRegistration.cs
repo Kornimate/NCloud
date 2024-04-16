@@ -14,7 +14,7 @@ namespace NCloud.Models
             IconPath = null!;
             IsConnectedToApp = isSharedInApp;
             IsConnectedToWeb = isPublic;
-            HashedPath = HashCreator.EncryptString(currentPath);
+            HashedPath = HashManager.EncryptString(currentPath);
         }
 
         public abstract bool IsFile();

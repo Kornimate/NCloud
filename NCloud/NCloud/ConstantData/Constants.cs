@@ -11,8 +11,8 @@ namespace NCloud.ConstantData
             "Videos",
             "Pictures"
         };
-
-        public static string HashingKey { get => ""; } //TODO: get a hasing key
+        public static string AesKey { get => "bT7TAqTu32JxED0qTPac8w=="; }
+        public static string IV { get => "IJ/UpiC2sYsmrq7fbFyemw=="; }
         public static string NoFileType { get => "notype"; }
         public static string UnkownFileType { get => "unknown"; }
         public static string FileTypePrefix { get => "filetype-"; }
