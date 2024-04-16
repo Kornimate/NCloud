@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Identity;
 using NCloud.ConstantData;
 using System.Security.Claims;
 using Castle.Core;
+using NCloud.Security;
 
 namespace NCloud.Services
 {
@@ -774,14 +775,18 @@ namespace NCloud.Services
             }
         }
 
-        public Task<List<string>> GetUserSharedFolderUrls(ClaimsPrincipal userPrincipal)
+        public async Task<List<string>> GetUserSharedFolderUrls(ClaimsPrincipal userPrincipal)
         {
-            return null;
+            CloudUser? user = await userManager.GetUserAsync(userPrincipal);
+            
+            return await context.SharedFolders.Where(x => x.Owner == user && x.ConnectedToWeb).OrderBy(x => x.CloudPathFromRoot).ThenBy(x => x.Name).Select(x => HashCreator.EncryptString(Path.Combine(x.CloudPathFromRoot,x.Name))).ToListAsync();
         }
 
-        public Task<List<string>> GetUserSharedFileUrls(ClaimsPrincipal userPrincipal)
+        public async Task<List<string>> GetUserSharedFileUrls(ClaimsPrincipal userPrincipal)
         {
-            return null;
+            CloudUser? user = await userManager.GetUserAsync(userPrincipal);
+
+            return await context.SharedFiles.Where(x => x.Owner == user && x.ConnectedToWeb).OrderBy(x => x.CloudPathFromRoot).ThenBy(x => x.Name).Select(x => HashCreator.EncryptString(Path.Combine(x.CloudPathFromRoot, x.Name))).ToListAsync();
         }
     }
 }

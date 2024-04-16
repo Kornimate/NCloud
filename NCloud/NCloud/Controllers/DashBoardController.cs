@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using NCloud.ConstantData;
 using NCloud.Models;
 using NCloud.Services;
 using NCloud.Users;
@@ -17,7 +18,7 @@ namespace NCloud.Controllers
 
             var result = service.GetCurrentUserIndexData(); //TODO: implement function
 
-            return View(new DriveIndexViewModel(result.Item1, result.Item2, await service.GetUserSharedFolderUrls(User), await service.GetUserSharedFileUrls(User)));
+            return View(new DashBoardViewModel(result.Item1, result.Item2, await service.GetUserSharedFolderUrls(User), await service.GetUserSharedFileUrls(User), Constants.GetWebControllerAndActionForDetails(), Constants.GetWebControllerAndActionForDownload()));
         }
     }
 }

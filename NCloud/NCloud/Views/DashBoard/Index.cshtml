@@ -1,43 +1,59 @@
-﻿@model DriveIndexViewModel
+﻿@model DashBoardViewModel
 
 @{
     ViewData["Title"] = "DashBoard";
+
+    int counter = 0;
 }
 <div>
     <h1>Available Space</h1>
     <div></div>
 </div>
-<div>
+<div class="mt-2">
     <h1>Recent Folders</h1>
     <div></div>
 </div>
-<div>
+<div class="mt-2">
     <h1>Recent Files</h1>
     <div></div>
 </div>
-<div>
+<div class="mt-2">
     <h1>Shared Folders</h1>
     <div class="list-group">
         @foreach (var folderUrl in Model.SharedFolderUrls)
         {
-            <a href="@folderUrl" class="list-group-item list-group-item-action">@folderUrl</a>
+            <ul class="list-group list-group-horizontal mt-1">
+                <li class="list-group-item list-group-item-action text-dark">@folderUrl.Replace(System.IO.Path.DirectorySeparatorChar, Constants.PathSeparator).Slice(Constants.PrivateRootName.Length, Constants.PrivateRootName.Length + Constants.GuidLength + 1)</li>
+            </ul>
+
+            string? url = Url.Action(Model.WebControllerAndActionForDetails.Second, Model.WebControllerAndActionForDetails.First, new { path = folderUrl }, Context.Request.Scheme);
+
+            <div class="list-group list-group-horizontal mb-1">
+                <button type="button" class="btn btn-outline-secondary" onclick="copyToClipBoard(@(++counter))"><img src="/utilities/link.svg" width=" 20" height="20" class="item rounded align-center"></button>
+                <a href="@url" id="@counter" class="list-group-item list-group-item-action text-primary" target="_blank">@url</a>
+            </div>
         }
     </div>
 </div>
-<div>
+<div class="mt-2">
     <h1>Shared Files</h1>
-        @foreach (var fileUrl in Model.SharedFileUrls)
-        {
-        string? url = Url.Action(Model.WebControllerAndActionForDownload.Second, Model.WebControllerAndActionForDownload.First, new { path = System.IO.Path.Combine(Model.CurrentPath, item.Info.Name) }, Context.Request.Scheme);
-            <div class="list-group list-group-horizontal">
-            <button type="button" class="btn btn-outline-dark" onclick="copyToClipBoard(@fileUrl)"><img src="/utilities/link.svg" width=" 20" height="20" class="ms-2 item rounded align-center"></button>
-                <a href="@fileUrl" class="list-group-item list-group-item-action">@fileUrl</a>
-            </div>
-        }
+    @foreach (var fileUrl in Model.SharedFileUrls)
+    {
+        <ul class="list-group list-group-horizontal mt-1">
+            <li class="list-group-item list-group-item-action text-dark">@fileUrl.Replace(System.IO.Path.DirectorySeparatorChar, Constants.PathSeparator).Slice(Constants.PrivateRootName.Length, Constants.PrivateRootName.Length + Constants.GuidLength + 1)</li>
+        </ul>
+
+        string? url = Url.Action(Model.WebControllerAndActionForDownload.Second, Model.WebControllerAndActionForDownload.First, new { path = fileUrl }, Context.Request.Scheme);
+
+        <div class="list-group list-group-horizontal mb-1">
+            <button type="button" class="btn btn-outline-secondary" onclick="copyToClipBoard(@(++counter))"><img src="/utilities/link.svg" width=" 20" height="20" class="item rounded align-center"></button>
+            <a href="@url" id="counter" class="list-group-item list-group-item-action text-primary" target="_blank">@url</a>
+        </div>
+    }
 </div>
 
 <script type="text/javascript">
-    function copyToClipBoard(url) {
-        navigator.clipboard.writeText(url);
+    function copyToClipBoard(id) {
+        navigator.clipboard.writeText(document.getElementById(id).innerHTML);
     }
 </script>
