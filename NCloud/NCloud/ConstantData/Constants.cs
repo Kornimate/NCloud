@@ -32,7 +32,7 @@ namespace NCloud.ConstantData
         public static char FileNameDelimiter { get => '_'; }
         public static char PathSeparator { get => '/'; }
         public static int DistanceToRootFolder { get => 4; }
-        public static int EmptyFolderAttributeNumber { get => 16; }
+        public static int EmptyFolderAttributeNumberZip { get => 16; }
         public static int OwnerPlaceInPath { get => 1; }
         public static int GuidLength { get => 36; }
 

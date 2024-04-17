@@ -11,25 +11,29 @@ namespace NCloud.Security
             if (input is null)
                 return String.Empty;
 
-            using (Aes aesManager = Aes.Create())
+            try
             {
-                aesManager.Key = Convert.FromBase64String(Constants.AesKey);
-                aesManager.IV = Convert.FromBase64String(Constants.IV);
-
-                ICryptoTransform encryptor = aesManager.CreateEncryptor(aesManager.Key, aesManager.IV);
-
-                using (var memoryStream = new MemoryStream())
+                using (Aes aesManager = Aes.Create())
                 {
-                    using (var cryptoStream = new CryptoStream(memoryStream, encryptor, CryptoStreamMode.Write))
-                    {
-                        using (var streamWriter = new StreamWriter(cryptoStream))
-                        {
-                            streamWriter.Write(input);
+                    aesManager.Key = Convert.FromBase64String(Constants.AesKey);
+                    aesManager.IV = Convert.FromBase64String(Constants.IV);
 
+                    ICryptoTransform encryptor = aesManager.CreateEncryptor(aesManager.Key, aesManager.IV);
+
+                    using (var memoryStream = new MemoryStream())
+                    {
+                        using (var cryptoStream = new CryptoStream(memoryStream, encryptor, CryptoStreamMode.Write))
+                        {
+                            cryptoStream.Write(Encoding.UTF8.GetBytes(input),0, input.Length);
+                            cryptoStream.FlushFinalBlock();
                             return Convert.ToBase64String(memoryStream.ToArray());
                         }
                     }
                 }
+            }
+            catch (Exception ex)
+            {
+                return String.Empty;
             }
         }
 
@@ -38,23 +42,30 @@ namespace NCloud.Security
             if (input is null)
                 return String.Empty;
 
-            using (Aes aesManager = Aes.Create())
+            try
             {
-                aesManager.Key = Convert.FromBase64String(Constants.AesKey);
-                aesManager.IV = Convert.FromBase64String(Constants.IV);
-
-                ICryptoTransform decryptor = aesManager.CreateDecryptor(aesManager.Key, aesManager.IV);
-
-                using (var memoryStream = new MemoryStream(Convert.FromBase64String(input)))
+                using (Aes aesManager = Aes.Create())
                 {
-                    using (var cryptoStream = new CryptoStream(memoryStream, decryptor, CryptoStreamMode.Read))
+                    aesManager.Key = Convert.FromBase64String(Constants.AesKey);
+                    aesManager.IV = Convert.FromBase64String(Constants.IV);
+
+                    ICryptoTransform decryptor = aesManager.CreateDecryptor(aesManager.Key, aesManager.IV);
+
+                    using (var memoryStream = new MemoryStream(Convert.FromBase64String(input)))
                     {
-                        using (var srDecrypt = new StreamReader(cryptoStream))
+                        using (var cryptoStream = new CryptoStream(memoryStream, decryptor, CryptoStreamMode.Read))
                         {
-                            return srDecrypt.ReadToEnd();
+                            using (var srDecrypt = new StreamReader(cryptoStream))
+                            {
+                                return srDecrypt.ReadToEnd();
+                            }
                         }
                     }
                 }
+            }
+            catch (Exception ex)
+            {
+                return String.Empty;
             }
         }
     }

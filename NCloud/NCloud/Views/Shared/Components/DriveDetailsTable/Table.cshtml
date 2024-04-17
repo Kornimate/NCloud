@@ -1,5 +1,10 @@
 ﻿@model DriveDetailsViewModel
 
+@{
+    ViewData["Title"] = "Cloud Files";
+    int counter = 0;
+}
+
 <table class="table">
     <thead>
         <tr>
@@ -47,60 +52,61 @@
                                             @item.Info.LastWriteTime
                                         </td>
                                     </tr>
-                                    <tr>
+                                    <tr class="align-middle">
                                         <td class="ps-3">
                                             Shared in @Constants.AppName
                                         </td>
-                                        <td>
+                                        <td id="@(counter)_app">
                                             @if (item.IsConnectedToApp)
                                             {
-                                                <span>✔</span>
+                                                <img class="p-2 bg-success rounded-circle" src="/utilities/connected.svg" width="50" height="50" />
                                             }
                                             else
                                             {
-                                                <span>❌</span>
+                                                <img class="p-2 bg-danger rounded-circle" src="/utilities/disconnected.svg" width="50" height="50" />
                                             }
                                         </td>
                                     </tr>
-                                    <tr>
+                                    <tr class="align-middle">
                                         <td class="ps-3">
                                             Public
                                         </td>
-                                        <td>
+                                        <td id="@(counter)_web">
                                             @if (item.IsConnectedToWeb)
                                             {
-                                                <span>✔</span>
+                                                <img class="p-2 bg-success rounded-circle" src="/utilities/connected.svg" width="50" height="50" />
                                             }
                                             else
                                             {
-                                                <span>❌</span>
+                                                <img class="p-2 bg-danger rounded-circle" src="/utilities/disconnected.svg" width="50" height="50" />
                                             }
                                         </td>
                                     </tr>
-                                    @if (item.IsConnectedToWeb)
-                                    {
+
+                                    @{
                                         string? url = Url.Action(Model.WebControllerAndActionForDetails.Second, Model.WebControllerAndActionForDetails.First, new { path = item.HashedPath }, Context.Request.Scheme);
-                                        <tr class="align-middle">
-                                            <td>
-                                                <button type="button" class="btn btn-outline-dark" onclick="copyToClipBoard(@url)"><span>Url</span><img src="/utilities/link.svg" width=" 20" height="20" class="ms-2 item rounded align-center"></button>
-                                            </td>
-                                            <td>
-                                                <a href="@url" class="text-decoration-none" target="_blank">@url</a>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td colspan="2" class="d-flex justify-content-center align-middle">
-                                                <img src="@CloudQRManager.GenerateQRCodeString(url)" height="200" width="200"/>
-                                            </td>
-                                        </tr>
                                     }
+                                    
+                                    <tr class="align-middle">
+                                        <td>
+                                            <button type="button" class="btn btn-outline-dark" onclick="copyToClipBoard(@url)"><span>Url</span><img src="/utilities/link.svg" width=" 20" height="20" class="ms-2 item rounded align-center"></button>
+                                        </td>
+                                        <td>
+                                            <a href="@url" class="text-decoration-none" target="_blank">@url</a>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="2" class="text-center">
+                                            <img src="@CloudQRManager.GenerateQRCodeString(url)" height="100" width="100" class="rounded" />
+                                        </td>
+                                    </tr>
                                 </table>
                             </fieldset>
                             <div class="d-flex justify-content-end">
                                 <div class="btn-group mx-2" role="group">
                                     @if (item.IsConnectedToWeb)
                                     {
-                                        <a asp-controller="Drive" class="btn btn-primary " asp-action="DisconnectDirectoryFromWeb" asp-route-directoryName="@item.Info.Name"><img src="~/utilities/nopublic.svg" width=" 20" height="20" class="rounded align-middle" /></a>
+                                        <button type="button" onclick="disConnectDirectoryFromWeb(@item.Info.Name)" class="btn btn-primary"><img src="~/utilities/nopublic.svg" width=" 20" height="20" class="rounded align-middle" /></button>
                                     }
                                     else
                                     {

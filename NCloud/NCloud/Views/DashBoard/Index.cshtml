@@ -23,10 +23,10 @@
         @foreach (var folderUrl in Model.SharedFolderUrls)
         {
             <ul class="list-group list-group-horizontal mt-1">
-                <li class="list-group-item list-group-item-action text-dark">@folderUrl.Replace(System.IO.Path.DirectorySeparatorChar, Constants.PathSeparator)</li>
+                <li class="list-group-item list-group-item-action text-dark">@folderUrl.Replace(System.IO.Path.DirectorySeparatorChar, Constants.PathSeparator).Slice(Constants.PrivateRootName.Length, Constants.PrivateRootName.Length + Constants.GuidLength + 1)</li>
             </ul>
 
-            string? url = Url.Action(Model.WebControllerAndActionForDetails.Second, Model.WebControllerAndActionForDetails.First, new { path = folderUrl }, Context.Request.Scheme);
+            string? url = Url.Action(Model.WebControllerAndActionForDetails.Second, Model.WebControllerAndActionForDetails.First, new { path = HashManager.EncryptString(folderUrl) }, Context.Request.Scheme);
 
             <div class="list-group list-group-horizontal mb-1">
                 <button type="button" class="btn btn-outline-secondary" onclick="copyToClipBoard(@(++counter))"><img src="/utilities/link.svg" width=" 20" height="20" class="item rounded align-center"></button>
@@ -40,10 +40,10 @@
     @foreach (var fileUrl in Model.SharedFileUrls)
     {
         <ul class="list-group list-group-horizontal mt-1">
-            <li class="list-group-item list-group-item-action text-dark">@fileUrl.Replace(System.IO.Path.DirectorySeparatorChar, Constants.PathSeparator)</li>
+            <li class="list-group-item list-group-item-action text-dark">@fileUrl.Replace(System.IO.Path.DirectorySeparatorChar, Constants.PathSeparator).Slice(Constants.PrivateRootName.Length, Constants.PrivateRootName.Length + Constants.GuidLength + 1)</li>
         </ul>
 
-        string? url = Url.Action(Model.WebControllerAndActionForDownload.Second, Model.WebControllerAndActionForDownload.First, new { path = fileUrl }, Context.Request.Scheme);
+        string? url = Url.Action(Model.WebControllerAndActionForDownload.Second, Model.WebControllerAndActionForDownload.First, new { path = HashManager.EncryptString(fileUrl) }, Context.Request.Scheme);
 
         <div class="list-group list-group-horizontal mb-1">
             <button type="button" class="btn btn-outline-secondary" onclick="copyToClipBoard(@(++counter))"><img src="/utilities/link.svg" width=" 20" height="20" class="item rounded align-center"></button>

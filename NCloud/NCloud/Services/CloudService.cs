@@ -779,14 +779,14 @@ namespace NCloud.Services
         {
             CloudUser? user = await userManager.GetUserAsync(userPrincipal);
             
-            return await context.SharedFolders.Where(x => x.Owner == user && x.ConnectedToWeb).OrderBy(x => x.CloudPathFromRoot).ThenBy(x => x.Name).Select(x => HashManager.EncryptString(Path.Combine(x.CloudPathFromRoot,x.Name))).ToListAsync();
+            return await context.SharedFolders.Where(x => x.Owner == user && x.ConnectedToWeb).OrderBy(x => x.CloudPathFromRoot).ThenBy(x => x.Name).Select(x => Path.Combine(x.CloudPathFromRoot,x.Name)).ToListAsync();
         }
 
         public async Task<List<string>> GetUserSharedFileUrls(ClaimsPrincipal userPrincipal)
         {
             CloudUser? user = await userManager.GetUserAsync(userPrincipal);
 
-            return await context.SharedFiles.Where(x => x.Owner == user && x.ConnectedToWeb).OrderBy(x => x.CloudPathFromRoot).ThenBy(x => x.Name).Select(x => HashManager.EncryptString(Path.Combine(x.CloudPathFromRoot, x.Name))).ToListAsync();
+            return await context.SharedFiles.Where(x => x.Owner == user && x.ConnectedToWeb).OrderBy(x => x.CloudPathFromRoot).ThenBy(x => x.Name).Select(x => Path.Combine(x.CloudPathFromRoot, x.Name)).ToListAsync();
         }
     }
 }

@@ -394,7 +394,7 @@ namespace NCloud.Controllers
 
                                         if (counter == 0)
                                         {
-                                            archive.CreateEntry(currentRelativePath).ExternalAttributes = Constants.EmptyFolderAttributeNumber;
+                                            archive.CreateEntry(currentRelativePath).ExternalAttributes = Constants.EmptyFolderAttributeNumberZip;
                                         }
                                     }
                                 }
