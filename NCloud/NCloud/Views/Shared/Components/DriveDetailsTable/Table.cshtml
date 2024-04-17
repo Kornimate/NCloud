@@ -2,9 +2,11 @@
 
 @{
     ViewData["Title"] = "Cloud Files";
+
     int counter = 0;
 }
 
+@Html.AntiForgeryToken()
 <table class="table">
     <thead>
         <tr>
@@ -56,10 +58,10 @@
                                         <td class="ps-3">
                                             Shared in @Constants.AppName
                                         </td>
-                                        <td id="@(counter)_app">
+                                        <td id="@(++counter)_app">
                                             @if (item.IsConnectedToApp)
                                             {
-                                                <img class="p-2 bg-success rounded-circle" src="/utilities/connected.svg" width="50" height="50" />
+                                                <img class="p-2 bg-primary rounded-circle" src="/utilities/connected.svg" width="50" height="50" />
                                             }
                                             else
                                             {
@@ -74,7 +76,7 @@
                                         <td id="@(counter)_web">
                                             @if (item.IsConnectedToWeb)
                                             {
-                                                <img class="p-2 bg-success rounded-circle" src="/utilities/connected.svg" width="50" height="50" />
+                                                <img class="p-2 bg-primary rounded-circle" src="/utilities/connected.svg" width="50" height="50" />
                                             }
                                             else
                                             {
@@ -86,8 +88,8 @@
                                     @{
                                         string? url = Url.Action(Model.WebControllerAndActionForDetails.Second, Model.WebControllerAndActionForDetails.First, new { path = item.HashedPath }, Context.Request.Scheme);
                                     }
-                                    
-                                    <tr class="align-middle">
+
+                                    <tr class="align-middle" id="@(counter)_tr1">
                                         <td>
                                             <button type="button" class="btn btn-outline-dark" onclick="copyToClipBoard(@url)"><span>Url</span><img src="/utilities/link.svg" width=" 20" height="20" class="ms-2 item rounded align-center"></button>
                                         </td>
@@ -95,7 +97,7 @@
                                             <a href="@url" class="text-decoration-none" target="_blank">@url</a>
                                         </td>
                                     </tr>
-                                    <tr>
+                                    <tr id="@(counter)_tr2">
                                         <td colspan="2" class="text-center">
                                             <img src="@CloudQRManager.GenerateQRCodeString(url)" height="100" width="100" class="rounded" />
                                         </td>
@@ -106,11 +108,21 @@
                                 <div class="btn-group mx-2" role="group">
                                     @if (item.IsConnectedToWeb)
                                     {
-                                        <button type="button" onclick="disConnectDirectoryFromWeb(@item.Info.Name)" class="btn btn-primary"><img src="~/utilities/nopublic.svg" width=" 20" height="20" class="rounded align-middle" /></button>
+                                        <button type="button" onclick="disConnectDirectoryFromWeb('@Url.Action("DisConnectDirectoryFromWeb", "Drive")', '@item.Info.Name', '@counter')" class="btn btn-primary">
+                                            <img src="~/utilities/nopublic.svg" width="20" height="20" class="rounded align-middle" id="@(counter)_logo" />
+                                            <div class="spinner-border spinner-border-sm text-dark hidden mx-1" role="status" id="@(counter)_spinner">
+                                                <span class="visually-hidden">Loading...</span>
+                                            </div>
+                                        </button>
                                     }
                                     else
                                     {
-                                        <a asp-controller="Drive" class="btn btn-primary " asp-action="ConnectDirectoryToWeb" asp-route-directoryName="@item.Info.Name"><img src="~/utilities/public.svg" width=" 20" height="20" class="rounded align-middle" /></a>
+                                        <button type="button" onclick="connectDirectoryToWeb('@Url.Action("ConnectDirectoryToWeb", "Drive")','@item.Info.Name', '@counter')" class="btn btn-primary">
+                                            <img src="~/utilities/public.svg" width="20" height="20" class="rounded align-middle" id="@(counter)_logo" />
+                                            <div class="spinner-border spinner-border-sm text-dark hidden mx-1" role="status" id="@(counter)_spinner">
+                                                <span class="visually-hidden">Loading...</span>
+                                            </div>
+                                        </button>
                                     }
                                     @if (item.IsConnectedToApp)
                                     {
@@ -184,11 +196,11 @@
                                         <td>
                                             @if (item.IsConnectedToApp)
                                             {
-                                                <span>✔</span>
+                                                <img class="p-2 bg-primary rounded-circle" src="/utilities/connected.svg" width="50" height="50" />
                                             }
                                             else
                                             {
-                                                <span>❌</span>
+                                                <img class="p-2 bg-danger rounded-circle" src="/utilities/disconnected.svg" width="50" height="50" />
                                             }
                                         </td>
                                     </tr>
@@ -199,11 +211,11 @@
                                         <td>
                                             @if (item.IsConnectedToWeb)
                                             {
-                                                <span>✔</span>
+                                                <img class="p-2 bg-primary rounded-circle" src="/utilities/connected.svg" width="50" height="50" />
                                             }
                                             else
                                             {
-                                                <span>❌</span>
+                                                <img class="p-2 bg-danger rounded-circle" src="/utilities/disconnected.svg" width="50" height="50" />
                                             }
                                         </td>
                                     </tr>

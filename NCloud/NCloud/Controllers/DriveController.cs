@@ -417,27 +417,27 @@ namespace NCloud.Controllers
             return RedirectToAction("DownloadItems");
         }
 
-        public async Task<IActionResult> ConnectDirectoryToApp(string directoryName)
+        public async Task<IActionResult> ConnectDirectoryToApp([FromBody] string itemName)
         {
             CloudPathData session = await GetSessionCloudPathData();
 
-            if (await service.ConnectDirectoryToApp(session.CurrentPath, directoryName, User))
+            if (await service.ConnectDirectoryToApp(session.CurrentPath, itemName, User))
             {
-                AddNewNotification(new Success("Directory and items inside connected to application"));
+                return Ok("Directory and items inside connected to application");
             }
             else
             {
-                AddNewNotification(new Success("Error while connecting directory to application!"));
+                return StatusCode(StatusCodes.Status409Conflict,"Error while connecting directory to application!");
             }
-
-            return RedirectToAction(nameof(Details));
         }
 
-        public async Task<IActionResult> ConnectDirectoryToWeb(string directoryName)
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ConnectDirectoryToWeb([FromBody] string itemName)
         {
             CloudPathData session = await GetSessionCloudPathData();
 
-            if (await service.ConnectDirectoryToWeb(session.CurrentPath, directoryName, User))
+            if (await service.ConnectDirectoryToWeb(session.CurrentPath, itemName, User))
             {
                 AddNewNotification(new Success("Directory and items inside connected to web"));
             }
@@ -449,11 +449,11 @@ namespace NCloud.Controllers
             return RedirectToAction(nameof(Details));
         }
 
-        public async Task<IActionResult> ConnectFileToApp(string fileName)
+        public async Task<IActionResult> ConnectFileToApp([FromBody] string itemName)
         {
             CloudPathData session = await GetSessionCloudPathData();
             
-            if (await service.ConnectFileToApp(session.CurrentPath, fileName, User))
+            if (await service.ConnectFileToApp(session.CurrentPath, itemName, User))
             {
                 AddNewNotification(new Success("File connected to application"));
             }
@@ -465,11 +465,11 @@ namespace NCloud.Controllers
             return RedirectToAction(nameof(Details));
         }
 
-        public async Task<IActionResult> ConnectFileToWeb(string fileName)
+        public async Task<IActionResult> ConnectFileToWeb([FromBody] string itemName)
         {
             CloudPathData session = await GetSessionCloudPathData();
             
-            if (await service.ConnectFileToWeb(session.CurrentPath, fileName, User))
+            if (await service.ConnectFileToWeb(session.CurrentPath, itemName, User))
             {
                 AddNewNotification(new Success("File connected to web"));
             }
@@ -481,11 +481,11 @@ namespace NCloud.Controllers
             return RedirectToAction(nameof(Details));
         }
 
-        public async Task<IActionResult> DisconnectDirectoryFromApp(string directoryName)
+        public async Task<IActionResult> DisconnectDirectoryFromApp([FromBody] string itemName)
         {
             CloudPathData session = await GetSessionCloudPathData();
 
-            if (await service.DisonnectDirectoryFromApp(session.CurrentPath, directoryName, User))
+            if (await service.DisonnectDirectoryFromApp(session.CurrentPath, itemName, User))
             {
                 AddNewNotification(new Success("Directory and items inside disconnected from application"));
             }
@@ -497,11 +497,13 @@ namespace NCloud.Controllers
             return RedirectToAction(nameof(Details));
         }
 
-        public async Task<IActionResult> DisconnectDirectoryFromWeb(string directoryName)
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DisconnectDirectoryFromWeb([FromBody] string itemName)
         {
             CloudPathData session = await GetSessionCloudPathData();
 
-            if (await service.DisconnectDirectoryFromWeb(session.CurrentPath, directoryName, User))
+            if (await service.DisconnectDirectoryFromWeb(session.CurrentPath, itemName, User))
             {
                 AddNewNotification(new Success("Directory and items inside disconnected from web"));
             }
@@ -513,11 +515,11 @@ namespace NCloud.Controllers
             return RedirectToAction(nameof(Details));
         }
 
-        public async Task<IActionResult> DisconnectFileFromApp(string fileName)
+        public async Task<IActionResult> DisconnectFileFromApp([FromBody] string itemName)
         {
             CloudPathData session = await GetSessionCloudPathData();
             
-            if (await service.DisonnectFileFromApp(session.CurrentPath, fileName, User))
+            if (await service.DisonnectFileFromApp(session.CurrentPath, itemName, User))
             {
                 AddNewNotification(new Success("File disconnected from application"));
             }
@@ -529,11 +531,11 @@ namespace NCloud.Controllers
             return RedirectToAction(nameof(Details));
         }
 
-        public async Task<IActionResult> DisconnectFileFromWeb(string fileName)
+        public async Task<IActionResult> DisconnectFileFromWeb([FromBody] string itemName)
         {
             CloudPathData session = await GetSessionCloudPathData();
             
-            if (await service.DisonnectFileFromWeb(session.CurrentPath, fileName, User))
+            if (await service.DisonnectFileFromWeb(session.CurrentPath, itemName, User))
             {
                 AddNewNotification(new Success("File disconnected from web"));
             }
