@@ -88,6 +88,11 @@
                                                 <a href="@url" class="text-decoration-none" target="_blank">@url</a>
                                             </td>
                                         </tr>
+                                        <tr>
+                                            <td colspan="2" class="d-flex justify-content-center align-middle">
+                                                <img src="@CloudQRManager.GenerateQRCodeString(url)" height="50" width="50"/>
+                                            </td>
+                                        </tr>
                                     }
                                 </table>
                             </fieldset>
@@ -95,22 +100,22 @@
                                 <div class="btn-group mx-2" role="group">
                                     @if (item.IsConnectedToWeb)
                                     {
-                                        <a asp-controller="Drive" class="btn btn-primary "asp-action="DisconnectDirectoryFromWeb" asp-route-directoryName="@item.Info.Name"><img src="~/utilities/nopublic.svg" width=" 20" height="20" class="rounded align-middle" /></a>
+                                        <a asp-controller="Drive" class="btn btn-primary " asp-action="DisconnectDirectoryFromWeb" asp-route-directoryName="@item.Info.Name"><img src="~/utilities/nopublic.svg" width=" 20" height="20" class="rounded align-middle" /></a>
                                     }
                                     else
                                     {
-                                        <a asp-controller="Drive" class="btn btn-primary "asp-action="ConnectDirectoryToWeb" asp-route-directoryName="@item.Info.Name"><img src="~/utilities/public.svg" width=" 20" height="20" class="rounded align-middle" /></a>
+                                        <a asp-controller="Drive" class="btn btn-primary " asp-action="ConnectDirectoryToWeb" asp-route-directoryName="@item.Info.Name"><img src="~/utilities/public.svg" width=" 20" height="20" class="rounded align-middle" /></a>
                                     }
                                     @if (item.IsConnectedToApp)
                                     {
-                                        <a asp-controller="Drive" class="btn btn-secondary "asp-action="DisconnectDirectoryFromApp" asp-route-directoryName="@item.Info.Name"><img src="~/utilities/noshare.svg" width=" 20" height="20" class="rounded align-middle" /></a>   
+                                        <a asp-controller="Drive" class="btn btn-secondary " asp-action="DisconnectDirectoryFromApp" asp-route-directoryName="@item.Info.Name"><img src="~/utilities/noshare.svg" width=" 20" height="20" class="rounded align-middle" /></a>
                                     }
                                     else
                                     {
-                                        <a asp-controller="Drive" class="btn btn-secondary "asp-action="ConnectDirectoryToApp" asp-route-directoryName="@item.Info.Name"><img src="~/utilities/share.svg" width=" 20" height="20" class="rounded align-middle" /></a>  
+                                        <a asp-controller="Drive" class="btn btn-secondary " asp-action="ConnectDirectoryToApp" asp-route-directoryName="@item.Info.Name"><img src="~/utilities/share.svg" width=" 20" height="20" class="rounded align-middle" /></a>
                                     }
-                                    <a asp-controller="Drive" class="btn btn-secondary "asp-action="Settings" asp-route-id="@item.Info.Name"><img src="~/utilities/gear.svg" width=" 20" height="20" class="rounded align-middle" /></a>
-                                    <a asp-controller="Drive" class="btn btn-danger "asp-action="DeleteFolder" asp-route-folderName="@item.Info.Name"><img src="~/utilities/trash.svg" width=" 20" height="20" class="rounded align-middle" /></a>
+                                    <a asp-controller="Drive" class="btn btn-secondary " asp-action="Settings" asp-route-id="@item.Info.Name"><img src="~/utilities/gear.svg" width=" 20" height="20" class="rounded align-middle" /></a>
+                                    <a asp-controller="Drive" class="btn btn-danger " asp-action="DeleteFolder" asp-route-folderName="@item.Info.Name"><img src="~/utilities/trash.svg" width=" 20" height="20" class="rounded align-middle" /></a>
                                 </div>
                             </div>
                         </details>
@@ -198,7 +203,7 @@
                                     </tr>
                                     @if (item.IsConnectedToWeb)
                                     {
-                                        string? url = Url.Action(Model.WebControllerAndActionForDownload.Second, Model.WebControllerAndActionForDownload.First, new { path = System.IO.Path.Combine(Model.CurrentPath,item.Info.Name) }, Context.Request.Scheme);
+                                        string? url = Url.Action(Model.WebControllerAndActionForDownload.Second, Model.WebControllerAndActionForDownload.First, new { path = System.IO.Path.Combine(Model.CurrentPath, item.Info.Name) }, Context.Request.Scheme);
                                         <tr class="align-middle">
                                             <td>
                                                 <button type="button" class="btn btn-outline-dark" onclick="copyToClipBoard(@url)"><span>Download</span><img src="/utilities/link.svg" width=" 20" height="20" class="ms-2 item rounded align-center"></button>
@@ -214,23 +219,23 @@
                                 <div class="btn-group mx-2" role="group">
                                     @if (item.IsConnectedToWeb)
                                     {
-                                        <a asp-controller="Drive" class="btn btn-primary "asp-action="DisconnectFileFromWeb" asp-route-fileName="@item.Info.Name"><img src="~/utilities/nopublic.svg" width=" 20" height="20" class="rounded align-middle" /></a>
+                                        <a asp-controller="Drive" class="btn btn-primary " asp-action="DisconnectFileFromWeb" asp-route-fileName="@item.Info.Name"><img src="~/utilities/nopublic.svg" width=" 20" height="20" class="rounded align-middle" /></a>
                                     }
                                     else
                                     {
-                                        <a asp-controller="Drive" class="btn btn-primary "asp-action="ConnectFileToWeb" asp-route-fileName="@item.Info.Name"><img src="~/utilities/public.svg" width=" 20" height="20" class="rounded align-middle" /></a>
+                                        <a asp-controller="Drive" class="btn btn-primary " asp-action="ConnectFileToWeb" asp-route-fileName="@item.Info.Name"><img src="~/utilities/public.svg" width=" 20" height="20" class="rounded align-middle" /></a>
                                     }
                                     @if (item.IsConnectedToApp)
                                     {
-                                        <a asp-controller="Drive" class="btn btn-secondary "asp-action="DisconnectFileFromApp" asp-route-fileName="@item.Info.Name"><img src="~/utilities/noshare.svg" width=" 20" height="20" class="rounded align-middle" /></a>   
+                                        <a asp-controller="Drive" class="btn btn-secondary " asp-action="DisconnectFileFromApp" asp-route-fileName="@item.Info.Name"><img src="~/utilities/noshare.svg" width=" 20" height="20" class="rounded align-middle" /></a>
                                     }
                                     else
                                     {
-                                        <a asp-controller="Drive" class="btn btn-secondary "asp-action="ConnectFileToApp" asp-route-fileName="@item.Info.Name"><img src="~/utilities/share.svg" width=" 20" height="20" class="rounded align-middle" /></a>  
+                                        <a asp-controller="Drive" class="btn btn-secondary " asp-action="ConnectFileToApp" asp-route-fileName="@item.Info.Name"><img src="~/utilities/share.svg" width=" 20" height="20" class="rounded align-middle" /></a>
                                     }
                                     <a asp-controller="Editor" class="btn btn-secondary" asp-action="Index" asp-route-fileName="@item.Info.Name"><img src="~/utilities/code-slash.svg" width=" 20" height="20" class="rounded align-middle" /></a>
-                                    <a asp-controller="Drive" class="btn btn-secondary"asp-action="Settings" asp-route-id="@item.Info.Name"><img src="~/utilities/gear.svg" width=" 20" height="20" class="rounded align-middle" /></a>
-                                    <a asp-controller="Drive" class="btn btn-danger"asp-action="DeleteFile" asp-route-id="@item.Info.Name"><img src="~/utilities/trash.svg" width=" 20" height="20" class="rounded align-middle" /></a>
+                                    <a asp-controller="Drive" class="btn btn-secondary" asp-action="Settings" asp-route-id="@item.Info.Name"><img src="~/utilities/gear.svg" width=" 20" height="20" class="rounded align-middle" /></a>
+                                    <a asp-controller="Drive" class="btn btn-danger" asp-action="DeleteFile" asp-route-id="@item.Info.Name"><img src="~/utilities/trash.svg" width=" 20" height="20" class="rounded align-middle" /></a>
                                 </div>
                             </div>
                         </details>
@@ -242,7 +247,7 @@
 </table>
 
 <script type="text/javascript">
-    function copyToClipBoard(url){
+    function copyToClipBoard(url) {
         navigator.clipboard.writeText(url);
     }
 </script>

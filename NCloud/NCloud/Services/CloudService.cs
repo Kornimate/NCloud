@@ -708,7 +708,7 @@ namespace NCloud.Services
 
         public Task<List<CloudFolder>> GetSharingUsersSharingDirectories(string currentPath)
         {
-            return context.Users.Where(x => x.SharedFiles.Count > 0 || x.SharedFolders.Count > 0).Select(x => new CloudFolder(x.UserName, null)).ToListAsync();
+            return context.Users.Where(x => x.SharedFiles.Where(x => x.ConnectedToApp).Count() > 0 || x.SharedFolders.Where(x => x.ConnectedToApp).Count() > 0).Select(x => new CloudFolder(x.UserName, null)).ToListAsync();
         }
 
         public async Task<List<CloudFile>> GetCurrentDepthSharingFiles(string currentPath, ClaimsPrincipal userPrincipal)

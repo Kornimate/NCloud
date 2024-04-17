@@ -17,6 +17,7 @@ namespace NCloud.ConstantData
         public static string UnkownFileType { get => "unknown"; }
         public static string FileTypePrefix { get => "filetype-"; }
         public static string IconsBasePath { get => Path.Combine("wwwroot", "utilities"); }
+        public static string GetLogoPath { get => Path.Combine("wwwroot", "utilities", "cloud_logo.png"); }
         public static string FolderIcon { get => "/utilities/folder.svg"; }
         public static string PrefixForIcons { get => "/utilities/filetype-"; }
         public static string SuffixForIcons { get => ".svg"; }
