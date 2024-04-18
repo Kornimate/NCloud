@@ -3,7 +3,11 @@
     document.getElementById(`${id}_logo`).classList.add("hidden");
     document.getElementById(`${id}_spinner`).classList.remove("hidden");
 
-    const result = await AjaxCall(url, folder);
+    let result = await AjaxCall(url, folder);
+
+    result = await result.json();
+
+    console.log(result);
 
     document.getElementById(`${id}_spinner`).classList.add("hidden");
     document.getElementById(`${id}_logo`).classList.remove("hidden");
@@ -27,7 +31,11 @@ async function disConnectDirectoryFromWeb(folder, id) {
     document.getElementById(`${id}_logo`).classList.add("hidden");
     document.getElementById(`${id}_spinner`).classList.remove("hidden");
 
-    const result = await AjaxCall(url, folder);
+    let result = await AjaxCall(url, folder);
+
+    result = await result.json();
+
+    console.log(result);
 
     document.getElementById(`${id}_spinner`).classList.add("hidden");
     document.getElementById(`${id}_logo`).classList.remove("hidden");
@@ -55,5 +63,5 @@ async function AjaxCall(address, itemName) {
         },
         body: JSON.stringify(itemName)
     });
-    return response.text();
+    return response;
 }
