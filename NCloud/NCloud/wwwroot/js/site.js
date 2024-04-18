@@ -1,4 +1,12 @@
-﻿async function connectDirectoryToWeb(url, folder, id) {
+﻿//import { Constants } from './Constants';
+
+class Constants {
+
+    static ConnectedLogo = "/utilities/connected.svg";
+    static DisConnectedLogo = "/utilities/disconnected.svg";
+}
+
+async function connectDirectoryToWeb(url, folder, id) {
 
     document.getElementById(`${id}_logo`).classList.add("hidden");
     document.getElementById(`${id}_spinner`).classList.remove("hidden");
@@ -12,7 +20,21 @@
     document.getElementById(`${id}_spinner`).classList.add("hidden");
     document.getElementById(`${id}_logo`).classList.remove("hidden");
 
-    console.log(result);
+    if (result.success) {
+        document.getElementById(`${id}_btnConnect`).classList.add("hidden");
+        document.getElementById(`${id}_web`).src = Constants.ConnectedLogo;
+        document.getElementById(`${id}_web`).classList.remove("bg-danger");
+        document.getElementById(`${id}_web`).classList.add("bg-primary");
+        document.getElementById(`${id}_tr1`).classList.remove("hidden");
+        document.getElementById(`${id}_tr2`).classList.remove("hidden");
+        document.getElementById(`${id}_btnDisConnect`).classList.remove("hidden");
+
+        //todo: notification with message
+    }
+    else {
+        //todo: notification with message
+
+    }
 }
 function connectDirectoryToApp(folder, id) {
 
@@ -26,10 +48,10 @@ function connectFileToApp(file, id) {
 
 }
 
-async function disConnectDirectoryFromWeb(folder, id) {
+async function disConnectDirectoryFromWeb(url, folder, id) {
 
-    document.getElementById(`${id}_logo`).classList.add("hidden");
-    document.getElementById(`${id}_spinner`).classList.remove("hidden");
+    document.getElementById(`${id}_logo`)?.classList.add("hidden");
+    document.getElementById(`${id}_spinner`)?.classList.remove("hidden");
 
     let result = await AjaxCall(url, folder);
 
@@ -37,8 +59,21 @@ async function disConnectDirectoryFromWeb(folder, id) {
 
     console.log(result);
 
-    document.getElementById(`${id}_spinner`).classList.add("hidden");
-    document.getElementById(`${id}_logo`).classList.remove("hidden");
+    document.getElementById(`${id}_spinner`)?.classList.add("hidden");
+    document.getElementById(`${id}_logo`)?.classList.remove("hidden");
+
+    if (result.success) {
+        document.getElementById(`${id}_btnDisConnect`).classList.add("hidden");
+        document.getElementById(`${id}_web`).src = Constants.DisConnectedLogo;
+        document.getElementById(`${id}_web`).classList.remove("bg-primary");
+        document.getElementById(`${id}_web`).classList.add("bg-danger");
+        document.getElementById(`${id}_tr1`).classList.add("hidden");
+        document.getElementById(`${id}_tr2`).classList.add("hidden");
+        document.getElementById(`${id}_btnConnect`).classList.remove("hidden");
+    }
+    else {
+
+    }
 }
 function disConnectDirectoryFromApp(folder, id) {
 

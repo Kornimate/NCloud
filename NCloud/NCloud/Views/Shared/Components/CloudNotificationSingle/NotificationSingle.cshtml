@@ -1,0 +1,29 @@
+﻿
+<div class="toast-container position-absolute bottom-0 end-0 p-3">
+    <div class="toast @(notification.Color)" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="5000">
+        <div class="toast-header @(notification.Color)">
+            <img src="@notification.Image" class="rounded me-2">
+            <strong class="me-auto text-dark">@notification.Title</strong>
+            <small class="text-bold text-dark">just now</small>
+            <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+        <div class="toast-body">
+            @notification.Text
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+
+    function ShowNotifications(dilation) {
+        const toasts = document.getElementsByClassName('toast');
+        for (let i = 0; i < toasts.length; i++) {
+            setTimeout(() => {
+                let toast = new bootstrap.Toast(toasts[i]);
+                toast.show();
+            }, i * dilation);
+        }
+    }
+
+    ShowNotifications(300);
+</script>
+}
