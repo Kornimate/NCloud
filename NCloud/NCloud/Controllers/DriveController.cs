@@ -259,7 +259,7 @@ namespace NCloud.Controllers
                     {
                         try
                         {
-                            if (!(await service.RemoveDirectory(itemName, pathData.CurrentPath, User)))
+                            if (!(await service.RemoveDirectory(itemName[1..], pathData.CurrentPath, User)))
                             {
                                 AddNewNotification(new Error($"Error removing folder {itemName}"));
 

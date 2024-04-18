@@ -141,10 +141,14 @@ namespace NCloud.Services
                 }
                 else
                 {
-                    throw new Exception("Folder already exists!");
+                    throw new InvalidOperationException("Folder already exists!");
                 }
             }
-            catch
+            catch (InvalidOperationException)
+            {
+                throw;
+            }
+            catch (Exception)
             {
                 if (!(await RemoveDirectory(folderName, currentPath, userPrincipal)))
                 {
@@ -778,8 +782,8 @@ namespace NCloud.Services
         public async Task<List<string>> GetUserSharedFolderUrls(ClaimsPrincipal userPrincipal)
         {
             CloudUser? user = await userManager.GetUserAsync(userPrincipal);
-            
-            return await context.SharedFolders.Where(x => x.Owner == user && x.ConnectedToWeb).OrderBy(x => x.CloudPathFromRoot).ThenBy(x => x.Name).Select(x => Path.Combine(x.CloudPathFromRoot,x.Name)).ToListAsync();
+
+            return await context.SharedFolders.Where(x => x.Owner == user && x.ConnectedToWeb).OrderBy(x => x.CloudPathFromRoot).ThenBy(x => x.Name).Select(x => Path.Combine(x.CloudPathFromRoot, x.Name)).ToListAsync();
         }
 
         public async Task<List<string>> GetUserSharedFileUrls(ClaimsPrincipal userPrincipal)

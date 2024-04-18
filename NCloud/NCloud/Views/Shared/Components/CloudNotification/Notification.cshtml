@@ -12,7 +12,7 @@
     <div class="toast-container position-absolute bottom-0 end-0 p-3">
         @foreach(CloudNotificationAbstarct notification in queue)
         {
-            <div class="toast @(notification.Color)" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="5000">
+            <div class="toast @(notification.Color)" id="notification_multiple" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="5000">
                 <div class="toast-header @(notification.Color)">
                     <img src="@notification.Image" class="rounded me-2">
                     <strong class="me-auto text-dark">@notification.Title</strong>
@@ -28,7 +28,7 @@
     <script type="text/javascript">
 
         function ShowNotifications(dilation) {
-            const toasts = document.getElementsByClassName('toast');
+            const toasts = document.querySelectorAll("#notification_multiple");
             for (let i = 0; i < toasts.length; i++) {
                 setTimeout(() => {
                     let toast = new bootstrap.Toast(toasts[i]);
