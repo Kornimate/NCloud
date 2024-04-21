@@ -14,6 +14,7 @@ using System.IO.Compression;
 using Castle.Core;
 using static NuGet.Packaging.PackagingConstants;
 using NCloud.ConstantData;
+using NCloud.DTOs;
 
 namespace NCloud.Controllers
 {
@@ -239,36 +240,40 @@ namespace NCloud.Controllers
                 {
                     if (itemName[0] == Constants.SelectedFileStarterSymbol)
                     {
+                        string itemForDelete = itemName[1..];
+
                         try
                         {
-                            if (!(await service.RemoveFile(itemName[1..], pathData.CurrentPath, User)))
+                            if (!(await service.RemoveFile(itemForDelete, pathData.CurrentPath, User)))
                             {
-                                AddNewNotification(new Error($"Error removing file {itemName}"));
+                                AddNewNotification(new Error($"Error removing file {itemForDelete}"));
 
                                 noFail = false;
                             }
                         }
                         catch (Exception ex)
                         {
-                            AddNewNotification(new Error($"{ex.Message} ({itemName})"));
+                            AddNewNotification(new Error($"{ex.Message} ({itemForDelete})"));
 
                             noFail = false;
                         }
                     }
                     else if (itemName[0] == Constants.SelectedFolderStarterSymbol)
                     {
+                        string itemForDelete = itemName[1..];
+
                         try
                         {
-                            if (!(await service.RemoveDirectory(itemName[1..], pathData.CurrentPath, User)))
+                            if (!(await service.RemoveDirectory(itemForDelete, pathData.CurrentPath, User)))
                             {
-                                AddNewNotification(new Error($"Error removing folder {itemName}"));
+                                AddNewNotification(new Error($"Error removing folder {itemForDelete}"));
 
                                 noFail = false;
                             }
                         }
                         catch (Exception ex)
                         {
-                            AddNewNotification(new Error($"{ex.Message} ({itemName})"));
+                            AddNewNotification(new Error($"{ex.Message} ({itemForDelete})"));
 
                             noFail = false;
                         }
@@ -417,17 +422,17 @@ namespace NCloud.Controllers
             return RedirectToAction("DownloadItems");
         }
 
-        public async Task<IActionResult> ConnectDirectoryToApp([FromBody] string itemName)
+        public async Task<JsonResult> ConnectDirectoryToApp([FromBody] string itemName)
         {
             CloudPathData session = await GetSessionCloudPathData();
 
             if (await service.ConnectDirectoryToApp(session.CurrentPath, itemName, User))
             {
-                return Ok("Directory and items inside connected to application");
+                return Json(new ConnectionDTO { Success = true, Message = "Directory and items inside connected to application" });
             }
             else
             {
-                return StatusCode(StatusCodes.Status409Conflict, "Error while connecting directory to application!");
+                return Json(new ConnectionDTO { Success = false, Message = "Error while connecting directory to application!" });
             }
         }
 
@@ -439,44 +444,40 @@ namespace NCloud.Controllers
 
             if (await service.ConnectDirectoryToWeb(session.CurrentPath, itemName, User))
             {
-                return Json(new { success = true, message = "Directory and items inside connected to web" });
+                return Json(new ConnectionDTO { Success = true, Message = "Directory and items inside connected to web" });
             }
             else
             {
-                return Json(new { success = true, message = "Error while connecting directory to web!" });
+                return Json(new ConnectionDTO { Success = false, Message = "Error while connecting directory to web!" });
             }
         }
 
-        public async Task<IActionResult> ConnectFileToApp([FromBody] string itemName)
+        public async Task<JsonResult> ConnectFileToApp([FromBody] string itemName)
         {
             CloudPathData session = await GetSessionCloudPathData();
 
             if (await service.ConnectFileToApp(session.CurrentPath, itemName, User))
             {
-                AddNewNotification(new Success("File connected to application"));
+                return Json(new ConnectionDTO { Success = true, Message = "File connected to application" });
             }
             else
             {
-                AddNewNotification(new Success("Error while connecting file to application!"));
+                return Json(new ConnectionDTO { Success = false, Message = "Error while connecting file to application!" });
             }
-
-            return RedirectToAction(nameof(Details));
         }
 
-        public async Task<IActionResult> ConnectFileToWeb([FromBody] string itemName)
+        public async Task<JsonResult> ConnectFileToWeb([FromBody] string itemName)
         {
             CloudPathData session = await GetSessionCloudPathData();
 
             if (await service.ConnectFileToWeb(session.CurrentPath, itemName, User))
             {
-                AddNewNotification(new Success("File connected to web"));
+                return Json(new ConnectionDTO { Success = true, Message = "File connected to web" });
             }
             else
             {
-                AddNewNotification(new Success("Error while connecting file to web!"));
+                return Json(new ConnectionDTO { Success = false, Message = "Error while connecting file to web!" });
             }
-
-            return RedirectToAction(nameof(Details));
         }
 
         public async Task<IActionResult> DisconnectDirectoryFromApp([FromBody] string itemName)
@@ -485,14 +486,12 @@ namespace NCloud.Controllers
 
             if (await service.DisonnectDirectoryFromApp(session.CurrentPath, itemName, User))
             {
-                AddNewNotification(new Success("Directory and items inside disconnected from application"));
+                return Json(new ConnectionDTO { Success = true, Message = "Directory and items inside disconnected from application" });
             }
             else
             {
-                AddNewNotification(new Success("Error while disconnecting directory from application"));
+                return Json(new ConnectionDTO { Success = false, Message = "Error while disconnecting directory from application" });
             }
-
-            return RedirectToAction(nameof(Details));
         }
 
         [HttpPost]
@@ -503,44 +502,40 @@ namespace NCloud.Controllers
 
             if (await service.DisconnectDirectoryFromWeb(session.CurrentPath, itemName, User))
             {
-                return Json(new { success = true, message = "Directory and items inside disconnected from web" });
+                return Json(new ConnectionDTO { Success = true, Message = "Directory and items inside disconnected from web" });
             }
             else
             {
-                return Json(new { success = false, message = "Error while disconnecting directory from web!" });
+                return Json(new ConnectionDTO { Success = false, Message = "Error while disconnecting directory from web!" });
             }
         }
 
-        public async Task<IActionResult> DisconnectFileFromApp([FromBody] string itemName)
+        public async Task<JsonResult> DisconnectFileFromApp([FromBody] string itemName)
         {
             CloudPathData session = await GetSessionCloudPathData();
 
             if (await service.DisonnectFileFromApp(session.CurrentPath, itemName, User))
             {
-                AddNewNotification(new Success("File disconnected from application"));
+                return Json(new ConnectionDTO { Success = true, Message = "File disconnected from application" });
             }
             else
             {
-                AddNewNotification(new Success("Error while disconnecting file from application!"));
+                return Json(new ConnectionDTO { Success = false, Message = "Error while disconnecting file from application!" });
             }
-
-            return RedirectToAction(nameof(Details));
         }
 
-        public async Task<IActionResult> DisconnectFileFromWeb([FromBody] string itemName)
+        public async Task<JsonResult> DisconnectFileFromWeb([FromBody] string itemName)
         {
             CloudPathData session = await GetSessionCloudPathData();
 
             if (await service.DisonnectFileFromWeb(session.CurrentPath, itemName, User))
             {
-                AddNewNotification(new Success("File disconnected from web"));
+                return Json(new ConnectionDTO { Success = true, Message = "File disconnected from web" });
             }
             else
             {
-                AddNewNotification(new Success("Error while disconnecting file from web!"));
+                return Json(new ConnectionDTO { Success = false, Message = "Error while disconnecting file from web!" });
             }
-
-            return RedirectToAction(nameof(Details));
         }
     }
 }

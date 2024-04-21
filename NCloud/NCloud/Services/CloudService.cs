@@ -243,8 +243,8 @@ namespace NCloud.Services
 
             CloudUser? user = await userManager.GetUserAsync(userPrincipal);
 
-            var appsharedfiles = user?.SharedFiles.Where(x => x.ConnectedToApp && x.SharedPathFromRoot == currentPath).Select(x => x.Name).ToList() ?? new();
-            var websharedfiles = user?.SharedFiles.Where(x => x.ConnectedToWeb && x.SharedPathFromRoot == currentPath).Select(x => x.Name).ToList() ?? new();
+            var appsharedfiles = user?.SharedFiles.Where(x => x.ConnectedToApp && x.CloudPathFromRoot == currentPath).Select(x => x.Name).ToList() ?? new();
+            var websharedfiles = user?.SharedFiles.Where(x => x.ConnectedToWeb && x.CloudPathFromRoot == currentPath).Select(x => x.Name).ToList() ?? new();
 
             try
             {

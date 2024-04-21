@@ -9,10 +9,10 @@
     <link rel="stylesheet" href="~/NCloud.styles.css" asp-append-version="true" />
 </head>
 <body>
-    
+
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    
+
     <div class="container-fluid">
         <div class="row flex-nowrap">
             <div class="col-auto col-md-3 col-xl-2 px-sm-2 px-0 background-color border border-dark fixed navwidth">
@@ -64,12 +64,15 @@
             </div>
             <div class="col py-3 maindiv">
                 @RenderBody()
+
+                @await Component.InvokeAsync("CloudNotification")
+
+                @await Component.InvokeAsync("CloudNotificationSingle")
             </div>
         </div>
     </div>
-    
-    @await Component.InvokeAsync("CloudNotification")
-    
+
+
     @await RenderSectionAsync("Scripts", required: false)
 
     <script src="~/js/site.js" asp-append-version="true"></script>
