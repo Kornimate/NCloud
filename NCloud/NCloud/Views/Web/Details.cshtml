@@ -1,0 +1,31 @@
+﻿@model WebDetailsViewModel
+
+@{
+    ViewData["Title"] = "Web";
+}
+
+<div>
+    <div class="d-flex justify-content-between">
+        <div class="">
+            <a class="btn btn-primary" asp-controller="Web" asp-action="Back"><img src="~/utilities/arrow-left-circle.svg" width=" 20" height="20" class="rounded align-middle" /></a>
+        </div>
+        <div class="">
+            <div class="btn-group" role="group">
+                <a class="btn btn-primary" id="refreshBtn" asp-controller="Web" asp-action="Details"><img src="~/utilities/arrow-repeat.svg" width=" 20" height="20" class="rounded-circle align-middle" /></a>
+                <a class="btn btn-primary" asp-controller="Drive" asp-action="DownloadItems"><img src="~/utilities/cloud-download.svg" width=" 20" height="20" class="rounded-circle align-middle" /></a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="w-100" id="itemsTable">
+    @await Component.InvokeAsync("WebDetailsTable", new { vm = Model })
+</div>
+
+<hr class="separator" />
+<div class="d-flex w-100 justify-content-end text-dark">
+    <div class=" border border-2 rounded border-secondary px-2">
+        <span><b>@Model.Folders.Count Folder@(@Model.Folders.Count > 1 ? "s" : ""),</b></span>
+        <span class="ms-1"><b>@Model.Files.Count File@(@Model.Files.Count > 1 ? "s" : "")</b></span>
+    </div>
+</div>
