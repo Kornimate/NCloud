@@ -41,46 +41,8 @@
                                                 @item.Info.LastWriteTime
                                             </td>
                                         </tr>
-                                        <tr>
-                                            <td>
-                                                Shared in @Constants.AppName
-                                            </td>
-                                            <td>
-                                                @if (item.IsConnectedToApp)
-                                                {
-                                                    <span>✔</span>
-                                                }
-                                                else
-                                                {
-                                                    <span>❌</span>
-                                                }
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td>
-                                                Public
-                                            </td>
-                                            <td>
-                                                @if (item.IsConnectedToWeb)
-                                                {
-                                                    <span>✔</span>
-                                                }
-                                                else
-                                                {
-                                                    <span>❌</span>
-                                                }
-                                            </td>
-                                        </tr>
                                     </table>
                                 </fieldset>
-                                @if (Model.Owner)
-                                {
-                                    <div class="d-flex justify-content-end">
-                                        <div class="btn-group me-2 my-3" role="group">
-                                            <a class="btn btn-primary" asp-controller="Sharing" asp-action="DisconnectDirectoryFromApp" asp-route-id="@item.Info.Name"><img src="~/utilities/noshare.svg" width=" 20" height="20" class="rounded-circle align-middle" /></a>
-                                        </div>
-                                    </div>
-                                }
                             </details>
                         }
                         else
@@ -112,72 +74,34 @@
                                     <a asp-action="Details" asp-route-folderName="@item.Info!.Name" class="itemlink">@item.Info.Name</a>
                                 </summary>
                                 <fieldset class="border border-dark p-2 m-2 rounded">
-                                <legend class="btn btn-outline-primary rounded-pill w-auto">Details</legend>
-                                <table class="table table-striped rounded">
-                                    <tr>
-                                        <td>
-                                            Created Time
-                                        </td>
-                                        <td>
-                                            @item.Info.CreationTime
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>
-                                            Last Modified Time
-                                        </td>
-                                        <td>
-                                            @item.Info.LastWriteTime
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>
-                                            Size
-                                        </td>
-                                        <td>
-                                            @item.Info.Length Byte(s)
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>
-                                            Shared in @Constants.AppName
-                                        </td>
-                                        <td>
-                                            @if (item.IsConnectedToApp)
-                                            {
-                                                <span>✔</span>
-                                            }
-                                            else
-                                            {
-                                                <span>❌</span>
-                                            }
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>
-                                            Public
-                                        </td>
-                                        <td>
-                                            @if (item.IsConnectedToWeb)
-                                            {
-                                                <span>✔</span>
-                                            }
-                                            else
-                                            {
-                                                <span>❌</span>
-                                            }
-                                        </td>
-                                    </tr>
-                                </table>
-                            </fieldset>
-                                @if (Model.Owner)
-                                {
-                                    <div class="d-flex justify-content-end">
-                                        <div class="btn-group me-2 my-3" role="group">
-                                            <a class="btn btn-primary" asp-controller="Sharing" asp-action="DisconnectDirectoryFromApp" asp-route-id="@item.Info.Name"><img src="~/utilities/noshare.svg" width=" 20" height="20" class="rounded-circle align-middle" /></a>
-                                        </div>
-                                    </div>
-                                }
+                                    <legend class="btn btn-outline-primary rounded-pill w-auto">Details</legend>
+                                    <table class="table table-striped rounded">
+                                        <tr>
+                                            <td>
+                                                Created Time
+                                            </td>
+                                            <td>
+                                                @item.Info.CreationTime
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                Last Modified Time
+                                            </td>
+                                            <td>
+                                                @item.Info.LastWriteTime
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                Size
+                                            </td>
+                                            <td>
+                                                @item.Info.Length Byte(s)
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </fieldset>
                             </details>
                         }
                         else

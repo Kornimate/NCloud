@@ -25,6 +25,7 @@ namespace NCloud.ConstantData
         public static string AppName { get => "NCloudDrive"; }
         public static string PrivateRootName { get => "@CLOUDROOT"; }
         public static string PublicRootName { get => "@SHAREDROOT"; }
+        public static string WebRootName { get => "@WEBROOT"; }
         public static string CompressedArchiveFileType { get => "zip"; }
         public static string NotSelectedResult { get => "false"; }
         public static char SelectedFileStarterSymbol { get => '_'; }
