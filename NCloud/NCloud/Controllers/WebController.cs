@@ -23,9 +23,29 @@ namespace NCloud.Controllers
                                                                                      path)));
         }
 
+        public async Task<IActionResult> DownloadItems(string path)
+        {
+            return await Task.FromResult<IActionResult>(View());
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [ActionName("DownloadItems")]
+        public async Task<IActionResult> DownloadItemsFromForm(string path)
+        {
+            return await Task.FromResult<IActionResult>(View());
+        }
+
         public async Task<IActionResult> Back(string path)
         {
             return null!;
+        }
+
+        public async Task<IActionResult> DownloadPage(string path)
+        {
+            path = HashManager.DecryptString(path);
+
+            return await Task.FromResult<IActionResult>(View());
         }
 
         public async Task<IActionResult> Download (string path)
