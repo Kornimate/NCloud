@@ -359,10 +359,16 @@ namespace NCloud.Services
             {
                 return currentPath.Replace(Constants.PrivateRootName, Path.Combine(env.WebRootPath, "CloudData", "Private"));
             }
-            else
+            else if (currentPath.StartsWith(Constants.PublicRootName))
             {
                 return currentPath.Replace(Constants.PublicRootName, Path.Combine(env.WebRootPath, "CloudData", "Public"));
             }
+            else if (currentPath.StartsWith(Constants.WebRootName))
+            {
+                return currentPath.Replace(Constants.WebRootName, Path.Combine(env.WebRootPath, "CloudData", "Public"));
+            }
+
+            return String.Empty;
         }
 
         private string ChangeRootName(string currentPath)
@@ -791,6 +797,47 @@ namespace NCloud.Services
             CloudUser? user = await userManager.GetUserAsync(userPrincipal);
 
             return await context.SharedFiles.Where(x => x.Owner == user && x.ConnectedToWeb).OrderBy(x => x.CloudPathFromRoot).ThenBy(x => x.Name).Select(x => Path.Combine(x.CloudPathFromRoot, x.Name)).ToListAsync();
+        }
+
+        public async Task<string> WebBackCheck(string path)
+        {
+            Pair<string, string> parentPathAndName = GetParentPathAndName(path);
+
+            if (await FolderIsSharedInWeb(parentPathAndName.First, parentPathAndName.Second))
+            {
+                return parentPathAndName.First;
+            }
+
+            return path;
+        }
+
+        private async Task<bool> FolderIsSharedInWeb(string path, string folderName)
+        {
+            return await context.SharedFolders.FirstOrDefaultAsync(x => x.CloudPathFromRoot == path && x.Name == folderName && x.ConnectedToWeb) != null;
+        }
+
+        public async Task<List<CloudFile>> GetCurrentDepthWebFiles(string path)
+        {
+            try
+            {
+                return (await context.SharedFiles.Where(x => x.ConnectedToWeb && x.CloudPathFromRoot == path).ToListAsync()).Select(x => new CloudFile(new FileInfo(ParseRootName(Path.Combine(x.CloudPathFromRoot,x.Name))), false, true, String.Empty)).OrderBy(x => x.Info.Name).ToList();
+            }
+            catch
+            {
+                throw new Exception("Error occurred while getting Files!");
+            }
+        }
+
+        public async Task<List<CloudFolder>> GetCurrentDepthWebDirectories(string path)
+        {
+            try
+            {
+                return (await context.SharedFolders.Where(x => x.ConnectedToWeb && x.CloudPathFromRoot == path).ToListAsync()).Select(x => new CloudFolder(new DirectoryInfo(ParseRootName(Path.Combine(x.CloudPathFromRoot, x.Name))), false, true, String.Empty)).OrderBy(x => x.Info.Name).ToList();
+            }
+            catch
+            {
+                throw new Exception("Error occurred while getting Folders!");
+            }
         }
     }
 }

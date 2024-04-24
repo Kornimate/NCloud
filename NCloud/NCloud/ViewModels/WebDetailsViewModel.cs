@@ -7,13 +7,11 @@ namespace NCloud.ViewModels
     {
         public List<CloudFile> Files { get; set; }
         public List<CloudFolder> Folders { get; set; }
-        public string CurrentPathShow { get; set; }
         public string CurrentPath { get; set; }
-        public WebDetailsViewModel(List<CloudFile> files, List<CloudFolder> folders, string currentPathShow, string currentPath)
+        public WebDetailsViewModel(List<CloudFile> files, List<CloudFolder> folders, string currentPath)
         {
             Files = files;
             Folders = folders;
-            CurrentPathShow = currentPathShow;
             CurrentPath = currentPath;
         }
     }

@@ -120,7 +120,7 @@ namespace NCloud.Controllers
             for (int i = 0; i < files.Count; i++)
             {
                 FileInfo fi = new FileInfo(files[i].FileName);
-                // TODO: check if allowed filetype
+                //TODO: check if allowed filetype
 
             }
 
@@ -303,6 +303,23 @@ namespace NCloud.Controllers
 
             return RedirectToAction("DeleteItems");
         }
+
+        public async Task<IActionResult> DownloadFolder(string? folderName)
+        {
+            if (folderName is null || folderName == String.Empty)
+            {
+                return null!;
+            }
+
+            return await DownloadItemsFromForm(new DriveDownloadViewModel
+            {
+                ItemsForDownload = new List<string>()
+                {
+                    Constants.SelectedFolderStarterSymbol + folderName
+                }
+            });
+        }
+
         public async Task<IActionResult> DownloadItems()
         {
             CloudPathData pathData = await GetSessionCloudPathData();

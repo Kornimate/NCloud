@@ -195,3 +195,8 @@
         }
     </tbody>
 </table>
+
+@if(Model.Files?.Count == 0 && Model.Folders?.Count == 0)
+{
+    <span class="w-100 d-flex justify-content-center text-muted fst-italic">No shared items</span>
+}

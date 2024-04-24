@@ -137,6 +137,7 @@
                                         </div>
                                     </button>
 
+                                    <a asp-controller="Drive" class="btn btn-primary" asp-action="DownloadFolder" asp-route-folderName="@item.Info.Name"><img src="~/utilities/cloud-download.svg" width=" 20" height="20" class="rounded align-middle" download /></a>
                                     <a asp-controller="Drive" class="btn btn-danger" asp-action="DeleteFolder" asp-route-folderName="@item.Info.Name"><img src="~/utilities/trash.svg" width=" 20" height="20" class="rounded align-middle" /></a>
                                 </div>
                             </div>
@@ -286,6 +287,11 @@
         }
     </tbody>
 </table>
+
+@if(Model.Files?.Count == 0 && Model.Folders?.Count == 0)
+{
+    <span class="w-100 d-flex justify-content-center text-muted fst-italic">No items</span>
+}
 
 <script type="text/javascript">
     function copyToClipBoard(url) {

@@ -32,5 +32,8 @@ namespace NCloud.Services
         Task<bool> OwnerOfPathIsActualUser(string currentPath, ClaimsPrincipal userPrincipal);
         Task<List<string>> GetUserSharedFolderUrls(ClaimsPrincipal userPrincipal);
         Task<List<string>> GetUserSharedFileUrls(ClaimsPrincipal userPrincipal);
+        Task<string> WebBackCheck(string path);
+        Task<List<CloudFile>> GetCurrentDepthWebFiles(string path);
+        Task<List<CloudFolder>> GetCurrentDepthWebDirectories(string path);
     }
 }

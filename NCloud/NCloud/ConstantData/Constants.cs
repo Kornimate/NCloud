@@ -39,12 +39,12 @@ namespace NCloud.ConstantData
 
         public static Pair<string,string> GetWebControllerAndActionForDetails()
         {
-            return new Pair<string, string>("Web","Details");
+            return new Pair<string, string>("Web","SharingPage");
         }
 
         public static Pair<string, string> GetWebControllerAndActionForDownload()
         {
-            return new Pair<string, string>("Web", "Download");
+            return new Pair<string, string>("Web", "DownloadPage");
         }
 
         public static string GetCloudRootPathInDatabase(Guid id)
