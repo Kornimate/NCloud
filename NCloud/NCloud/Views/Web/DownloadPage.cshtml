@@ -1,5 +1,13 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
-@{
-}
+﻿@model WebSingleDownloadViewModel
+
+<div class="row">
+    <div class="col-auto">
+
+    </div>
+    <div>
+        <span>@System.IO.Path.Combine(Model.Path,Model.FileName)</span>
+    </div>
+    <div class="col-auto">
+        <a asp-controller="Web" class="btn btn-primary" asp-action="DownloadFile" asp-route-path="@Model.Path" asp-route-fileName="@Model.FileName"><img src="~/utilities/cloud-download.svg" width=" 20" height="20" class="rounded align-middle" download /></a>
+    </div>
+</div>

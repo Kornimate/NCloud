@@ -2,11 +2,13 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using NCloud.ConstantData;
+using NCloud.Models;
 using NCloud.Models.Extensions;
 using NCloud.Security;
 using NCloud.Services;
 using NCloud.Users;
 using NCloud.ViewModels;
+using System.Drawing.Drawing2D;
 
 namespace NCloud.Controllers
 {
@@ -45,17 +47,68 @@ namespace NCloud.Controllers
             return await Task.FromResult<IActionResult>(RedirectToAction(nameof(Details), new { path = path }));
         }
 
+        public async Task<IActionResult> DownloadFolder(string? path, string? folderName)
+        {
+            if (folderName is null || folderName == String.Empty || path is null || path == String.Empty)
+            {
+                return View("Error");
+            }
+
+            return await Download(new List<string>()
+            {
+                Constants.SelectedFolderStarterSymbol + folderName
+            },
+            path);
+        }
+
+        public async Task<IActionResult> DownloadFile(string? path, string? fileName)
+        {
+            if (fileName is null || fileName == String.Empty || path is null || path == String.Empty)
+            {
+                return View("Error");
+            }
+
+            return await Download(new List<string>()
+            {
+                Constants.SelectedFileStarterSymbol + fileName
+            },
+            path);
+        }
+
         public async Task<IActionResult> DownloadItems(string path)
         {
-            return await Task.FromResult<IActionResult>(View());
+            try
+            {
+                var files = await service.GetCurrentDepthCloudFiles(path, User);
+                var folders = await service.GetCurrentDepthCloudDirectories(path, User);
+
+                return View(new WebDownloadViewModel
+                {
+                    Folders = folders,
+                    Files = files,
+                    ItemsForDownload = new string[files.Count + folders.Count].ToList(),
+                    Path = path
+                });
+            }
+            catch (Exception ex)
+            {
+                AddNewNotification(new Error(ex.Message));
+                return View(new WebSingleDownloadViewModel
+                {
+                    Folders = new List<CloudFolder>(),
+                    Files = new List<CloudFile>(),
+                    ItemsForDownload = Array.Empty<string>().ToList(),
+                    Path = path
+                });
+            }
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
         [ActionName("DownloadItems")]
-        public async Task<IActionResult> DownloadItemsFromForm(string path)
+        public async Task<IActionResult> DownloadItemsFromForm(WebDownloadViewModel vm)
         {
-            return await Task.FromResult<IActionResult>(View());
+            return await Download(vm.ItemsForDownload ?? new(), vm.Path);
         }
 
 
@@ -63,7 +116,12 @@ namespace NCloud.Controllers
         {
             path = HashManager.DecryptString(path);
 
-            return await Task.FromResult<IActionResult>(RedirectToAction("Download", new { path = path }));
+
+
+            return await Task.FromResult<IActionResult>(View("DownloadPage", new WebSingleDownloadViewModel()
+            {
+                Path = ""
+            }));
         }
 
         public async Task<IActionResult> Download(string path)

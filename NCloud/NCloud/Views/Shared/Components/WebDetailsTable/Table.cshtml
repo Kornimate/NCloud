@@ -43,6 +43,11 @@
                                         </tr>
                                     </table>
                                 </fieldset>
+                                <div class="d-flex justify-content-end">
+                                    <div class="btn-group me-2" role="group">
+                                        <a asp-controller="Web" class="btn btn-primary" asp-action="DownloadFolder" asp-route-path="@Model.CurrentPath" asp-route-folderName="@item.Info.Name"><img src="~/utilities/cloud-download.svg" width=" 20" height="20" class="rounded align-middle" download /></a>
+                                    </div>
+                                </div>
                             </details>
                         }
                         else
@@ -102,6 +107,11 @@
                                         </tr>
                                     </table>
                                 </fieldset>
+                                <div class="d-flex justify-content-end">
+                                    <div class="btn-group me-2" role="group">
+                                        <a asp-controller="Web" class="btn btn-primary" asp-action="DownloadFile" asp-route-path="@Model.CurrentPath" asp-route-fileName="@item.Info.Name"><img src="~/utilities/cloud-download.svg" width=" 20" height="20" class="rounded align-middle" download /></a>
+                                    </div>
+                                </div>
                             </details>
                         }
                         else
