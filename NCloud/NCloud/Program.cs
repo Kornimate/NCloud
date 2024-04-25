@@ -2,11 +2,13 @@ using DNTCaptcha.Core;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using NCloud.ConstantData;
 using NCloud.Models;
+using NCloud.Security;
 using NCloud.Services;
 using NCloud.Users;
 using NCloud.Users.Roles;
-using System.Timers;
+using System.Threading;
 
 namespace NCloud
 {
@@ -97,7 +99,12 @@ namespace NCloud
                 DbInitializer.Initialize(serviceScope.ServiceProvider, app.Environment);
             }
 
-            //Timer timer = new System.Threading.Timer()
+            Timer timer = new Timer(_ => new Thread(() =>
+            {
+                Thread.CurrentThread.IsBackground = true;
+                CloudDirectoryManager.RemoveOutdatedItems(app.Environment);
+
+            }).Start(), null, TimeSpan.FromSeconds(0), Constants.TempFileDeleteTimeSpan);
 
             app.Run();
         }

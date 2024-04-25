@@ -134,9 +134,7 @@ namespace NCloud.Controllers
         [NonAction]
         protected async Task<string?> CreateZipFile(List<string> itemsForDownload, string currentPath, string filePath)
         {
-            string tempFile = GetTempFileNameAndPath();
-
-            using var zipFile = System.IO.File.Create(tempFile);
+            using var zipFile = System.IO.File.Create(filePath);
 
             try
             {
@@ -177,14 +175,14 @@ namespace NCloud.Controllers
 
                                         currentRelativePath = Path.Combine(directoryInfo.First, directoryInfo.Second.Name);
 
-                                        foreach (CloudFile file in await service.GetCurrentDepthCloudFiles(Path.Combine(serverPathStart, currentRelativePath), User))
+                                        foreach (CloudFile file in await service.GetCurrentDepthCloudFiles(Path.Combine(currentPath, currentRelativePath), User))
                                         {
                                             archive.CreateEntryFromFile(Path.Combine(serverPathStart, currentRelativePath, file.Info.Name), Path.Combine(currentRelativePath, file.Info.Name));
 
                                             ++counter;
                                         }
 
-                                        foreach (CloudFolder folder in await service.GetCurrentDepthCloudDirectories(Path.Combine(serverPathStart, currentRelativePath), User))
+                                        foreach (CloudFolder folder in await service.GetCurrentDepthCloudDirectories(Path.Combine(currentPath, currentRelativePath), User))
                                         {
                                             directories.Enqueue(new Pair<string, DirectoryInfo>(currentRelativePath, folder.Info));
 
@@ -200,6 +198,8 @@ namespace NCloud.Controllers
                                 catch (Exception ex)
                                 {
                                     AddNewNotification(new Error($"{ex.Message} ({itemName})"));
+
+                                    throw;
                                 }
                             }
                         }
@@ -218,9 +218,77 @@ namespace NCloud.Controllers
             }
         }
 
+        public async Task<IActionResult> Download(List<string> itemsForDownload)
+        {
+            CloudPathData pathData = await GetSessionCloudPathData();
+
+            try
+            {
+                if (itemsForDownload is not null && itemsForDownload.Count != 0)
+                {
+                    if (itemsForDownload.Count > 1 || itemsForDownload[0].StartsWith(Constants.SelectedFolderStarterSymbol))
+                    {
+                        string? tempFile = await CreateZipFile(itemsForDownload, pathData.CurrentPath, GetTempFileNameAndPath());
+
+                        try
+                        {
+                            if (tempFile is null)
+                                throw new Exception("File was not created");
+
+                            FileStream stream = new FileStream(tempFile, FileMode.Open, FileAccess.Read, FileShare.Read, 4096, FileOptions.DeleteOnClose);
+
+                            return File(stream, Constants.ZipMimeType, $"{APPNAME}_{DateTime.Now.ToString(Constants.DateTimeFormat)}.{Constants.CompressedArchiveFileType}");
+                        }
+                        catch (Exception)
+                        {
+                            throw;
+                        }
+                    }
+                    else
+                    {
+                        try
+                        {
+                            if (itemsForDownload[0].StartsWith(Constants.SelectedFileStarterSymbol))
+                            {
+                                string name = itemsForDownload[0][1..];
+
+                                try
+                                {
+                                    FileStream stream = new FileStream(Path.Combine(service.ServerPath(pathData.CurrentPath), name), FileMode.Open, FileAccess.Read, FileShare.Read);
+
+                                    return File(stream, FormatManager.GetMimeType(name), name);
+                                }
+                                catch (Exception)
+                                {
+                                    throw;
+                                }
+                            }
+                        }
+                        catch (Exception)
+                        {
+                            AddNewNotification(new Error($"Invalid filename: {itemsForDownload[0]}"));
+                        }
+                    }
+                }
+
+                AddNewNotification(new Warning($"No file(s) or folder(s) were chosen for download"));
+            }
+            catch (Exception)
+            {
+                AddNewNotification(new Error($"App unable to create file for download"));
+            }
+
+            return RedirectToAction("DownloadItems");
+        }
+
         [NonAction]
         protected string GetTempFileNameAndPath()
         {
+            if (!Directory.Exists(Constants.TempFilePath))
+            {
+                Directory.CreateDirectory(Constants.TempFilePath);
+            }
+
             return Path.Combine(Constants.TempFilePath, Guid.NewGuid().ToString() + DateTime.Now.ToString(Constants.DateTimeFormat));
         }
     }

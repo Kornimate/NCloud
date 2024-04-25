@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using NCloud.ConstantData;
 using NCloud.Services;
 using NCloud.Users;
 using NCloud.Users.Roles;
@@ -34,14 +35,19 @@ namespace NCloud.Models
                 roleManager.CreateAsync(new CloudRole(userRole, 1)).Wait();
             }
 
-            if (!Directory.Exists(Path.Combine(env.WebRootPath, "CloudData", "Public")))
-            {
-                Directory.CreateDirectory(Path.Combine(env.WebRootPath, "CloudData", "Public"));
-            }
+            //if (!Directory.Exists(Path.Combine(env.WebRootPath, "CloudData", "Public")))
+            //{
+            //    Directory.CreateDirectory(Path.Combine(env.WebRootPath, "CloudData", "Public"));
+            //}
 
             if (!Directory.Exists(Path.Combine(env.WebRootPath, "CloudData", "Private")))
             {
                 Directory.CreateDirectory(Path.Combine(env.WebRootPath, "CloudData", "Private"));
+            }
+
+            if (!Directory.Exists(Path.Combine(env.WebRootPath,Constants.TempFilePath)))
+            {
+                Directory.CreateDirectory(Path.Combine(env.WebRootPath, Constants.TempFilePath));
             }
 
             if (!context.Users.Any())

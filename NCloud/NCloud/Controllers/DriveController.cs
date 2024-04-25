@@ -308,31 +308,26 @@ namespace NCloud.Controllers
         {
             if (folderName is null || folderName == String.Empty)
             {
-                return null!;
+                return View("Error");
             }
 
-            return await DownloadItemsFromForm(new DriveDownloadViewModel
+            return await Download(new List<string>()
             {
-                ItemsForDownload = new List<string>()
-                {
-                    Constants.SelectedFolderStarterSymbol + folderName
-                }
-            });
+                Constants.SelectedFolderStarterSymbol + folderName
+            }
+            );
         }
 
         public async Task<IActionResult> DownloadFile(string? fileName)
         {
-            if (fileName is null || fileName == String.Empty)
+           if (fileName is null || fileName == String.Empty)
             {
-                return null!;
+                return View("Error");
             }
 
-            return await DownloadItemsFromForm(new DriveDownloadViewModel
+            return await Download(new List<string>()
             {
-                ItemsForDownload = new List<string>()
-                {
-                    Constants.SelectedFileStarterSymbol + fileName
-                }
+                Constants.SelectedFileStarterSymbol + fileName
             });
         }
 
@@ -368,65 +363,7 @@ namespace NCloud.Controllers
         [ValidateAntiForgeryToken, ActionName("DownloadItems")]
         public async Task<IActionResult> DownloadItemsFromForm([Bind("ItemsForDownload")] DriveDownloadViewModel vm)
         {
-            CloudPathData pathData = await GetSessionCloudPathData();
-
-            try
-            {
-                if (vm.ItemsForDownload is not null && vm.ItemsForDownload.Count != 0)
-                {
-                    if (vm.ItemsForDownload.Count > 1 || vm.ItemsForDownload[0].StartsWith(Constants.SelectedFolderStarterSymbol))
-                    {
-                        string? tempFile = await CreateZipFile(vm.ItemsForDownload, pathData.CurrentPath, GetTempFileNameAndPath());
-
-                        try
-                        {
-                            if (tempFile is null)
-                                throw new Exception("File was not created");
-
-                            FileStream stream = new FileStream(tempFile, FileMode.Open, FileAccess.Read, FileShare.Read, 4096, FileOptions.DeleteOnClose);
-
-                            return File(stream, Constants.ZipMimeType, $"{APPNAME}_{DateTime.Now.ToString(Constants.DateTimeFormat)}.{Constants.CompressedArchiveFileType}");
-                        }
-                        catch (Exception)
-                        {
-                            throw;
-                        } 
-                    }
-                    else
-                    {
-                        try
-                        {
-                            if (vm.ItemsForDownload[0].StartsWith(Constants.SelectedFileStarterSymbol))
-                            {
-                                string name = vm.ItemsForDownload[0][1..];
-
-                                try
-                                {
-                                    FileStream stream = new FileStream(Path.Combine(service.ServerPath(pathData.CurrentPath), name), FileMode.Open, FileAccess.Read, FileShare.Read);
-
-                                    return File(stream, FormatManager.GetMimeType(name), name);
-                                }
-                                catch (Exception)
-                                {
-                                    AddNewNotification(new Error("App unable to download file"));
-                                } 
-                            }
-                        }
-                        catch (Exception)
-                        {
-                            AddNewNotification(new Error($"Invalid filename: {vm.ItemsForDownload[0]}"));
-                        }
-                    }
-                }
-
-                AddNewNotification(new Warning($"No file(s) or folder(s) were chosen for download"));
-            }
-            catch (Exception)
-            {
-                AddNewNotification(new Error($"App unable to create file for download"));
-            }
-
-            return RedirectToAction("DownloadItems");
+            return await Download(vm.ItemsForDownload ?? new());
         }
 
         public async Task<JsonResult> ConnectDirectoryToApp([FromBody] string itemName)
@@ -459,6 +396,8 @@ namespace NCloud.Controllers
             }
         }
 
+        [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<JsonResult> ConnectFileToApp([FromBody] string itemName)
         {
             CloudPathData session = await GetSessionCloudPathData();
@@ -473,6 +412,8 @@ namespace NCloud.Controllers
             }
         }
 
+        [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<JsonResult> ConnectFileToWeb([FromBody] string itemName)
         {
             CloudPathData session = await GetSessionCloudPathData();
@@ -487,6 +428,8 @@ namespace NCloud.Controllers
             }
         }
 
+        [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> DisconnectDirectoryFromApp([FromBody] string itemName)
         {
             CloudPathData session = await GetSessionCloudPathData();
@@ -517,6 +460,8 @@ namespace NCloud.Controllers
             }
         }
 
+        [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<JsonResult> DisconnectFileFromApp([FromBody] string itemName)
         {
             CloudPathData session = await GetSessionCloudPathData();
@@ -531,6 +476,8 @@ namespace NCloud.Controllers
             }
         }
 
+        [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<JsonResult> DisconnectFileFromWeb([FromBody] string itemName)
         {
             CloudPathData session = await GetSessionCloudPathData();

@@ -63,7 +63,7 @@ namespace NCloud.Controllers
         {
             path = HashManager.DecryptString(path);
 
-            return await Task.FromResult<IActionResult>(View());
+            return await Task.FromResult<IActionResult>(RedirectToAction("Download", new { path = path }));
         }
 
         public async Task<IActionResult> Download(string path)

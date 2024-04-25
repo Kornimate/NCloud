@@ -2,17 +2,17 @@
 
 namespace NCloud.Security
 {
-    public class DirectoryCleanUpManager
+    public class CloudDirectoryManager
     {
-        public Task<bool> RemoveOutdatedItems()
+        public static bool RemoveOutdatedItems(IWebHostEnvironment env)
         {
             bool everyFileDeleted = true;
 
-            foreach (string file in Directory.EnumerateFiles(Constants.TempFilePath))
+            foreach (string file in Directory.EnumerateFiles(Path.Combine(env.WebRootPath,Constants.TempFolderName)))
             {
                 FileInfo fi = new FileInfo(file);
 
-                if (fi.Exists && (fi.CreationTimeUtc - DateTime.UtcNow) > Constants.TempFileDeleteTimeSpan)
+                if (fi.Exists && (DateTime.UtcNow - fi.CreationTimeUtc) > Constants.TempFileDeleteTimeSpan)
                 {
                     try
                     {
@@ -25,7 +25,7 @@ namespace NCloud.Security
                 }
             }
 
-            return Task.FromResult<bool>(everyFileDeleted);
+            return everyFileDeleted;
         }
     }
 }
