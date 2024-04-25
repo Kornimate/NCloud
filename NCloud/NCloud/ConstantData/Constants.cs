@@ -14,10 +14,14 @@ namespace NCloud.ConstantData
         public static string AesKey { get => "bT7TAqTu32JxED0qTPac8w=="; }
         public static string IV { get => "IJ/UpiC2sYsmrq7fbFyemw=="; }
         public static string NoFileType { get => "notype"; }
+        public static string ZipMimeType { get => "application/zip"; }
+        public static string DefaultMimeType { get => "application/octet-stream"; }
+        public static string DateTimeFormat { get => "yyyy'-'MM'-'dd'T'HH'-'mm'-'ss"; }
         public static string UnkownFileType { get => "unknown"; }
         public static string FileTypePrefix { get => "filetype-"; }
         public static string IconsBasePath { get => Path.Combine("wwwroot", "utilities"); }
-        public static string GetLogoPath { get => Path.Combine("wwwroot", "utilities", "cloud_logo.png"); }
+        public static string LogoPath { get => Path.Combine("wwwroot", "utilities", "cloud_logo.png"); }
+        public static string TempFilePath { get => Path.Combine("wwwroot", "temp"); }
         public static string FolderIcon { get => "/utilities/folder.svg"; }
         public static string PrefixForIcons { get => "/utilities/filetype-"; }
         public static string SuffixForIcons { get => ".svg"; }
@@ -36,6 +40,7 @@ namespace NCloud.ConstantData
         public static int EmptyFolderAttributeNumberZip { get => 16; }
         public static int OwnerPlaceInPath { get => 1; }
         public static int GuidLength { get => 36; }
+        public static TimeSpan TempFileDeleteTimeSpan { get => TimeSpan.FromMinutes(10); }
 
         public static Pair<string,string> GetWebControllerAndActionForDetails()
         {

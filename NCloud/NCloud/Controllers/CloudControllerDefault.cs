@@ -1,10 +1,13 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Castle.Core;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using NCloud.ConstantData;
 using NCloud.Models;
 using NCloud.Services;
 using NCloud.Users;
 using NuGet.Protocol;
 using System.Drawing.Drawing2D;
+using System.IO.Compression;
 using System.Text.Json;
 using CloudPathData = NCloud.Models.CloudPathData;
 
@@ -126,6 +129,99 @@ namespace NCloud.Controllers
             {
                 return false;
             }
+        }
+
+        [NonAction]
+        protected async Task<string?> CreateZipFile(List<string> itemsForDownload, string currentPath, string filePath)
+        {
+            string tempFile = GetTempFileNameAndPath();
+
+            using var zipFile = System.IO.File.Create(tempFile);
+
+            try
+            {
+                using (ZipArchive archive = new ZipArchive(zipFile, ZipArchiveMode.Create))
+                {
+                    foreach (string itemName in itemsForDownload!)
+                    {
+                        if (itemName != Constants.NotSelectedResult && itemName is not null  && itemName != String.Empty)
+                        {
+                            if (itemName.StartsWith(Constants.SelectedFileStarterSymbol))
+                            {
+                                try
+                                {
+                                    string name = itemName[1..];
+
+                                    archive.CreateEntryFromFile(Path.Combine(service.ServerPath(currentPath), name), name);
+                                }
+                                catch (Exception ex)
+                                {
+                                    AddNewNotification(new Error($"{ex.Message} ({itemName})"));
+                                }
+                            }
+                            else if (itemName.StartsWith(Constants.SelectedFolderStarterSymbol))
+                            {
+                                try
+                                {
+                                    string name = itemName[1..];
+                                    string serverPathStart = service.ServerPath(currentPath);
+                                    string currentRelativePath = String.Empty;
+
+                                    Queue<Pair<string, DirectoryInfo>> directories = new(new List<Pair<string, DirectoryInfo>>() { new Pair<string, DirectoryInfo>(currentRelativePath, await service.GetFolderByPath(serverPathStart, name)) });
+
+                                    while (directories.Any())
+                                    {
+                                        var directoryInfo = directories.Dequeue();
+
+                                        int counter = 0;
+
+                                        currentRelativePath = Path.Combine(directoryInfo.First, directoryInfo.Second.Name);
+
+                                        foreach (CloudFile file in await service.GetCurrentDepthCloudFiles(Path.Combine(serverPathStart, currentRelativePath), User))
+                                        {
+                                            archive.CreateEntryFromFile(Path.Combine(serverPathStart, currentRelativePath, file.Info.Name), Path.Combine(currentRelativePath, file.Info.Name));
+
+                                            ++counter;
+                                        }
+
+                                        foreach (CloudFolder folder in await service.GetCurrentDepthCloudDirectories(Path.Combine(serverPathStart, currentRelativePath), User))
+                                        {
+                                            directories.Enqueue(new Pair<string, DirectoryInfo>(currentRelativePath, folder.Info));
+
+                                            ++counter;
+                                        }
+
+                                        if (counter == 0)
+                                        {
+                                            archive.CreateEntry(currentRelativePath).ExternalAttributes = Constants.EmptyFolderAttributeNumberZip;
+                                        }
+                                    }
+                                }
+                                catch (Exception ex)
+                                {
+                                    AddNewNotification(new Error($"{ex.Message} ({itemName})"));
+                                }
+                            }
+                        }
+                        else
+                        {
+                            AddNewNotification(new Warning($"The following item is invalid: {itemName}"));
+                        }
+                    }
+                }
+
+                return filePath;
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+        }
+
+        [NonAction]
+        protected string GetTempFileNameAndPath()
+        {
+            return Path.Combine(Constants.TempFilePath, Guid.NewGuid().ToString() + DateTime.Now.ToString(Constants.DateTimeFormat));
         }
     }
 }

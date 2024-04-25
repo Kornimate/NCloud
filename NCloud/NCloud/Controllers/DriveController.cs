@@ -320,6 +320,22 @@ namespace NCloud.Controllers
             });
         }
 
+        public async Task<IActionResult> DownloadFile(string? fileName)
+        {
+            if (fileName is null || fileName == String.Empty)
+            {
+                return null!;
+            }
+
+            return await DownloadItemsFromForm(new DriveDownloadViewModel
+            {
+                ItemsForDownload = new List<string>()
+                {
+                    Constants.SelectedFileStarterSymbol + fileName
+                }
+            });
+        }
+
         public async Task<IActionResult> DownloadItems()
         {
             CloudPathData pathData = await GetSessionCloudPathData();
@@ -352,89 +368,63 @@ namespace NCloud.Controllers
         [ValidateAntiForgeryToken, ActionName("DownloadItems")]
         public async Task<IActionResult> DownloadItemsFromForm([Bind("ItemsForDownload")] DriveDownloadViewModel vm)
         {
-
             CloudPathData pathData = await GetSessionCloudPathData();
 
-            string tempFile = Path.GetTempFileName(); //may need to chnage to specific
-
-            //TODO: add to clean up process the path
-
-            using var zipFile = System.IO.File.Create(tempFile);
-
-            if (vm.ItemsForDownload is not null && vm.ItemsForDownload.Count != 0)
+            try
             {
-                using (ZipArchive archive = new ZipArchive(zipFile, ZipArchiveMode.Create))
+                if (vm.ItemsForDownload is not null && vm.ItemsForDownload.Count != 0)
                 {
-                    foreach (string itemName in vm.ItemsForDownload!)
+                    if (vm.ItemsForDownload.Count > 1 || vm.ItemsForDownload[0].StartsWith(Constants.SelectedFolderStarterSymbol))
                     {
-                        if (itemName != Constants.NotSelectedResult)
+                        string? tempFile = await CreateZipFile(vm.ItemsForDownload, pathData.CurrentPath, GetTempFileNameAndPath());
+
+                        try
                         {
-                            if (itemName[0] == Constants.SelectedFileStarterSymbol)
+                            if (tempFile is null)
+                                throw new Exception("File was not created");
+
+                            FileStream stream = new FileStream(tempFile, FileMode.Open, FileAccess.Read, FileShare.Read, 4096, FileOptions.DeleteOnClose);
+
+                            return File(stream, Constants.ZipMimeType, $"{APPNAME}_{DateTime.Now.ToString(Constants.DateTimeFormat)}.{Constants.CompressedArchiveFileType}");
+                        }
+                        catch (Exception)
+                        {
+                            throw;
+                        } 
+                    }
+                    else
+                    {
+                        try
+                        {
+                            if (vm.ItemsForDownload[0].StartsWith(Constants.SelectedFileStarterSymbol))
                             {
+                                string name = vm.ItemsForDownload[0][1..];
+
                                 try
                                 {
-                                    string name = itemName[1..];
+                                    FileStream stream = new FileStream(Path.Combine(service.ServerPath(pathData.CurrentPath), name), FileMode.Open, FileAccess.Read, FileShare.Read);
 
-                                    archive.CreateEntryFromFile(Path.Combine(service.ServerPath(pathData.CurrentPath), name), name);
+                                    return File(stream, FormatManager.GetMimeType(name), name);
                                 }
-                                catch (Exception ex)
+                                catch (Exception)
                                 {
-                                    AddNewNotification(new Error($"{ex.Message} ({itemName})"));
-                                }
+                                    AddNewNotification(new Error("App unable to download file"));
+                                } 
                             }
-                            else if (itemName[0] == Constants.SelectedFolderStarterSymbol)
-                            {
-                                try
-                                {
-                                    string name = itemName[1..];
-                                    string serverPathStart = service.ServerPath(pathData.CurrentPath);
-                                    string currentRelativePath = String.Empty;
-
-                                    Queue<Pair<string, DirectoryInfo>> directories = new(new List<Pair<string, DirectoryInfo>>() { new Pair<string, DirectoryInfo>(currentRelativePath, await service.GetFolderByPath(serverPathStart, name)) });
-
-                                    while (directories.Any())
-                                    {
-                                        var directoryInfo = directories.Dequeue();
-
-                                        int counter = 0;
-
-                                        currentRelativePath = Path.Combine(directoryInfo.First, directoryInfo.Second.Name);
-
-                                        foreach (CloudFile file in await service.GetCurrentDepthCloudFiles(Path.Combine(serverPathStart, currentRelativePath), User))
-                                        {
-                                            archive.CreateEntryFromFile(Path.Combine(serverPathStart, currentRelativePath, file.Info.Name), Path.Combine(currentRelativePath, file.Info.Name));
-
-                                            ++counter;
-                                        }
-
-                                        foreach (CloudFolder folder in await service.GetCurrentDepthCloudDirectories(Path.Combine(serverPathStart, currentRelativePath), User))
-                                        {
-                                            directories.Enqueue(new Pair<string, DirectoryInfo>(currentRelativePath, folder.Info));
-
-                                            ++counter;
-                                        }
-
-                                        if (counter == 0)
-                                        {
-                                            archive.CreateEntry(currentRelativePath).ExternalAttributes = Constants.EmptyFolderAttributeNumberZip;
-                                        }
-                                    }
-                                }
-                                catch (Exception ex)
-                                {
-                                    AddNewNotification(new Error($"{ex.Message} ({itemName})"));
-                                }
-                            }
+                        }
+                        catch (Exception)
+                        {
+                            AddNewNotification(new Error($"Invalid filename: {vm.ItemsForDownload[0]}"));
                         }
                     }
                 }
 
-                FileStream stream = new FileStream(tempFile, FileMode.Open, FileAccess.Read, FileShare.Read, 4096, FileOptions.DeleteOnClose);
-
-                return File(stream, "application/zip", $"{APPNAME}_{DateTime.Now:yyyy'-'MM'-'dd'T'HH'-'mm'-'ss}.{Constants.CompressedArchiveFileType}");
+                AddNewNotification(new Warning($"No file(s) or folder(s) were chosen for download"));
             }
-
-            AddNewNotification(new Warning($"No files were chosen for download"));
+            catch (Exception)
+            {
+                AddNewNotification(new Error($"App unable to create file for download"));
+            }
 
             return RedirectToAction("DownloadItems");
         }

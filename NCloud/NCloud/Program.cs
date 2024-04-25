@@ -6,6 +6,7 @@ using NCloud.Models;
 using NCloud.Services;
 using NCloud.Users;
 using NCloud.Users.Roles;
+using System.Timers;
 
 namespace NCloud
 {
@@ -95,6 +96,8 @@ namespace NCloud
             {
                 DbInitializer.Initialize(serviceScope.ServiceProvider, app.Environment);
             }
+
+            //Timer timer = new System.Threading.Timer()
 
             app.Run();
         }
