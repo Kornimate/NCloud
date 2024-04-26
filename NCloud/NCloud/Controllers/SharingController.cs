@@ -70,7 +70,7 @@ namespace NCloud.Controllers
             {
                 Constants.SelectedFolderStarterSymbol + folderName
             },
-            (await GetSessionSharedPathData()).CurrentPath,
+            service.ChangePathStructure((await GetSessionSharedPathData()).CurrentPath),
             RedirectToAction("Details", "Drive"),
             connectedToApp: true);
         }

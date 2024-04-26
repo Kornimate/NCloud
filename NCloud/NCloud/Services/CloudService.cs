@@ -10,6 +10,9 @@ using NCloud.ConstantData;
 using System.Security.Claims;
 using Castle.Core;
 using NCloud.Security;
+using Microsoft.AspNetCore.Mvc;
+using System.IO.Compression;
+using System;
 
 namespace NCloud.Services
 {
@@ -363,15 +366,11 @@ namespace NCloud.Services
             {
                 return currentPath.Replace(Constants.PublicRootName, Path.Combine(env.WebRootPath, "CloudData", "Public"));
             }
-            else if (currentPath.StartsWith(Constants.WebRootName))
-            {
-                return currentPath.Replace(Constants.WebRootName, Path.Combine(env.WebRootPath, "CloudData", "Public"));
-            }
 
             return String.Empty;
         }
 
-        private string ChangeRootName(string currentPath)
+        public string ChangeRootName(string currentPath)
         {
             if (currentPath.StartsWith(Constants.PrivateRootName))
             {
@@ -838,6 +837,148 @@ namespace NCloud.Services
             {
                 throw new Exception("Error occurred while getting Folders!");
             }
+        }
+
+        public async Task<string?> CreateZipFile(List<string> itemsForDownload, string currentPath, string filePath, bool connectedToApp, bool connectedToWeb, ClaimsPrincipal userPrincipal)
+        {
+            using var zipFile = System.IO.File.Create(filePath);
+
+            try
+            {
+                using (ZipArchive archive = new ZipArchive(zipFile, ZipArchiveMode.Create))
+                {
+                    foreach (string itemName in itemsForDownload!)
+                    {
+                        if (itemName != Constants.NotSelectedResult && itemName is not null && itemName != String.Empty)
+                        {
+                            if (itemName.StartsWith(Constants.SelectedFileStarterSymbol))
+                            {
+                                try
+                                {
+                                    string name = itemName[1..];
+
+                                    archive.CreateEntryFromFile(Path.Combine(ParseRootName(currentPath), name), name);
+                                }
+                                catch (Exception ex)
+                                {
+                                    throw new Exception($"{ex.Message} ({itemName})");
+                                }
+                            }
+                            else if (itemName.StartsWith(Constants.SelectedFolderStarterSymbol))
+                            {
+                                try
+                                {
+                                    string name = itemName[1..];
+                                    string serverPathStart = ParseRootName(currentPath);
+                                    string currentRelativePath = String.Empty;
+
+                                    Queue<Pair<string, DirectoryInfo>> directories = new(new List<Pair<string, DirectoryInfo>>() { new Pair<string, DirectoryInfo>(currentRelativePath, await GetFolderByPath(serverPathStart, name)) });
+
+                                    while (directories.Any())
+                                    {
+                                        var directoryInfo = directories.Dequeue();
+
+                                        int counter = 0;
+
+                                        currentRelativePath = Path.Combine(directoryInfo.First, directoryInfo.Second.Name);
+
+                                        foreach (CloudFile file in await GetCurrentDepthCloudFiles(Path.Combine(currentPath, currentRelativePath), userPrincipal))
+                                        {
+                                            archive.CreateEntryFromFile(Path.Combine(serverPathStart, currentRelativePath, file.Info.Name), Path.Combine(currentRelativePath, file.Info.Name));
+
+                                            ++counter;
+                                        }
+
+                                        foreach (CloudFolder folder in await GetCurrentDepthCloudDirectories(Path.Combine(currentPath, currentRelativePath), userPrincipal))
+                                        {
+                                            directories.Enqueue(new Pair<string, DirectoryInfo>(currentRelativePath, folder.Info));
+
+                                            ++counter;
+                                        }
+
+                                        if (counter == 0)
+                                        {
+                                            archive.CreateEntry(currentRelativePath).ExternalAttributes = Constants.EmptyFolderAttributeNumberZip;
+                                        }
+                                    }
+                                }
+                                catch (Exception ex)
+                                {
+                                    throw new Exception($"{ex.Message} ({itemName})");
+                                }
+                            }
+                        }
+                        else
+                        {
+                            throw new Exception($"The following item is invalid: {itemName}, will not be in the created file");
+                        }
+                    }
+                }
+
+                return filePath;
+            }
+            catch (Exception ex)
+            {
+                zipFile.Close();
+
+                if (File.Exists(filePath))
+                {
+                    try
+                    {
+                        File.Delete(filePath);
+                    }
+                    catch (Exception) { }               
+                }
+
+                throw new InvalidOperationException(ex.Message);
+
+            }
+        }
+
+        public async Task<string> ChangePathStructure(string currentPath)
+        {
+            string[] pathElements = currentPath.Split(Path.DirectorySeparatorChar,StringSplitOptions.RemoveEmptyEntries);
+
+            if(pathElements.Length < 2)
+            {
+                return currentPath;
+            }
+
+            if (pathElements[Constants.RootProviderPlaceinPath] == Constants.PublicRootName)
+            {
+                CloudUser? user = await context.Users.FirstOrDefaultAsync(x => x.UserName == pathElements[Constants.OwnerPlaceInPath]);
+
+                if (user is not null)
+                {
+                    pathElements[Constants.RootProviderPlaceinPath] = Constants.PrivateRootName;
+                    pathElements[Constants.OwnerPlaceInPath] = user.Id.ToString();
+
+                    return String.Join(Path.DirectorySeparatorChar, pathElements);
+                }
+                else
+                {
+                    return currentPath;
+                }
+            }
+
+            if (pathElements[Constants.RootProviderPlaceinPath] == Constants.PrivateRootName)
+            {
+                CloudUser? user = await context.Users.FirstOrDefaultAsync(x => x.Id.ToString() == pathElements[Constants.OwnerPlaceInPath]);
+
+                if (user is not null)
+                {
+                    pathElements[Constants.RootProviderPlaceinPath] = Constants.PublicRootName;
+                    pathElements[Constants.OwnerPlaceInPath] = user.UserName;
+
+                    return String.Join(Path.DirectorySeparatorChar, pathElements);
+                }
+                else
+                {
+                    return currentPath;
+                }
+            }
+
+            return currentPath;
         }
     }
 }

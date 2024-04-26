@@ -131,94 +131,7 @@ namespace NCloud.Controllers
             }
         }
 
-        [NonAction]
-        protected async Task<string?> CreateZipFile(List<string> itemsForDownload, string currentPath, string filePath, bool connectedToApp, bool connectedToWeb)
-        {
-            using var zipFile = System.IO.File.Create(filePath);
-
-            try
-            {
-                using (ZipArchive archive = new ZipArchive(zipFile, ZipArchiveMode.Create))
-                {
-                    foreach (string itemName in itemsForDownload!)
-                    {
-                        if (itemName != Constants.NotSelectedResult && itemName is not null  && itemName != String.Empty)
-                        {
-                            if (itemName.StartsWith(Constants.SelectedFileStarterSymbol))
-                            {
-                                try
-                                {
-                                    string name = itemName[1..];
-
-                                    archive.CreateEntryFromFile(Path.Combine(service.ServerPath(currentPath), name), name);
-                                }
-                                catch (Exception ex)
-                                {
-                                    AddNewNotification(new Error($"{ex.Message} ({itemName})"));
-
-                                    throw;
-                                }
-                            }
-                            else if (itemName.StartsWith(Constants.SelectedFolderStarterSymbol))
-                            {
-                                try
-                                {
-                                    string name = itemName[1..];
-                                    string serverPathStart = service.ServerPath(currentPath);
-                                    string currentRelativePath = String.Empty;
-
-                                    Queue<Pair<string, DirectoryInfo>> directories = new(new List<Pair<string, DirectoryInfo>>() { new Pair<string, DirectoryInfo>(currentRelativePath, await service.GetFolderByPath(serverPathStart, name)) });
-
-                                    while (directories.Any())
-                                    {
-                                        var directoryInfo = directories.Dequeue();
-
-                                        int counter = 0;
-
-                                        currentRelativePath = Path.Combine(directoryInfo.First, directoryInfo.Second.Name);
-
-                                        foreach (CloudFile file in await service.GetCurrentDepthCloudFiles(Path.Combine(currentPath, currentRelativePath), User))
-                                        {
-                                            archive.CreateEntryFromFile(Path.Combine(serverPathStart, currentRelativePath, file.Info.Name), Path.Combine(currentRelativePath, file.Info.Name));
-
-                                            ++counter;
-                                        }
-
-                                        foreach (CloudFolder folder in await service.GetCurrentDepthCloudDirectories(Path.Combine(currentPath, currentRelativePath), User))
-                                        {
-                                            directories.Enqueue(new Pair<string, DirectoryInfo>(currentRelativePath, folder.Info));
-
-                                            ++counter;
-                                        }
-
-                                        if (counter == 0)
-                                        {
-                                            archive.CreateEntry(currentRelativePath).ExternalAttributes = Constants.EmptyFolderAttributeNumberZip;
-                                        }
-                                    }
-                                }
-                                catch (Exception ex)
-                                {
-                                    AddNewNotification(new Error($"{ex.Message} ({itemName})"));
-
-                                    throw;
-                                }
-                            }
-                        }
-                        else
-                        {
-                            AddNewNotification(new Warning($"The following item is invalid: {itemName}, will not be in the created file"));
-                        }
-                    }
-                }
-
-                return filePath;
-            }
-            catch (Exception)
-            {
-                return null;
-            }
-        }
+        
 
         public async Task<IActionResult> Download(List<string> itemsForDownload, string path, IActionResult returnAction, bool connectedToApp = false, bool connectedToWeb = false)
         {
@@ -228,8 +141,16 @@ namespace NCloud.Controllers
                 {
                     if (itemsForDownload.Count > 1 || itemsForDownload[0].StartsWith(Constants.SelectedFolderStarterSymbol))
                     {
-                        string? tempFile = await CreateZipFile(itemsForDownload, path, GetTempFileNameAndPath(), connectedToApp, connectedToWeb);
+                        string? tempFile = null;
 
+                        try
+                        {
+                            tempFile = await service.CreateZipFile(itemsForDownload, path, GetTempFileNameAndPath(), connectedToApp, connectedToWeb, User);
+                        }
+                        catch (Exception ex)
+                        {
+                            AddNewNotification(new Error(ex.Message));
+                        }
                         try
                         {
                             if (tempFile is null)

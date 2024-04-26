@@ -30,7 +30,6 @@ namespace NCloud.ConstantData
         public static string AppName { get => "NCloudDrive"; }
         public static string PrivateRootName { get => "@CLOUDROOT"; }
         public static string PublicRootName { get => "@SHAREDROOT"; }
-        public static string WebRootName { get => "@WEBROOT"; }
         public static string CompressedArchiveFileType { get => "zip"; }
         public static string NotSelectedResult { get => "false"; }
         public static char SelectedFileStarterSymbol { get => '_'; }
@@ -40,6 +39,7 @@ namespace NCloud.ConstantData
         public static int DistanceToRootFolder { get => 4; }
         public static int EmptyFolderAttributeNumberZip { get => 16; }
         public static int OwnerPlaceInPath { get => 1; }
+        public static int RootProviderPlaceinPath { get => 0; }
         public static int GuidLength { get => 36; }
         public static TimeSpan TempFileDeleteTimeSpan { get => TimeSpan.FromMinutes(10); }
 

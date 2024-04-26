@@ -15,6 +15,7 @@ namespace NCloud.Services
         Task<bool> RemoveDirectory(string folderName, string currentPath, ClaimsPrincipal userPrincipal);
         Task<bool> RemoveFile(string fileName, string currentPath, ClaimsPrincipal userPrincipal);
         string ServerPath(string currentPath);
+        string ChangeRootName(string currentPath);
         Tuple<List<CloudFile?>, List<CloudFolder?>> GetCurrentUserIndexData();
         bool DirectoryExists(string? pathAndName);
         Task<DirectoryInfo> GetFolderByPath(string path, string folderName);
@@ -35,5 +36,7 @@ namespace NCloud.Services
         Task<string> WebBackCheck(string path);
         Task<List<CloudFile>> GetCurrentDepthWebFiles(string path);
         Task<List<CloudFolder>> GetCurrentDepthWebDirectories(string path);
+        Task<string?> CreateZipFile(List<string> itemsForDownload, string currentPath, string filePath, bool connectedToApp, bool connectedToWeb, ClaimsPrincipal userPrincipal);
+        Task <string> ChangePathStructure(string currentPath);
     }
 }
