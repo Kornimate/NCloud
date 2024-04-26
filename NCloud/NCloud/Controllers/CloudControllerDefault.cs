@@ -132,7 +132,7 @@ namespace NCloud.Controllers
         }
 
         [NonAction]
-        protected async Task<string?> CreateZipFile(List<string> itemsForDownload, string currentPath, string filePath)
+        protected async Task<string?> CreateZipFile(List<string> itemsForDownload, string currentPath, string filePath, bool connectedToApp, bool connectedToWeb)
         {
             using var zipFile = System.IO.File.Create(filePath);
 
@@ -155,6 +155,8 @@ namespace NCloud.Controllers
                                 catch (Exception ex)
                                 {
                                     AddNewNotification(new Error($"{ex.Message} ({itemName})"));
+
+                                    throw;
                                 }
                             }
                             else if (itemName.StartsWith(Constants.SelectedFolderStarterSymbol))
@@ -205,7 +207,7 @@ namespace NCloud.Controllers
                         }
                         else
                         {
-                            AddNewNotification(new Warning($"The following item is invalid: {itemName}"));
+                            AddNewNotification(new Warning($"The following item is invalid: {itemName}, will not be in the created file"));
                         }
                     }
                 }
@@ -218,7 +220,7 @@ namespace NCloud.Controllers
             }
         }
 
-        public async Task<IActionResult> Download(List<string> itemsForDownload, string path)
+        public async Task<IActionResult> Download(List<string> itemsForDownload, string path, IActionResult returnAction, bool connectedToApp = false, bool connectedToWeb = false)
         {
             try
             {
@@ -226,7 +228,7 @@ namespace NCloud.Controllers
                 {
                     if (itemsForDownload.Count > 1 || itemsForDownload[0].StartsWith(Constants.SelectedFolderStarterSymbol))
                     {
-                        string? tempFile = await CreateZipFile(itemsForDownload, path, GetTempFileNameAndPath());
+                        string? tempFile = await CreateZipFile(itemsForDownload, path, GetTempFileNameAndPath(), connectedToApp, connectedToWeb);
 
                         try
                         {
@@ -276,7 +278,7 @@ namespace NCloud.Controllers
                 AddNewNotification(new Error($"App unable to create file for download"));
             }
 
-            return RedirectToAction("DownloadItems");
+            return returnAction;
         }
 
         [NonAction]

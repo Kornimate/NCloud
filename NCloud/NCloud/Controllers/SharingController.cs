@@ -13,29 +13,29 @@ namespace NCloud.Controllers
     public class SharingController : CloudControllerDefault
     {
         public SharingController(ICloudService service, UserManager<CloudUser> userManager, SignInManager<CloudUser> signInManager, IWebHostEnvironment env, ICloudNotificationService notifier) : base(service, userManager, signInManager, env, notifier) { }
-        
+
         public async Task<IActionResult> Details(string? folderName = null)
         {
             SharedPathData pathdata = await GetSessionSharedPathData();
-            
+
             string currentPath = pathdata.SetFolder(folderName);
-            
+
             await SetSessionSharedPathData(pathdata);
-            
-            if(pathdata.CurrentPath == Constants.PublicRootName)
+
+            if (pathdata.CurrentPath == Constants.PublicRootName)
             {
                 return View(new SharingDetailsViewModel(new List<CloudFile>(),
                                                         await service.GetSharingUsersSharingDirectories(currentPath),
                                                         pathdata.CurrentPathShow,
                                                         false));
             }
-            
+
             try
             {
-                return View(new SharingDetailsViewModel(await service.GetCurrentDepthSharingFiles(currentPath,User),
-                                                        await service.GetCurrentDepthSharingDirectories(currentPath,User),
+                return View(new SharingDetailsViewModel(await service.GetCurrentDepthSharingFiles(currentPath, User),
+                                                        await service.GetCurrentDepthSharingDirectories(currentPath, User),
                                                         pathdata.CurrentPathShow,
-                                                        await service.OwnerOfPathIsActualUser(currentPath,User)));
+                                                        await service.OwnerOfPathIsActualUser(currentPath, User)));
             }
             catch (Exception ex)
             {
@@ -51,23 +51,55 @@ namespace NCloud.Controllers
         public async Task<IActionResult> Back()
         {
             SharedPathData pathdata = await GetSessionSharedPathData();
-            
+
             pathdata.RemoveFolderFromPrevDirs();
-            
+
             await SetSessionSharedPathData(pathdata);
-            
+
             return RedirectToAction("Details", "Sharing");
+        }
+
+        public async Task<IActionResult> DownloadFolder(string? folderName)
+        {
+            if (folderName is null || folderName == String.Empty)
+            {
+                return View("Error");
+            }
+
+            return await Download(new List<string>()
+            {
+                Constants.SelectedFolderStarterSymbol + folderName
+            },
+            (await GetSessionSharedPathData()).CurrentPath,
+            RedirectToAction("Details", "Drive"),
+            connectedToApp: true);
+        }
+
+        public async Task<IActionResult> DownloadFile(string? fileName)
+        {
+            if (fileName is null || fileName == String.Empty)
+            {
+                return View("Error");
+            }
+
+            return await Download(new List<string>()
+            {
+                Constants.SelectedFileStarterSymbol + fileName
+            },
+            (await GetSessionSharedPathData()).CurrentPath,
+            RedirectToAction("Details", "Drive"),
+            connectedToApp:true);
         }
 
         public async Task<IActionResult> DownloadItems()
         {
             SharedPathData pathData = await GetSessionSharedPathData();
-            
+
             try
             {
                 var files = await service.GetCurrentDepthCloudFiles(pathData.CurrentPath, User);
                 var folders = await service.GetCurrentDepthCloudDirectories(pathData.CurrentPath, User);
-               
+
                 return View(new DriveDownloadViewModel
                 {
                     Folders = folders,
@@ -78,7 +110,7 @@ namespace NCloud.Controllers
             catch (Exception ex)
             {
                 AddNewNotification(new Error(ex.Message));
-            
+
                 return View(new DriveDownloadViewModel
                 {
                     Folders = new List<CloudFolder>(),
@@ -92,7 +124,7 @@ namespace NCloud.Controllers
         [ValidateAntiForgeryToken, ActionName("DownloadItems")]
         public async Task<IActionResult> DownloadItemsFromForm([Bind("ItemsForDownload")] DriveDownloadViewModel vm)
         {
-            return await Download(vm.ItemsForDownload ?? new(), (await GetSessionSharedPathData()).CurrentPath);
+            return await Download(vm.ItemsForDownload ?? new(), (await GetSessionSharedPathData()).CurrentPath, RedirectToAction("Details", "Sharing"), connectedToApp: true);
         }
     }
 }

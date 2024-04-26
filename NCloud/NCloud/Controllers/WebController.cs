@@ -9,6 +9,7 @@ using NCloud.Services;
 using NCloud.Users;
 using NCloud.ViewModels;
 using System.Drawing.Drawing2D;
+using System.IO;
 
 namespace NCloud.Controllers
 {
@@ -58,7 +59,9 @@ namespace NCloud.Controllers
             {
                 Constants.SelectedFolderStarterSymbol + folderName
             },
-            path);
+            path,
+            RedirectToAction("Details", "Web", new { path = path }),
+            connectedToWeb: true);
         }
 
         public async Task<IActionResult> DownloadFile(string? path, string? fileName)
@@ -72,7 +75,9 @@ namespace NCloud.Controllers
             {
                 Constants.SelectedFileStarterSymbol + fileName
             },
-            path);
+            path,
+            RedirectToAction("Details", "Web", new { path = path }),
+            connectedToWeb: true);
         }
 
         public async Task<IActionResult> DownloadItems(string path)
@@ -108,7 +113,7 @@ namespace NCloud.Controllers
         [ActionName("DownloadItems")]
         public async Task<IActionResult> DownloadItemsFromForm(WebDownloadViewModel vm)
         {
-            return await Download(vm.ItemsForDownload ?? new(), vm.Path);
+            return await Download(vm.ItemsForDownload ?? new(), vm.Path, RedirectToAction("Details", "Web", new { path = vm.Path }), connectedToWeb: true);
         }
 
 
