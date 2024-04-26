@@ -93,7 +93,7 @@ namespace NCloud.Controllers
             catch (Exception ex)
             {
                 AddNewNotification(new Error(ex.Message));
-                return View(new WebSingleDownloadViewModel
+                return View(new WebDownloadViewModel
                 {
                     Folders = new List<CloudFolder>(),
                     Files = new List<CloudFile>(),
