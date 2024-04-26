@@ -8,7 +8,14 @@ namespace NCloud.Security
         {
             bool everyFileDeleted = true;
 
-            foreach (string file in Directory.EnumerateFiles(Path.Combine(env.WebRootPath,Constants.TempFolderName)))
+            string tempfolder = Path.Combine(env.WebRootPath, Constants.TempFolderName);
+
+            if (!Directory.Exists(tempfolder))
+            {
+                Directory.CreateDirectory(tempfolder);
+            }
+
+            foreach (string file in Directory.EnumerateFiles(tempfolder))
             {
                 FileInfo fi = new FileInfo(file);
 
@@ -23,6 +30,11 @@ namespace NCloud.Security
                         everyFileDeleted = everyFileDeleted && false;
                     }
                 }
+            }
+
+            if (!Directory.Exists(tempfolder))
+            {
+                Directory.CreateDirectory(tempfolder);
             }
 
             return everyFileDeleted;
