@@ -314,8 +314,8 @@ namespace NCloud.Controllers
             return await Download(new List<string>()
             {
                 Constants.SelectedFolderStarterSymbol + folderName
-            }
-            );
+            },
+            (await GetSessionCloudPathData()).CurrentPath);
         }
 
         public async Task<IActionResult> DownloadFile(string? fileName)
@@ -328,7 +328,8 @@ namespace NCloud.Controllers
             return await Download(new List<string>()
             {
                 Constants.SelectedFileStarterSymbol + fileName
-            });
+            },
+            (await GetSessionCloudPathData()).CurrentPath);
         }
 
         public async Task<IActionResult> DownloadItems()
@@ -363,7 +364,7 @@ namespace NCloud.Controllers
         [ValidateAntiForgeryToken, ActionName("DownloadItems")]
         public async Task<IActionResult> DownloadItemsFromForm([Bind("ItemsForDownload")] DriveDownloadViewModel vm)
         {
-            return await Download(vm.ItemsForDownload ?? new());
+            return await Download(vm.ItemsForDownload ?? new(), (await GetSessionCloudPathData()).CurrentPath);
         }
 
         public async Task<JsonResult> ConnectDirectoryToApp([FromBody] string itemName)

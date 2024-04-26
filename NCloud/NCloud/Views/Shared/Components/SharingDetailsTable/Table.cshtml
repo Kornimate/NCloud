@@ -73,14 +73,15 @@
                                         </tr>
                                     </table>
                                 </fieldset>
-                                @if (Model.Owner)
-                                {
-                                    <div class="d-flex justify-content-end">
-                                        <div class="btn-group me-2 my-3" role="group">
+                                <div class="d-flex justify-content-end">
+                                    <div class="btn-group me-2 my-3" role="group">
+                                        <a asp-controller="Sharing" class="btn btn-primary" asp-action="DownloadFolder" asp-route-folderName="@item.Info.Name"><img src="~/utilities/cloud-download.svg" width=" 20" height="20" class="rounded align-middle" download /></a>
+                                        @if (Model.Owner)
+                                        {
                                             <a class="btn btn-primary" asp-controller="Sharing" asp-action="DisconnectDirectoryFromApp" asp-route-id="@item.Info.Name"><img src="~/utilities/noshare.svg" width=" 20" height="20" class="rounded-circle align-middle" /></a>
-                                        </div>
+                                        }
                                     </div>
-                                }
+                                </div>
                             </details>
                         }
                         else
@@ -170,14 +171,15 @@
                                     </tr>
                                 </table>
                             </fieldset>
-                                @if (Model.Owner)
-                                {
-                                    <div class="d-flex justify-content-end">
-                                        <div class="btn-group me-2 my-3" role="group">
+                                <div class="d-flex justify-content-end">
+                                    <div class="btn-group me-2 my-3" role="group">
+                                        <a asp-controller="Sharing" class="btn btn-secondary" asp-action="DownloadFile" asp-route-fileName="@item.Info.Name"><img src="~/utilities/cloud-download.svg" width=" 20" height="20" class="rounded align-middle" download /></a>
+                                        @if (Model.Owner)
+                                        {
                                             <a class="btn btn-primary" asp-controller="Sharing" asp-action="DisconnectDirectoryFromApp" asp-route-id="@item.Info.Name"><img src="~/utilities/noshare.svg" width=" 20" height="20" class="rounded-circle align-middle" /></a>
-                                        </div>
+                                        }
                                     </div>
-                                }
+                                </div>
                             </details>
                         }
                         else

@@ -218,17 +218,15 @@ namespace NCloud.Controllers
             }
         }
 
-        public async Task<IActionResult> Download(List<string> itemsForDownload, string? path = null)
+        public async Task<IActionResult> Download(List<string> itemsForDownload, string path)
         {
-            string currentPath = path ?? (await GetSessionCloudPathData()).CurrentPath;
-
             try
             {
                 if (itemsForDownload is not null && itemsForDownload.Count != 0)
                 {
                     if (itemsForDownload.Count > 1 || itemsForDownload[0].StartsWith(Constants.SelectedFolderStarterSymbol))
                     {
-                        string? tempFile = await CreateZipFile(itemsForDownload, currentPath, GetTempFileNameAndPath());
+                        string? tempFile = await CreateZipFile(itemsForDownload, path, GetTempFileNameAndPath());
 
                         try
                         {
@@ -254,7 +252,7 @@ namespace NCloud.Controllers
 
                                 try
                                 {
-                                    FileStream stream = new FileStream(Path.Combine(service.ServerPath(currentPath), name), FileMode.Open, FileAccess.Read, FileShare.Read);
+                                    FileStream stream = new FileStream(Path.Combine(service.ServerPath(path), name), FileMode.Open, FileAccess.Read, FileShare.Read);
 
                                     return File(stream, FormatManager.GetMimeType(name), name);
                                 }

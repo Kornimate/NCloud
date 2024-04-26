@@ -13,7 +13,7 @@ namespace NCloud.Models
             QRCode code = new QRCode(info);
             Bitmap img = code.GetGraphic(30);
 
-            return "data:image/png;base64, " + Convert.ToBase64String((byte[])(new ImageConverter().ConvertTo(img, typeof(byte[]))));
+            return "data:image/png;base64, " + Convert.ToBase64String((byte[])(new ImageConverter().ConvertTo(img, typeof(byte[])))!);
         }
     }
 }
