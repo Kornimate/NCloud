@@ -626,7 +626,7 @@ namespace NCloud.Services
                         sharedFile.SharedPathFromRoot = sharingPath;
                     }
 
-                    if (sharedFile.ConnectedToWeb != false && sharedFile.ConnectedToApp != false)
+                    if (sharedFile.ConnectedToWeb == false && sharedFile.ConnectedToApp == false)
                     {
                         context.SharedFiles.Remove(sharedFile);
                     }

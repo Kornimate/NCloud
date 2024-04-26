@@ -4,6 +4,10 @@
     static DisConnectedLogo = "/utilities/disconnected.svg";
 }
 
+$(function () {
+    $('[data-toggle="tooltip"]').tooltip();
+});
+
 async function connectDirectoryToWeb(url, folder, id) {
 
     document.getElementById(`${id}_logo_2`).classList.add("hidden");
