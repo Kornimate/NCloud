@@ -190,7 +190,7 @@ namespace NCloud.Controllers
             }
             catch (Exception)
             {
-                AddNewNotification(new Error("Failed to remove Folder!"));
+                AddNewNotification(new Error("Failed to remove File!"));
             }
 
             return RedirectToAction("Details", "Drive");

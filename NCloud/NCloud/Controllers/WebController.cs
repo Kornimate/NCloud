@@ -121,19 +121,20 @@ namespace NCloud.Controllers
         {
             path = HashManager.DecryptString(path);
 
+            string fileName = Path.GetFileName(path);
 
+            path = path.Substring(0, path.LastIndexOf(Path.DirectorySeparatorChar));
 
             return await Task.FromResult<IActionResult>(View("DownloadPage", new WebSingleDownloadViewModel()
             {
-                Path = ""
+                Path = path,
+                FileName = fileName
             }));
         }
 
-        public async Task<IActionResult> Download(string path)
+        public async Task<IActionResult> DownloadSingleItem(string path, string fileName)
         {
-            path = HashManager.DecryptString(path);
-
-            return await Task.FromResult<IActionResult>(Content(path));
+            return await Download(new List<string>() { Constants.SelectedFileStarterSymbol + fileName }, path, RedirectToAction("DownloadPage", new { path = HashManager.EncryptString(Path.Combine(path, fileName)) }), connectedToWeb: true);
         }
     }
 }

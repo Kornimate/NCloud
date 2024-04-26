@@ -70,7 +70,7 @@ namespace NCloud.Controllers
             {
                 Constants.SelectedFolderStarterSymbol + folderName
             },
-            service.ChangePathStructure((await GetSessionSharedPathData()).CurrentPath),
+            await service.ChangePathStructure((await GetSessionSharedPathData()).CurrentPath),
             RedirectToAction("Details", "Drive"),
             connectedToApp: true);
         }
@@ -86,7 +86,7 @@ namespace NCloud.Controllers
             {
                 Constants.SelectedFileStarterSymbol + fileName
             },
-            (await GetSessionSharedPathData()).CurrentPath,
+            await service.ChangePathStructure((await GetSessionSharedPathData()).CurrentPath),
             RedirectToAction("Details", "Drive"),
             connectedToApp:true);
         }
@@ -124,7 +124,7 @@ namespace NCloud.Controllers
         [ValidateAntiForgeryToken, ActionName("DownloadItems")]
         public async Task<IActionResult> DownloadItemsFromForm([Bind("ItemsForDownload")] DriveDownloadViewModel vm)
         {
-            return await Download(vm.ItemsForDownload ?? new(), (await GetSessionSharedPathData()).CurrentPath, RedirectToAction("Details", "Sharing"), connectedToApp: true);
+            return await Download(vm.ItemsForDownload ?? new(), await service.ChangePathStructure((await GetSessionSharedPathData()).CurrentPath), RedirectToAction("Details", "Sharing"), connectedToApp: true);
         }
     }
 }

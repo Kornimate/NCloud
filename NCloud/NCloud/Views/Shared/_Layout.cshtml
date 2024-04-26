@@ -4,7 +4,7 @@
     
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - NCloud</title>
+    <title>@ViewData["Title"] - @Constants.AppName</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/NCloud.styles.css" asp-append-version="true" />
@@ -28,10 +28,12 @@
     <div class="container">
         <main role="main" class="pt-3">
             @RenderBody()
+
+            @await Component.InvokeAsync("CloudNotification")
+
+            @await Component.InvokeAsync("CloudNotificationSingle")
         </main>
     </div>
-    
-    @await Component.InvokeAsync("CloudNotification")
     
     @await RenderSectionAsync("Scripts", required: false)
 

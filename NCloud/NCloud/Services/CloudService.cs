@@ -136,7 +136,7 @@ namespace NCloud.Services
 
                     CloudUser user = await userManager.GetUserAsync(userPrincipal);
 
-                    Pair<string, string> parentPathAndName = GetParentPathAndName(ChangeOwnerIdentification(ChangeRootName(currentPath), user.UserName));
+                    Pair<string, string> parentPathAndName = GetParentPathAndName(currentPath);
 
                     Pair<bool, bool> connections = await FolderIsSharedInAppInWeb(parentPathAndName.First, parentPathAndName.Second, user);
 
@@ -190,7 +190,7 @@ namespace NCloud.Services
 
                 CloudUser user = await userManager.GetUserAsync(userPrincipal);
 
-                Pair<string, string> parentPathAndName = GetParentPathAndName(ChangeOwnerIdentification(ChangeRootName(currentPath), user.UserName));
+                Pair<string, string> parentPathAndName = GetParentPathAndName(currentPath);
 
                 Pair<bool, bool> connections = await FolderIsSharedInAppInWeb(parentPathAndName.First, parentPathAndName.Second, user);
 
@@ -209,9 +209,9 @@ namespace NCloud.Services
             return retNum;
         }
 
-        private async Task<Pair<bool, bool>> FolderIsSharedInAppInWeb(string sharingPath, string directoryName, CloudUser user)
+        private async Task<Pair<bool, bool>> FolderIsSharedInAppInWeb(string cloudPath, string directoryName, CloudUser user)
         {
-            SharedFolder? sharedFolder = await context.SharedFolders.FirstOrDefaultAsync(x => x.SharedPathFromRoot == sharingPath && x.Name == directoryName && x.Owner == user);
+            SharedFolder? sharedFolder = await context.SharedFolders.FirstOrDefaultAsync(x => x.CloudPathFromRoot == cloudPath && x.Name == directoryName && x.Owner == user);
 
             if (sharedFolder is null)
             {
@@ -415,7 +415,7 @@ namespace NCloud.Services
         {
             try
             {
-                SharedFolder? sharedFolder = await context.SharedFolders.FirstOrDefaultAsync(x => x.SharedPathFromRoot == sharingPath && x.Name == directoryName && x.Owner == user);
+                SharedFolder? sharedFolder = await context.SharedFolders.FirstOrDefaultAsync(x => x.CloudPathFromRoot == cloudPath && x.Name == directoryName && x.Owner == user);
 
                 if (sharedFolder is null)
                 {
@@ -534,7 +534,7 @@ namespace NCloud.Services
             {
                 CloudUser user = await userManager.GetUserAsync(userPrincipal);
 
-                Pair<string, string> parentPathAndName = GetParentPathAndName(ChangeOwnerIdentification(ChangeRootName(currentPath), user.UserName));
+                Pair<string, string> parentPathAndName = GetParentPathAndName(currentPath);
 
                 Pair<bool, bool> connections = await FolderIsSharedInAppInWeb(parentPathAndName.First, parentPathAndName.Second, user);
 
@@ -587,7 +587,7 @@ namespace NCloud.Services
         {
             try
             {
-                SharedFile? sharedFile = await context.SharedFiles.FirstOrDefaultAsync(x => x.SharedPathFromRoot == sharingPath && x.Name == fileName && x.Owner == user);
+                SharedFile? sharedFile = await context.SharedFiles.FirstOrDefaultAsync(x => x.CloudPathFromRoot == cloudPath && x.Name == fileName && x.Owner == user);
 
                 if (sharedFile is null)
                 {
@@ -652,7 +652,7 @@ namespace NCloud.Services
             {
                 CloudUser user = await userManager.GetUserAsync(userPrincipal);
 
-                Pair<string, string> parentPathAndName = GetParentPathAndName(ChangeOwnerIdentification(ChangeRootName(currentPath), user.UserName));
+                Pair<string, string> parentPathAndName = GetParentPathAndName(currentPath);
 
                 Pair<bool, bool> connections = await FolderIsSharedInAppInWeb(parentPathAndName.First, parentPathAndName.Second, user);
 
