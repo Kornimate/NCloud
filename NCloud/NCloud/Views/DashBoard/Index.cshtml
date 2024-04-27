@@ -2,8 +2,6 @@
 
 @{
     ViewData["Title"] = "DashBoard";
-
-    int counter = 0;
 }
 <div>
     <h1>Available Space</h1>
@@ -22,15 +20,16 @@
     <div class="list-group">
         @foreach (var folderUrl in Model.SharedFolderUrls)
         {
-            <ul class="list-group list-group-horizontal mt-1">
+            <ul class="list-group list-group-horizontal mt-1 text-center fw-bold">
                 <li class="list-group-item list-group-item-action text-dark">@folderUrl.Replace(System.IO.Path.DirectorySeparatorChar, Constants.PathSeparator).Slice(Constants.PrivateRootName.Length, Constants.PrivateRootName.Length + Constants.GuidLength + 1)</li>
             </ul>
 
             string? url = Url.Action(Model.WebControllerAndActionForDetails.Second, Model.WebControllerAndActionForDetails.First, new { path = HashManager.EncryptString(folderUrl) }, Context.Request.Scheme);
 
             <div class="list-group list-group-horizontal mb-1">
-                <button type="button" class="btn btn-outline-secondary" onclick="copyToClipBoard(@(++counter))"><img src="/utilities/link.svg" width=" 20" height="20" class="item rounded align-center"></button>
-                <a href="@url" id="@counter" class="list-group-item list-group-item-action text-primary" target="_blank">Link to shared directory</a>
+                <button type="button" class="btn btn-secondary" onclick="copyToClipBoard('@(@url)')"><img src="/utilities/link.svg" width=" 20" height="20" class="item rounded align-center"></button>
+                <a href="@url" class="list-group-item list-group-item-action text-primary text-center" target="_blank">Link to shared directory</a>
+                <button type="button" class="btn btn-danger " onclick=""><img src="/utilities/nopublic.svg" width=" 20" height="20" class="item rounded align-center"></button>
             </div>
         }
     </div>
@@ -46,14 +45,26 @@
         string? url = Url.Action(Model.WebControllerAndActionForDownload.Second, Model.WebControllerAndActionForDownload.First, new { path = HashManager.EncryptString(fileUrl) }, Context.Request.Scheme);
 
         <div class="list-group list-group-horizontal mb-1">
-            <button type="button" class="btn btn-outline-secondary" onclick="copyToClipBoard(@(++counter))"><img src="/utilities/link.svg" width=" 20" height="20" class="item rounded align-center"></button>
-            <a href="@url" id="counter" class="list-group-item list-group-item-action text-primary" target="_blank">Link to shared file</a>
+            <button type="button" class="btn btn-secondary" onclick="copyToClipBoard('@(url)')"><img src="/utilities/link.svg" width=" 20" height="20" class="item rounded align-center"></button>
+            <a href="@url" class="list-group-item list-group-item-action text-primary text-center" target="_blank">Link to shared file</a>
+            <button type="button" class="btn btn-danger " onclick=""><img src="/utilities/nopublic.svg" width=" 20" height="20" class="item rounded align-center"></button>
         </div>
     }
 </div>
 
-<script type="text/javascript">
-    function copyToClipBoard(id) {
-        navigator.clipboard.writeText(document.getElementById(id).innerHTML);
-    }
-</script>
+@section Scripts {
+
+    <script type="text/javascript">
+        function copyToClipBoard(url) {
+
+            try {
+                navigator.clipboard.writeText(url);
+
+                ShowSuccessToast("Success", "Url copied to clipboard");
+            }
+            catch {
+                ShowErrorToast("Error", "Error while copying url to clipboard!");
+            }
+        }
+    </script>
+}

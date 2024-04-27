@@ -294,8 +294,19 @@
     <span class="w-100 d-flex justify-content-center text-muted fst-italic">No items</span>
 }
 
-<script type="text/javascript">
-    function copyToClipBoard(url) {
-        navigator.clipboard.writeText(url);
-    }
-</script>
+@section Scripts {
+
+    <script type="text/javascript">
+        function copyToClipBoard(url) {
+
+            try {
+                navigator.clipboard.writeText(url);
+
+                ShowSuccessToast("Success", "Url copied to clipboard");
+            }
+            catch {
+                ShowErrorToast("Error", "Error while copying url to clipboard!");
+            }
+        }
+    </script>
+}
