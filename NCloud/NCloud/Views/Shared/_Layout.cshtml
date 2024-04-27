@@ -1,26 +1,41 @@
 ﻿<!DOCTYPE html>
 <html lang="en">
 <head>
+    
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - NCloud</title>
+    <title>@ViewData["Title"] - @Constants.AppName</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/NCloud.styles.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/lib/bootstrap-icons/font/bootstrap-icons.css" />
+    <link rel="stylesheet" href="~/lib/bootstrap-icons/font/bootstrap-icons.min.css" />
+
 </head>
-<body class="background-color">
-    <div class="">
-        <main role="main" class="">
-            @RenderBody()
-        </main>
-    </div>
+<body class="bg-light">
+   
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
-    @await Component.InvokeAsync("Notyf")
+    
+    <nav class="navbar background-color">
+        <div class="container-fluid">
+            <a asp-controller="Home" asp-action="Index" class="navbar-brand"><img src="~/utilities/cloud_logo_no_text.png" width="50" height="50" alt="" class="me-2"/>@Constants.AppName</a>
+            <!--Identitiy platform data-->
+        </div>
+    </nav>
+
+    <div class="container">
+        <main role="main" class="pt-3">
+            @RenderBody()
+
+            @await Component.InvokeAsync("CloudNotification")
+
+            @await Component.InvokeAsync("CloudNotificationSingle")
+        </main>
+    </div>
+    
     @await RenderSectionAsync("Scripts", required: false)
+
 </body>
 </html>
-
-<base href="~/" />
-<script src="_framework/blazor.server.js"></script>

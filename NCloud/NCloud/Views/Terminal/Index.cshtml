@@ -1,0 +1,40 @@
+﻿@model TerminalViewModel
+
+<div class="w-100 h-100 d-flex justify-content-center">
+    <div class="terminal space shadow w-75 terminalstyle">
+        <div class="top">
+            <div class="btns">
+                <span class="circle red"></span>
+                <span class="circle yellow"></span>
+                <span class="circle green"></span>
+            </div>
+            <div class="title">CloudShell</div>
+        </div>
+        <div class="body h-100" id="terminal"></div>
+        @Html.AntiForgeryToken()
+    </div>
+</div>
+
+<link rel="stylesheet" href="~/lib/jquery.terminal/css/jquery.terminal.min.css" />
+<script src="~/lib/jquery.terminal/js/jquery.terminal.min.js"></script>
+<script src="~/js/terminal.js"></script>
+
+<script>
+    jQuery(function ($, undefined) {
+        $('#terminal').terminal(async function (command) {
+            if (command !== '') {
+                if (command.toLowerCase() === 'exit') {
+                    window.open('@Url.Action("Details","Drive")','_self');
+                    return;
+                }
+                terminal = new TerminalCommand;
+                var result = await terminal.eval(command.toLowerCase(), "@Url.Action("Evaluate","Terminal")", document.querySelector('input[name="__RequestVerificationToken"]').value)
+                this.echo(result)
+            }
+        }, {
+            greetings: 'Hello User',
+            prompt: '@Model.CurrentDirectory> ',
+            checkArity: false
+        });
+    });
+</script>

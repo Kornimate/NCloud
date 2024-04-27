@@ -7,22 +7,14 @@ using NCloud.ViewModels;
 using NCloud.Controllers;
 using System.IO;
 using DNTCaptcha.Core;
+using NCloud.Services;
 
-namespace ELTE.TodoList.Web.Controllers
+namespace NCloud.Controllers
 {
     [Authorize]
-    public class AccountController : Controller
+    public class AccountController : CloudControllerDefault
     {
-        private readonly UserManager<CloudUser> userManager;
-        private readonly SignInManager<CloudUser> signInManager;
-        private readonly IWebHostEnvironment env;
-
-        public AccountController(UserManager<CloudUser> userManager, SignInManager<CloudUser> signInManager, IWebHostEnvironment env)
-        {
-            this.userManager = userManager;
-            this.signInManager = signInManager;
-            this.env = env;
-        }
+        public AccountController(ICloudService service, UserManager<CloudUser> userManager, SignInManager<CloudUser> signInManager, IWebHostEnvironment env, ICloudNotificationService notifier) : base(service, userManager, signInManager, env, notifier) { }
         public IActionResult Back(string returnUrl)
         {
             return Redirect(returnUrl);
@@ -64,9 +56,9 @@ namespace ELTE.TodoList.Web.Controllers
                 {
                     if (returnUrl is null)
                     {
-                        return RedirectToAction("Index", "Drive");
+                        return RedirectToAction("Index", "DashBoard");
                     }
-                    return RedirectToLocal(returnUrl);
+                    return await RedirectToLocal(returnUrl);
                 }
 
                 ModelState.AddModelError("", "Failed to Login!");
@@ -91,70 +83,48 @@ namespace ELTE.TodoList.Web.Controllers
             ViewBag.ReturnUrl = returnUrl;
             if (ModelState.IsValid)
             {
-                var existingUserName = await userManager.FindByNameAsync(vm.UserName);
-                if (existingUserName != null)
+                try
                 {
-                    ModelState.AddModelError("UserName", "This Username is already in use!");
-                    return View(vm);
-                }
-                var existingEmail = await userManager.FindByNameAsync(vm.Email);
-                if (existingEmail != null)
-                {
-                    ModelState.AddModelError("Email", "This Username is already in use!");
-                    return View(vm);
-                }
-                var user = new CloudUser { UserName = vm.UserName, FullName = vm.FullName,Email=vm.Email };
-                var result = await userManager.CreateAsync(user, vm.Password);
+                    var existingUserName = await userManager.FindByNameAsync(vm.UserName);
+                    if (existingUserName != null)
+                    {
+                        ModelState.AddModelError("UserName", "This Username is already in use!");
+                        return View(vm);
+                    }
+                    var existingEmail = await userManager.FindByNameAsync(vm.Email);
+                    if (existingEmail != null)
+                    {
+                        ModelState.AddModelError("Email", "This Username is already in use!");
+                        return View(vm);
+                   
+                    }
+                    var user = new CloudUser { UserName = vm.UserName, FullName = vm.FullName, Email = vm.Email };
+                    var result = await userManager.CreateAsync(user, vm.Password);
 
-                if (result.Succeeded)
-                {
-                    CloudUser newUser = await userManager.FindByNameAsync(vm.UserName);
-                    CreateBaseDirectory(newUser);
-                    await signInManager.SignInAsync(newUser,false);
-                    return RedirectToAction(nameof(Index), "Drive");
-                }
+                    if (result.Succeeded)
+                    {
+                        CloudUser newUser = await userManager.FindByNameAsync(vm.UserName);
+                        
+                        await service.CreateBaseDirectory(newUser);
+                        
+                        await signInManager.SignInAsync(newUser, false);
+                        
+                        return RedirectToAction(nameof(Index), "DashBoard");
+                    }
 
-                ModelState.AddModelError("", "Failed to Register!");
+                    ModelState.AddModelError("", "Failed to Register!");
+                }
+                catch
+                {
+                    ModelState.AddModelError("", "Failed to Register!");
+                }
             }
-
             return View(vm);
         }
-
-        [NonAction]
-        private void CreateBaseDirectory(CloudUser cloudUser)
-        {
-            string publicFolder = Path.Combine(env.WebRootPath, "CloudData", "Public");
-            if (!Directory.Exists(publicFolder))
-            {
-                Directory.CreateDirectory(publicFolder);
-            }
-            string userFolderPath = Path.Combine(env.WebRootPath, "CloudData", "UserData",cloudUser.Id);
-            if (!Directory.Exists(userFolderPath))
-            {
-                Directory.CreateDirectory(userFolderPath);
-            }
-            Directory.CreateDirectory(Path.Combine(userFolderPath,"Documents"));
-            Directory.CreateDirectory(Path.Combine(userFolderPath,"Pictures"));
-            Directory.CreateDirectory(Path.Combine(userFolderPath,"Videos"));
-            Directory.CreateDirectory(Path.Combine(userFolderPath,"Music"));
-        }
-
         public async Task<IActionResult> Logout()
         {
             await signInManager.SignOutAsync();
             return RedirectToAction("Index", "Home");
-        }
-
-        private IActionResult RedirectToLocal(string? returnUrl)
-        {
-            if (Url.IsLocalUrl(returnUrl))
-            {
-                return Redirect(returnUrl);
-            }
-            else
-            {
-                return RedirectToAction(nameof(HomeController.Index), "Home");
-            }
         }
     }
 }

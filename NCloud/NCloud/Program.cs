@@ -1,10 +1,14 @@
-using AspNetCoreHero.ToastNotification;
 using DNTCaptcha.Core;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using NCloud.ConstantData;
 using NCloud.Models;
+using NCloud.Security;
 using NCloud.Services;
 using NCloud.Users;
+using NCloud.Users.Roles;
+using System.Threading;
 
 namespace NCloud
 {
@@ -16,12 +20,13 @@ namespace NCloud
 
             builder.Services.AddDbContext<CloudDbContext>(options =>
             {
-                IConfigurationRoot configuration = builder.Configuration;
-                options.UseSqlServer(configuration.GetConnectionString("SqlServerConnection"));
+                options.UseSqlite(builder.Configuration.GetConnectionString("SQLiteConnection"));
                 options.UseLazyLoadingProxies();
             });
 
-            builder.Services.AddIdentity<CloudUser, IdentityRole>(options =>
+            builder.Services.AddDatabaseDeveloperPageExceptionFilter();
+
+            builder.Services.AddIdentity<CloudUser, CloudRole>(options =>
             {
                 options.Password.RequireDigit = true;
                 options.Password.RequiredLength = 8;
@@ -36,9 +41,9 @@ namespace NCloud
 
             builder.Services.AddTransient<ICloudTerminalService, CloudTerminalService>();
 
-            builder.Services.AddRazorPages();
+            builder.Services.AddTransient<ICloudShareService, CloudShareService>();
 
-            builder.Services.AddServerSideBlazor();
+            builder.Services.AddTransient<ICloudNotificationService, CloudNotificationService>();
           
             builder.Services.AddControllersWithViews();
 
@@ -46,13 +51,7 @@ namespace NCloud
 
             builder.Services.AddHttpContextAccessor();
 
-            builder.Services.AddNotyf(config =>
-            {
-                config.DurationInSeconds = 5;
-                config.IsDismissable = true;
-                config.Position = NotyfPosition.BottomRight;
-                config.HasRippleEffect = true;
-            });
+            builder.Services.AddAntiforgery(x => x.HeaderName = "X-CSRF-TOKEN");
 
             builder.Services.AddSession(options =>
             {
@@ -90,19 +89,22 @@ namespace NCloud
 
             app.UseAuthorization();
 
-            app.UseBlazorFrameworkFiles();
-
             app.MapControllerRoute(
                 name: "default",
-                pattern: "{controller=Drive}/{action=Index}/{id?}");
-
-            app.MapBlazorHub();
+                pattern: "{controller=Dashboard}/{action=Index}/{id?}");
 
             using (var serviceScope = app.Services.CreateScope())
             using (var context = serviceScope.ServiceProvider.GetRequiredService<CloudDbContext>())
             {
                 DbInitializer.Initialize(serviceScope.ServiceProvider, app.Environment);
             }
+
+            Timer timer = new Timer(_ => new Thread(() =>
+            {
+                Thread.CurrentThread.IsBackground = true;
+                CloudDirectoryManager.RemoveOutdatedItems(app.Environment);
+
+            }).Start(), null, TimeSpan.FromSeconds(0), Constants.TempFileDeleteTimeSpan);
 
             app.Run();
         }

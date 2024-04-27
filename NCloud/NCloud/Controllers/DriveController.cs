@@ -1,5 +1,4 @@
-﻿using AspNetCoreHero.ToastNotification.Abstractions;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -10,108 +9,97 @@ using NCloud.ViewModels;
 using System.Drawing.Drawing2D;
 using System.Text.Json;
 using System.IO;
-using PathData = NCloud.Models.PathData;
+using CloudPathData = NCloud.Models.CloudPathData;
 using System.IO.Compression;
+using Castle.Core;
+using static NuGet.Packaging.PackagingConstants;
+using NCloud.ConstantData;
+using NCloud.DTOs;
 
 namespace NCloud.Controllers
 {
-    public class DriveController : Controller
+    public class DriveController : CloudControllerDefault
     {
-        private readonly ICloudService service;
-        private readonly IWebHostEnvironment env;
-        private readonly INotyfService notifier;
-        private readonly UserManager<CloudUser> userManager;
-        private readonly SignInManager<CloudUser> signInManager;
-        private const string FOLDERSEPARATOR = "//";
-        private const string COOKIENAME = "pathData";
-        private const string ROOTNAME = "@CLOUDROOT";
-        private const string APPNAME = "NCloudDrive";
-        private readonly List<string> ALLOWEDFILETYPES = new List<string>();
+        public DriveController(ICloudService service, UserManager<CloudUser> userManager, SignInManager<CloudUser> signInManager, IWebHostEnvironment env, ICloudNotificationService notifier) : base(service, userManager, signInManager, env, notifier) { }
 
-        public DriveController(ICloudService service, UserManager<CloudUser> userManager, SignInManager<CloudUser> signInManager, IWebHostEnvironment env, INotyfService notifier)
+        // GET: DriveController/Details/Documents
+        public async Task<IActionResult> Details(string? folderName = null)
         {
-            this.service = service;
-            this.userManager = userManager;
-            this.signInManager = signInManager;
-            this.env = env;
-            this.notifier = notifier;
-        }
+            CloudPathData pathdata = await GetSessionCloudPathData();
 
-        // GET: DriveController
-        public ActionResult Index()
-        {
-            Task.Run(async () => await signInManager.PasswordSignInAsync("Admin", "Admin_1234", false, false)).Wait();
-            var result = service.GetCurrentUserIndexData();
-            return View(new DriveIndexViewModel(result.Item1, result.Item2));
-        }
+            string currentPath = String.Empty;
 
-        // GET: DriveController/Details/5
-        public async Task<ActionResult> Details(string? folderName = null)
-        {
-            PathData pathdata = null!;
-            if (folderName is null)
+            if (service.DirectoryExists(pathdata.TrySetFolder(folderName)))
             {
-                if (HttpContext.Session.Keys.Contains(COOKIENAME))
-                {
-                    pathdata = JsonSerializer.Deserialize<PathData>(HttpContext.Session.GetString(COOKIENAME)!)!;
-                }
-                else
-                {
-                    pathdata = new PathData();
-                    pathdata.SetDefaultPathData((await userManager.GetUserAsync(User)).Id.ToString());
-                }
+                currentPath = pathdata.SetFolder(folderName);
             }
             else
             {
-                if (HttpContext.Session.Keys.Contains(COOKIENAME))
-                {
-                    pathdata = JsonSerializer.Deserialize<PathData>(HttpContext.Session.GetString(COOKIENAME)!)!;
-                }
-                else
-                {
-                    return BadRequest();
-                }
+                currentPath = pathdata.CurrentPath;
             }
-            string currentPath = pathdata.SetFolder(folderName);
-            HttpContext.Session.SetString(COOKIENAME, JsonSerializer.Serialize<PathData>(pathdata));
-            ViewBag.CurrentPath = pathdata.CurrentPathShow;
-            return View(new DriveDetailsViewModel(service.GetCurrentDeptFiles(currentPath),
-                                                service.GetCurrentDeptFolders(currentPath),
-                                                                              currentPath));
+
+            await SetSessionCloudPathData(pathdata);
+
+            try
+            {
+                return View(new DriveDetailsViewModel(await service.GetCurrentDepthCloudFiles(currentPath),
+                                                      await service.GetCurrentDepthCloudDirectories(currentPath),
+                                                      pathdata.CurrentPathShow,
+                                                      pathdata.CurrentPath,
+                                                      Constants.GetWebControllerAndActionForDetails(),
+                                                      Constants.GetWebControllerAndActionForDownload()));
+            }
+            catch (Exception ex)
+            {
+                AddNewNotification(new Error(ex.Message));
+                return View(new DriveDetailsViewModel(new List<CloudFile>(),
+                                                      new List<CloudFolder>(),
+                                                      pathdata.CurrentPathShow,
+                                                      String.Empty,
+                                                      null!,
+                                                      null!));
+            }
         }
 
-        public IActionResult Back()
+        public async Task<IActionResult> Back()
         {
-            PathData pathdata = JsonSerializer.Deserialize<PathData>(HttpContext.Session.GetString(COOKIENAME)!)!;
+            CloudPathData pathdata = await GetSessionCloudPathData();
+
             if (pathdata.PreviousDirectories.Count > 2)
             {
                 pathdata.RemoveFolderFromPrevDirs();
-                HttpContext.Session.SetString(COOKIENAME, JsonSerializer.Serialize<PathData>(pathdata));
+
+                await SetSessionCloudPathData(pathdata);
             }
+
             return RedirectToAction("Details", "Drive");
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult AddNewFolder(string? folderName)
+        public async Task<IActionResult> AddNewFolder(string? folderName)
         {
             try
             {
+                if (folderName == JSONCONTAINERNAME)
+                {
+                    throw new Exception("Invalid Folder Name!");
+                }
+
                 if (folderName is null || folderName == String.Empty)
                 {
-                    throw new Exception("Folder name must be at least one charachter!");
+                    throw new Exception("Folder name must be at least one character!");
                 }
-                if (!service.CreateDirectory(folderName!, GetSessionPathData().CurrentPath))
-                {
-                    throw new Exception("Unknown Error occured");
-                }
-                notifier.Success("Folder is created!");
+
+                await service.CreateDirectory(folderName!, (await GetSessionCloudPathData()).CurrentPath, User);
+
+                AddNewNotification(new Success("Folder is created!"));
             }
             catch (Exception ex)
             {
-                TempData["FolderError"] = ex.Message;
-                notifier.Error("Failed to create Folder!");
+                AddNewNotification(new Error(ex.Message));
             }
+
             return RedirectToAction("Details");
         }
 
@@ -120,233 +108,391 @@ namespace NCloud.Controllers
         public async Task<IActionResult> AddNewFiles(List<IFormFile>? files = null)
         {
             bool errorPresent = false;
+
             if (files == null || files.Count == 0)
             {
-                notifier.Warning("No Files were uploaded!");
+                AddNewNotification(new Warning("No Files were uploaded!"));
                 return RedirectToAction("Details", "Drive");
             }
-            PathData pathData = GetSessionPathData();
+
+            CloudPathData pathData = await GetSessionCloudPathData();
+
             for (int i = 0; i < files.Count; i++)
             {
                 FileInfo fi = new FileInfo(files[i].FileName);
-                // TODO: check if allowed filetype
+                //TODO: check if allowed filetype
 
             }
+
             for (int i = 0; i < files.Count; i++)
             {
-                int res = await service.CreateFile(files[i], pathData.CurrentPath);
+                int res = await service.CreateFile(files[i], pathData.CurrentPath, User);
+
                 if (res == 0)
                 {
-                    notifier.Warning($"A File has been renamed!");
+                    AddNewNotification(new Warning($"A File has been renamed!"));
                 }
                 else if (res == -1)
                 {
                     errorPresent = true;
-                    notifier.Error($"There was error adding the file {files[i].FileName}!");
+
+                    AddNewNotification(new Error($"There was error adding the file {files[i].FileName}!"));
                 }
             }
+
             if (!errorPresent)
             {
-                notifier.Success($"File{(files.Count > 1 ? "s" : "")} added successfully!");
+                AddNewNotification(new Success($"File{(files.Count > 1 ? "s" : "")} added successfully!"));
             }
+
             return RedirectToAction("Details", "Drive");
         }
 
-        public IActionResult DeleteFolder(string folderName)
+        public async Task<IActionResult> DeleteFolder(string folderName)
         {
             try
             {
                 if (folderName is null || folderName == String.Empty)
                 {
-                    throw new Exception("Folder name must be at least one charachter!");
+                    throw new Exception("Folder name must be at least one character!");
                 }
-                if (!service.RemoveDirectory(folderName!, GetSessionPathData().CurrentPath))
+
+                if (!(await service.RemoveDirectory(folderName!, (await GetSessionCloudPathData()).CurrentPath, User)))
                 {
                     throw new Exception("Folder is System Folder!");
                 }
-                notifier.Success("Folder is removed!");
+
+                AddNewNotification(new Success("Folder is removed!"));
             }
             catch (Exception)
             {
-                notifier.Error("Failed to remove Folder!");
+                AddNewNotification(new Error("Failed to remove Folder!"));
             }
+
             return RedirectToAction("Details", "Drive");
         }
 
-        public IActionResult DeleteFile(string fileName)
+        public async Task<IActionResult> DeleteFile(string fileName)
         {
             try
             {
                 if (fileName is null || fileName == String.Empty)
                 {
-                    throw new Exception("File name must be at least one charachter!");
+                    throw new Exception("File name must be at least one character!");
                 }
-                if (!service.RemoveFile(fileName!, GetSessionPathData().CurrentPath))
+
+                if (!(await service.RemoveFile(fileName!, (await GetSessionCloudPathData()).CurrentPath, User)))
                 {
                     throw new Exception("File is System Folder!");
                 }
-                notifier.Success("File is removed!");
+
+                AddNewNotification(new Success("File is removed!"));
             }
             catch (Exception)
             {
-                notifier.Error("Failed to remove Folder!");
+                AddNewNotification(new Error("Failed to remove File!"));
             }
+
             return RedirectToAction("Details", "Drive");
         }
 
-        public IActionResult DeleteItems()
+        public async Task<IActionResult> DeleteItems()
         {
-            PathData pathData = GetSessionPathData();
-            var files = service.GetCurrentDeptFiles(pathData.CurrentPath);
-            var folders = service.GetCurrentDeptFolders(pathData.CurrentPath);
-            return View(new DriveDeleteViewModel
+            CloudPathData pathData = await GetSessionCloudPathData();
+            try
             {
-                Folders = folders,
-                Files = files,
-                ItemsForDelete = new string[files.Count + folders.Count].ToList()
-            });
+                var files = await service.GetCurrentDepthCloudFiles(pathData.CurrentPath);
+                var folders = await service.GetCurrentDepthCloudDirectories(pathData.CurrentPath);
+
+                return View(new DriveDeleteViewModel
+                {
+                    Folders = folders,
+                    Files = files,
+                    ItemsForDelete = new string[files.Count + folders.Count].ToList()
+                });
+            }
+            catch (Exception ex)
+            {
+                AddNewNotification(new Error(ex.Message));
+
+                return View(new DriveDeleteViewModel
+                {
+                    Folders = new List<CloudFolder>(),
+                    Files = new List<CloudFile>(),
+                    ItemsForDelete = Array.Empty<string>().ToList()
+                });
+            }
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken, ActionName("DeleteItems")]
-        public IActionResult DeleteItemsFromForm([Bind("ItemsForDelete")] DriveDeleteViewModel vm)
+        public async Task<IActionResult> DeleteItemsFromForm([Bind("ItemsForDelete")] DriveDeleteViewModel vm)
         {
             bool noFail = true;
-            PathData pathData = GetSessionPathData();
-            foreach (string itemName in vm.ItemsForDelete!)
+
+            int falseCounter = 0;
+
+            CloudPathData pathData = await GetSessionCloudPathData();
+
+            foreach (string itemName in vm.ItemsForDelete ?? new())
             {
-                if (itemName != "false")
+                if (itemName != Constants.NotSelectedResult)
                 {
-                    if (itemName[0] == '_')
+                    if (itemName[0] == Constants.SelectedFileStarterSymbol)
                     {
+                        string itemForDelete = itemName[1..];
+
                         try
                         {
-                            if (!service.RemoveFile(itemName[1..], pathData.CurrentPath))
+                            if (!(await service.RemoveFile(itemForDelete, pathData.CurrentPath, User)))
                             {
-                                notifier.Error($"Error removing file {itemName}");
+                                AddNewNotification(new Error($"Error removing file {itemForDelete}"));
+
                                 noFail = false;
                             }
                         }
                         catch (Exception ex)
                         {
-                            notifier.Error($"{ex.Message} ({itemName})");
+                            AddNewNotification(new Error($"{ex.Message} ({itemForDelete})"));
+
                             noFail = false;
                         }
                     }
-                    else
+                    else if (itemName[0] == Constants.SelectedFolderStarterSymbol)
                     {
+                        string itemForDelete = itemName[1..];
+
                         try
                         {
-                            if (!service.RemoveDirectory(itemName, pathData.CurrentPath))
+                            if (!(await service.RemoveDirectory(itemForDelete, pathData.CurrentPath, User)))
                             {
-                                notifier.Error($"Error removing folder {itemName}");
+                                AddNewNotification(new Error($"Error removing folder {itemForDelete}"));
+
                                 noFail = false;
                             }
                         }
                         catch (Exception ex)
                         {
-                            notifier.Error($"{ex.Message} ({itemName})");
+                            AddNewNotification(new Error($"{ex.Message} ({itemForDelete})"));
+
                             noFail = false;
                         }
                     }
                 }
+                else
+                {
+                    falseCounter++;
+                }
             }
+
+            if (falseCounter == vm.ItemsForDelete?.Count)
+            {
+                AddNewNotification(new Warning($"No files were chosen for deletion"));
+
+                return RedirectToAction("DeleteItems", "Drive");
+            }
+
             if (noFail)
             {
-                notifier.Success("All Items removed successfully!");
+                AddNewNotification(new Success("All Items removed successfully!"));
             }
             else
             {
-                notifier.Warning("Could not complete all item deletion!");
+                AddNewNotification(new Warning("Could not complete all item deletion!"));
             }
-            return RedirectToAction("DeleteItems", "Drive");
+
+            return RedirectToAction("DeleteItems");
         }
-        public IActionResult DownloadItems()
+
+        public async Task<IActionResult> DownloadFolder(string? folderName)
         {
-            PathData pathData = GetSessionPathData();
-            var files = service.GetCurrentDeptFiles(pathData.CurrentPath);
-            //var folders = service.GetCurrentDeptFolders(pathData.CurrentPath); //later to be able to add folders to zp too
-            var folders = new List<CloudFolder?>();
-            return View(new DriveDownloadViewModel
+            if (folderName is null || folderName == String.Empty)
             {
-                Folders = folders,
-                Files = files,
-                ItemsForDownload = new string[files.Count + folders.Count].ToList()
-            });
+                return View("Error");
+            }
+
+            return await Download(new List<string>()
+            {
+                Constants.SelectedFolderStarterSymbol + folderName
+            },
+            (await GetSessionCloudPathData()).CurrentPath,
+            RedirectToAction("Details","Drive"));
+        }
+
+        public async Task<IActionResult> DownloadFile(string? fileName)
+        {
+           if (fileName is null || fileName == String.Empty)
+            {
+                return View("Error");
+            }
+
+            return await Download(new List<string>()
+            {
+                Constants.SelectedFileStarterSymbol + fileName
+            },
+            (await GetSessionCloudPathData()).CurrentPath,
+            RedirectToAction("Details","Drive"));
+        }
+
+        public async Task<IActionResult> DownloadItems()
+        {
+            CloudPathData pathData = await GetSessionCloudPathData();
+
+            try
+            {
+                var files = await service.GetCurrentDepthCloudFiles(pathData.CurrentPath);
+                var folders = await service.GetCurrentDepthCloudDirectories(pathData.CurrentPath);
+
+                return View(new DriveDownloadViewModel
+                {
+                    Folders = folders,
+                    Files = files,
+                    ItemsForDownload = new string[files.Count + folders.Count].ToList()
+                });
+            }
+            catch (Exception ex)
+            {
+                AddNewNotification(new Error(ex.Message));
+                return View(new DriveDownloadViewModel
+                {
+                    Folders = new List<CloudFolder>(),
+                    Files = new List<CloudFile>(),
+                    ItemsForDownload = Array.Empty<string>().ToList()
+                });
+            }
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken, ActionName("DownloadItems")]
-        public IActionResult DownloadItemsFromForm([Bind("ItemsForDownload")] DriveDownloadViewModel vm)
+        public async Task<IActionResult> DownloadItemsFromForm([Bind("ItemsForDownload")] DriveDownloadViewModel vm)
         {
-            PathData pathData = GetSessionPathData();
-            string tempFile = Path.GetTempFileName();
-            using var zipFile = System.IO.File.Create(tempFile);
-            if (vm.ItemsForDownload is not null && vm.ItemsForDownload.Count != 0)
-            {
-                using (ZipArchive archive = new ZipArchive(zipFile, ZipArchiveMode.Create))
-                {
-                    foreach (string itemName in vm.ItemsForDownload!)
-                    {
-                        if (itemName != "false")
-                        {
-                            if (itemName[0] == '_')
-                            {
-                                string name = itemName[1..];
-                                archive.CreateEntryFromFile(Path.Combine(service.ReturnServerPath(pathData.CurrentPath), name), name);
-                                try
-                                {
-                                    ;
-                                }
-                                catch (Exception ex)
-                                {
-                                    notifier.Error($"{ex.Message} ({itemName})");
-                                }
-                            }
-                            else
-                            {
-                                try
-                                {
-                                    // TODO: here comes folder zipping
-                                }
-                                catch (Exception ex)
-                                {
-                                    notifier.Error($"{ex.Message} ({itemName})");
-                                }
-                            }
-                        }
-                    }
-                }
-                FileStream stream = new FileStream(tempFile, FileMode.Open, FileAccess.Read, FileShare.Read, 4096, FileOptions.DeleteOnClose);
-                return File(stream, "application/zip", $"{APPNAME}_{DateTime.Now:yyyy'-'MM'-'dd'T'HH':'mm':'ss}.zip");
-            }
-            //warning implementation
-            return RedirectToAction("DownloadItems");
+            return await Download(vm.ItemsForDownload ?? new(), (await GetSessionCloudPathData()).CurrentPath, RedirectToAction("Details","Drive"));
         }
 
-        public IActionResult Terminal()
+        public async Task<JsonResult> ConnectDirectoryToApp([FromBody] string itemName)
         {
-            PathData pathData = GetSessionPathData();
-            return View(new TerminalViewModel
-            {
-                CurrentDirectory = pathData.CurrentPathShow
-            });
-        }
+            CloudPathData session = await GetSessionCloudPathData();
 
-        [NonAction]
-        private PathData GetSessionPathData()
-        {
-            PathData data = null!;
-            if (HttpContext.Session.Keys.Contains(COOKIENAME))
+            if (await service.ConnectDirectoryToApp(session.CurrentPath, itemName, User))
             {
-                data = JsonSerializer.Deserialize<PathData>(HttpContext.Session.GetString(COOKIENAME)!)!;
+                return Json(new ConnectionDTO { Success = true, Message = "Directory and items inside connected to application" });
             }
             else
             {
-                data = new PathData();
-                HttpContext.Session.SetString(COOKIENAME, JsonSerializer.Serialize<PathData>(data));
+                return Json(new ConnectionDTO { Success = false, Message = "Error while connecting directory to application!" });
             }
-            return data;
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<JsonResult> ConnectDirectoryToWeb([FromBody] string itemName)
+        {
+            CloudPathData session = await GetSessionCloudPathData();
+
+            if (await service.ConnectDirectoryToWeb(session.CurrentPath, itemName, User))
+            {
+                return Json(new ConnectionDTO { Success = true, Message = "Directory and items inside connected to web" });
+            }
+            else
+            {
+                return Json(new ConnectionDTO { Success = false, Message = "Error while connecting directory to web!" });
+            }
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<JsonResult> ConnectFileToApp([FromBody] string itemName)
+        {
+            CloudPathData session = await GetSessionCloudPathData();
+
+            if (await service.ConnectFileToApp(session.CurrentPath, itemName, User))
+            {
+                return Json(new ConnectionDTO { Success = true, Message = "File connected to application" });
+            }
+            else
+            {
+                return Json(new ConnectionDTO { Success = false, Message = "Error while connecting file to application!" });
+            }
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<JsonResult> ConnectFileToWeb([FromBody] string itemName)
+        {
+            CloudPathData session = await GetSessionCloudPathData();
+
+            if (await service.ConnectFileToWeb(session.CurrentPath, itemName, User))
+            {
+                return Json(new ConnectionDTO { Success = true, Message = "File connected to web" });
+            }
+            else
+            {
+                return Json(new ConnectionDTO { Success = false, Message = "Error while connecting file to web!" });
+            }
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DisconnectDirectoryFromApp([FromBody] string itemName)
+        {
+            CloudPathData session = await GetSessionCloudPathData();
+
+            if (await service.DisonnectDirectoryFromApp(session.CurrentPath, itemName, User))
+            {
+                return Json(new ConnectionDTO { Success = true, Message = "Directory and items inside disconnected from application" });
+            }
+            else
+            {
+                return Json(new ConnectionDTO { Success = false, Message = "Error while disconnecting directory from application" });
+            }
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<JsonResult> DisconnectDirectoryFromWeb([FromBody] string itemName)
+        {
+            CloudPathData session = await GetSessionCloudPathData();
+
+            if (await service.DisconnectDirectoryFromWeb(session.CurrentPath, itemName, User))
+            {
+                return Json(new ConnectionDTO { Success = true, Message = "Directory and items inside disconnected from web" });
+            }
+            else
+            {
+                return Json(new ConnectionDTO { Success = false, Message = "Error while disconnecting directory from web!" });
+            }
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<JsonResult> DisconnectFileFromApp([FromBody] string itemName)
+        {
+            CloudPathData session = await GetSessionCloudPathData();
+
+            if (await service.DisonnectFileFromApp(session.CurrentPath, itemName, User))
+            {
+                return Json(new ConnectionDTO { Success = true, Message = "File disconnected from application" });
+            }
+            else
+            {
+                return Json(new ConnectionDTO { Success = false, Message = "Error while disconnecting file from application!" });
+            }
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<JsonResult> DisconnectFileFromWeb([FromBody] string itemName)
+        {
+            CloudPathData session = await GetSessionCloudPathData();
+
+            if (await service.DisonnectFileFromWeb(session.CurrentPath, itemName, User))
+            {
+                return Json(new ConnectionDTO { Success = true, Message = "File disconnected from web" });
+            }
+            else
+            {
+                return Json(new ConnectionDTO { Success = false, Message = "Error while disconnecting file from web!" });
+            }
         }
     }
 }

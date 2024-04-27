@@ -1,0 +1,312 @@
+﻿@model DriveDetailsViewModel
+
+@{
+    ViewData["Title"] = "Cloud Files";
+
+    int counter = 0;
+}
+
+@Html.AntiForgeryToken()
+<table class="table">
+    <thead>
+        <tr>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (CloudFolder? item in Model.Folders)
+        {
+            if (item != null)
+            {
+                ++counter;
+                <tr>
+                    <td>
+                        <details>
+                            <summary>
+                                <span id="iconforitemtype">
+                                    <img src="@item.IconPath" width=" 20" height="20" class="item align-center">
+                                </span>
+                                <a asp-action="Details" asp-route-folderName="@item.Info.Name" class="itemlink">@item.Info!.Name</a>
+                            </summary>
+                            <fieldset class="border border-dark p-2 m-2 rounded">
+                                <legend class="btn btn-outline-primary rounded-pill w-auto">Details</legend>
+                                <table class="table table-striped rounded">
+                                    <tr>
+                                        <td class="ps-3 w-25 text-break">
+                                            Created By
+                                        </td>
+                                        <td class="text-break">
+                                            @User.Identity?.Name
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="ps-3 w-25 text-break">
+                                            Created Time
+                                        </td>
+                                        <td class="text-break">
+                                            @item.Info.CreationTime
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="ps-3 w-25 text-break">
+                                            Last Modified Time
+                                        </td>
+                                        <td class="text-break">
+                                            @item.Info.LastWriteTime
+                                        </td>
+                                    </tr>
+                                    <tr class="align-middle">
+                                        <td class="ps-3 w-25 text-break">
+                                            Shared in @Constants.AppName
+                                        </td>
+                                        <td class="text-break">
+                                            @if (item.IsConnectedToApp)
+                                            {
+                                                <img id="@(counter)_app" class="p-2 bg-primary rounded-circle" src="/utilities/connected.svg" width="50" height="50" />
+                                            }
+                                            else
+                                            {
+                                                <img id="@(counter)_app" class="p-2 bg-danger rounded-circle" src="/utilities/disconnected.svg" width="50" height="50" />
+                                            }
+                                        </td>
+                                    </tr>
+                                    <tr class="align-middle">
+                                        <td class="ps-3 w-25 text-break">
+                                            Public
+                                        </td>
+                                        <td class="text-break">
+                                            @if (item.IsConnectedToWeb)
+                                            {
+                                                <img id="@(counter)_web" class="p-2 bg-primary rounded-circle" src="/utilities/connected.svg" width="50" height="50" />
+                                            }
+                                            else
+                                            {
+                                                <img id="@(counter)_web" class="p-2 bg-danger rounded-circle" src="/utilities/disconnected.svg" width="50" height="50" />
+                                            }
+                                        </td>
+                                    </tr>
+
+                                    @{
+                                        string? url = Url.Action(Model.WebControllerAndActionForDetails.Second, Model.WebControllerAndActionForDetails.First, new { path = item.HashedPath }, Context.Request.Scheme);
+                                    }
+
+                                    <tr class="align-middle @(item.IsConnectedToWeb ? "" : "hidden")" id="@(counter)_tr1">
+                                        <td class="w-25 text-break">
+                                            <button type="button" class="btn btn-outline-dark" onclick="copyToClipBoard(@url)"><span>Url</span><img src="/utilities/link.svg" width=" 20" height="20" class="ms-2 item rounded align-center"></button>
+                                        </td>
+                                        <td class="text-break">
+                                            <a href="@url" class="text-decoration-none" target="_blank">@url</a>
+                                        </td>
+                                    </tr>
+                                    <tr class="@(item.IsConnectedToWeb ? "" : "hidden")" id="@(counter)_tr2">
+                                        <td colspan="2" class="text-center">
+                                            <img src="@CloudQRManager.GenerateQRCodeString(url)" height="100" width="100" class="rounded" />
+                                        </td>
+                                    </tr>
+                                </table>
+                            </fieldset>
+                            <div class="d-flex justify-content-end">
+                                <div class="btn-group mx-2" role="group">
+                                    <a asp-controller="Drive" class="btn btn-primary " asp-action="Settings" asp-route-id="@item.Info.Name"><img src="~/utilities/gear.svg" width=" 20" height="20" class="rounded align-middle" /></a>
+
+                                    <button class="btn btn-secondary @(item.IsConnectedToWeb ? "" : "hidden")" id="@(counter)_btnDisConnectDirWeb" type="button" onclick="disConnectDirectoryFromWeb('@Url.Action("DisConnectDirectoryFromWeb", "Drive")', '@item.Info.Name', '@counter')">
+                                        <img src="~/utilities/nopublic.svg" width="20" height="20" class="rounded align-middle" id="@(counter)_logo_1" />
+                                        <div class="spinner-border spinner-border-sm text-dark hidden mx-1" role="status" id="@(counter)_spinner_1">
+                                            <span class="visually-hidden">Loading...</span>
+                                        </div>
+                                    </button>
+
+                                    <button class="btn btn-secondary @(item.IsConnectedToWeb ? "hidden" : "")" id="@(counter)_btnConnectDirWeb" type="button" onclick="connectDirectoryToWeb('@Url.Action("ConnectDirectoryToWeb", "Drive")','@item.Info.Name', '@counter')">
+                                        <img src="~/utilities/public.svg" width="20" height="20" class="rounded align-middle" id="@(counter)_logo_2" />
+                                        <div class="spinner-border spinner-border-sm text-dark hidden mx-1" role="status" id="@(counter)_spinner_2">
+                                            <span class="visually-hidden">Loading...</span>
+                                        </div>
+                                    </button>
+
+                                    <button class="btn btn-secondary @(item.IsConnectedToApp ? "" : "hidden")" id="@(counter)_btnDisConnectDirApp" type="button" onclick="disConnectDirectoryFromApp('@Url.Action("DisConnectDirectoryFromApp", "Drive")', '@item.Info.Name', '@counter')">
+                                        <img src="~/utilities/noshare.svg" width="20" height="20" class="rounded align-middle" id="@(counter)_logo_3" />
+                                        <div class="spinner-border spinner-border-sm text-dark hidden mx-1" role="status" id="@(counter)_spinner_3">
+                                            <span class="visually-hidden">Loading...</span>
+                                        </div>
+                                    </button>
+
+                                    <button class="btn btn-secondary @(item.IsConnectedToApp ? "hidden" : "")" id="@(counter)_btnConnectDirApp" type="button" onclick="connectDirectoryToApp('@Url.Action("ConnectDirectoryToApp", "Drive")','@item.Info.Name', '@counter')">
+                                        <img src="~/utilities/share.svg" width="20" height="20" class="rounded align-middle" id="@(counter)_logo_4" />
+                                        <div class="spinner-border spinner-border-sm text-dark hidden mx-1" role="status" id="@(counter)_spinner_4">
+                                            <span class="visually-hidden">Loading...</span>
+                                        </div>
+                                    </button>
+
+                                    <a asp-controller="Drive" class="btn btn-secondary" asp-action="DownloadFolder" asp-route-folderName="@item.Info.Name"><img src="~/utilities/cloud-download.svg" width=" 20" height="20" class="rounded align-middle" download /></a>
+                                    <a asp-controller="Drive" class="btn btn-danger" asp-action="DeleteFolder" asp-route-folderName="@item.Info.Name"><img src="~/utilities/trash.svg" width=" 20" height="20" class="rounded align-middle" /></a>
+                                </div>
+                            </div>
+                        </details>
+                    </td>
+                </tr>
+            }
+        }
+        @foreach (CloudFile? item in Model.Files)
+        {
+            if (item != null)
+            {
+                ++counter;
+                <tr>
+                    <td>
+                        <details>
+                            <summary>
+                                <span id="iconforitemtype">
+                                    <img src="@item.IconPath" width=" 20" height="20" class="item align-center">
+                                </span>
+                                <span class="itemlink">@item.Info!.Name</span>
+                            </summary>
+                            <fieldset class="border border-dark p-2 m-2 rounded">
+                                <legend class="btn btn-outline-primary rounded-pill w-auto">Details</legend>
+                                <table class="table table-striped rounded">
+                                    <tr>
+                                        <td class="ps-3">
+                                            Created By
+                                        </td>
+                                        <td>
+                                            @User.Identity?.Name
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="ps-3">
+                                            Created Time
+                                        </td>
+                                        <td>
+                                            @item.Info.CreationTime
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="ps-3">
+                                            Last Modified Time
+                                        </td>
+                                        <td>
+                                            @item.Info.LastWriteTime
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="ps-3">
+                                            Size
+                                        </td>
+                                        <td>
+                                            @item.Info.Length Byte(s)
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="ps-3">
+                                            Shared in @Constants.AppName
+                                        </td>
+                                        <td>
+                                            @if (item.IsConnectedToApp)
+                                            {
+                                                <img id="@(counter)_app" class="p-2 bg-primary rounded-circle" src="/utilities/connected.svg" width="50" height="50" />
+                                            }
+                                            else
+                                            {
+                                                <img id="@(counter)_app" class="p-2 bg-danger rounded-circle" src="/utilities/disconnected.svg" width="50" height="50" />
+                                            }
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="ps-3">
+                                            Public
+                                        </td>
+                                        <td>
+                                            @if (item.IsConnectedToWeb)
+                                            {
+                                                <img id="@(counter)_web" class="p-2 bg-primary rounded-circle" src="/utilities/connected.svg" width="50" height="50" />
+                                            }
+                                            else
+                                            {
+                                                <img id="@(counter)_web" class="p-2 bg-danger rounded-circle" src="/utilities/disconnected.svg" width="50" height="50" />
+                                            }
+                                        </td>
+                                    </tr>
+                                    @{
+                                        string? url = Url.Action(Model.WebControllerAndActionForDownload.Second, Model.WebControllerAndActionForDownload.First, new { path = item.HashedPath }, Context.Request.Scheme);
+                                    }
+
+                                    <tr class="align-middle @(item.IsConnectedToWeb ? "" : "hidden")" id="@(counter)_tr1">
+                                        <td class="w-25 text-break">
+                                            <button type="button" class="btn btn-outline-dark" onclick="copyToClipBoard(@url)"><span>Url</span><img src="/utilities/link.svg" width=" 20" height="20" class="ms-2 item rounded align-center"></button>
+                                        </td>
+                                        <td class="text-break">
+                                            <a href="@url" class="text-decoration-none" target="_blank">@url</a>
+                                        </td>
+                                    </tr>
+                                    <tr class="@(item.IsConnectedToWeb ? "" : "hidden")" id="@(counter)_tr2">
+                                        <td colspan="2" class="text-center">
+                                            <img src="@CloudQRManager.GenerateQRCodeString(url)" height="100" width="100" class="rounded" />
+                                        </td>
+                                    </tr>
+                                </table>
+                            </fieldset>
+                            <div class="d-flex justify-content-end">
+                                <div class="btn-group mx-2" role="group">
+                                    <a asp-controller="Drive" class="btn btn-primary" asp-action="Settings" asp-route-id="@item.Info.Name"><img src="~/utilities/gear.svg" width=" 20" height="20" class="rounded align-middle" /></a>
+
+                                    <button class="btn btn-secondary @(item.IsConnectedToWeb ? "" : "hidden")" id="@(counter)_btnDisConnectFileWeb" type="button" onclick="disConnectFileFromWeb('@Url.Action("DisConnectFileFromWeb", "Drive")', '@item.Info.Name', '@counter')">
+                                        <img src="~/utilities/nopublic.svg" width="20" height="20" class="rounded align-middle" id="@(counter)_logo_1" />
+                                        <div class="spinner-border spinner-border-sm text-dark hidden mx-1" role="status" id="@(counter)_spinner_1">
+                                            <span class="visually-hidden">Loading...</span>
+                                        </div>
+                                    </button>
+
+                                    <button class="btn btn-secondary @(item.IsConnectedToWeb ? "hidden" : "")" id="@(counter)_btnConnectFileWeb" type="button" onclick="connectFileToWeb('@Url.Action("ConnectFileToWeb", "Drive")','@item.Info.Name', '@counter')">
+                                        <img src="~/utilities/public.svg" width="20" height="20" class="rounded align-middle" id="@(counter)_logo_2" />
+                                        <div class="spinner-border spinner-border-sm text-dark hidden mx-1" role="status" id="@(counter)_spinner_2">
+                                            <span class="visually-hidden">Loading...</span>
+                                        </div>
+                                    </button>
+
+                                    <button class="btn btn-secondary @(item.IsConnectedToApp ? "" : "hidden")" id="@(counter)_btnDisConnectFileApp" type="button" onclick="disConnectFileFromApp('@Url.Action("DisConnectFileFromApp", "Drive")', '@item.Info.Name', '@counter')">
+                                        <img src="~/utilities/noshare.svg" width="20" height="20" class="rounded align-middle" id="@(counter)_logo_3" />
+                                        <div class="spinner-border spinner-border-sm text-dark hidden mx-1" role="status" id="@(counter)_spinner_3">
+                                            <span class="visually-hidden">Loading...</span>
+                                        </div>
+                                    </button>
+
+                                    <button class="btn btn-secondary @(item.IsConnectedToApp ? "hidden" : "")" id="@(counter)_btnConnectFileApp" type="button" onclick="connectFileToApp('@Url.Action("ConnectFileToApp", "Drive")','@item.Info.Name', '@counter')">
+                                        <img src="~/utilities/share.svg" width="20" height="20" class="rounded align-middle" id="@(counter)_logo_4" />
+                                        <div class="spinner-border spinner-border-sm text-dark hidden mx-1" role="status" id="@(counter)_spinner_4">
+                                            <span class="visually-hidden">Loading...</span>
+                                        </div>
+                                    </button>
+
+                                    <a asp-controller="Drive" class="btn btn-secondary" asp-action="DownloadFile" asp-route-fileName="@item.Info.Name"><img src="~/utilities/cloud-download.svg" width=" 20" height="20" class="rounded align-middle" download /></a>
+                                    <a asp-controller="Editor" class="btn btn-secondary" asp-action="Index" asp-route-fileName="@item.Info.Name"><img src="~/utilities/code-slash.svg" width=" 20" height="20" class="rounded align-middle" /></a>
+                                    <a asp-controller="Drive" class="btn btn-danger" asp-action="DeleteFile" asp-route-fileName="@item.Info.Name"><img src="~/utilities/trash.svg" width=" 20" height="20" class="rounded align-middle" /></a>
+                                </div>
+                            </div>
+                        </details>
+                    </td>
+                </tr>
+            }
+        }
+    </tbody>
+</table>
+
+@if(Model.Files?.Count == 0 && Model.Folders?.Count == 0)
+{
+    <span class="w-100 d-flex justify-content-center text-muted fst-italic">No items</span>
+}
+
+@section Scripts {
+
+    <script type="text/javascript">
+        function copyToClipBoard(url) {
+
+            try {
+                navigator.clipboard.writeText(url);
+
+                ShowSuccessToast("Success", "Url copied to clipboard");
+            }
+            catch {
+                ShowErrorToast("Error", "Error while copying url to clipboard!");
+            }
+        }
+    </script>
+}

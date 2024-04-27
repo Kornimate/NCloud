@@ -1,0 +1,47 @@
+﻿@model CodeEditorViewModel
+
+@{
+    ViewData["Title"] = "Code Editor";
+}
+
+<div class="d-flex justify-content-end mb-2 background-color w-100 rounded">
+    <div class="btn-group">
+        <div class="btn">&nbsp;</div>
+        <div class="btn btn-outline-white"><img src="/utilities/save.svg" /></div>
+    </div>
+</div>
+<div class="border border-primary border-3 w-100 h-100 rounded">
+    <div class="w-100 bg-primary"></div>
+    <div id="CodeEditor" class="editor-class"></div>
+</div>
+
+@* <div id="loadertoplevel">
+    <div class="loading-box">
+        <div class="loader"></div>
+    </div>
+</div> *@
+
+<link rel="stylesheet"
+      data-name="vs/editor/editor.main"
+      href="~/lib/monaco-editor/min/vs/editor/editor.main.css" />
+
+<script>
+    var require = { paths: { vs: '/lib/monaco-editor/min/vs' } };
+</script>
+<script src="~/lib/monaco-editor/min/vs/loader.js"></script>
+<script src="~/lib/monaco-editor/min/vs/editor/editor.main.nls.js"></script>
+<script src="~/lib/monaco-editor/min/vs/editor/editor.main.js"></script>
+
+<script>
+    var editor = monaco.editor.create(document.getElementById('CodeEditor'), {
+        value: "//write your code here",
+        language: 'csharp',
+        theme:"hc-black"
+    });
+</script>
+
+@* <script>
+    jQuery(document).ready(function () {
+        jQuery('.loadertoplevel').fadeOut(3000);
+    });
+</script> *@

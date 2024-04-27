@@ -1,0 +1,111 @@
+﻿@model DriveDownloadViewModel
+
+@{
+    ViewData["title"] = "Download Items";
+    int i = 0;
+}
+
+<div class="d-flex justify-content-between w-100 bg-secondary rounded">
+    <a asp-action="Details" asp-controller="Sharing" class="btn btn-primary"><img src="~/utilities/arrow-left-circle.svg" width=" 20" height="20" class="rounded align-middle" /></a>
+    <span class="btn"><img src="~/utilities/cloud-download.svg" width=" 20" height="20" class="rounded align-middle" /></span>
+</div>
+
+<form asp-action="DownloadItems">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>
+                    @if (Model.ItemsForDownload?.Count == 0)
+                    {
+                        <span class="w-100 d-flex justify-content-center text-muted fst-italic">No items</span>
+                    }
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model.ItemsForDownload?.Count > 0)
+            {
+                <tr>
+                    <td>
+                        <div class="d-flex-inline align-middle">
+                            <div class="input-group">
+                                <span class="btn btn-outline-secondary" id="selectAll"><img src="~/utilities/check.svg" width=" 20" height="20" class="rounded align-middle" /></span>
+                                <span class="btn btn-outline-secondary" id="deselectAll"><img src="~/utilities/ban.svg" width=" 20" height="20" class="rounded align-middle" /></span>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+            }
+            @foreach (CloudFolder? item in Model.Folders)
+            {
+                if (item != null)
+                {
+                    <tr>
+                        <td>
+                            <div class="d-flex-inline">
+                                <input type="checkbox" asp-for="ItemsForDownload![i]" class="form-check-input" value="@($"{Constants.SelectedFolderStarterSymbol}{item.Info.Name}")" />
+                                <span id="iconforitemtype ms-2">
+                                    <img src="@item.IconPath" width=" 20" height="20" class="item rounded align-bottom">
+                                </span>
+                                <label class="form-check-label ms-2">@item.Info.Name</label>
+                            </div>
+                        </td>
+                    </tr>
+                }
+                i++;
+            }
+            @foreach (CloudFile? item in Model.Files)
+            {
+                if (item != null)
+                {
+                    <tr>
+                        <td>
+                            <div class="d-flex-inline">
+                                <input type="checkbox" asp-for="ItemsForDownload![i]" class="form-check-input" value="@($"{Constants.SelectedFileStarterSymbol}{item.Info.Name}")" />
+                                <span id="iconforitemtype ms-2">
+                                    <img src="@item.IconPath" width=" 20" height="20" class="item rounded align-bottom">
+                                </span>
+                                <label class="form-check-label ms-2">@item.Info.Name</label>
+                            </div>
+                        </td>
+                    </tr>
+                }
+                i++;
+            }
+        </tbody>
+    </table>
+    <div class="d-flex w-100 justify-content-center">
+        <button type="submit" class="btn btn-primary border border-primary border-3" id="downloadBtn"><img src="~/utilities/cloud-download.svg" width=" 20" height="20" class="rounded align-middle" /></button>
+    </div>
+</form>
+<script type="text/javascript">
+    function StartFunction() {
+        document.getElementById("selectAll").addEventListener("click", SelectAll, false)
+        document.getElementById("deselectAll").addEventListener("click", DeselectAll, false)
+        document.getElementById("downloadBtn").addEventListener("click", CallDeselect, false)
+    }
+
+    function CallDeselect(e) {
+        setTimeout(DeselectAll, 1);
+    }
+
+    function SelectAll() {
+        const checkboxes = document.getElementsByTagName("input");
+        for (let e of checkboxes) {
+            if (!e.checked) {
+                e.checked = true;
+            }
+        }
+    }
+
+    function DeselectAll() {
+        let checkboxes = document.getElementsByTagName("input");
+        for (let e of checkboxes) {
+            if (e.checked) {
+                e.checked = false;
+            }
+        }
+    }
+
+    StartFunction();
+</script>

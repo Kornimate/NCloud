@@ -1,0 +1,17 @@
+﻿@model WebSingleDownloadViewModel
+
+@{
+    ViewData["Title"] = "Download File";
+}
+
+<div class="row">
+    <div class="w-100 justify-content-center text-center">
+        <img src="/utilities//cloud_logo.png" class="img-fluid" width="200" />
+    </div>
+    <div class="col-auto w-100 mb-5 justify-content-center text-center fw-bold">
+        <span>@Model.FileName</span>
+    </div>
+    <div class="w-100 justify-content-center text-center">
+        <a asp-controller="Web" class="btn btn-primary border border-primary border-3" asp-action="DownloadSingleItem" asp-route-path="@Model.Path" asp-route-fileName="@Model.FileName"><img src="~/utilities/cloud-download.svg" width=" 20" height="20" class="rounded align-middle" download id="downloadRef"/></a>
+    </div>
+</div>

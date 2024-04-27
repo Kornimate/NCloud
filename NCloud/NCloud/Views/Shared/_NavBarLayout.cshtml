@@ -3,12 +3,16 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - NCloud</title>
+    <title>@ViewData["Title"] - @Constants.AppName</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/NCloud.styles.css" asp-append-version="true" />
 </head>
 <body>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+
     <div class="container-fluid">
         <div class="row flex-nowrap">
             <div class="col-auto col-md-3 col-xl-2 px-sm-2 px-0 background-color border border-dark fixed navwidth">
@@ -18,33 +22,33 @@
                     </a>
                     <ul class="nav nav-pills flex-column mb-sm-auto mb-0 align-items-center align-items-sm-start" id="menu">
                         <li class="nav-item my-2">
-                            <a asp-controller="Drive" asp-action="Index" class="align-middle px-0 text-decoration-none text-dark">
+                            <a asp-controller="DashBoard" asp-action="Index" class="align-middle px-0 text-decoration-none text-dark">
                                 <span class="d-inline m-1"><img src="~/utilities/speedometer.svg" width="20" height="20" class="rounded-circle" /></span> <span class="ms-1 d-none d-sm-inline">DashBoard</span>
                             </a>
                         </li>
                         <li class="nav-item my-2">
-                            <a asp-controller="Drive" asp-action="Details" asp-route-id="0" class="align-middle px-0 text-decoration-none text-dark">
+                            <a asp-controller="Drive" asp-action="Details" class="align-middle px-0 text-decoration-none text-dark">
                                 <span class="d-inline m-1"><img src="~/utilities/files.svg" width="20" height="20" class="rounded" /></span> <span class="ms-1 d-none d-sm-inline">My Files</span>
                             </a>
                         </li>
                         <li class="nav-item my-2">
-                            <a asp-controller="Drive" asp-action="SharedDetails" asp-route-id="0" class="align-middle px-0 text-decoration-none text-dark">
+                            <a asp-controller="Sharing" asp-action="Details" class="align-middle px-0 text-decoration-none text-dark">
                                 <span class="d-inline m-1"><img src="~/utilities/cloud.svg" width="20" height="20" class="rounded" /></span> <span class="ms-1 d-none d-sm-inline">Shared Files</span>
                             </a>
                         </li>
                         <li class="nav-item my-2">
-                            <a asp-controller="Editor" asp-action="Index" class="align-middle px-0 text-decoration-none text-dark">
+                            <a asp-controller="Editor" asp-action="CodeEditor" class="align-middle px-0 text-decoration-none text-dark">
                                 <span class="d-inline m-1"><img src="~/utilities/code-slash.svg" width="20" height="20" class="rounded-circle" /></span> <span class="ms-1 d-none d-sm-inline">Code Editor</span>
                             </a>
                         </li>
                         <li class="nav-item my-2">
-                            <a asp-controller="Editor" asp-action="IndexText" class="align-middle px-0 text-decoration-none text-dark">
-                                <span class="d-inline m-1"><img src="~/utilities/file-text-fill.svg" width="20" height="20" class="rounded" /></span> <span class="ms-1 d-none d-sm-inline">Text Editor</span>
+                            <a asp-controller="Editor" asp-action="TextEditor" class="align-middle px-0 text-decoration-none text-dark">
+                                <span class="d-inline m-1"><img src="~/utilities/window.svg" width="20" height="20" class="rounded" /></span> <span class="ms-1 d-none d-sm-inline">Text Editor</span>
                             </a>
                         </li>
                         <li class="nav-item my-2">
-                            <a href="#" class="align-middle px-0 text-decoration-none text-dark">
-                                <span class="d-inline m-1"><img src="~/utilities/soundwave.svg" width="20" height="20" class="rounded-circle" /></span> <span class="ms-1 d-none d-sm-inline">Music</span>
+                            <a asp-controller="Terminal" asp-action="Index" class="align-middle px-0 text-decoration-none text-dark">
+                                <span class="d-inline m-1"><img src="~/utilities/terminal.svg" width="20" height="20" class="rounded" /></span> <span class="ms-1 d-none d-sm-inline">Terminal</span>
                             </a>
                         </li>
                     </ul>
@@ -60,10 +64,17 @@
             </div>
             <div class="col py-3 maindiv">
                 @RenderBody()
+
+                @await Component.InvokeAsync("CloudNotification")
+
+                @await Component.InvokeAsync("CloudNotificationSingle")
             </div>
         </div>
     </div>
+
+    <script src="~/js/site.js" asp-append-version="true"></script>
+
+    @await RenderSectionAsync("Scripts", required: false)
+
 </body>
 </html>
-<base href="~/" />
-<script src="_framework/blazor.server.js"></script>

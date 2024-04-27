@@ -1,7 +1,11 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using NCloud.ConstantData;
+using NCloud.Services;
 using NCloud.Users;
+using NCloud.Users.Roles;
+using System.Text.Json;
 
 namespace NCloud.Models
 {
@@ -10,65 +14,65 @@ namespace NCloud.Models
         private static CloudDbContext context = null!;
         private static UserManager<CloudUser> userManager = null!;
         private static SignInManager<CloudUser> signInManager = null!;
+        private static RoleManager<CloudRole> roleManager = null!;
+        private static ICloudService service = null!;
         public static void Initialize(IServiceProvider serviceProvider, IWebHostEnvironment env)
         {
             context = serviceProvider.GetRequiredService<CloudDbContext>();
             userManager = serviceProvider.GetRequiredService<UserManager<CloudUser>>();
             signInManager = serviceProvider.GetRequiredService<SignInManager<CloudUser>>();
+            roleManager = serviceProvider.GetRequiredService<RoleManager<CloudRole>>();
+            service = serviceProvider.GetRequiredService<ICloudService>();
 
             context.Database.Migrate();
 
-            var admin = new CloudUser { FullName = "Admin", UserName = "Admin" }; // Admin User : FullName: Admin, UserName: Admin
+            string adminRole = "admin";
+            string userRole = "user";
+
+            if (!roleManager.Roles.Any())
+            {
+                roleManager.CreateAsync(new CloudRole(adminRole, 10)).Wait();
+                roleManager.CreateAsync(new CloudRole(userRole, 1)).Wait();
+            }
+
+            //if (!Directory.Exists(Path.Combine(env.WebRootPath, "CloudData", "Public")))
+            //{
+            //    Directory.CreateDirectory(Path.Combine(env.WebRootPath, "CloudData", "Public"));
+            //}
+
+            if (!Directory.Exists(Path.Combine(env.WebRootPath, "CloudData", "Private")))
+            {
+                Directory.CreateDirectory(Path.Combine(env.WebRootPath, "CloudData", "Private"));
+            }
+
+            if (!Directory.Exists(Path.Combine(env.WebRootPath,Constants.TempFilePath)))
+            {
+                Directory.CreateDirectory(Path.Combine(env.WebRootPath, Constants.TempFilePath));
+            }
 
             if (!context.Users.Any())
             {
+                var adminUser = new CloudUser { FullName = "Admin", UserName = "Admin", Email = "admin@nclouddrive.hu" };
+
                 try
                 {
-                    Task.Run(async () =>
-                    {
-                        var result = await userManager.CreateAsync(admin, "Admin_1234");
-                        if (result.Succeeded)
-                        {
-                            string adminPath = Path.Combine(env.WebRootPath, "CloudData","UserData", admin.Id.ToString());
-                            if (!Directory.Exists(adminPath))
-                            {
-                                Directory.CreateDirectory(adminPath);
-                                Directory.CreateDirectory(Path.Combine(adminPath,"Documents"));
-                                Directory.CreateDirectory(Path.Combine(adminPath,"Pictures"));
-                                Directory.CreateDirectory(Path.Combine(adminPath,"Videos"));
-                                Directory.CreateDirectory(Path.Combine(adminPath,"Music"));
-                            }
-                        }
+                    userManager.CreateAsync(adminUser, "Admin_1234").Wait();  // Passwords is Admin_1234 because of safety reasons
+                    userManager.AddToRoleAsync(adminUser, adminRole);
 
-                    }).Wait(); // Passwords is Admin_1234 beacuse of safety reasons
                 }
-                catch { }
-                //if (context.Entries.Any()) { return; }
+                catch (Exception) { }
 
-                //List<Entry> defFolders = new List<Entry>()
-                //{
-                //	new Entry
-                //	{
-                //		Name="Public Folder",
-                //		Size=0,
-                //		ParentId=0,
-                //		Type = EntryType.FOLDER,
-                //		CreatedDate= DateTime.Now,
-                //		IsVisibleForEveryOne = true,
-                //		CreatedBy = admin,
-                //	}
-                //};
 
-                //context.Entries.AddRange(defFolders);
+                Task.Run(async () =>
+                {
+                    if (!(await service.CreateBaseDirectory(adminUser)))
+                    {
+                        throw new Exception("App unable to create base resources!");
+                    }
+                }).Wait();
             }
-            if (!Directory.Exists(Path.Combine(env.WebRootPath,"CloudData","Public")))
-            {
-                Directory.CreateDirectory(Path.Combine(env.WebRootPath,"CloudData", "Public"));
-            }
-            if (!Directory.Exists(Path.Combine(env.WebRootPath,"CloudData", "UserData")))
-            {
-                Directory.CreateDirectory(Path.Combine(env.WebRootPath,"CloudData", "UserData"));
-            }
+
+            //Just sure to be created
             context.SaveChanges();
         }
     }

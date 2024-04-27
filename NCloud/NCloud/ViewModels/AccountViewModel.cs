@@ -5,13 +5,13 @@ namespace NCloud.ViewModels
     public class AccountViewModel
     {
         public string? UserName { get; set; }
-        public string? Fullname { get; set; }
+        public string? FullName { get; set; }
         public string? Email { get; set; }
 
-        public AccountViewModel(string? username, string? fullname, string? email)
+        public AccountViewModel(string? username, string? fullName,string? email)
         {
             UserName = username;
-            Fullname = fullname;
+            FullName = fullName;
             Email = email;
         }
     }
