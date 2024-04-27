@@ -12,6 +12,6 @@
         <span>@Model.FileName</span>
     </div>
     <div class="w-100 justify-content-center text-center">
-        <a asp-controller="Web" class="btn btn-primary" asp-action="DownloadSingleItem" asp-route-path="@Model.Path" asp-route-fileName="@Model.FileName"><img src="~/utilities/cloud-download.svg" width=" 20" height="20" class="rounded align-middle" download id="downloadRef"/></a>
+        <a asp-controller="Web" class="btn btn-primary border border-primary border-3" asp-action="DownloadSingleItem" asp-route-path="@Model.Path" asp-route-fileName="@Model.FileName"><img src="~/utilities/cloud-download.svg" width=" 20" height="20" class="rounded align-middle" download id="downloadRef"/></a>
     </div>
 </div>

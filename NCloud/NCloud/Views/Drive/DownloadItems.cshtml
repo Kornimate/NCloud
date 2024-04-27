@@ -14,7 +14,12 @@
     <table class="table">
         <thead>
             <tr>
-                <th></th>
+                <th>
+                    @if (Model.ItemsForDownload?.Count == 0)
+                    {
+                        <span class="w-100 d-flex justify-content-center text-muted fst-italic">No items</span>
+                    }
+                </th>
             </tr>
         </thead>
         <tbody>
@@ -70,7 +75,7 @@
         </tbody>
     </table>
     <div class="d-flex w-100 justify-content-center">
-        <button type="submit" class="btn btn-outline-secondary border border-secondary border-3" id="downloadBtn"><img src="~/utilities/cloud-download.svg" width=" 20" height="20" class="rounded align-middle" /></button>
+        <button type="submit" class="btn btn-primary border border-primary border-3" id="downloadBtn"><img src="~/utilities/cloud-download.svg" width=" 20" height="20" class="rounded align-middle" /></button>
     </div>
 </form>
 <script type="text/javascript">
