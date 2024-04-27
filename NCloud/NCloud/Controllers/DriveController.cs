@@ -42,8 +42,8 @@ namespace NCloud.Controllers
 
             try
             {
-                return View(new DriveDetailsViewModel(await service.GetCurrentDepthCloudFiles(currentPath, User),
-                                                      await service.GetCurrentDepthCloudDirectories(currentPath, User),
+                return View(new DriveDetailsViewModel(await service.GetCurrentDepthCloudFiles(currentPath),
+                                                      await service.GetCurrentDepthCloudDirectories(currentPath),
                                                       pathdata.CurrentPathShow,
                                                       pathdata.CurrentPath,
                                                       Constants.GetWebControllerAndActionForDetails(),
@@ -201,8 +201,8 @@ namespace NCloud.Controllers
             CloudPathData pathData = await GetSessionCloudPathData();
             try
             {
-                var files = await service.GetCurrentDepthCloudFiles(pathData.CurrentPath, User);
-                var folders = await service.GetCurrentDepthCloudDirectories(pathData.CurrentPath, User);
+                var files = await service.GetCurrentDepthCloudFiles(pathData.CurrentPath);
+                var folders = await service.GetCurrentDepthCloudDirectories(pathData.CurrentPath);
 
                 return View(new DriveDeleteViewModel
                 {
@@ -340,8 +340,8 @@ namespace NCloud.Controllers
 
             try
             {
-                var files = await service.GetCurrentDepthCloudFiles(pathData.CurrentPath, User);
-                var folders = await service.GetCurrentDepthCloudDirectories(pathData.CurrentPath, User);
+                var files = await service.GetCurrentDepthCloudFiles(pathData.CurrentPath);
+                var folders = await service.GetCurrentDepthCloudDirectories(pathData.CurrentPath);
 
                 return View(new DriveDownloadViewModel
                 {

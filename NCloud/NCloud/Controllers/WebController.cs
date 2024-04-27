@@ -84,8 +84,8 @@ namespace NCloud.Controllers
         {
             try
             {
-                var files = await service.GetCurrentDepthCloudFiles(path, User);
-                var folders = await service.GetCurrentDepthCloudDirectories(path, User);
+                var files = await service.GetCurrentDepthCloudFiles(path);
+                var folders = await service.GetCurrentDepthCloudDirectories(path);
 
                 return View(new WebDownloadViewModel
                 {

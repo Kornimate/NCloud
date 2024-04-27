@@ -145,7 +145,7 @@ namespace NCloud.Controllers
 
                         try
                         {
-                            tempFile = await service.CreateZipFile(itemsForDownload, path, GetTempFileNameAndPath(), connectedToApp, connectedToWeb, User);
+                            tempFile = await service.CreateZipFile(itemsForDownload, path, GetTempFileNameAndPath(), connectedToApp, connectedToWeb);
                         }
                         catch (Exception ex)
                         {

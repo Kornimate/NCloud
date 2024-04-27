@@ -138,7 +138,7 @@ namespace NCloud.Services
 
                     Pair<string, string> parentPathAndName = GetParentPathAndName(currentPath);
 
-                    Pair<bool, bool> connections = await FolderIsSharedInAppInWeb(parentPathAndName.First, parentPathAndName.Second, user);
+                    Pair<bool, bool> connections = await FolderIsSharedInAppInWeb(parentPathAndName.First, parentPathAndName.Second);
 
                     await SetDirectoryConnectedState(currentPath, folderName, ChangeOwnerIdentification(ChangeRootName(currentPath), user.UserName), user, connections.First, connections.Second);
                 }
@@ -192,7 +192,7 @@ namespace NCloud.Services
 
                 Pair<string, string> parentPathAndName = GetParentPathAndName(currentPath);
 
-                Pair<bool, bool> connections = await FolderIsSharedInAppInWeb(parentPathAndName.First, parentPathAndName.Second, user);
+                Pair<bool, bool> connections = await FolderIsSharedInAppInWeb(parentPathAndName.First, parentPathAndName.Second);
 
                 await SetFileConnectedState(currentPath, newName, ChangeOwnerIdentification(ChangeRootName(currentPath), user.UserName), user, connections.First, connections.Second);
             }
@@ -209,9 +209,21 @@ namespace NCloud.Services
             return retNum;
         }
 
-        private async Task<Pair<bool, bool>> FolderIsSharedInAppInWeb(string cloudPath, string directoryName, CloudUser user)
+        private async Task<Pair<bool, bool>> FolderIsSharedInAppInWeb(string cloudPath, string directoryName)
         {
-            SharedFolder? sharedFolder = await context.SharedFolders.FirstOrDefaultAsync(x => x.CloudPathFromRoot == cloudPath && x.Name == directoryName && x.Owner == user);
+            SharedFolder? sharedFolder = await context.SharedFolders.FirstOrDefaultAsync(x => x.CloudPathFromRoot == cloudPath && x.Name == directoryName);
+
+            if (sharedFolder is null)
+            {
+                return new Pair<bool, bool>(false, false);
+            }
+
+            return new Pair<bool, bool>(sharedFolder.ConnectedToApp, sharedFolder.ConnectedToWeb);
+        }
+
+        private async Task<Pair<bool, bool>> FileIsSharedInAppInWeb(string cloudPath, string directoryName)
+        {
+            SharedFile? sharedFolder = await context.SharedFiles.FirstOrDefaultAsync(x => x.CloudPathFromRoot == cloudPath && x.Name == directoryName);
 
             if (sharedFolder is null)
             {
@@ -240,14 +252,12 @@ namespace NCloud.Services
             return await context.Users.FirstOrDefaultAsync(x => x.UserName == Constants.AdminUserName);
         }
 
-        public async Task<List<CloudFile>> GetCurrentDepthCloudFiles(string currentPath, ClaimsPrincipal userPrincipal)
+        public async Task<List<CloudFile>> GetCurrentDepthCloudFiles(string currentPath)
         {
             string path = ParseRootName(currentPath);
 
-            CloudUser? user = await userManager.GetUserAsync(userPrincipal);
-
-            var appsharedfiles = user?.SharedFiles.Where(x => x.ConnectedToApp && x.CloudPathFromRoot == currentPath).Select(x => x.Name).ToList() ?? new();
-            var websharedfiles = user?.SharedFiles.Where(x => x.ConnectedToWeb && x.CloudPathFromRoot == currentPath).Select(x => x.Name).ToList() ?? new();
+            var appsharedfiles = context.SharedFiles.Where(x => x.ConnectedToApp && x.CloudPathFromRoot == currentPath).Select(x => x.Name).ToList() ?? new();
+            var websharedfiles = context.SharedFiles.Where(x => x.ConnectedToWeb && x.CloudPathFromRoot == currentPath).Select(x => x.Name).ToList() ?? new();
 
             try
             {
@@ -259,14 +269,12 @@ namespace NCloud.Services
             }
         }
 
-        public async Task<List<CloudFolder>> GetCurrentDepthCloudDirectories(string currentPath, ClaimsPrincipal userPrincipal)
+        public async Task<List<CloudFolder>> GetCurrentDepthCloudDirectories(string currentPath)
         {
             string path = ParseRootName(currentPath);
 
-            CloudUser? user = await userManager.GetUserAsync(userPrincipal);
-
-            var appsharedfolders = user?.SharedFolders.Where(x => x.ConnectedToApp && x.CloudPathFromRoot == currentPath).Select(x => x.Name).ToList() ?? new();
-            var websharedfolders = user?.SharedFolders.Where(x => x.ConnectedToWeb && x.CloudPathFromRoot == currentPath).Select(x => x.Name).ToList() ?? new();
+            var appsharedfolders = await context.SharedFolders.Where(x => x.ConnectedToApp && x.CloudPathFromRoot == currentPath).Select(x => x.Name).ToListAsync() ?? new();
+            var websharedfolders = await context.SharedFolders.Where(x => x.ConnectedToWeb && x.CloudPathFromRoot == currentPath).Select(x => x.Name).ToListAsync() ?? new();
 
             try
             {
@@ -536,7 +544,7 @@ namespace NCloud.Services
 
                 Pair<string, string> parentPathAndName = GetParentPathAndName(currentPath);
 
-                Pair<bool, bool> connections = await FolderIsSharedInAppInWeb(parentPathAndName.First, parentPathAndName.Second, user);
+                Pair<bool, bool> connections = await FolderIsSharedInAppInWeb(parentPathAndName.First, parentPathAndName.Second);
 
                 if (connections.First && currentPath != Constants.GetCloudRootPathInDatabase(user.Id))
                 {
@@ -654,7 +662,7 @@ namespace NCloud.Services
 
                 Pair<string, string> parentPathAndName = GetParentPathAndName(currentPath);
 
-                Pair<bool, bool> connections = await FolderIsSharedInAppInWeb(parentPathAndName.First, parentPathAndName.Second, user);
+                Pair<bool, bool> connections = await FolderIsSharedInAppInWeb(parentPathAndName.First, parentPathAndName.Second);
 
                 if (connections.First && currentPath != Constants.GetCloudRootPathInDatabase(user.Id))
                 {
@@ -839,7 +847,7 @@ namespace NCloud.Services
             }
         }
 
-        public async Task<string?> CreateZipFile(List<string> itemsForDownload, string currentPath, string filePath, bool connectedToApp, bool connectedToWeb, ClaimsPrincipal userPrincipal)
+        public async Task<string?> CreateZipFile(List<string> itemsForDownload, string currentPath, string filePath, bool connectedToApp, bool connectedToWeb)
         {
             using var zipFile = System.IO.File.Create(filePath);
 
@@ -856,6 +864,8 @@ namespace NCloud.Services
                                 try
                                 {
                                     string name = itemName[1..];
+
+                                    //if(FileIsSharedInAppInWeb)
 
                                     archive.CreateEntryFromFile(Path.Combine(ParseRootName(currentPath), name), name);
                                 }
@@ -882,14 +892,14 @@ namespace NCloud.Services
 
                                         currentRelativePath = Path.Combine(directoryInfo.First, directoryInfo.Second.Name);
 
-                                        foreach (CloudFile file in await GetCurrentDepthCloudFiles(Path.Combine(currentPath, currentRelativePath), userPrincipal))
+                                        foreach (CloudFile file in await GetCurrentDepthCloudFiles(Path.Combine(currentPath, currentRelativePath)))
                                         {
                                             archive.CreateEntryFromFile(Path.Combine(serverPathStart, currentRelativePath, file.Info.Name), Path.Combine(currentRelativePath, file.Info.Name));
 
                                             ++counter;
                                         }
 
-                                        foreach (CloudFolder folder in await GetCurrentDepthCloudDirectories(Path.Combine(currentPath, currentRelativePath), userPrincipal))
+                                        foreach (CloudFolder folder in await GetCurrentDepthCloudDirectories(Path.Combine(currentPath, currentRelativePath)))
                                         {
                                             directories.Enqueue(new Pair<string, DirectoryInfo>(currentRelativePath, folder.Info));
 

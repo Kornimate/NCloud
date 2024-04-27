@@ -6,8 +6,8 @@ namespace NCloud.Services
 {
     public interface ICloudService
     {
-        Task<List<CloudFolder>> GetCurrentDepthCloudDirectories(string currentPath, ClaimsPrincipal userPrincipal);
-        Task<List<CloudFile>> GetCurrentDepthCloudFiles(string currentPath, ClaimsPrincipal userPrincipal);
+        Task<List<CloudFolder>> GetCurrentDepthCloudDirectories(string currentPath);
+        Task<List<CloudFile>> GetCurrentDepthCloudFiles(string currentPath);
         Task<CloudUser?> GetAdmin();
         Task<bool> CreateBaseDirectory(CloudUser cloudUser);
         Task CreateDirectory(string folderName, string currentPath, ClaimsPrincipal userPrincipal);
@@ -36,7 +36,7 @@ namespace NCloud.Services
         Task<string> WebBackCheck(string path);
         Task<List<CloudFile>> GetCurrentDepthWebFiles(string path);
         Task<List<CloudFolder>> GetCurrentDepthWebDirectories(string path);
-        Task<string?> CreateZipFile(List<string> itemsForDownload, string currentPath, string filePath, bool connectedToApp, bool connectedToWeb, ClaimsPrincipal userPrincipal);
+        Task<string?> CreateZipFile(List<string> itemsForDownload, string currentPath, string filePath, bool connectedToApp, bool connectedToWeb);
         Task <string> ChangePathStructure(string currentPath);
     }
 }
