@@ -28,14 +28,14 @@ namespace NCloud.Services
         Task<bool> DisonnectFileFromApp(string currentPath, string fileName, ClaimsPrincipal userPrincipal);
         Task<bool> DisonnectFileFromWeb(string currentPath, string fileName, ClaimsPrincipal userPrincipal);
         Task<List<CloudFolder>> GetSharingUsersSharingDirectories(string currentPath);
-        Task<List<CloudFile>> GetCurrentDepthSharingFiles(string currentPath);
-        Task<List<CloudFolder>> GetCurrentDepthSharingDirectories(string currentPath);
+        Task<List<CloudFile>> GetCurrentDepthAppSharingFiles(string currentPath);
+        Task<List<CloudFolder>> GetCurrentDepthAppSharingDirectories(string currentPath);
         Task<bool> OwnerOfPathIsActualUser(string currentPath, ClaimsPrincipal userPrincipal);
         Task<List<string>> GetUserSharedFolderUrls(ClaimsPrincipal userPrincipal);
         Task<List<string>> GetUserSharedFileUrls(ClaimsPrincipal userPrincipal);
         Task<string> WebBackCheck(string path);
-        Task<List<CloudFile>> GetCurrentDepthWebFiles(string path);
-        Task<List<CloudFolder>> GetCurrentDepthWebDirectories(string path);
+        Task<List<CloudFile>> GetCurrentDepthWebSharingFiles(string path);
+        Task<List<CloudFolder>> GetCurrentDepthWebSharingDirectories(string path);
         Task<string?> CreateZipFile(List<string> itemsForDownload, string currentPath, string filePath, bool connectedToApp, bool connectedToWeb);
         Task <string> ChangePathStructure(string currentPath);
     }

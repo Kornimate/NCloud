@@ -751,14 +751,14 @@ namespace NCloud.Services
             return context.Users.Where(x => x.SharedFiles.Where(x => x.ConnectedToApp).Count() > 0 || x.SharedFolders.Where(x => x.ConnectedToApp).Count() > 0).Select(x => new CloudFolder(x.UserName, null)).ToListAsync();
         }
 
-        public async Task<List<CloudFile>> GetCurrentDepthSharingFiles(string currentPath)
+        public async Task<List<CloudFile>> GetCurrentDepthAppSharingFiles(string currentPath)
         {
             CloudUser? user = await context.Users.FirstOrDefaultAsync(x => x.UserName == GetSharedPathOwnerUser(currentPath));
 
             return (await context.SharedFiles.Where(x => x.ConnectedToApp && x.Owner == user && x.SharedPathFromRoot == currentPath).ToListAsync()).Select(x => new CloudFile(new FileInfo(Path.Combine(ParseRootName(x.CloudPathFromRoot), x.Name)), x.ConnectedToApp, x.ConnectedToWeb, String.Empty)).ToList() ?? new();
         }
 
-        public async Task<List<CloudFolder>> GetCurrentDepthSharingDirectories(string currentPath)
+        public async Task<List<CloudFolder>> GetCurrentDepthAppSharingDirectories(string currentPath)
         {
             CloudUser? user = await context.Users.FirstOrDefaultAsync(x => x.UserName == GetSharedPathOwnerUser(currentPath));
 
@@ -846,7 +846,7 @@ namespace NCloud.Services
             return await context.SharedFolders.FirstOrDefaultAsync(x => x.CloudPathFromRoot == path && x.Name == folderName && x.ConnectedToWeb) != null;
         }
 
-        public async Task<List<CloudFile>> GetCurrentDepthWebFiles(string path)
+        public async Task<List<CloudFile>> GetCurrentDepthWebSharingFiles(string path)
         {
             try
             {
@@ -858,7 +858,7 @@ namespace NCloud.Services
             }
         }
 
-        public async Task<List<CloudFolder>> GetCurrentDepthWebDirectories(string path)
+        public async Task<List<CloudFolder>> GetCurrentDepthWebSharingDirectories(string path)
         {
             try
             {

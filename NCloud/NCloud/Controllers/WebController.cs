@@ -22,8 +22,8 @@ namespace NCloud.Controllers
         {
             path = HashManager.DecryptString(path);
 
-            return await Task.FromResult<IActionResult>(View("Details", new WebDetailsViewModel(await service.GetCurrentDepthWebFiles(path),
-                                                                                     await service.GetCurrentDepthWebDirectories(path),
+            return await Task.FromResult<IActionResult>(View("Details", new WebDetailsViewModel(await service.GetCurrentDepthWebSharingFiles(path),
+                                                                                     await service.GetCurrentDepthWebSharingDirectories(path),
                                                                                      path)));
         }
 
@@ -34,8 +34,8 @@ namespace NCloud.Controllers
                 path = Path.Combine(path, folderName);
             }
 
-            return await Task.FromResult<IActionResult>(View("Details", new WebDetailsViewModel(await service.GetCurrentDepthWebFiles(path),
-                                                                         await service.GetCurrentDepthWebDirectories(path),
+            return await Task.FromResult<IActionResult>(View("Details", new WebDetailsViewModel(await service.GetCurrentDepthWebSharingFiles(path),
+                                                                         await service.GetCurrentDepthWebSharingDirectories(path),
                                                                          path)));
         }
         public async Task<IActionResult> Back(string path)
@@ -84,8 +84,8 @@ namespace NCloud.Controllers
         {
             try
             {
-                var files = await service.GetCurrentDepthCloudFiles(path);
-                var folders = await service.GetCurrentDepthCloudDirectories(path);
+                var files = await service.GetCurrentDepthWebSharingFiles(path);
+                var folders = await service.GetCurrentDepthWebSharingDirectories(path);
 
                 return View(new WebDownloadViewModel
                 {

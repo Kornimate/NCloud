@@ -32,8 +32,8 @@ namespace NCloud.Controllers
 
             try
             {
-                return View(new SharingDetailsViewModel(await service.GetCurrentDepthSharingFiles(currentPath),
-                                                        await service.GetCurrentDepthSharingDirectories(currentPath),
+                return View(new SharingDetailsViewModel(await service.GetCurrentDepthAppSharingFiles(currentPath),
+                                                        await service.GetCurrentDepthAppSharingDirectories(currentPath),
                                                         pathdata.CurrentPathShow,
                                                         await service.OwnerOfPathIsActualUser(currentPath, User)));
             }
@@ -97,8 +97,8 @@ namespace NCloud.Controllers
 
             try
             {
-                var files = await service.GetCurrentDepthCloudFiles(pathData.CurrentPath);
-                var folders = await service.GetCurrentDepthCloudDirectories(pathData.CurrentPath);
+                var files = await service.GetCurrentDepthAppSharingFiles(pathData.CurrentPath);
+                var folders = await service.GetCurrentDepthAppSharingDirectories(pathData.CurrentPath);
 
                 return View(new DriveDownloadViewModel
                 {
