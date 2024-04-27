@@ -6,8 +6,8 @@ namespace NCloud.Services
 {
     public interface ICloudService
     {
-        Task<List<CloudFolder>> GetCurrentDepthCloudDirectories(string currentPath);
-        Task<List<CloudFile>> GetCurrentDepthCloudFiles(string currentPath);
+        Task<List<CloudFolder>> GetCurrentDepthCloudDirectories(string currentPath, bool connectToApp = false, bool connectToWeb = false);
+        Task<List<CloudFile>> GetCurrentDepthCloudFiles(string currentPath, bool connectToApp = false, bool connectToWeb = false);
         Task<CloudUser?> GetAdmin();
         Task<bool> CreateBaseDirectory(CloudUser cloudUser);
         Task CreateDirectory(string folderName, string currentPath, ClaimsPrincipal userPrincipal);

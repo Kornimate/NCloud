@@ -13,6 +13,7 @@ using NCloud.Security;
 using Microsoft.AspNetCore.Mvc;
 using System.IO.Compression;
 using System;
+using System.Xml.Linq;
 
 namespace NCloud.Services
 {
@@ -223,14 +224,14 @@ namespace NCloud.Services
 
         private async Task<Pair<bool, bool>> FileIsSharedInAppInWeb(string cloudPath, string directoryName)
         {
-            SharedFile? sharedFolder = await context.SharedFiles.FirstOrDefaultAsync(x => x.CloudPathFromRoot == cloudPath && x.Name == directoryName);
+            SharedFile? sharedFile = await context.SharedFiles.FirstOrDefaultAsync(x => x.CloudPathFromRoot == cloudPath && x.Name == directoryName);
 
-            if (sharedFolder is null)
+            if (sharedFile is null)
             {
                 return new Pair<bool, bool>(false, false);
             }
 
-            return new Pair<bool, bool>(sharedFolder.ConnectedToApp, sharedFolder.ConnectedToWeb);
+            return new Pair<bool, bool>(sharedFile.ConnectedToApp, sharedFile.ConnectedToWeb);
         }
 
         private Pair<string, string> GetParentPathAndName(string path)
@@ -252,7 +253,7 @@ namespace NCloud.Services
             return await context.Users.FirstOrDefaultAsync(x => x.UserName == Constants.AdminUserName);
         }
 
-        public async Task<List<CloudFile>> GetCurrentDepthCloudFiles(string currentPath)
+        public async Task<List<CloudFile>> GetCurrentDepthCloudFiles(string currentPath, bool connectedToApp = false, bool connectedToWeb = false)
         {
             string path = ParseRootName(currentPath);
 
@@ -261,7 +262,18 @@ namespace NCloud.Services
 
             try
             {
-                return await Task.FromResult<List<CloudFile>>(Directory.GetFiles(path).Select(x => new CloudFile(new FileInfo(x), appsharedfiles.Contains(Path.GetFileName(x)!), websharedfiles.Contains(Path.GetFileName(x)!), Path.Combine(currentPath, Path.GetFileName(x)))).OrderBy(x => x.Info.Name).ToList());
+                var items = await Task.FromResult<IEnumerable<CloudFile>>(Directory.GetFiles(path).Select(x => new CloudFile(new FileInfo(x), appsharedfiles.Contains(Path.GetFileName(x)!), websharedfiles.Contains(Path.GetFileName(x)!), Path.Combine(currentPath, Path.GetFileName(x)))).OrderBy(x => x.Info.Name));
+
+                if (connectedToApp)
+                {
+                    items = items.Where(x => x.IsConnectedToApp);
+                }
+                else if (connectedToWeb)
+                {
+                    items = items.Where(x => x.IsConnectedToWeb);
+                }
+
+                return items.ToList();
             }
             catch
             {
@@ -269,7 +281,7 @@ namespace NCloud.Services
             }
         }
 
-        public async Task<List<CloudFolder>> GetCurrentDepthCloudDirectories(string currentPath)
+        public async Task<List<CloudFolder>> GetCurrentDepthCloudDirectories(string currentPath, bool connectedToApp = false, bool connectedToWeb = false)
         {
             string path = ParseRootName(currentPath);
 
@@ -278,7 +290,18 @@ namespace NCloud.Services
 
             try
             {
-                return await Task.FromResult<List<CloudFolder>>(Directory.GetDirectories(path).Select(x => new CloudFolder(new DirectoryInfo(x), appsharedfolders.Contains(Path.GetFileName(x)!), websharedfolders.Contains(Path.GetFileName(x)!), Path.Combine(currentPath, Path.GetFileName(x)))).OrderBy(x => x.Info.Name).ToList());
+                var items = await Task.FromResult<IEnumerable<CloudFolder>>(Directory.GetDirectories(path).Select(x => new CloudFolder(new DirectoryInfo(x), appsharedfolders.Contains(Path.GetFileName(x)!), websharedfolders.Contains(Path.GetFileName(x)!), Path.Combine(currentPath, Path.GetFileName(x)))).OrderBy(x => x.Info.Name));
+
+                if (connectedToApp)
+                {
+                    items = items.Where(x => x.IsConnectedToApp);
+                }
+                else if (connectedToWeb)
+                {
+                    items = items.Where(x => x.IsConnectedToWeb);
+                }
+
+                return items.ToList();
             }
             catch
             {
@@ -827,7 +850,7 @@ namespace NCloud.Services
         {
             try
             {
-                return (await context.SharedFiles.Where(x => x.ConnectedToWeb && x.CloudPathFromRoot == path).ToListAsync()).Select(x => new CloudFile(new FileInfo(ParseRootName(Path.Combine(x.CloudPathFromRoot,x.Name))), false, true, String.Empty)).OrderBy(x => x.Info.Name).ToList();
+                return (await context.SharedFiles.Where(x => x.ConnectedToWeb && x.CloudPathFromRoot == path).ToListAsync()).Select(x => new CloudFile(new FileInfo(ParseRootName(Path.Combine(x.CloudPathFromRoot, x.Name))), false, true, String.Empty)).OrderBy(x => x.Info.Name).ToList();
             }
             catch
             {
@@ -865,9 +888,7 @@ namespace NCloud.Services
                                 {
                                     string name = itemName[1..];
 
-                                    //if(FileIsSharedInAppInWeb)
-
-                                    archive.CreateEntryFromFile(Path.Combine(ParseRootName(currentPath), name), name);
+                                    await AddFileToArchive(archive, currentPath, name, connectedToApp, connectedToWeb);
                                 }
                                 catch (Exception ex)
                                 {
@@ -892,14 +913,14 @@ namespace NCloud.Services
 
                                         currentRelativePath = Path.Combine(directoryInfo.First, directoryInfo.Second.Name);
 
-                                        foreach (CloudFile file in await GetCurrentDepthCloudFiles(Path.Combine(currentPath, currentRelativePath)))
+                                        foreach (CloudFile file in await GetCurrentDepthCloudFiles(Path.Combine(currentPath, currentRelativePath), connectedToApp, connectedToWeb))
                                         {
                                             archive.CreateEntryFromFile(Path.Combine(serverPathStart, currentRelativePath, file.Info.Name), Path.Combine(currentRelativePath, file.Info.Name));
 
                                             ++counter;
                                         }
 
-                                        foreach (CloudFolder folder in await GetCurrentDepthCloudDirectories(Path.Combine(currentPath, currentRelativePath)))
+                                        foreach (CloudFolder folder in await GetCurrentDepthCloudDirectories(Path.Combine(currentPath, currentRelativePath), connectedToApp, connectedToWeb))
                                         {
                                             directories.Enqueue(new Pair<string, DirectoryInfo>(currentRelativePath, folder.Info));
 
@@ -937,7 +958,7 @@ namespace NCloud.Services
                     {
                         File.Delete(filePath);
                     }
-                    catch (Exception) { }               
+                    catch (Exception) { }
                 }
 
                 throw new InvalidOperationException(ex.Message);
@@ -945,11 +966,37 @@ namespace NCloud.Services
             }
         }
 
+        private async Task AddFileToArchive(ZipArchive archive, string currentPath, string name, bool connectedToApp = false, bool connectedToWeb = false)
+        {
+            if (connectedToApp)
+            {
+                var connections = await FileIsSharedInAppInWeb(currentPath, name);
+
+                if (connections.First)
+                {
+                    archive.CreateEntryFromFile(Path.Combine(ParseRootName(currentPath), name), name);
+                }
+            }
+            else if (connectedToWeb)
+            {
+                var connections = await FileIsSharedInAppInWeb(currentPath, name);
+
+                if (connections.Second)
+                {
+                    archive.CreateEntryFromFile(Path.Combine(ParseRootName(currentPath), name), name);
+                }
+            }
+            else
+            {
+                archive.CreateEntryFromFile(Path.Combine(ParseRootName(currentPath), name), name);
+            }
+        }
+
         public async Task<string> ChangePathStructure(string currentPath)
         {
-            string[] pathElements = currentPath.Split(Path.DirectorySeparatorChar,StringSplitOptions.RemoveEmptyEntries);
+            string[] pathElements = currentPath.Split(Path.DirectorySeparatorChar, StringSplitOptions.RemoveEmptyEntries);
 
-            if(pathElements.Length < 2)
+            if (pathElements.Length < 2)
             {
                 return currentPath;
             }
