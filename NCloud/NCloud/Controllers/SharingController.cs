@@ -32,8 +32,8 @@ namespace NCloud.Controllers
 
             try
             {
-                return View(new SharingDetailsViewModel(await service.GetCurrentDepthSharingFiles(currentPath, User),
-                                                        await service.GetCurrentDepthSharingDirectories(currentPath, User),
+                return View(new SharingDetailsViewModel(await service.GetCurrentDepthSharingFiles(currentPath),
+                                                        await service.GetCurrentDepthSharingDirectories(currentPath),
                                                         pathdata.CurrentPathShow,
                                                         await service.OwnerOfPathIsActualUser(currentPath, User)));
             }
