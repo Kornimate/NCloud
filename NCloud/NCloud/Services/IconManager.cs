@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace NCloud.Services
 {
-    public class ImageLoader
+    public class IconManager
     {
         public static string Load(bool isDirectory, string name)
         {

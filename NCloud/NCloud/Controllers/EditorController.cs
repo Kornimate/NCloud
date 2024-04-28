@@ -14,15 +14,28 @@ namespace NCloud.Controllers
     {
         public EditorController(ICloudService service, UserManager<CloudUser> userManager, SignInManager<CloudUser> signInManager, IWebHostEnvironment env, ICloudNotificationService notifier) : base(service, userManager, signInManager, env, notifier) { }
 
-        public IActionResult Index(string fileName)
+        public async Task<IActionResult> Index()
         {
-            if (ExtensionManager.TryGetFileCodingExtensionData(fileName, out string codingExtensionData))
+            return await Task.FromResult<IActionResult>(View());
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CreateNewFile(string fileName, string fileExtension)
+        {
+            //TODO: implement method
+            return View();
+        }
+
+        public async Task<IActionResult> EditorHub(string fileName)
+        {
+            if (await ExtensionManager.TryGetFileCodingExtensionData(fileName, out string codingExtensionData))
             {
-                return RedirectToAction("CodeEditor", new { fileName = fileName, extensionData = codingExtensionData });
+                return RedirectToAction("CodeEditor", new { fileName = fileName, extensionData = codingExtensionData, errorAction = RedirectToAction("Details", "Drive") });
             }
-            else if (ExtensionManager.TryGetFileCodingExtensionData(fileName, out string textDocumentExtensionData))
+            else if (await ExtensionManager.TryGetFileCodingExtensionData(fileName, out string textDocumentExtensionData))
             {
-                return RedirectToAction("TextEditor", new { fileName = fileName, extensionData = textDocumentExtensionData });
+                return RedirectToAction("TextEditor", new { fileName = fileName, extensionData = textDocumentExtensionData, errorAction = RedirectToAction("Details", "Drive") });
             }
             else
             {
@@ -32,7 +45,7 @@ namespace NCloud.Controllers
             }
         }
 
-        public async Task<ActionResult> CodeEditor(string fileName, string extensionData)
+        public async Task<IActionResult> CodeEditor(string fileName, string extensionData, IActionResult errorAction)
         {
             CloudPathData pathData = await GetSessionCloudPathData();
 
@@ -51,11 +64,11 @@ namespace NCloud.Controllers
             {
                 AddNewNotification(new Error("Application could not load the file"));
 
-                return RedirectToAction("Details", "Drive");
+                return errorAction;
             }
         }
 
-        public async Task<IActionResult> TextEditor(string fileName, string extensionData)
+        public async Task<IActionResult> TextEditor(string fileName, string extensionData, IActionResult errorAction)
         {
             CloudPathData pathData = await GetSessionCloudPathData();
 
@@ -74,7 +87,7 @@ namespace NCloud.Controllers
             {
                 AddNewNotification(new Error("Application could not load the file"));
 
-                return RedirectToAction("Details", "Drive");
+                return errorAction;
             }
         }
 
@@ -82,6 +95,8 @@ namespace NCloud.Controllers
         [ValidateAntiForgeryToken]
         public async Task<JsonResult> SaveData(string? file = null)
         {
+
+
             return Json(new ConnectionDTO { Success = true, Message = "---" });
         }
     }

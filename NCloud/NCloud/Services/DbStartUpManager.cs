@@ -9,7 +9,7 @@ using System.Text.Json;
 
 namespace NCloud.Services
 {
-    public class DbInitializer
+    public static class DbStartUpManager
     {
         private static CloudDbContext context = null!;
         private static UserManager<CloudUser> userManager = null!;

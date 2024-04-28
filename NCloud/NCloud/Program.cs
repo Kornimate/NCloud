@@ -41,8 +41,6 @@ namespace NCloud
 
             builder.Services.AddTransient<ICloudTerminalService, CloudTerminalService>();
 
-            builder.Services.AddTransient<ICloudShareService, CloudShareService>();
-
             builder.Services.AddTransient<ICloudNotificationService, CloudNotificationService>();
           
             builder.Services.AddControllersWithViews();
@@ -96,7 +94,7 @@ namespace NCloud
             using (var serviceScope = app.Services.CreateScope())
             using (var context = serviceScope.ServiceProvider.GetRequiredService<CloudDbContext>())
             {
-                DbInitializer.Initialize(serviceScope.ServiceProvider, app.Environment);
+                DbStartUpManager.Initialize(serviceScope.ServiceProvider, app.Environment);
             }
 
             Timer timer = new Timer(_ => new Thread(() =>

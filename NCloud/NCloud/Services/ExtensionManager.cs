@@ -5,41 +5,41 @@ namespace NCloud.Services
 {
     public static class ExtensionManager
     {
-        public static bool TryGetFileCodingExtensionData(string fileName, out string extensionData)
+        public static Task<bool> TryGetFileCodingExtensionData(string fileName, out string extensionData)
         {
 
-            string extension = Path.GetExtension(fileName).TrimStart(Constants.FileExtensionDelimiter);
+            string extension = Path.GetExtension(fileName).TrimStart(Constants.FileExtensionDelimiter).ToLower();
 
             try
             {
                 extensionData = JObject.Parse(File.ReadAllText(Constants.CodingExtensionsFilePath))[extension]?.ToString() ?? String.Empty;
 
-                return extensionData != String.Empty;
+                return Task.FromResult<bool>(extensionData != String.Empty);
             }
             catch (Exception)
             {
                 extensionData = String.Empty;
 
-                return false;
+                return Task.FromResult<bool>(false);
             }
         }
 
-        public static bool TryGetFileTextDocumentExtensionData(string fileName, out string extensionData)
+        public static Task<bool> TryGetFileTextDocumentExtensionData(string fileName, out string extensionData)
         {
 
-            string extension = Path.GetExtension(fileName).TrimStart(Constants.FileExtensionDelimiter);
+            string extension = Path.GetExtension(fileName).TrimStart(Constants.FileExtensionDelimiter).ToLower();
 
             try
             {
                 extensionData = JObject.Parse(File.ReadAllText(Constants.TextDocumentExtensionsFilePath))[extension]?.ToString() ?? String.Empty;
 
-                return extensionData != String.Empty;
+                return Task.FromResult<bool>(extensionData != String.Empty);
             }
             catch (Exception)
             {
                 extensionData = String.Empty;
 
-                return false;
+                return Task.FromResult<bool>(false);
             }
         }
     }
