@@ -177,7 +177,7 @@ namespace NCloud.Controllers
                                 {
                                     FileStream stream = new FileStream(Path.Combine(service.ServerPath(path), name), FileMode.Open, FileAccess.Read, FileShare.Read);
 
-                                    return File(stream, FormatManager.GetMimeType(name), name);
+                                    return File(stream, MimeTypeManager.GetMimeType(name), name);
                                 }
                                 catch (Exception)
                                 {

@@ -32,9 +32,12 @@ namespace NCloud.ConstantData
         public static string PublicRootName { get => "@SHAREDROOT"; }
         public static string CompressedArchiveFileType { get => "zip"; }
         public static string NotSelectedResult { get => "false"; }
+        public static string CodingExtensionsFilePath { get => "./Services/Resources/coding-extensions.json"; }
+        public static string TextDocumentExtensionsFilePath { get => "./Services/Resources/text-document-extensions.json"; }
         public static char SelectedFileStarterSymbol { get => '_'; }
         public static char SelectedFolderStarterSymbol { get => '&'; }
         public static char FileNameDelimiter { get => '_'; }
+        public static char FileExtensionDelimiter { get => '.'; }
         public static char PathSeparator { get => '/'; }
         public static int DistanceToRootFolder { get => 4; }
         public static int EmptyFolderAttributeNumberZip { get => 16; }

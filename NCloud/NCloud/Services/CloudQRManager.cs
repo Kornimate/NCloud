@@ -2,7 +2,7 @@
 using QRCoder;
 using System.Drawing;
 
-namespace NCloud.Models
+namespace NCloud.Services
 {
     public static class CloudQRManager
     {
@@ -13,7 +13,7 @@ namespace NCloud.Models
             QRCode code = new QRCode(info);
             Bitmap img = code.GetGraphic(30);
 
-            return "data:image/png;base64, " + Convert.ToBase64String((byte[])(new ImageConverter().ConvertTo(img, typeof(byte[])))!);
+            return "data:image/png;base64, " + Convert.ToBase64String((byte[])new ImageConverter().ConvertTo(img, typeof(byte[]))!);
         }
     }
 }

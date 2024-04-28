@@ -3,7 +3,7 @@ using NCloud.ConstantData;
 
 namespace NCloud.Services
 {
-    public static class FormatManager
+    public static class MimeTypeManager
     {
         public static string GetMimeType(string fileName)
         {

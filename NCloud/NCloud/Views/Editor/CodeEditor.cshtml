@@ -1,9 +1,10 @@
-﻿@model CodeEditorViewModel
+﻿@model EditorViewModel
 
 @{
     ViewData["Title"] = "Code Editor";
 }
 
+@Html.AntiForgeryToken();
 <div class="d-flex justify-content-end mb-2 background-color w-100 rounded">
     <div class="btn-group">
         <div class="btn">&nbsp;</div>
@@ -28,8 +29,7 @@
 
 <script>
     var editor = monaco.editor.create(document.getElementById('CodeEditor'), {
-        value: "//write your code here",
-        language: 'csharp',
+        value: "@(Model.Content != String.Empty ? Model.Content : "//write your code here")",
         theme:"hc-black"
     });
 </script>

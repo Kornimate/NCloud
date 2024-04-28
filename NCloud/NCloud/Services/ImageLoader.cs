@@ -1,7 +1,7 @@
 ﻿using NCloud.ConstantData;
 using System.Collections.Generic;
 
-namespace NCloud.Models
+namespace NCloud.Services
 {
     public class ImageLoader
     {
@@ -24,7 +24,7 @@ namespace NCloud.Models
 
             string extensionFilter = Path.GetExtension(fileName).ToLower();
 
-            string extension =  extensionFilter != String.Empty ? extensionFilter[1..] : Constants.NoFileType;
+            string extension = extensionFilter != string.Empty ? extensionFilter[1..] : Constants.NoFileType;
 
             if (File.Exists(Path.Combine(Constants.IconsBasePath, $"{Constants.FileTypePrefix}{extension}{Constants.SuffixForIcons}")))
             {

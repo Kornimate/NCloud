@@ -2,12 +2,12 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using NCloud.ConstantData;
-using NCloud.Services;
+using NCloud.Models;
 using NCloud.Users;
 using NCloud.Users.Roles;
 using System.Text.Json;
 
-namespace NCloud.Models
+namespace NCloud.Services
 {
     public class DbInitializer
     {
@@ -45,7 +45,7 @@ namespace NCloud.Models
                 Directory.CreateDirectory(Path.Combine(env.WebRootPath, "CloudData", "Private"));
             }
 
-            if (!Directory.Exists(Path.Combine(env.WebRootPath,Constants.TempFilePath)))
+            if (!Directory.Exists(Path.Combine(env.WebRootPath, Constants.TempFilePath)))
             {
                 Directory.CreateDirectory(Path.Combine(env.WebRootPath, Constants.TempFilePath));
             }
@@ -65,7 +65,7 @@ namespace NCloud.Models
 
                 Task.Run(async () =>
                 {
-                    if (!(await service.CreateBaseDirectory(adminUser)))
+                    if (!await service.CreateBaseDirectory(adminUser))
                     {
                         throw new Exception("App unable to create base resources!");
                     }

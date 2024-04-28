@@ -6,55 +6,83 @@ using System.Text.Json;
 using NCloud.ViewModels;
 using Microsoft.AspNetCore.Identity;
 using NCloud.Users;
+using NCloud.DTOs;
 
 namespace NCloud.Controllers
 {
     public class EditorController : CloudControllerDefault
     {
-        private readonly HashSet<string> codingExtensions = new HashSet<string>();
-
         public EditorController(ICloudService service, UserManager<CloudUser> userManager, SignInManager<CloudUser> signInManager, IWebHostEnvironment env, ICloudNotificationService notifier) : base(service, userManager, signInManager, env, notifier) { }
-        
-        // GET: EditorController
+
         public IActionResult Index(string fileName)
         {
-            FileInfo fi = new FileInfo(fileName);
-
-            if (codingExtensions.Contains(fi.Extension))
+            if (ExtensionManager.TryGetFileCodingExtensionData(fileName, out string codingExtensionData))
             {
-                return RedirectToAction("CodeEditor", new { fileName = fileName });
+                return RedirectToAction("CodeEditor", new { fileName = fileName, extensionData = codingExtensionData });
+            }
+            else if (ExtensionManager.TryGetFileCodingExtensionData(fileName, out string textDocumentExtensionData))
+            {
+                return RedirectToAction("TextEditor", new { fileName = fileName, extensionData = textDocumentExtensionData });
             }
             else
             {
-                return RedirectToAction("TextEditor", new { fileName = fileName });
+                AddNewNotification(new Error("No Editor available for this extension"));
+
+                return RedirectToAction("Details", "Drive");
             }
         }
 
-        public async Task<ActionResult> CodeEditor(string? fileName = null)
+        public async Task<ActionResult> CodeEditor(string fileName, string extensionData)
         {
-            if (fileName == null)
-            {
-                return View(new CodeEditorViewModel());
-            }
-            
             CloudPathData pathData = await GetSessionCloudPathData();
-            
-            return View(new CodeEditorViewModel { FilePath = service.ServerPath(Path.Combine(pathData.CurrentPath, fileName)) });
+
+            string pathAndName = Path.Combine(pathData.CurrentPath, fileName);
+
+            try
+            {
+                return View(new EditorViewModel
+                {
+                    FilePath = pathAndName,
+                    Content = System.IO.File.ReadAllText(service.ServerPath(Path.Combine())),
+                    ExtensionData = extensionData
+                });
+            }
+            catch (Exception)
+            {
+                AddNewNotification(new Error("Application could not load the file"));
+
+                return RedirectToAction("Details", "Drive");
+            }
         }
 
-        public IActionResult TextEditor(string? fileName = null)
+        public async Task<IActionResult> TextEditor(string fileName, string extensionData)
         {
-            //TODO: implement with file input
-            return View(new TextEditorViewModel());
+            CloudPathData pathData = await GetSessionCloudPathData();
+
+            string pathAndName = Path.Combine(pathData.CurrentPath, fileName);
+
+            try
+            {
+                return View(new EditorViewModel
+                {
+                    FilePath = pathAndName,
+                    Content = System.IO.File.ReadAllText(service.ServerPath(Path.Combine())),
+                    ExtensionData = extensionData
+                });
+            }
+            catch (Exception)
+            {
+                AddNewNotification(new Error("Application could not load the file"));
+
+                return RedirectToAction("Details", "Drive");
+            }
         }
 
         [HttpPost]
-        [ActionName("TextEditor")]
         [ValidateAntiForgeryToken]
-        public IActionResult TextEditorPost(string? fileNameAndPath = null)
+        public async Task<JsonResult> SaveData(string? file = null)
         {
-            //TODO: implement save file or create new file
-            return View(new TextEditorViewModel());
+            return Json(new ConnectionDTO { Success = true, Message = "---" });
         }
     }
 }
