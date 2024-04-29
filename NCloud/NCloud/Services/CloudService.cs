@@ -163,10 +163,8 @@ namespace NCloud.Services
             }
         }
 
-        public async Task<int> CreateFile(IFormFile file, string currentPath, ClaimsPrincipal userPrincipal)
+        public async Task<string> CreateFile(IFormFile file, string currentPath, ClaimsPrincipal userPrincipal)
         {
-            int retNum = 1;
-
             string path = ParseRootName(currentPath);
             string newName = file.FileName;
             string pathAndName = Path.Combine(path, newName);
@@ -181,7 +179,6 @@ namespace NCloud.Services
 
                     newName = fi.Name.Split('.')[0] + Constants.FileNameDelimiter + $"{++counter}" + fi.Extension;
                     pathAndName = Path.Combine(path, newName);
-                    retNum = 0;
                 }
 
                 using (FileStream stream = new FileStream(pathAndName, FileMode.Create))
@@ -204,10 +201,10 @@ namespace NCloud.Services
                     //TODO: logging action
                 }
 
-                retNum = -1; //error occurred
+                return String.Empty;
             }
 
-            return retNum;
+            return newName;
         }
 
         private async Task<Pair<bool, bool>> FolderIsSharedInAppInWeb(string cloudPath, string directoryName)

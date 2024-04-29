@@ -4,7 +4,7 @@
     ViewData["Title"] = "Code Editor";
 }
 
-@Html.AntiForgeryToken();
+@Html.AntiForgeryToken()
 <div class="d-flex justify-content-end mb-2 background-color w-100 rounded">
     <div class="btn-group">
         <div class="btn">&nbsp;</div>
@@ -30,6 +30,8 @@
 <script>
     var editor = monaco.editor.create(document.getElementById('CodeEditor'), {
         value: "@(Model.Content != String.Empty ? Model.Content : "//write your code here")",
-        theme:"hc-black"
+        theme:"hc-black",
+        language: "javascript",
+        automaticLayout: true,
     });
 </script>

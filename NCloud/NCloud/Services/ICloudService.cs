@@ -11,7 +11,7 @@ namespace NCloud.Services
         Task<CloudUser?> GetAdmin();
         Task<bool> CreateBaseDirectory(CloudUser cloudUser);
         Task CreateDirectory(string folderName, string currentPath, ClaimsPrincipal userPrincipal);
-        Task<int> CreateFile(IFormFile file, string currentPath, ClaimsPrincipal userPrincipal);
+        Task<string> CreateFile(IFormFile file, string currentPath, ClaimsPrincipal userPrincipal);
         Task<bool> RemoveDirectory(string folderName, string currentPath, ClaimsPrincipal userPrincipal);
         Task<bool> RemoveFile(string fileName, string currentPath, ClaimsPrincipal userPrincipal);
         string ServerPath(string currentPath);

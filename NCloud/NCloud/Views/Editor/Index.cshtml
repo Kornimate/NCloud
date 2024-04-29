@@ -27,7 +27,7 @@
     </div>
 </div>
 
-<div class="modal fade" id="codingModal" tabindex="-1" aria-labelledby="codingModal" aria-hidden="true">
+<div class="modal hide fade" id="codingModal" aria-labelledby="codingModal" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header background-color">
@@ -39,7 +39,7 @@
                     <div class="input-group">
                         <input asp-for="FileName" class="form-control" placeholder="Write filename here..." />
                         <span class="input-group-text">.</span>
-                        <select asp-for="Extension" asp-items="@Model.CodingExtensions" class="selectlist"></select>
+                        <select asp-for="Extension" asp-items="@Model.CodingExtensions" id="codeSelect"></select>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -51,7 +51,7 @@
     </div>
 </div>
 
-<div class="modal fade" id="textDocumentModal" tabindex="-1" aria-labelledby="textDocumentModal" aria-hidden="true">
+<div class="modal hide fade" id="textDocumentModal" aria-labelledby="textDocumentModal" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header background-color">
@@ -63,7 +63,7 @@
                     <div class="input-group">
                         <input asp-for="FileName" class="form-control" placeholder="Write filename here..." />
                         <span class="input-group-text">.</span>
-                        <select asp-for="Extension" asp-items="@Model.TextDocumentExtensions" class="selectlist"></select>
+                        <select asp-for="Extension" asp-items="@Model.TextDocumentExtensions" id="textDocumentSelect"></select>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -74,3 +74,18 @@
         </div>
     </div>
 </div>
+
+@section Scripts {
+    
+    <script type="text/javascript">
+        $("#codeSelect").select2({
+            theme: "bootstrap-5",
+            dropdownParent: ("#codingModal")
+        });
+
+        $("#textDocumentSelect").select2({
+            theme: "bootstrap-5",
+            dropdownParent: ("#textDocumentModal")
+        });
+    </script>
+}

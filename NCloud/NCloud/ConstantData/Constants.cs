@@ -1,4 +1,5 @@
 ﻿using Castle.Core;
+using System.Security.Claims;
 
 namespace NCloud.ConstantData
 {
@@ -34,6 +35,7 @@ namespace NCloud.ConstantData
         public static string NotSelectedResult { get => "false"; }
         public static string CodingExtensionsFilePath { get => "./Services/Resources/coding-extensions.json"; }
         public static string TextDocumentExtensionsFilePath { get => "./Services/Resources/text-document-extensions.json"; }
+        public static string ControllerDataSeparator{ get => "||"; }
         public static char SelectedFileStarterSymbol { get => '_'; }
         public static char SelectedFolderStarterSymbol { get => '&'; }
         public static char FileNameDelimiter { get => '_'; }
@@ -64,6 +66,15 @@ namespace NCloud.ConstantData
         public static string GetSharingRootPathInDatabase(string userName)
         {
             return Path.Combine(PublicRootName, userName);
+        }
+        public static string GetDefaultFileSavingPath(Guid id)
+        {
+            return Path.Combine(GetCloudRootPathInDatabase(id), "Documents");
+        }
+
+        public static string GetDefaultFileShowingPath()
+        {
+            return String.Join(PathSeparator, PrivateRootName, "Documents");
         }
     }
 }

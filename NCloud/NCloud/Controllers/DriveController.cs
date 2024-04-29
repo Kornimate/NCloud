@@ -126,13 +126,13 @@ namespace NCloud.Controllers
 
             for (int i = 0; i < files.Count; i++)
             {
-                int res = await service.CreateFile(files[i], pathData.CurrentPath, User);
+                string res = await service.CreateFile(files[i], pathData.CurrentPath, User);
 
-                if (res == 0)
+                if (res != files[i].FileName)
                 {
-                    AddNewNotification(new Warning($"A File has been renamed!"));
+                    AddNewNotification(new Warning($"A file has been renamed!"));
                 }
-                else if (res == -1)
+                else if (res == String.Empty)
                 {
                     errorPresent = true;
 
