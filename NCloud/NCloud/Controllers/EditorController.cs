@@ -7,6 +7,7 @@ using NCloud.ViewModels;
 using Microsoft.AspNetCore.Identity;
 using NCloud.Users;
 using NCloud.DTOs;
+using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace NCloud.Controllers
 {
@@ -16,15 +17,25 @@ namespace NCloud.Controllers
 
         public async Task<IActionResult> Index()
         {
-            return await Task.FromResult<IActionResult>(View());
+            return View(new EditorIndexViewModel
+            {
+                CodingExtensions = new SelectList(await ExtensionManager.GetCodingExtensions()),
+                TextDocumentExtensions = new SelectList(await ExtensionManager.GetTextDocumentExtensions())
+            });
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> CreateNewFile(string fileName, string fileExtension)
+        public async Task<IActionResult> CreateNewFile([Bind("FileName,Extension")] EditorIndexViewModel vm)
         {
-            //TODO: implement method
-            return View();
+            if(ModelState.IsValid)
+            {
+
+            }
+
+            AddNewNotification(new Error("Invalid input data"));
+
+            return RedirectToAction("Index");
         }
 
         public async Task<IActionResult> EditorHub(string fileName)

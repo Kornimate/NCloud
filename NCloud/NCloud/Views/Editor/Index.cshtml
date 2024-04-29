@@ -1,15 +1,17 @@
-﻿@{
+﻿@model EditorIndexViewModel
+
+@{
     ViewData["Title"] = "Editors";
 }
 
 <div class="container w-50">
-    <div class="row row-cols-1 row-cols-md-2 g-4 vh-100 align-items-center">
+    <div class="row row-cols-1 row-cols-md-2 g-4 min-vh-100 align-items-center">
         <div class="col-sm-6">
             <div class="card border border-4 border-primary rounded p-3">
                 <img src="/utilities/editor-code.svg" class="card-img-top" alt="code-editor">
                 <div class="card-body text-center">
                     <h5 class="card-title fw-bold">Code Editor</h5>
-                    <button type="button" class="btn btn-primary w-100 mt-3">Open</button>
+                    <button type="button" class="btn btn-primary w-100 mt-3" data-bs-toggle="modal" data-bs-target="#codingModal">Open</button>
                 </div>
             </div>
         </div>
@@ -18,10 +20,57 @@
                 <img src="/utilities/editor-text.svg" class="card-img-top" alt="text-editor">
                 <div class="card-body text-center">
                     <h5 class="card-title fw-bold">Text Editor</h5>
-                    <button type="button" class="btn btn-primary w-100 mt-3">Open</button>
+                    <button type="button" class="btn btn-primary w-100 mt-3" data-bs-toggle="modal" data-bs-target="#textDocumentModal">Open</button>
                 </div>
             </div>
         </div>
     </div>
 </div>
 
+<div class="modal fade" id="codingModal" tabindex="-1" aria-labelledby="codingModal" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header background-color">
+                <h5 class="modal-title" id="codingModal">Create New Coding File</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form asp-action="CreateNewFile">
+                <div class="modal-body">
+                    <div class="input-group">
+                        <input asp-for="FileName" class="form-control" placeholder="Write filename here..." />
+                        <span class="input-group-text">.</span>
+                        <select asp-for="Extension" asp-items="@Model.CodingExtensions" class="selectlist"></select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary">Create</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="textDocumentModal" tabindex="-1" aria-labelledby="textDocumentModal" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header background-color">
+                <h5 class="modal-title" id="textDocumentModal">Create New Text Document</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form asp-action="CreateNewFile">
+                <div class="modal-body">
+                    <div class="input-group">
+                        <input asp-for="FileName" class="form-control" placeholder="Write filename here..." />
+                        <span class="input-group-text">.</span>
+                        <select asp-for="Extension" asp-items="@Model.TextDocumentExtensions" class="selectlist"></select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary">Create</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

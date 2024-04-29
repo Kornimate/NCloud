@@ -42,5 +42,15 @@ namespace NCloud.Services
                 return Task.FromResult<bool>(false);
             }
         }
+
+        public static Task<List<string>> GetCodingExtensions()
+        {
+            return Task.FromResult<List<string>>(JObject.Parse(File.ReadAllText(Constants.CodingExtensionsFilePath)).Properties().Select(x => x.Name).OrderBy(x => x).ToList());
+        }
+
+        public static Task<List<string>> GetTextDocumentExtensions()
+        {
+            return Task.FromResult<List<string>>(JObject.Parse(File.ReadAllText(Constants.TextDocumentExtensionsFilePath)).Properties().Select(x => x.Name).OrderBy(x => x).ToList());
+        }
     }
 }

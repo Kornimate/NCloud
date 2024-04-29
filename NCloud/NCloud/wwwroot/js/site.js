@@ -6,6 +6,10 @@
 
 $(function () {
     $('[data-toggle="tooltip"]').tooltip();
+
+    $('.selectlist').select2({
+        theme: 'bootstrap-5'
+    });
 });
 
 async function connectDirectoryToWeb(url, folder, id) {
