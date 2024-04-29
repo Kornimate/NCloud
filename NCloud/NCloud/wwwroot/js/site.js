@@ -241,6 +241,7 @@ async function AjaxCall(address, itemName) {
         },
         body: JSON.stringify(itemName)
     });
+
     return response;
 }
 

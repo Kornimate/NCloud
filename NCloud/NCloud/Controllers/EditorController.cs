@@ -144,14 +144,14 @@ namespace NCloud.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<JsonResult> SaveData(string? file = null, string? path = null)
+        public async Task<JsonResult> SaveData([FromBody] string? file = null, [FromBody] string? content = null)
         {
             if (file is null || file == String.Empty)
             {
                 return Json(new ConnectionDTO { Success = false, Message = "Invalid file" });
             }
 
-            if (path is null || path == String.Empty)
+            if (content is null)
             {
                 return Json(new ConnectionDTO { Success = false, Message = "Invalid path" });
             }

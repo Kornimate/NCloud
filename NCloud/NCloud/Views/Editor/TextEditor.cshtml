@@ -4,7 +4,6 @@
     ViewData["Title"] = "Text Editor";
 }
 
-@Html.AntiForgeryToken()
 <div class="d-flex justify-content-end mb-2 background-color w-100 h-100 rounded">
     <div class="btn-group">
         <div class="btn">&nbsp;</div>
@@ -14,16 +13,21 @@
 <textarea id="texteditor">@Model.Content</textarea>
 
 <script src="/lib/tinymce/tinymce.min.js" referrerpolicy="origin"></script>
-<script>
-    tinymce.init({
-        selector: '#texteditor',
-        theme: "silver",
-        resize: false,
-        height: "640",
-        themes: "modern",
-        skin: "oxide-dark",
-        content_css: "dark",
-        branding: false,
-        promotion: false
-    });
-</script>
+
+@Html.AntiForgeryToken()
+
+@section Scripts {
+    <script>
+        tinymce.init({
+            selector: '#texteditor',
+            theme: "silver",
+            resize: false,
+            height: "640",
+            themes: "modern",
+            skin: "oxide-dark",
+            content_css: "dark",
+            branding: false,
+            promotion: false
+        });
+    </script>
+}

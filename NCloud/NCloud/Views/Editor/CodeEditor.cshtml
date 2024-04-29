@@ -4,16 +4,25 @@
     ViewData["Title"] = "Code Editor";
 }
 
-@Html.AntiForgeryToken()
 <div class="d-flex justify-content-end mb-2 background-color w-100 rounded">
     <div class="btn-group">
-        <div class="btn">&nbsp;</div>
-        <div class="btn btn-outline-white"><img src="/utilities/save.svg" /></div>
+        <div class="spinner-border text-secondary hidden" role="status" id="usersavespinner">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <button type="button" class="btn" id="usersavebtn" onclick="UserSave('@Model.FilePath',window.editor.getValue(),'@Url.Action("SaveData", "Editor")')"><img src="/utilities/save.svg" /></button>
     </div>
 </div>
+
+<div class="d-flex w-100 justify-content-end">
+    <div class="spinner-border spinner-border-sm text-secondary hidden" role="status" id="autosavespinner">
+        <span class="visually-hidden">Loading...</span>
+    </div>
+    <span class="text-muted fs-6 fst-italic" id="statustext">Not saved yet</span>
+</div>
+
 <div class="border border-primary border-3 w-100 h-100 rounded">
     <div class="w-100 bg-primary"></div>
-    <div id="CodeEditor" class="editor-class"></div>
+    <div id="codeeditor" class="editor-class"></div>
 </div>
 
 <link rel="stylesheet"
@@ -23,15 +32,26 @@
 <script>
     var require = { paths: { vs: '/lib/monaco-editor/min/vs' } };
 </script>
+
 <script src="~/lib/monaco-editor/min/vs/loader.js"></script>
 <script src="~/lib/monaco-editor/min/vs/editor/editor.main.nls.js"></script>
 <script src="~/lib/monaco-editor/min/vs/editor/editor.main.js"></script>
 
-<script>
-    var editor = monaco.editor.create(document.getElementById('CodeEditor'), {
-        value: "@(Model.Content != String.Empty ? Model.Content : "//write your code here")",
-        theme:"hc-black",
-        language: "javascript",
-        automaticLayout: true,
-    });
-</script>
+@Html.AntiForgeryToken()
+
+@section Scripts {
+    <script type="text/javascript">
+        window.editor = monaco.editor.create(document.getElementById('codeeditor'), {
+            value: "@(Model.Content != String.Empty ? Model.Content : "//write your code here")",
+            theme: "hc-black",
+            language: "javascript",
+            automaticLayout: true,
+        });
+    </script>
+
+    <script src="/js/editor.js"></script>
+
+    <script type="text/javascript">
+        setTimeout(async () => await PeriodicSave("@Model.FilePath", window.editor.getValue(), "@Url.Action("SaveData", "Editor")"), TIMEOUTMS);
+    </script>
+}
