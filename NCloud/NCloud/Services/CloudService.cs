@@ -1034,5 +1034,19 @@ namespace NCloud.Services
 
             return currentPath;
         }
+
+        public Task<bool> ModifyFileContent(string file, string content)
+        {
+            try
+            {
+                File.WriteAllText(ParseRootName(file), content);
+
+                return Task.FromResult<bool>(true);
+            }
+            catch(Exception)
+            {
+                return Task.FromResult<bool>(false);
+            }
+        }
     }
 }

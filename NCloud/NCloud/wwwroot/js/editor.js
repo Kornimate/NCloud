@@ -20,7 +20,7 @@ async function PeriodicSave(file, content, address) {
         text.innerHTML = "Error while saving document...";
     }
 
-    setTimeout(() => PeriodicSave(file, content, address), TIMEOUTMS);
+    setTimeout(async () => await PeriodicSave(file, content, address), TIMEOUTMS);
 }
 
 async function UserSave(file, content, address) {
@@ -39,7 +39,7 @@ async function UserSave(file, content, address) {
     btnSave.disabled = false;
 
     if (response.success) {
-        text.innerHTML = `Last saved: ${new Date().toLocaleString()}`;
+        document.getElementById("statustext").innerHTML = `Last saved: ${new Date().toLocaleString()}`;
         ShowSuccessToast("Success", response.message);
     }
     else {

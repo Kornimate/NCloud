@@ -51,7 +51,7 @@ namespace NCloud.Controllers
 
                     AddNewNotification(new Success($"File successfully created at {Constants.GetDefaultFileShowingPath()}"));
 
-                    return await EditorHub(fileName, path, RedirectionManager.CreateRedirectionString("Editor","Index"));
+                    return await EditorHub(fileName, path, RedirectionManager.CreateRedirectionString("Editor", "Index"));
                 }
                 catch (Exception)
                 {
@@ -73,7 +73,7 @@ namespace NCloud.Controllers
         {
             if (await ExtensionManager.TryGetFileCodingExtensionData(fileName, out string codingExtensionData))
             {
-                return RedirectToAction("CodeEditor", new { fileName = fileName, path = path, extensionData = codingExtensionData, redirectData = redirectData ?? RedirectionManager.CreateRedirectionString("Drive","Details") });
+                return RedirectToAction("CodeEditor", new { fileName = fileName, path = path, extensionData = codingExtensionData, redirectData = redirectData ?? RedirectionManager.CreateRedirectionString("Drive", "Details") });
             }
             else if (await ExtensionManager.TryGetFileCodingExtensionData(fileName, out string textDocumentExtensionData))
             {
@@ -91,7 +91,7 @@ namespace NCloud.Controllers
                 {
                     var redirection = RedirectionManager.CreateRedirectionAction(redirectData);
 
-                    return RedirectToAction(redirection.Action, redirection.Controller);  
+                    return RedirectToAction(redirection.Action, redirection.Controller);
                 }
             }
         }
@@ -104,7 +104,7 @@ namespace NCloud.Controllers
             {
                 return View(new EditorViewModel
                 {
-                    FilePath = pathAndName,
+                    FilePath = pathAndName.Replace(Path.DirectorySeparatorChar, Constants.PathSeparator),
                     Content = System.IO.File.ReadAllText(service.ServerPath(pathAndName)),
                     ExtensionData = extensionData
                 });
@@ -127,7 +127,7 @@ namespace NCloud.Controllers
             {
                 return View(new EditorViewModel
                 {
-                    FilePath = pathAndName,
+                    FilePath = pathAndName.Replace(Path.DirectorySeparatorChar, Constants.PathSeparator),
                     Content = System.IO.File.ReadAllText(service.ServerPath(pathAndName)),
                     ExtensionData = extensionData
                 });
@@ -144,21 +144,28 @@ namespace NCloud.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<JsonResult> SaveData([FromBody] string? file = null, [FromBody] string? content = null)
+        public async Task<JsonResult> SaveData([FromBody] FileDataViewModel vm)
         {
-            if (file is null || file == String.Empty)
+            if (vm.File is null || vm.File == String.Empty)
             {
                 return Json(new ConnectionDTO { Success = false, Message = "Invalid file" });
             }
 
-            if (content is null)
+            if (vm.Content is null)
             {
                 return Json(new ConnectionDTO { Success = false, Message = "Invalid path" });
             }
 
-            //todo: save file
+            vm.File = vm.File.Replace(Constants.PathSeparator, Path.DirectorySeparatorChar);
 
-            return Json(new ConnectionDTO { Success = true, Message = "---" });
+            bool success = await service.ModifyFileContent(vm.File, vm.Content);
+
+            if (success)
+            {
+                return Json(new ConnectionDTO { Success = true, Message = "File content successfully saved" });
+            }
+
+            return Json(new ConnectionDTO { Success = false, Message = "Error while saving file content" });
         }
     }
 }

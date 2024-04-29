@@ -49,7 +49,7 @@
         });
     </script>
 
-    <script src="/js/editor.js"></script>
+    <script type="text/javascript" src="/js/editor.js"></script>
 
     <script type="text/javascript">
         setTimeout(async () => await PeriodicSave("@Model.FilePath", window.editor.getValue(), "@Url.Action("SaveData", "Editor")"), TIMEOUTMS);

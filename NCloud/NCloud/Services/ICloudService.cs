@@ -38,5 +38,6 @@ namespace NCloud.Services
         Task<List<CloudFolder>> GetCurrentDepthWebSharingDirectories(string path);
         Task<string?> CreateZipFile(List<string> itemsForDownload, string currentPath, string filePath, bool connectedToApp, bool connectedToWeb);
         Task <string> ChangePathStructure(string currentPath);
+        Task<bool> ModifyFileContent(string file, string content);
     }
 }
