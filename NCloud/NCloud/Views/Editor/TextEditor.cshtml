@@ -4,12 +4,32 @@
     ViewData["Title"] = "Text Editor";
 }
 
-<div class="d-flex justify-content-end mb-2 background-color w-100 h-100 rounded">
+<div class="d-flex justify-content-between mb-2 background-color w-100 rounded">
+    <div>
+        <a class="btn" asp-controller="Editor" asp-action="Back" asp-route-redirectionString="@Model.Redirection"><img src="~/utilities/arrow-left-circle.svg" width=" 20" height="20" class="rounded align-middle" /></a>
+    </div>
     <div class="btn-group">
-        <div class="btn">&nbsp;</div>
-        <div class="btn btn-outline-white"><img src="/utilities/save.svg" /></div>
+        <div class="btn">
+            <div class="spinner-border spinner-border-sm text-dark hidden" role="status" id="usersavespinner">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+        <button type="button" class="btn" id="usersavebtn" onclick="UserSave('@Model.FilePath',tinymce.get('texteditor').getContent(),'@Url.Action("SaveData", "Editor" )')"><img src="/utilities/save.svg" class="pb-1" /></button>
     </div>
 </div>
+
+<div class="d-flex w-100 justify-content-between">
+    <div class="w-50 text-break">
+        <span class="text-secondary fw-bold">@Model.FilePath.Slice(Constants.PrivateRootName.Length, Constants.PrivateRootName.Length + Constants.GuidLength + 1)</span>
+    </div>
+    <div>
+        <span class="text-muted fs-6 fst-italic me-2" id="statustext">Not saved yet</span>
+        <div class="spinner-border spinner-border-sm text-secondary align-baseline me-2 hidden" role="status" id="autosavespinner">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+</div>
+
 <textarea id="texteditor">@Model.Content</textarea>
 
 <script src="/lib/tinymce/tinymce.min.js" referrerpolicy="origin"></script>
@@ -23,11 +43,19 @@
             theme: "silver",
             resize: false,
             height: "640",
+            statusbar: false,
             themes: "modern",
             skin: "oxide-dark",
             content_css: "dark",
             branding: false,
-            promotion: false
+            promotion: false,
+            toolbar: "aligncenter alignjustify alignleft alignnone alignright| anchor | blockquote blocks | backcolor | bold | copy | cut | fontfamily fontsize forecolor h1 h2 h3 h4 h5 h6 hr indent | italic | language | lineheight | newdocument | outdent | paste pastetext | print | redo | remove removeformat | selectall | strikethrough | styles | subscript superscript underline | undo | visualaid | a11ycheck advtablerownumbering typopgraphy anchor restoredraft casechange charmap checklist code codesample addcomment showcomments ltr rtl editimage fliph flipv imageoptions rotateleft rotateright emoticons export footnotes footnotesupdate formatpainter fullscreen help image insertdatetime link openlink unlink bullist numlist media mergetags mergetags_list nonbreaking pagebreak pageembed permanentpen preview quickimage quicklink quicktable cancel save searchreplace spellcheckdialog spellchecker | table tablecellprops tablecopyrow tablecutrow tabledelete tabledeletecol tabledeleterow tableinsertdialog tableinsertcolafter tableinsertcolbefore tableinsertrowafter tableinsertrowbefore tablemergecells tablepasterowafter tablepasterowbefore tableprops tablerowprops tablesplitcells tableclass tablecellclass tablecellvalign tablecellborderwidth tablecellborderstyle tablecaption tablecellbackgroundcolor tablecellbordercolor tablerowheader tablecolheader | tableofcontents tableofcontentsupdate | template typography | insertfile | visualblocks visualchars | wordcount",
         });
+    </script>
+
+    <script type="text/javascript" src="/js/editor.js"></script>
+
+    <script type="text/javascript">
+        setTimeout(async () => await PeriodicSave("@Model.FilePath", tinymce.get("texteditor").getContent(), "@Url.Action("SaveData", "Editor")"), TIMEOUTMS);
     </script>
 }

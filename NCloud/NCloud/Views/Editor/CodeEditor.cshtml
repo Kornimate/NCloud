@@ -4,20 +4,31 @@
     ViewData["Title"] = "Code Editor";
 }
 
-<div class="d-flex justify-content-end mb-2 background-color w-100 rounded">
+<div class="d-flex justify-content-between mb-2 background-color w-100 rounded">
+    <div>
+        <a class="btn" asp-controller="Editor" asp-action="Back" asp-route-redirectionString="@Model.Redirection"><img src="~/utilities/arrow-left-circle.svg" width=" 20" height="20" class="rounded align-middle" /></a>
+    </div>
     <div class="btn-group">
-        <div class="spinner-border text-secondary hidden" role="status" id="usersavespinner">
-            <span class="visually-hidden">Loading...</span>
+        <div class="btn">
+            <div class="spinner-border spinner-border-sm text-dark hidden" role="status" id="usersavespinner">
+                <span class="visually-hidden">Loading...</span>
+            </div>
         </div>
-        <button type="button" class="btn" id="usersavebtn" onclick="UserSave('@Model.FilePath',window.editor.getValue(),'@Url.Action("SaveData", "Editor")')"><img src="/utilities/save.svg" /></button>
+        <button type="button" class="btn" id="usersavebtn" onclick="UserSave('@Model.FilePath',window.editor.getValue(),'@Url.Action("SaveData", "Editor")')"><img src="/utilities/save.svg" class="pb-1" /></button>
     </div>
 </div>
 
-<div class="d-flex w-100 justify-content-end">
-    <div class="spinner-border spinner-border-sm text-secondary hidden" role="status" id="autosavespinner">
-        <span class="visually-hidden">Loading...</span>
+<div class="d-flex w-100 justify-content-between">
+    <div class="w-50 text-break">
+        <span class="text-secondary fw-bold">@Model.FilePath.Slice(Constants.PrivateRootName.Length, Constants.PrivateRootName.Length + Constants.GuidLength + 1)</span>
     </div>
-    <span class="text-muted fs-6 fst-italic" id="statustext">Not saved yet</span>
+    <div>
+
+        <span class="text-muted fs-6 fst-italic me-2" id="statustext">Not saved yet</span>
+        <div class="spinner-border spinner-border-sm text-secondary align-baseline me-2 hidden" role="status" id="autosavespinner">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
 </div>
 
 <div class="border border-primary border-3 w-100 h-100 rounded">
@@ -30,19 +41,19 @@
       href="~/monaco-editor/min/vs/editor/editor.main.css" />
 
 <script>
-    var require = { paths: { vs: '/lib/monaco-editor/min/vs' } };
+    var require = { paths: { vs: '/monaco-editor/min/vs' } };
 </script>
 
-<script src="~/monaco-editor/min/vs/loader.min.js"></script>
+<script src="~/monaco-editor/min/vs/loader.js"></script>
 <script src="~/monaco-editor/min/vs/editor/editor.main.nls.js"></script>
-<script src="~/monaco-editor/min/vs/editor/editor.main.min.js"></script>
+<script src="~/monaco-editor/min/vs/editor/editor.main.js"></script>
 
 @Html.AntiForgeryToken()
 
 @section Scripts {
     <script type="text/javascript">
         window.editor = monaco.editor.create(document.getElementById('codeeditor'), {
-            value: "@(Model.Content != String.Empty ? Model.Content : "//write your code here")",
+            value: @Html.Raw(Json.Serialize(Model.Content)),
             theme: "hc-black",
             language: "javascript",
             automaticLayout: true,
