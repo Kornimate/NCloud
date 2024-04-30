@@ -1,0 +1,28 @@
+﻿@model EditorSelectViewModel
+
+@{
+    ViewData["Title"] = "Select Editor";
+}
+
+<div class="container w-50">
+    <div class="row row-cols-1 row-cols-md-2 g-4 min-vh-100 align-items-center">
+        <div class="col-sm-6">
+            <div class="card border border-4 border-primary rounded p-3">
+                <img src="/utilities/editor-code.svg" class="card-img-top" alt="code-editor">
+                <div class="card-body text-center">
+                    <h5 class="card-title fw-bold">Code Editor</h5>
+                    <a asp-action="CodeEditor" asp-route-fileName="@Model.FileName" asp-route-path="@Model.Path" asp-route-extensionData="@Model.ExtensionDataCoding" asp-route-redirectData="@Model.RedirectData" class="btn btn-primary w-100 mt-3">Open</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <div class="card border border-4 border-primary rounded p-3">
+                <img src="/utilities/editor-text.svg" class="card-img-top" alt="text-editor">
+                <div class="card-body text-center">
+                    <h5 class="card-title fw-bold">Text Editor</h5>
+                    <a asp-action="TextEditor" asp-route-fileName="@Model.FileName" asp-route-path="@Model.Path" asp-route-extensionData="@Model.ExtensionDataTextDocument" asp-route-redirectData="@Model.RedirectData" class="btn btn-primary w-100 mt-3">Open</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

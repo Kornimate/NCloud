@@ -19,11 +19,12 @@
 </div>
 
 <div class="d-flex w-100 justify-content-between">
-    <div class="w-50 text-break">
-        <span class="text-secondary fw-bold">@Model.FilePath.Slice(Constants.PrivateRootName.Length, Constants.PrivateRootName.Length + Constants.GuidLength + 1)</span>
+    <div class="w-50 text-break text-wrap">
+        <span class="w-75 text-secondary fw-bold align-baseline">@Model.FilePath.Slice(Constants.PrivateRootName.Length, Constants.PrivateRootName.Length + Constants.GuidLength + 1)</span>
+        <span class="w-25 text-secondary fw-bold align-baseline">(@Model.ExtensionData)</span>
     </div>
     <div>
-        <span class="text-muted fs-6 fst-italic me-2" id="statustext">Not saved yet</span>
+        <span class="text-muted fs-6 fst-italic me-2 align-bottom" id="statustext">Not saved yet</span>
         <div class="spinner-border spinner-border-sm text-secondary align-baseline me-2 hidden" role="status" id="autosavespinner">
             <span class="visually-hidden">Loading...</span>
         </div>
@@ -37,7 +38,7 @@
 @Html.AntiForgeryToken()
 
 @section Scripts {
-    <script>
+    <script type="text/javascript">
         tinymce.init({
             selector: '#texteditor',
             theme: "silver",

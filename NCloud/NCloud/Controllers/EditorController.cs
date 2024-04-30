@@ -29,7 +29,7 @@ namespace NCloud.Controllers
 
         public async Task<IActionResult> Back(string? redirectionString = null)
         {
-            if(redirectionString is null || redirectionString == String.Empty)
+            if (redirectionString is null || redirectionString == String.Empty)
             {
                 return RedirectToAction("Index");
             }
@@ -83,14 +83,22 @@ namespace NCloud.Controllers
 
         public async Task<IActionResult> EditorHub(string fileName, string? path = null, string? redirectData = null)
         {
-            if (await ExtensionManager.TryGetFileCodingExtensionData(fileName, out string codingExtensionData))
+            bool codingExtension = await ExtensionManager.TryGetFileCodingExtensionData(fileName, out string codingExtensionData);
+            bool textDocumentExtension = await ExtensionManager.TryGetFileTextDocumentExtensionData(fileName, out string textDocumentExtensionData);
+
+            if (codingExtension && textDocumentExtension)
+            {
+                return View("Select", new EditorSelectViewModel(fileName, path, codingExtensionData, textDocumentExtensionData, redirectData ?? RedirectionManager.CreateRedirectionString("Drive", "Details")));
+            }
+            else if (codingExtension)
             {
                 return RedirectToAction("CodeEditor", new { fileName = fileName, path = path, extensionData = codingExtensionData, redirectData = redirectData ?? RedirectionManager.CreateRedirectionString("Drive", "Details") });
             }
-            else if (await ExtensionManager.TryGetFileTextDocumentExtensionData(fileName, out string textDocumentExtensionData))
+            else if (textDocumentExtension)
             {
                 return RedirectToAction("TextEditor", new { fileName = fileName, path = path, extensionData = textDocumentExtensionData, redirectData = redirectData ?? RedirectionManager.CreateRedirectionString("Drive", "Details") });
             }
+
             else
             {
                 AddNewNotification(new Error("No Editor available for this extension"));

@@ -19,8 +19,9 @@
 </div>
 
 <div class="d-flex w-100 justify-content-between">
-    <div class="w-50 text-break">
-        <span class="text-secondary fw-bold">@Model.FilePath.Slice(Constants.PrivateRootName.Length, Constants.PrivateRootName.Length + Constants.GuidLength + 1)</span>
+    <div class="w-50 text-break text-wrap">
+        <span class="w-75 text-secondary fw-bold">@Model.FilePath.Slice(Constants.PrivateRootName.Length, Constants.PrivateRootName.Length + Constants.GuidLength + 1)</span>
+        <span class="w-25 text-secondary fw-bold">(@Model.ExtensionData)</span>
     </div>
     <div>
 
