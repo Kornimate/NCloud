@@ -18,6 +18,8 @@ namespace NCloud.Controllers
 
             var result = service.GetCurrentUserIndexData(); //TODO: implement function
 
+            AddNewNotification(new Information("Test"));
+
             return View(new DashBoardViewModel(result.Item1, result.Item2, await service.GetUserSharedFolderUrls(User), await service.GetUserSharedFileUrls(User), Constants.GetWebControllerAndActionForDetails(), Constants.GetWebControllerAndActionForDownload()));
         }
     }

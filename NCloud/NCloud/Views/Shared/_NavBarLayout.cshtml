@@ -62,13 +62,13 @@
             </div>
             <div class="col py-3 maindiv">
                 @RenderBody()
-
-                @await Component.InvokeAsync("CloudNotification")
-
-                @await Component.InvokeAsync("CloudNotificationSingle")
             </div>
         </div>
     </div>
+
+    @await Component.InvokeAsync("CloudNotification")
+
+    @await Component.InvokeAsync("CloudNotificationSingle")
 
     <script src="~/js/site.js" asp-append-version="true"></script>
 
