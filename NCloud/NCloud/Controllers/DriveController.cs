@@ -15,6 +15,7 @@ using Castle.Core;
 using static NuGet.Packaging.PackagingConstants;
 using NCloud.ConstantData;
 using NCloud.DTOs;
+using System.Linq;
 
 namespace NCloud.Controllers
 {
@@ -316,12 +317,12 @@ namespace NCloud.Controllers
                 Constants.SelectedFolderStarterSymbol + folderName
             },
             (await GetSessionCloudPathData()).CurrentPath,
-            RedirectToAction("Details","Drive"));
+            RedirectToAction("Details", "Drive"));
         }
 
         public async Task<IActionResult> DownloadFile(string? fileName)
         {
-           if (fileName is null || fileName == String.Empty)
+            if (fileName is null || fileName == String.Empty)
             {
                 return View("Error");
             }
@@ -331,7 +332,7 @@ namespace NCloud.Controllers
                 Constants.SelectedFileStarterSymbol + fileName
             },
             (await GetSessionCloudPathData()).CurrentPath,
-            RedirectToAction("Details","Drive"));
+            RedirectToAction("Details", "Drive"));
         }
 
         public async Task<IActionResult> DownloadItems()
@@ -366,7 +367,7 @@ namespace NCloud.Controllers
         [ValidateAntiForgeryToken, ActionName("DownloadItems")]
         public async Task<IActionResult> DownloadItemsFromForm([Bind("ItemsForDownload")] DriveDownloadViewModel vm)
         {
-            return await Download(vm.ItemsForDownload ?? new(), (await GetSessionCloudPathData()).CurrentPath, RedirectToAction("Details","Drive"));
+            return await Download(vm.ItemsForDownload ?? new(), (await GetSessionCloudPathData()).CurrentPath, RedirectToAction("Details", "Drive"));
         }
 
         public async Task<JsonResult> ConnectDirectoryToApp([FromBody] string itemName)
@@ -437,7 +438,7 @@ namespace NCloud.Controllers
         {
             CloudPathData session = await GetSessionCloudPathData();
 
-            if (await service.DisonnectDirectoryFromApp(session.CurrentPath, itemName, User))
+            if (await service.DisconnectDirectoryFromApp(session.CurrentPath, itemName, User))
             {
                 return Json(new ConnectionDTO { Success = true, Message = "Directory and items inside disconnected from application" });
             }
@@ -469,7 +470,7 @@ namespace NCloud.Controllers
         {
             CloudPathData session = await GetSessionCloudPathData();
 
-            if (await service.DisonnectFileFromApp(session.CurrentPath, itemName, User))
+            if (await service.DisconnectFileFromApp(session.CurrentPath, itemName, User))
             {
                 return Json(new ConnectionDTO { Success = true, Message = "File disconnected from application" });
             }
@@ -485,7 +486,7 @@ namespace NCloud.Controllers
         {
             CloudPathData session = await GetSessionCloudPathData();
 
-            if (await service.DisonnectFileFromWeb(session.CurrentPath, itemName, User))
+            if (await service.DisconnectFileFromWeb(session.CurrentPath, itemName, User))
             {
                 return Json(new ConnectionDTO { Success = true, Message = "File disconnected from web" });
             }
@@ -493,6 +494,64 @@ namespace NCloud.Controllers
             {
                 return Json(new ConnectionDTO { Success = false, Message = "Error while disconnecting file from web!" });
             }
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DisconnectDirectoryFromWebDashboard(string folder)
+        {
+            string[] pathElements = folder.Split(Constants.PathSeparator, StringSplitOptions.RemoveEmptyEntries);
+
+            if (pathElements is null || pathElements.Length < 2)
+            {
+                AddNewNotification(new Error("Error while disconnecting directory from web! (invalid path)"));
+
+                return RedirectToAction("Index", "DashBoard");
+            }
+
+            string itemName = pathElements.Last();
+
+            string path = String.Join(Path.DirectorySeparatorChar, pathElements.SkipLast(1)); //remove directory from path
+
+            if (await service.DisconnectDirectoryFromWeb(path, itemName, User))
+            {
+                AddNewNotification(new Success("Directory and items inside disconnected from web"));
+            }
+            else
+            {
+                AddNewNotification(new Error("Error while disconnecting directory from web!"));
+            }
+
+            return RedirectToAction("Index", "DashBoard");
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DisconnectFileFromWebDashboard(string file)
+        {
+            string[] pathElements = file.Split(Constants.PathSeparator, StringSplitOptions.RemoveEmptyEntries);
+
+            if (pathElements is null || pathElements.Length < 2)
+            {
+                AddNewNotification(new Error("Error while disconnecting file from web! (invalid path)"));
+
+                return RedirectToAction("Index", "DashBoard");
+            }
+
+            string itemName = pathElements.Last();
+
+            string path = String.Join(Path.DirectorySeparatorChar, pathElements.SkipLast(1)); //remove file from path
+
+            if (await service.DisconnectFileFromWeb(path, itemName, User))
+            {
+                AddNewNotification(new Success("File disconnected from web"));
+            }
+            else
+            {
+                AddNewNotification(new Error("Error while disconnecting file from web!"));
+            }
+
+            return RedirectToAction("Index", "DashBoard");
         }
     }
 }

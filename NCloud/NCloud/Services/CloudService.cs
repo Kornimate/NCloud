@@ -443,6 +443,11 @@ namespace NCloud.Services
         {
             try
             {
+                if (!SecurityManager.CheckIfDirectoryExists(Path.Combine(ParseRootName(cloudPath), directoryName)))
+                {
+                    throw new FileNotFoundException("File does not exists!");
+                }
+
                 SharedFolder? sharedFolder = await context.SharedFolders.FirstOrDefaultAsync(x => x.CloudPathFromRoot == cloudPath && x.Name == directoryName && x.Owner == user);
 
                 if (sharedFolder is null)
@@ -582,7 +587,7 @@ namespace NCloud.Services
             }
         }
 
-        public async Task<bool> DisonnectDirectoryFromApp(string currentPath, string directoryName, ClaimsPrincipal userPrincipal)
+        public async Task<bool> DisconnectDirectoryFromApp(string currentPath, string directoryName, ClaimsPrincipal userPrincipal)
         {
             try
             {
@@ -615,6 +620,11 @@ namespace NCloud.Services
         {
             try
             {
+                if (!SecurityManager.CheckIfFileExists(Path.Combine(ParseRootName(cloudPath), fileName)))
+                {
+                    throw new FileNotFoundException("File does not exists!");
+                }
+
                 SharedFile? sharedFile = await context.SharedFiles.FirstOrDefaultAsync(x => x.CloudPathFromRoot == cloudPath && x.Name == fileName && x.Owner == user);
 
                 if (sharedFile is null)
@@ -714,7 +724,7 @@ namespace NCloud.Services
             }
         }
 
-        public async Task<bool> DisonnectFileFromApp(string currentPath, string fileName, ClaimsPrincipal userPrincipal)
+        public async Task<bool> DisconnectFileFromApp(string currentPath, string fileName, ClaimsPrincipal userPrincipal)
         {
             try
             {
@@ -729,7 +739,7 @@ namespace NCloud.Services
             }
         }
 
-        public async Task<bool> DisonnectFileFromWeb(string currentPath, string fileName, ClaimsPrincipal userPrincipal)
+        public async Task<bool> DisconnectFileFromWeb(string currentPath, string fileName, ClaimsPrincipal userPrincipal)
         {
             try
             {
@@ -1043,7 +1053,7 @@ namespace NCloud.Services
 
                 return Task.FromResult<bool>(true);
             }
-            catch(Exception)
+            catch (Exception)
             {
                 return Task.FromResult<bool>(false);
             }

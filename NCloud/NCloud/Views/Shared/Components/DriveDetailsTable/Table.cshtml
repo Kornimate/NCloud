@@ -190,7 +190,7 @@
                                             Size
                                         </td>
                                         <td>
-                                            @item.Info.Length Byte(s)
+                                            @FileSizeManager.ConvertToReadableSize(item.Info.Length)
                                         </td>
                                     </tr>
                                     <tr>
@@ -274,6 +274,7 @@
                                         </div>
                                     </button>
 
+                                    <button type="button" class="btn btn-secondary"></button>
                                     <a asp-controller="Drive" class="btn btn-secondary" asp-action="DownloadFile" asp-route-fileName="@item.Info.Name"><img src="~/utilities/cloud-download.svg" width=" 20" height="20" class="rounded align-middle" download /></a>
                                     <a asp-controller="Editor" class="btn btn-secondary" asp-action="EditorHub" asp-route-fileName="@item.Info.Name"><img src="~/utilities/editor-general.svg" width=" 20" height="20" class="rounded align-middle" /></a>
                                     <a asp-controller="Drive" class="btn btn-danger" asp-action="DeleteFile" asp-route-fileName="@item.Info.Name"><img src="~/utilities/trash.svg" width=" 20" height="20" class="rounded align-middle" /></a>
@@ -290,21 +291,4 @@
 @if(Model.Files?.Count == 0 && Model.Folders?.Count == 0)
 {
     <span class="w-100 d-flex justify-content-center text-muted fst-italic">No items</span>
-}
-
-@section Scripts {
-
-    <script type="text/javascript">
-        function copyToClipBoard(url) {
-
-            try {
-                navigator.clipboard.writeText(url);
-
-                ShowSuccessToast("Success", "Url copied to clipboard");
-            }
-            catch {
-                ShowErrorToast("Error", "Error while copying url to clipboard!");
-            }
-        }
-    </script>
 }

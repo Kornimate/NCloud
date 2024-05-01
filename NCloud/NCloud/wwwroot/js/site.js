@@ -8,6 +8,18 @@ $(function () {
     $('[data-toggle="tooltip"]').tooltip();
 });
 
+function copyToClipBoard(url) {
+
+    try {
+        navigator.clipboard.writeText(url);
+
+        ShowSuccessToast("Success", "Url copied to clipboard");
+    }
+    catch {
+        ShowErrorToast("Error", "Error while copying url to clipboard!");
+    }
+}
+
 async function connectDirectoryToWeb(url, folder, id) {
 
     document.getElementById(`${id}_logo_2`).classList.add("hidden");
@@ -222,6 +234,23 @@ async function disConnectFileFromApp(url, file, id) {
         document.getElementById(`${id}_app`).classList.remove("bg-primary");
         document.getElementById(`${id}_app`).classList.add("bg-danger");
         document.getElementById(`${id}_btnConnectFileApp`).classList.remove("hidden");
+
+        ShowSuccessToast("Success", result.message);
+    }
+    else {
+        ShowErrorToast("Error", result.message);
+    }
+}
+
+async function disConnectItemFromAppSharing(url, itemName, id, containerName) {
+
+    let result = await AjaxCall(url, itemName);
+
+    result = await result.json();
+
+    if (result.success) {
+
+        document.getElementById(containerName).removeChild(document.getElementById(id));
 
         ShowSuccessToast("Success", result.message);
     }
