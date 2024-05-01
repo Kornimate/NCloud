@@ -39,5 +39,6 @@ namespace NCloud.Services
         Task<string?> CreateZipFile(List<string> itemsForDownload, string currentPath, string filePath, bool connectedToApp, bool connectedToWeb);
         Task <string> ChangePathStructure(string currentPath);
         Task<bool> ModifyFileContent(string file, string content);
+        Task<CloudFolder> GetFolder(string currentPath, string folderName);
     }
 }

@@ -1058,5 +1058,17 @@ namespace NCloud.Services
                 return Task.FromResult<bool>(false);
             }
         }
+
+        public async Task<CloudFolder> GetFolder(string currentPath, string folderName)
+        {
+            var folder = await context.SharedFolders.FirstOrDefaultAsync(x => x.CloudPathFromRoot == currentPath && x.Name == folderName);
+        
+            if(folder is null)
+            {
+                throw new DirectoryNotFoundException("Directory not found!");
+            }
+
+            return await Task.FromResult<CloudFolder>(new CloudFolder(new DirectoryInfo(Path.Combine(ParseRootName(currentPath),folderName)), folder.ConnectedToApp, folder.ConnectedToWeb, Path.Combine(currentPath,folderName)));
+        }
     }
 }

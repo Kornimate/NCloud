@@ -16,6 +16,7 @@ using static NuGet.Packaging.PackagingConstants;
 using NCloud.ConstantData;
 using NCloud.DTOs;
 using System.Linq;
+using NCloud.Security;
 
 namespace NCloud.Controllers
 {
@@ -552,6 +553,46 @@ namespace NCloud.Controllers
             }
 
             return RedirectToAction("Index", "DashBoard");
+        }
+
+        public async Task<IActionResult> FolderSettings(string folderName)
+        {
+            CloudPathData pathData = await GetSessionCloudPathData();
+
+            if (!SecurityManager.CheckIfDirectoryExists(Path.Combine(pathData.CurrentPath, folderName)))
+            {
+                AddNewNotification(new Error("Directory does not exists"));
+
+                return RedirectToAction("Details", "Drive");
+            }
+
+            try
+            {
+                CloudFolder folder = await service.GetFolder(pathData.CurrentPath, folderName);
+                
+                return View(new FolderSettingsViewModel(folder.Info.Name, pathData.CurrentPathShow, folder.IsConnectedToApp, folder.IsConnectedToWeb));
+            }
+            catch (Exception)
+            {
+                AddNewNotification(new Error("Directory does not exists"));
+
+                return RedirectToAction("Details", "Drive");
+            }
+        }
+
+        [HttpPost]
+        [ActionName("FolderSettings")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> FolderSettingsForm([Bind("Name,Path,ConnectedToApp,ConnectedToWeb")] FolderSettingsViewModel vm)
+        {
+            if (ModelState.IsValid)
+            {
+
+            }
+
+            AddNewNotification(new Error("Invalid input data"));
+
+            return View(vm);
         }
     }
 }
