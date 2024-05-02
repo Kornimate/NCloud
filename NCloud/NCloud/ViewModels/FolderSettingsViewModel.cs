@@ -6,7 +6,8 @@ namespace NCloud.ViewModels
     public class FolderSettingsViewModel
     {
         [Required(ErrorMessage = "Folder Name is compulsory")]
-        public string Name { get; set; }
+        public string OldName { get; set; }
+        public string NewName { get; set; }
         public string Path { get; set; }
 
         [Required]
@@ -18,9 +19,10 @@ namespace NCloud.ViewModels
 
         public bool ConnectedToWeb { get; set; }
 
-        public FolderSettingsViewModel(string name, string path, bool connectedToApp, bool connectedToWeb)
+        public FolderSettingsViewModel(string oldName, string newName, string path, bool connectedToApp, bool connectedToWeb)
         {
-            Name = name;
+            OldName = oldName;
+            NewName = newName;
             Path = path;
             ConnectedToApp = connectedToApp;
             ConnectedToWeb = connectedToWeb;

@@ -569,8 +569,8 @@ namespace NCloud.Controllers
             try
             {
                 CloudFolder folder = await service.GetFolder(pathData.CurrentPath, folderName);
-                
-                return View(new FolderSettingsViewModel(folder.Info.Name, pathData.CurrentPathShow, folder.IsConnectedToApp, folder.IsConnectedToWeb));
+
+                return View(new FolderSettingsViewModel(folder.Info.Name, folder.Info.Name, pathData.CurrentPathShow, folder.IsConnectedToApp, folder.IsConnectedToWeb));
             }
             catch (Exception)
             {
@@ -583,11 +583,28 @@ namespace NCloud.Controllers
         [HttpPost]
         [ActionName("FolderSettings")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> FolderSettingsForm([Bind("Name,Path,ConnectedToApp,ConnectedToWeb")] FolderSettingsViewModel vm)
+        public async Task<IActionResult> FolderSettingsForm([Bind("OldName,NewName,Path,ConnectedToApp,ConnectedToWeb")] FolderSettingsViewModel vm)
         {
             if (ModelState.IsValid)
             {
+                CloudPathData pathData = await GetSessionCloudPathData();
 
+                if (!SecurityManager.CheckIfDirectoryExists(Path.Combine(service.ServerPath(pathData.CurrentPath), vm.OldName)))
+                {
+                    AddNewNotification(new Error("Directory does not exist"));
+
+                    return RedirectToAction("Details", "Drive");
+                }
+
+                if(vm.NewName != vm.OldName)
+                {
+                    if(!await service.RenameFile(pathData.CurrentPath, vm.OldName, vm.NewName))
+                    {
+                        AddNewNotification(new Error("Failed to rename directory"));
+
+                        return RedirectToAction("Details", "Drive");
+                    }
+                }
             }
 
             AddNewNotification(new Error("Invalid input data"));
