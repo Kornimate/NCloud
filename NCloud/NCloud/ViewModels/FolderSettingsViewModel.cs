@@ -5,8 +5,11 @@ namespace NCloud.ViewModels
 {
     public class FolderSettingsViewModel
     {
-        [Required(ErrorMessage = "Folder Name is compulsory")]
+        [Required]
         public string OldName { get; set; }
+
+        [Required(ErrorMessage = "Folder Name is compulsory")]
+        [Display(Name = "Name")]
         public string NewName { get; set; }
         public string Path { get; set; }
 

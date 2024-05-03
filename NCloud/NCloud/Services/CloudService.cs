@@ -1061,16 +1061,16 @@ namespace NCloud.Services
 
         public async Task<CloudFolder> GetFolder(string currentPath, string folderName)
         {
-            var folder = await context.SharedFolders.FirstOrDefaultAsync(x => x.CloudPathFromRoot == currentPath && x.Name == folderName) ?? throw new DirectoryNotFoundException("Directory not found!");
+            var folder = await context.SharedFolders.FirstOrDefaultAsync(x => x.CloudPathFromRoot == currentPath && x.Name == folderName);
 
-            return await Task.FromResult<CloudFolder>(new CloudFolder(new DirectoryInfo(Path.Combine(ParseRootName(currentPath), folderName)), folder.ConnectedToApp, folder.ConnectedToWeb, Path.Combine(currentPath, folderName)));
+            return await Task.FromResult<CloudFolder>(new CloudFolder(new DirectoryInfo(Path.Combine(ParseRootName(currentPath), folderName)), folder?.ConnectedToApp ?? false, folder?.ConnectedToWeb ?? false, Path.Combine(currentPath, folderName)));
         }
 
         public async Task<CloudFile> GetFile(string currentPath, string fileName)
         {
-            var file = await context.SharedFiles.FirstOrDefaultAsync(x => x.CloudPathFromRoot == currentPath && x.Name == fileName) ?? throw new DirectoryNotFoundException("Directory not found!");
+            var file = await context.SharedFiles.FirstOrDefaultAsync(x => x.CloudPathFromRoot == currentPath && x.Name == fileName);
 
-            return await Task.FromResult<CloudFile>(new CloudFile(new FileInfo(Path.Combine(ParseRootName(currentPath), fileName)), file.ConnectedToApp, file.ConnectedToWeb, Path.Combine(currentPath, fileName)));
+            return await Task.FromResult<CloudFile>(new CloudFile(new FileInfo(Path.Combine(ParseRootName(currentPath), fileName)), file?.ConnectedToApp ?? false, file?.ConnectedToWeb ?? false, Path.Combine(currentPath, fileName)));
         }
 
         public async Task<bool> RenameFolder(string currentPath, string folderName, string newName)

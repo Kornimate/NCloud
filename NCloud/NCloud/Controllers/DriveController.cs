@@ -559,7 +559,7 @@ namespace NCloud.Controllers
         {
             CloudPathData pathData = await GetSessionCloudPathData();
 
-            if (!SecurityManager.CheckIfDirectoryExists(Path.Combine(pathData.CurrentPath, folderName)))
+            if (!SecurityManager.CheckIfDirectoryExists(Path.Combine(service.ServerPath(pathData.CurrentPath), folderName)))
             {
                 AddNewNotification(new Error("Directory does not exists"));
 
@@ -605,6 +605,38 @@ namespace NCloud.Controllers
                         return RedirectToAction("Details", "Drive");
                     }
                 }
+
+                if (vm.ConnectedToWeb)
+                {
+                    if(!await service.ConnectDirectoryToWeb(pathData.CurrentPath, vm.NewName, User))
+                    {
+                        AddNewNotification(new Error("Error while applying settings (web connect)"));
+                    }
+                }
+                else
+                {
+                    if (!await service.DisconnectDirectoryFromWeb(pathData.CurrentPath, vm.NewName, User))
+                    {
+                        AddNewNotification(new Error("Error while applying settings (web disconnect)"));
+                    }
+                }
+
+                if (vm.ConnectedToApp)
+                {
+                    if (!await service.ConnectDirectoryToApp(pathData.CurrentPath, vm.NewName, User))
+                    {
+                        AddNewNotification(new Error("Error while applying settings (app connect)"));
+                    }
+                }
+                else
+                {
+                    if (!await service.DisconnectDirectoryFromApp(pathData.CurrentPath, vm.NewName, User))
+                    {
+                        AddNewNotification(new Error("Error while applying settings (app disconnect)"));
+                    }
+                }
+
+                return RedirectToAction("Details", "Drive");
             }
 
             AddNewNotification(new Error("Invalid input data"));

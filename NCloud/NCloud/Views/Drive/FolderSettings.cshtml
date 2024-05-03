@@ -1,31 +1,39 @@
 ﻿@model FolderSettingsViewModel
 
+@{
+    ViewData["Title"] = "Folder Settings";
+}
+
+<div class="d-flex justify-content-between w-100 bg-primary rounded mb-3">
+    <a asp-action="Details" asp-controller="Drive" class="btn btn-primary"><img src="~/utilities/arrow-left-circle.svg" width=" 20" height="20" class="rounded align-middle" /></a>
+    <span class="btn"><img src="~/utilities/gear.svg" width=" 20" height="20" class="rounded align-middle" /></span>
+</div>
 <div class="container-fluid d-flex justify-content-center align-items-center min-vh-100">
-    <div class="row">
-        <div class="col">
-            <h3>@String.Join(Constants.PathSeparator, Model.Path, Model.OldName)</h3>
+    <div class="row border border-primary border-3 rounded p-5">
+        <div class="col-12 w-100 text-center">
+            <h3 class="fw-bold">@String.Join(Constants.PathSeparator, Model.Path, Model.OldName)</h3>
         </div>
-        <div class="col">
-            <form asp-action="FileSettings">
+        <div class="col-12">
+            <form asp-action="FolderSettings">
                 <input type="hidden" asp-for="Path" class="form-control" />
                 <input type="hidden" asp-for="OldName" class="form-control" />
                 <div class="form-group">
-                    <label asp-for="OldName"></label>
-                    <input asp-for="OldName" class="form-control" />
+                    <label asp-for="NewName"></label>
+                    <input asp-for="NewName" class="form-control" />
                 </div>
-                <div class="form-group my-3">
-                    <label asp-for="ConnectedToApp"></label>
-                    <input asp-for="ConnectedToApp" class="form-control" />
+                <div class="form-check my-3">
+                    <input class="form-check-input" asp-for="ConnectedToApp" class="form-check" />
+                    <label class="form-check-label" asp-for="ConnectedToApp"></label>
                 </div>
-                <div class="form-group">
-                    <label asp-for="ConnectedToWeb"></label>
-                    <input asp-for="ConnectedToWeb" class="form-control" />
+                <div class="form-check">
+                    <input class="form-check-input" asp-for="ConnectedToWeb" class="form-check" />
+                    <label class="form-check-lable" asp-for="ConnectedToWeb"></label>
                 </div>
                 <div class="d-flex w-100 justify-content-center">
                     <button type="submit" class="btn btn-primary">Save</button>
                 </div>
             </form>
-            <div class="col input-group">
+            <div class="d-flex w-100 justify-content-center input-group mt-3">
                 <a asp-controller="Drive" class="btn btn-primary" asp-action="DownloadFolder" asp-route-folderName="@Model.OldName"><img src="~/utilities/cloud-download.svg" width=" 20" height="20" class="rounded align-middle" download /></a>
                 <a asp-controller="Drive" class="btn btn-danger" asp-action="DeleteFolder" asp-route-folderName="@Model.OldName"><img src="~/utilities/trash.svg" width=" 20" height="20" class="rounded align-middle" /></a>
             </div>
