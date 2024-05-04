@@ -20,6 +20,7 @@ namespace NCloud.ConstantData
         public static string DateTimeFormat { get => "yyyy'-'MM'-'dd'T'HH'-'mm'-'ss"; }
         public static string UnkownFileType { get => "unknown"; }
         public static string FileTypePrefix { get => "filetype-"; }
+        public static string WebRootFolderName { get => "wwwroot"; }
         public static string IconsBasePath { get => Path.Combine("wwwroot", "utilities"); }
         public static string LogoPath { get => Path.Combine("wwwroot", "utilities", "cloud_logo.png"); }
         public static string TempFolderName { get => "temp"; }
@@ -36,7 +37,7 @@ namespace NCloud.ConstantData
         public static string CodingExtensionsFilePath { get => "./Services/Resources/coding-extensions.json"; }
         public static string TextDocumentExtensionsFilePath { get => "./Services/Resources/text-document-extensions.json"; }
         public static string ControllerDataSeparator{ get => "||"; }
-        public static char SelectedFileStarterSymbol { get => '_'; }
+        public static char SelectedFileStarterSymbol { get => '@'; }
         public static char SelectedFolderStarterSymbol { get => '&'; }
         public static char FileNameDelimiter { get => '_'; }
         public static char FileExtensionDelimiter { get => '.'; }

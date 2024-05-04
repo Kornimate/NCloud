@@ -9,14 +9,16 @@ namespace NCloud.Models
         public List<string> PreviousDirectories { get; private set; }
         public string CurrentPath { get; private set; }
         public string CurrentPathShow { get; private set; }
+        public string ClipBoard { get; private set; }
 
         [JsonConstructor]
-        public CloudPathData(string currentDirectory, List<string> previousDirectories, string currentPath, string currentPathShow)
+        public CloudPathData(string currentDirectory, List<string> previousDirectories, string currentPath, string currentPathShow, string clipBoard)
         {
             CurrentDirectory = currentDirectory;
             PreviousDirectories = previousDirectories;
             CurrentPath = currentPath;
             CurrentPathShow = currentPathShow;
+            ClipBoard = clipBoard;
         }
         public CloudPathData()
         {
@@ -24,6 +26,7 @@ namespace NCloud.Models
             CurrentDirectory = String.Empty;
             CurrentPath = Constants.PrivateRootName;
             CurrentPathShow = Constants.PrivateRootName;
+            ClipBoard = String.Empty;
         }
 
         public void SetDefaultPathData(string? id)
@@ -85,6 +88,16 @@ namespace NCloud.Models
             }
             
             return folder;
+        }
+
+        public void SetClipBoardData(string text, bool isFile)
+        {
+            ClipBoard = (isFile ? Constants.SelectedFileStarterSymbol : Constants.SelectedFolderStarterSymbol) + Constants.FileNameDelimiter + new string(text); //copy data
+        }
+
+        public (string,string) GetClipBoardData()
+        {
+            return ("", ""); //TODO: implement
         }
     }
 }

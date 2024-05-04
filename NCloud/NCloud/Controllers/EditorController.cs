@@ -31,12 +31,12 @@ namespace NCloud.Controllers
         {
             if (redirectionString is null || redirectionString == String.Empty)
             {
-                return RedirectToAction("Index");
+                return await Task.FromResult<IActionResult>(RedirectToAction("Index"));
             }
 
             var redirection = RedirectionManager.CreateRedirectionAction(redirectionString);
 
-            return RedirectToAction(redirection.Action, redirection.Controller);
+            return await Task.FromResult<IActionResult>(RedirectToAction(redirection.Action, redirection.Controller));
         }
 
         [HttpPost]

@@ -167,19 +167,10 @@ namespace NCloud.Services
         {
             string path = ParseRootName(currentPath);
             string newName = file.FileName;
-            string pathAndName = Path.Combine(path, newName);
 
             try
             {
-                int counter = 0;
-
-                while (System.IO.File.Exists(pathAndName))
-                {
-                    FileInfo fi = new FileInfo(file.FileName);
-
-                    newName = fi.Name.Split('.')[0] + Constants.FileNameDelimiter + $"{++counter}" + fi.Extension;
-                    pathAndName = Path.Combine(path, newName);
-                }
+                string pathAndName = Path.Combine(path, RenameObject(path, ref newName));
 
                 using (FileStream stream = new FileStream(pathAndName, FileMode.Create))
                 {
@@ -337,7 +328,7 @@ namespace NCloud.Services
 
                 CloudUser user = await userManager.GetUserAsync(userPrincipal);
 
-                await SetDirectoryConnectedState(currentPath, folderName, ChangeOwnerIdentification(ChangeRootName(currentPath), user.UserName), user, false, false);
+                await SetObjectAndUnderlyingObjectsState(currentPath, folderName, ChangeOwnerIdentification(ChangeRootName(currentPath), user.UserName), user, false, false);
 
             }
             catch (Exception)
@@ -415,7 +406,11 @@ namespace NCloud.Services
         private bool IsSystemFolder(string path)
         {
             List<string> pathFolders = path.Split(Path.DirectorySeparatorChar).ToList();
-            return Constants.SystemFolders.Contains(pathFolders[pathFolders.FindIndex(x => x == "wwwroot") + Constants.DistanceToRootFolder]);
+
+            if (pathFolders.Count < 1)
+                return false;
+
+            return Constants.SystemFolders.Contains(pathFolders.Last()) && ((pathFolders.Count - pathFolders.FindIndex(x => x == Constants.WebRootFolderName) - 1) == Constants.DistanceToRootFolder);
         }
 
         public string ServerPath(string currentPath)
@@ -1073,13 +1068,22 @@ namespace NCloud.Services
             return await Task.FromResult<CloudFile>(new CloudFile(new FileInfo(Path.Combine(ParseRootName(currentPath), fileName)), file?.ConnectedToApp ?? false, file?.ConnectedToWeb ?? false, Path.Combine(currentPath, fileName)));
         }
 
-        public async Task<bool> RenameFolder(string currentPath, string folderName, string newName)
+        public async Task<string> RenameFolder(string currentPath, string folderName, string newName)
         {
             try
             {
                 string folderPath = ParseRootName(currentPath);
+                string folderPathAndName = Path.Combine(folderPath, folderName);
 
-                File.Move(Path.Combine(folderPath, folderName), Path.Combine(folderPath, newName));
+                if (IsSystemFolder(folderPathAndName))
+                    throw new Exception("System Folders can not be renamed!");
+
+                string newFolderPathAndName = Path.Combine(folderPath, newName);
+
+                if (Directory.Exists(newFolderPathAndName))
+                    throw new Exception("Folder with this name already exists");
+
+                Directory.Move(folderPathAndName, newFolderPathAndName);
 
                 SharedFolder? folder = await context.SharedFolders.FirstOrDefaultAsync(x => x.CloudPathFromRoot == currentPath && x.Name == folderName);
 
@@ -1091,38 +1095,58 @@ namespace NCloud.Services
                     await context.SaveChangesAsync();
                 }
 
-                return true;
+                return String.Empty;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return false;
+                return ex.Message;
             }
         }
 
-        public async Task<bool> RenameFile(string currentPath, string fileName, string newName)
+        public async Task<string> RenameFile(string currentPath, string fileName, string newName)
         {
+            string newFileName = new string(newName);
+
             try
             {
                 string filePath = ParseRootName(currentPath);
 
-                File.Move(Path.Combine(filePath, fileName), Path.Combine(filePath, newName));
+                File.Move(Path.Combine(filePath, fileName), Path.Combine(filePath, RenameObject(filePath, ref newFileName)));
 
                 SharedFile? file = await context.SharedFiles.FirstOrDefaultAsync(x => x.CloudPathFromRoot == currentPath && x.Name == fileName);
 
                 if (file is not null)
                 {
-                    file.Name = newName;
+                    file.Name = newFileName;
 
                     context.SharedFiles.Update(file);
                     await context.SaveChangesAsync();
                 }
 
-                return true;
+                return fileName;
             }
             catch (Exception)
             {
-                return false;
+                throw new FileLoadException("Error while renaming file");
             }
+        }
+
+        private string RenameObject(string path, ref string name)
+        {
+            int counter = 0;
+
+            string pathAndName = Path.Combine(path, name);
+
+            while (System.IO.File.Exists(pathAndName))
+            {
+                FileInfo fi = new FileInfo(name);
+
+                name = fi.Name.Split(Constants.FileExtensionDelimiter)[0] + Constants.FileNameDelimiter + $"{++counter}" + fi.Extension;
+                
+                pathAndName = Path.Combine(path, name);
+            }
+
+            return name;
         }
     }
 }

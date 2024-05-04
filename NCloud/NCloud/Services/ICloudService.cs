@@ -41,7 +41,7 @@ namespace NCloud.Services
         Task<bool> ModifyFileContent(string file, string content);
         Task<CloudFolder> GetFolder(string currentPath, string folderName);
         Task<CloudFile> GetFile(string currentPath, string fileName);
-        Task<bool> RenameFolder(string currentPath, string folderName, string newName);
-        Task<bool> RenameFile(string currentPath, string fileName, string newName);
+        Task<string> RenameFolder(string currentPath, string folderName, string newName);
+        Task<string> RenameFile(string currentPath, string fileName, string newName);
     }
 }

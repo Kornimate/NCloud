@@ -1,21 +1,12 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using NCloud.Models;
 using NCloud.Services;
 using NCloud.Users;
 using NCloud.ViewModels;
-using System.Drawing.Drawing2D;
-using System.Text.Json;
-using System.IO;
 using CloudPathData = NCloud.Models.CloudPathData;
-using System.IO.Compression;
-using Castle.Core;
-using static NuGet.Packaging.PackagingConstants;
 using NCloud.ConstantData;
 using NCloud.DTOs;
-using System.Linq;
 using NCloud.Security;
 
 namespace NCloud.Controllers
@@ -570,7 +561,7 @@ namespace NCloud.Controllers
             {
                 CloudFolder folder = await service.GetFolder(pathData.CurrentPath, folderName);
 
-                return View(new FolderSettingsViewModel(folder.Info.Name, folder.Info.Name, pathData.CurrentPathShow, folder.IsConnectedToApp, folder.IsConnectedToWeb));
+                return View(new FolderSettingsViewModel(folder.Info.Name, folder.Info.Name, pathData.CurrentPathShow, folder.IsConnectedToApp, folder.IsConnectedToWeb, folder.Info));
             }
             catch (Exception)
             {
@@ -589,18 +580,22 @@ namespace NCloud.Controllers
             {
                 CloudPathData pathData = await GetSessionCloudPathData();
 
-                if (!SecurityManager.CheckIfDirectoryExists(Path.Combine(service.ServerPath(pathData.CurrentPath), vm.OldName)))
+                bool noError = true;
+
+                if (!SecurityManager.CheckIfDirectoryExists(Path.Combine(service.ServerPath(pathData.CurrentPath), vm.OldName!)))
                 {
                     AddNewNotification(new Error("Directory does not exist"));
 
                     return RedirectToAction("Details", "Drive");
                 }
 
-                if(vm.NewName != vm.OldName)
+                if (vm.NewName != vm.OldName)
                 {
-                    if(!await service.RenameFile(pathData.CurrentPath, vm.OldName, vm.NewName))
+                    string msg = await service.RenameFolder(pathData.CurrentPath, vm.OldName!, vm.NewName!);
+
+                    if (msg != String.Empty)
                     {
-                        AddNewNotification(new Error("Failed to rename directory"));
+                        AddNewNotification(new Error(msg));
 
                         return RedirectToAction("Details", "Drive");
                     }
@@ -608,32 +603,45 @@ namespace NCloud.Controllers
 
                 if (vm.ConnectedToWeb)
                 {
-                    if(!await service.ConnectDirectoryToWeb(pathData.CurrentPath, vm.NewName, User))
+                    if (!await service.ConnectDirectoryToWeb(pathData.CurrentPath, vm.NewName!, User))
                     {
                         AddNewNotification(new Error("Error while applying settings (web connect)"));
+
+                        noError = false;
                     }
                 }
                 else
                 {
-                    if (!await service.DisconnectDirectoryFromWeb(pathData.CurrentPath, vm.NewName, User))
+                    if (!await service.DisconnectDirectoryFromWeb(pathData.CurrentPath, vm.NewName!, User))
                     {
                         AddNewNotification(new Error("Error while applying settings (web disconnect)"));
+
+                        noError = false;
                     }
                 }
 
                 if (vm.ConnectedToApp)
                 {
-                    if (!await service.ConnectDirectoryToApp(pathData.CurrentPath, vm.NewName, User))
+                    if (!await service.ConnectDirectoryToApp(pathData.CurrentPath, vm.NewName!, User))
                     {
                         AddNewNotification(new Error("Error while applying settings (app connect)"));
+
+                        noError = false;
                     }
                 }
                 else
                 {
-                    if (!await service.DisconnectDirectoryFromApp(pathData.CurrentPath, vm.NewName, User))
+                    if (!await service.DisconnectDirectoryFromApp(pathData.CurrentPath, vm.NewName!, User))
                     {
                         AddNewNotification(new Error("Error while applying settings (app disconnect)"));
+
+                        noError = false;
                     }
+                }
+
+                if (noError)
+                {
+                    AddNewNotification(new Success("Directory edited successfully"));
                 }
 
                 return RedirectToAction("Details", "Drive");
@@ -642,6 +650,170 @@ namespace NCloud.Controllers
             AddNewNotification(new Error("Invalid input data"));
 
             return View(vm);
+        }
+
+        public async Task<IActionResult> FileSettings(string fileName)
+        {
+            CloudPathData pathData = await GetSessionCloudPathData();
+
+            if (!SecurityManager.CheckIfFileExists(Path.Combine(service.ServerPath(pathData.CurrentPath), fileName)))
+            {
+                AddNewNotification(new Error("File does not exists"));
+
+                return RedirectToAction("Details", "Drive");
+            }
+
+            try
+            {
+                CloudFile file = await service.GetFile(pathData.CurrentPath, fileName);
+
+                return View(new FileSettingsViewModel(file.Info.Name, Path.GetFileNameWithoutExtension(file.Info.Name) ?? String.Empty, Path.GetExtension(file.Info.Name), pathData.CurrentPathShow, file.IsConnectedToApp, file.IsConnectedToWeb, file.Info));
+            }
+            catch (Exception)
+            {
+                AddNewNotification(new Error("File does not exists"));
+
+                return RedirectToAction("Details", "Drive");
+            }
+        }
+
+        [HttpPost]
+        [ActionName("FileSettings")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> FileSettingsForm([Bind("OldName,NewName,Extension,Path,ConnectedToApp,ConnectedToWeb")] FileSettingsViewModel vm)
+        {
+            if (ModelState.IsValid)
+            {
+                CloudPathData pathData = await GetSessionCloudPathData();
+
+                bool noError = true;
+
+                if (!SecurityManager.CheckIfFileExists(Path.Combine(service.ServerPath(pathData.CurrentPath), vm.OldName!)))
+                {
+                    AddNewNotification(new Error("File does not exist"));
+
+                    return RedirectToAction("Details", "Drive");
+                }
+
+                string newFileName = vm.NewName! + vm.Extension!; // already has the "." delimiter
+
+                if (newFileName != vm.OldName)
+                {
+                    try
+                    {
+                        string name = await service.RenameFile(pathData.CurrentPath, vm.OldName!, newFileName);
+
+                        if (name != (vm.NewName + vm.Extension))
+                        {
+                            AddNewNotification(new Warning("File has been renamed"));
+                        }
+
+                    }
+                    catch (Exception ex)
+                    {
+                        AddNewNotification(new Error(ex.Message));
+
+                        return RedirectToAction("Details", "Drive");
+                    }
+                }
+
+                if (vm.ConnectedToWeb)
+                {
+                    if (!await service.ConnectFileToWeb(pathData.CurrentPath, newFileName, User))
+                    {
+                        AddNewNotification(new Error("Error while applying settings (web connect)"));
+
+                        noError = false;
+                    }
+                }
+                else
+                {
+                    if (!await service.DisconnectFileFromWeb(pathData.CurrentPath, newFileName, User))
+                    {
+                        AddNewNotification(new Error("Error while applying settings (web disconnect)"));
+
+                        noError = false;
+                    }
+                }
+
+                if (vm.ConnectedToApp)
+                {
+                    if (!await service.ConnectFileToApp(pathData.CurrentPath, newFileName, User))
+                    {
+                        AddNewNotification(new Error("Error while applying settings (app connect)"));
+
+                        noError = false;
+                    }
+                }
+                else
+                {
+                    if (!await service.DisconnectFileFromApp(pathData.CurrentPath, newFileName, User))
+                    {
+                        AddNewNotification(new Error("Error while applying settings (app disconnect)"));
+
+                        noError = false;
+                    }
+                }
+
+                if (noError)
+                {
+                    AddNewNotification(new Success("File edited successfully"));
+                }
+
+                return RedirectToAction("Details", "Drive");
+            }
+
+            AddNewNotification(new Error("Invalid input data"));
+
+            return View(vm);
+        }
+
+        public async Task<JsonResult> CopyFolderToCloudClipboard(string folderName)
+        {
+            if (folderName is null || folderName == String.Empty)
+            {
+                return Json(new ConnectionDTO { Success = false, Message = "Invalid directory name" });
+            }
+
+            try
+            {
+                CloudPathData pathData = await GetSessionCloudPathData();
+
+                pathData.SetClipBoardData(Path.Combine(pathData.CurrentDirectory, folderName), false);
+
+                await SetSessionCloudPathData(pathData);
+
+                return Json(new ConnectionDTO { Success = true, Message = "Successfully copied directory to cloud clipboard" });
+
+            }
+            catch (Exception)
+            {
+                return Json(new ConnectionDTO { Success = false, Message = "Error while copy directory to cloud clipboard" });
+            }
+        }
+
+        public async Task<JsonResult> CopyFileToCloudClipboard(string fileName)
+        {
+            if (fileName is null || fileName == String.Empty)
+            {
+                return Json(new ConnectionDTO { Success = false, Message = "Invalid file name" });
+            }
+
+            try
+            {
+                CloudPathData pathData = await GetSessionCloudPathData();
+
+                pathData.SetClipBoardData(Path.Combine(pathData.CurrentDirectory, fileName), true);
+
+                await SetSessionCloudPathData(pathData);
+
+                return Json(new ConnectionDTO { Success = true, Message = "Successfully copied file to cloud clipboard" });
+
+            }
+            catch (Exception)
+            {
+                return Json(new ConnectionDTO { Success = false, Message = "Error while copy file to cloud clipboard" });
+            }
         }
     }
 }

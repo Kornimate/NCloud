@@ -3,14 +3,19 @@ using System.ComponentModel.DataAnnotations;
 
 namespace NCloud.ViewModels
 {
-    public class FolderSettingsViewModel
+    public class FileSettingsViewModel
     {
         [Required]
         public string? OldName { get; set; }
 
-        [Required(ErrorMessage = "Folder Name is compulsory")]
+        [Required(ErrorMessage = "File Name is compulsory")]
         [Display(Name = "Name")]
         public string? NewName { get; set; }
+
+        [Required]
+        public string? Extension { get; set; }
+
+        [Required]
         public string? Path { get; set; }
 
         [Required]
@@ -22,18 +27,19 @@ namespace NCloud.ViewModels
 
         public bool ConnectedToWeb { get; set; } = false;
 
-        public DirectoryInfo? Info { get; set; }
+        public FileInfo? Info { get; set; }
 
-        public FolderSettingsViewModel(string oldName, string newName, string path, bool connectedToApp, bool connectedToWeb, DirectoryInfo info)
+        public FileSettingsViewModel(string oldName, string newName, string extension, string path, bool connectedToApp, bool connectedToWeb, FileInfo info)
         {
             OldName = oldName;
             NewName = newName;
+            Extension = extension;
             Path = path;
             ConnectedToApp = connectedToApp;
             ConnectedToWeb = connectedToWeb;
             Info = info;
         }
 
-        public FolderSettingsViewModel() { }
+        public FileSettingsViewModel() { }
     }
 }
