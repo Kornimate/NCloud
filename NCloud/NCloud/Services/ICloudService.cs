@@ -43,5 +43,7 @@ namespace NCloud.Services
         Task<CloudFile> GetFile(string currentPath, string fileName);
         Task<string> RenameFolder(string currentPath, string folderName, string newName);
         Task<string> RenameFile(string currentPath, string fileName, string newName);
+        Task<bool> CopyFile(string? itemPath, string currentPath);
+        Task<bool> CopyFolder(string? itemPath, string currentPath);
     }
 }

@@ -815,5 +815,49 @@ namespace NCloud.Controllers
                 return Json(new ConnectionDTO { Success = false, Message = "Error while copy file to cloud clipboard" });
             }
         }
+        public async Task<IActionResult> PasteDataFromClipBoard()
+        {
+            CloudPathData pathData = await GetSessionCloudPathData();
+
+            try
+            {
+                CloudRegistration? item = pathData.GetClipBoardData();
+
+                if(item is null)
+                {
+                    AddNewNotification(new Error("Invalid data in clipboard"));
+
+                    return RedirectToAction("Details", "Drive");
+                }
+
+                if (item.IsFile())
+                {
+                    if(!await service.CopyFile(item.ItemPath, pathData.CurrentPath))
+                    {
+                        AddNewNotification(new Error("Error while pasting file"));
+
+                        return RedirectToAction("Details", "Drive");
+                    }
+                }
+
+                if (item.IsFolder())
+                {
+                    if(!await service.CopyFolder(item.ItemPath, pathData.CurrentPath))
+                    {
+                        AddNewNotification(new Error("Error while pasting folder"));
+
+                        return RedirectToAction("Details", "Drive");
+                    }
+                }
+
+                return RedirectToAction("Details", "Drive");
+            }
+            catch (Exception ex)
+            {
+                AddNewNotification(new Error(ex.Message));
+
+                return RedirectToAction("Details", "Drive");
+            }
+        }
     }
 }

@@ -95,9 +95,14 @@ namespace NCloud.Models
             ClipBoard = (isFile ? Constants.SelectedFileStarterSymbol : Constants.SelectedFolderStarterSymbol) + Constants.FileNameDelimiter + new string(text); //copy data
         }
 
-        public (string,string) GetClipBoardData()
+        public CloudRegistration? GetClipBoardData()
         {
-            return ("", ""); //TODO: implement
+            if(ClipBoard is null || ClipBoard == String.Empty)
+            {
+                throw new MissingMemberException("No data in clipboard");
+            }
+
+            return CloudRegistration.RegistrationPathFactory(ClipBoard);
         }
     }
 }

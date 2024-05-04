@@ -1148,5 +1148,17 @@ namespace NCloud.Services
 
             return name;
         }
+
+        public Task<bool> CopyFile(string? itemPath, string currentPath)
+        {
+            //TODO: implement method
+            throw new Exception();
+        }
+
+        public Task<bool> CopyFolder(string? itemPath, string currentPath)
+        {
+            //TODO: implement method
+            throw new Exception();
+        }
     }
 }

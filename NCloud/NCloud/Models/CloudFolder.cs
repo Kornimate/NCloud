@@ -19,6 +19,12 @@ namespace NCloud.Models
             Info = null!;
         }
 
+        public CloudFolder(string itemPath) : base(false, false, String.Empty)
+        {
+            ItemPath = itemPath;
+            Info = null!;
+        }
+
         public override bool IsFile()
         {
             return false;
