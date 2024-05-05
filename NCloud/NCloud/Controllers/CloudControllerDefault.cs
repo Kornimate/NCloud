@@ -20,13 +20,6 @@ namespace NCloud.Controllers
         protected readonly ICloudNotificationService notifier;
         protected readonly UserManager<CloudUser> userManager;
         protected readonly SignInManager<CloudUser> signInManager;
-        protected const string USERCOOKIENAME = "pathDataUser";
-        protected const string SHAREDCOOKIENAME = "pathDataShared";
-        protected const string APPNAME = "NCloudDrive";
-        protected const string NOTIFICATIONKEY = "Notification";
-        protected readonly List<string> ALLOWEDFILETYPES = new List<string>(); //TODO: add filetypes
-
-        protected const string JSONCONTAINERNAME = "__JsonContainer__.json";
         public CloudControllerDefault(ICloudService service, UserManager<CloudUser> userManager, SignInManager<CloudUser> signInManager, IWebHostEnvironment env, ICloudNotificationService notifier)
         {
             this.service = service;
@@ -40,9 +33,9 @@ namespace NCloud.Controllers
         protected async Task<CloudPathData> GetSessionCloudPathData()
         {
             CloudPathData data = null!;
-            if (HttpContext.Session.Keys.Contains(USERCOOKIENAME))
+            if (HttpContext.Session.Keys.Contains(Constants.CloudCookieKey))
             {
-                data = JsonSerializer.Deserialize<CloudPathData>(HttpContext.Session.GetString(USERCOOKIENAME)!)!;
+                data = JsonSerializer.Deserialize<CloudPathData>(HttpContext.Session.GetString(Constants.CloudCookieKey)!)!;
             }
             else
             {
@@ -60,7 +53,7 @@ namespace NCloud.Controllers
             return Task.Run(() =>
             {
                 if (pathData == null) return;
-                HttpContext.Session.SetString(USERCOOKIENAME, JsonSerializer.Serialize<CloudPathData>(pathData));
+                HttpContext.Session.SetString(Constants.CloudCookieKey, JsonSerializer.Serialize<CloudPathData>(pathData));
             });
         }
 
@@ -70,14 +63,14 @@ namespace NCloud.Controllers
             return await Task.Run(() =>
             {
                 SharedPathData data = null!;
-                if (HttpContext.Session.Keys.Contains(SHAREDCOOKIENAME))
+                if (HttpContext.Session.Keys.Contains(Constants.SharedCookieKey))
                 {
-                    data = JsonSerializer.Deserialize<SharedPathData>(HttpContext.Session.GetString(SHAREDCOOKIENAME)!)!;
+                    data = JsonSerializer.Deserialize<SharedPathData>(HttpContext.Session.GetString(Constants.SharedCookieKey)!)!;
                 }
                 else
                 {
                     data = new SharedPathData();
-                    HttpContext.Session.SetString(SHAREDCOOKIENAME, JsonSerializer.Serialize<SharedPathData>(data));
+                    HttpContext.Session.SetString(Constants.SharedCookieKey, JsonSerializer.Serialize<SharedPathData>(data));
                 }
                 return data;
             });
@@ -91,7 +84,7 @@ namespace NCloud.Controllers
                 try
                 {
                     pathData ??= new SharedPathData();
-                    HttpContext.Session.SetString(SHAREDCOOKIENAME, JsonSerializer.Serialize<SharedPathData>(pathData));
+                    HttpContext.Session.SetString(Constants.SharedCookieKey, JsonSerializer.Serialize<SharedPathData>(pathData));
 
                     return true;
                 }
@@ -121,7 +114,7 @@ namespace NCloud.Controllers
             try
             {
                 notifier.AddNotification(notification);
-                TempData[NOTIFICATIONKEY] = notifier.GetNotificationQueue();
+                TempData[Constants.NotificationCookieKey] = notifier.GetNotificationQueue();
 
                 return true;
             }
@@ -158,7 +151,7 @@ namespace NCloud.Controllers
 
                             FileStream stream = new FileStream(tempFile, FileMode.Open, FileAccess.Read, FileShare.Read, 4096, FileOptions.DeleteOnClose);
 
-                            return File(stream, Constants.ZipMimeType, $"{APPNAME}_{DateTime.Now.ToString(Constants.DateTimeFormat)}.{Constants.CompressedArchiveFileType}");
+                            return File(stream, Constants.ZipMimeType, $"{Constants.AppName}_{DateTime.Now.ToString(Constants.DateTimeFormat)}.{Constants.CompressedArchiveFileType}");
                         }
                         catch (Exception)
                         {

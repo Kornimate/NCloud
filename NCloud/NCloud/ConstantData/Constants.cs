@@ -36,7 +36,10 @@ namespace NCloud.ConstantData
         public static string NotSelectedResult { get => "false"; }
         public static string CodingExtensionsFilePath { get => "./Services/Resources/coding-extensions.json"; }
         public static string TextDocumentExtensionsFilePath { get => "./Services/Resources/text-document-extensions.json"; }
-        public static string ControllerDataSeparator{ get => "||"; }
+        public static string ControllerDataSeparator { get => "||"; }
+        public static string NotificationCookieKey { get => "Notification"; }
+        public static string CloudCookieKey { get => "pathDataCloud"; }
+        public static string SharedCookieKey { get => "pathDataShared"; }
         public static char SelectedFileStarterSymbol { get => '@'; }
         public static char SelectedFolderStarterSymbol { get => '&'; }
         public static char FileNameDelimiter { get => '_'; }
@@ -49,9 +52,9 @@ namespace NCloud.ConstantData
         public static int GuidLength { get => 36; }
         public static TimeSpan TempFileDeleteTimeSpan { get => TimeSpan.FromMinutes(10); }
 
-        public static Pair<string,string> GetWebControllerAndActionForDetails()
+        public static Pair<string, string> GetWebControllerAndActionForDetails()
         {
-            return new Pair<string, string>("Web","SharingPage");
+            return new Pair<string, string>("Web", "SharingPage");
         }
 
         public static Pair<string, string> GetWebControllerAndActionForDownload()

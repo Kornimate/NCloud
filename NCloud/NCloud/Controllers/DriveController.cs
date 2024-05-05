@@ -74,11 +74,6 @@ namespace NCloud.Controllers
         {
             try
             {
-                if (folderName == JSONCONTAINERNAME)
-                {
-                    throw new Exception("Invalid Folder Name!");
-                }
-
                 if (folderName is null || folderName == String.Empty)
                 {
                     throw new Exception("Folder name must be at least one character!");

@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Security.Cryptography;
 using System.Security.Policy;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using NCloud.Security;
 using NCloud.Services;
 
@@ -8,14 +10,8 @@ class Program
 {
     static void Main()
     {
-        for(int i=0; i <10;i++)
-        {
-            new Thread(() =>
-            {
-                string s = File.ReadAllText("./Test.txt");
-
-                Console.WriteLine($"Finished {i}.");
-            }).Start();
-        }
+        var data = JsonSerializer.Serialize("&_oksa");
+        var write = JsonSerializer.Deserialize<string>(data);
+        Console.Write(write);
     }
 }
