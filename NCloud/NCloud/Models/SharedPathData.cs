@@ -5,15 +5,13 @@ namespace NCloud.Models
 {
     public class SharedPathData
     {
-        public string CurrentDirectory { get; private set; }
         public List<string> PreviousDirectories { get; private set; }
         public string CurrentPath { get; private set; }
         public string CurrentPathShow { get; private set; }
 
         [JsonConstructor]
-        public SharedPathData(string currentDirectory, List<string> previousDirectories, string currentPath, string currentPathShow)
+        public SharedPathData(List<string> previousDirectories, string currentPath, string currentPathShow)
         {
-            CurrentDirectory = currentDirectory;
             PreviousDirectories = previousDirectories;
             CurrentPath = currentPath;
             CurrentPathShow = currentPathShow;
@@ -21,7 +19,6 @@ namespace NCloud.Models
         public SharedPathData()
         {
             PreviousDirectories = new List<string>() { Constants.PublicRootName };
-            CurrentDirectory = String.Empty;
             CurrentPath = Constants.PublicRootName;
             CurrentPathShow = Constants.PublicRootName;
         }
@@ -46,7 +43,6 @@ namespace NCloud.Models
                 
                 PreviousDirectories.Add(folderName);
                 CurrentPath = $@"{currentPath}"; //for security reasons
-                CurrentDirectory = folderName!;
                 CurrentPathShow += Constants.PathSeparator + folderName;
             }
             
@@ -64,7 +60,6 @@ namespace NCloud.Models
                 folder = PreviousDirectories.Last();
             }
             
-            CurrentDirectory = folder;
             CurrentPath = Path.Combine(PreviousDirectories.ToArray());
             CurrentPathShow = String.Join(Constants.PathSeparator, PreviousDirectories.ToArray());
             

@@ -776,7 +776,7 @@ namespace NCloud.Controllers
             {
                 CloudPathData pathData = await GetSessionCloudPathData();
 
-                pathData.SetClipBoardData(Path.Combine(pathData.CurrentDirectory, itemName), false);
+                pathData.SetClipBoardData(Path.Combine(pathData.CurrentPath, itemName), false);
 
                 await SetSessionCloudPathData(pathData);
 
@@ -802,7 +802,7 @@ namespace NCloud.Controllers
             {
                 CloudPathData pathData = await GetSessionCloudPathData();
 
-                pathData.SetClipBoardData(Path.Combine(pathData.CurrentDirectory, itemName), true);
+                pathData.SetClipBoardData(Path.Combine(pathData.CurrentPath, itemName), true);
 
                 await SetSessionCloudPathData(pathData);
 
@@ -851,9 +851,9 @@ namespace NCloud.Controllers
 
                 return RedirectToAction("Details", "Drive");
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                AddNewNotification(new Error(ex.Message));
+                AddNewNotification(new Error("Error while pasting item"));
 
                 return RedirectToAction("Details", "Drive");
             }
