@@ -768,9 +768,11 @@ namespace NCloud.Controllers
             return View(vm);
         }
 
-        public async Task<JsonResult> CopyFolderToCloudClipboard(string folderName)
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<JsonResult> CopyFolderToCloudClipboard([FromBody] string itemName)
         {
-            if (folderName is null || folderName == String.Empty)
+            if (itemName is null || itemName == String.Empty)
             {
                 return Json(new ConnectionDTO { Success = false, Message = "Invalid directory name" });
             }
@@ -779,7 +781,7 @@ namespace NCloud.Controllers
             {
                 CloudPathData pathData = await GetSessionCloudPathData();
 
-                pathData.SetClipBoardData(Path.Combine(pathData.CurrentDirectory, folderName), false);
+                pathData.SetClipBoardData(Path.Combine(pathData.CurrentDirectory, itemName), false);
 
                 await SetSessionCloudPathData(pathData);
 
@@ -792,9 +794,11 @@ namespace NCloud.Controllers
             }
         }
 
-        public async Task<JsonResult> CopyFileToCloudClipboard(string fileName)
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<JsonResult> CopyFileToCloudClipboard([FromBody] string itemName)
         {
-            if (fileName is null || fileName == String.Empty)
+            if (itemName is null || itemName == String.Empty)
             {
                 return Json(new ConnectionDTO { Success = false, Message = "Invalid file name" });
             }
@@ -803,7 +807,7 @@ namespace NCloud.Controllers
             {
                 CloudPathData pathData = await GetSessionCloudPathData();
 
-                pathData.SetClipBoardData(Path.Combine(pathData.CurrentDirectory, fileName), true);
+                pathData.SetClipBoardData(Path.Combine(pathData.CurrentDirectory, itemName), true);
 
                 await SetSessionCloudPathData(pathData);
 
@@ -823,7 +827,7 @@ namespace NCloud.Controllers
             {
                 CloudRegistration? item = pathData.GetClipBoardData();
 
-                if(item is null)
+                if (item is null)
                 {
                     AddNewNotification(new Error("Invalid data in clipboard"));
 
@@ -832,7 +836,7 @@ namespace NCloud.Controllers
 
                 if (item.IsFile())
                 {
-                    if(!await service.CopyFile(item.ItemPath, pathData.CurrentPath))
+                    if (!await service.CopyFile(item.ItemPath, pathData.CurrentPath))
                     {
                         AddNewNotification(new Error("Error while pasting file"));
 
@@ -842,7 +846,7 @@ namespace NCloud.Controllers
 
                 if (item.IsFolder())
                 {
-                    if(!await service.CopyFolder(item.ItemPath, pathData.CurrentPath))
+                    if (!await service.CopyFolder(item.ItemPath, pathData.CurrentPath))
                     {
                         AddNewNotification(new Error("Error while pasting folder"));
 

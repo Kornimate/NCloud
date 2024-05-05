@@ -8,6 +8,22 @@ $(function () {
     $('[data-toggle="tooltip"]').tooltip();
 });
 
+async function copyItemToCloudClipBoard(url, itemName) {
+
+    console.log(itemName);
+
+    let response = await AjaxCall(url, itemName);
+
+    response = await response.json()
+
+    if (response.success) {
+        ShowSuccessToast("Success", response.message);
+    } else {
+        ShowErrorToast("Error", response.message);
+    }
+}
+
+
 function copyToClipBoard(url) {
 
     try {

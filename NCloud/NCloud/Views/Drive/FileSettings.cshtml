@@ -75,6 +75,7 @@
             </form>
             <div class="d-flex w-100 justify-content-center input-group mt-4">
                 <a asp-controller="Drive" class="btn btn-primary" asp-action="DownloadFolder" asp-route-folderName="@Model.OldName"><img src="~/utilities/cloud-download.svg" width=" 20" height="20" class="rounded align-middle" download /></a>
+                <button type="button" class="btn btn-secondary" onclick="copyItemToCloudClipBoard('@Url.Action("CopyFileToCloudClipboard","Drive")','@Model.Info.Name')"><img src="~/utilities/copy.svg" width=" 20" height="20" class="align-middle" /></button>
                 <a asp-controller="Drive" class="btn btn-danger" asp-action="DeleteFolder" asp-route-folderName="@Model.OldName"><img src="~/utilities/trash.svg" width=" 20" height="20" class="rounded align-middle" /></a>
             </div>
         </div>
