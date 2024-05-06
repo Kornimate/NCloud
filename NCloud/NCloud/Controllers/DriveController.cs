@@ -840,7 +840,7 @@ namespace NCloud.Controllers
 
                     try
                     {
-                        string result = await service.CopyFile(item.ItemPath, pathData.CurrentPath);
+                        string result = await service.CopyFile(item.ItemPath, pathData.CurrentPath, User);
                         if (result != String.Empty)
                         {
                             AddNewNotification(new Warning("File has been renamed"));
@@ -865,7 +865,7 @@ namespace NCloud.Controllers
 
                     try
                     {
-                        string result = await service.CopyFolder(item.ItemPath, pathData.CurrentPath);
+                        string result = await service.CopyFolder(item.ItemPath, pathData.CurrentPath, User);
 
                         if (result != String.Empty)
                         {

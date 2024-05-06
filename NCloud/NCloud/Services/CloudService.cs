@@ -1171,7 +1171,7 @@ namespace NCloud.Services
             return name;
         }
 
-        public async Task<string> CopyFile(string? source, string destination)
+        public async Task<string> CopyFile(string? source, string destination, ClaimsPrincipal userPrincipal)
         {
             if (source is null || source == String.Empty)
             {
@@ -1199,6 +1199,14 @@ namespace NCloud.Services
                     return await Task.FromResult<string>(String.Empty);
                 }
 
+                CloudUser user = await userManager.GetUserAsync(userPrincipal);
+
+                Pair<string, string> parentPathAndName = GetParentPathAndName(destination);
+
+                Pair<bool, bool> connections = await FolderIsSharedInAppInWeb(parentPathAndName.First, parentPathAndName.Second);
+
+                await SetFileConnectedState(destination, name, ChangeOwnerIdentification(ChangeRootName(destination), user.UserName), user, connections.First, connections.Second);
+
                 return await Task.FromResult<string>(name);
             }
             catch (Exception)
@@ -1207,7 +1215,7 @@ namespace NCloud.Services
             }
         }
 
-        public async Task<string> CopyFolder(string? source, string destination)
+        public async Task<string> CopyFolder(string? source, string destination, ClaimsPrincipal userPrincipal)
         {
 
             throw new Exception();
