@@ -1192,7 +1192,7 @@ namespace NCloud.Services
 
                 string name = new string(fi.Name);
 
-                File.Copy(src,Path.Combine(dest, RenameObject(dest, ref name, true)));
+                File.Copy(src, Path.Combine(dest, RenameObject(dest, ref name, true)));
 
                 CloudUser user = await userManager.GetUserAsync(userPrincipal);
 
@@ -1218,7 +1218,58 @@ namespace NCloud.Services
         public async Task<string> CopyFolder(string? source, string destination, ClaimsPrincipal userPrincipal)
         {
 
-            throw new Exception();
+            if (source is null || source == String.Empty)
+            {
+                throw new Exception("Invalid source of file");
+            }
+
+            if (destination is null || destination == String.Empty)
+            {
+                throw new Exception("Invalid destination for copy");
+            }
+
+            try
+            {
+                string src = ParseRootName(source);
+                string dest = ParseRootName(destination);
+
+                DirectoryInfo di = new DirectoryInfo(src);
+
+                string name = new string(di.Name);
+
+                Directory.CreateDirectory(Path.Combine(dest, RenameObject(dest,ref name, false)));
+
+                string destinationInnerDir = Path.Combine(dest, name);
+
+                foreach(DirectoryInfo dir in di.GetDirectories())
+                {
+                    FileSystem.CopyDirectory(dir.FullName, destinationInnerDir);
+                }
+
+                foreach(FileInfo fi in di.GetFiles())
+                {
+                    File.Copy(fi.FullName, Path.Combine(destinationInnerDir, fi.Name));
+                }
+
+                CloudUser user = await userManager.GetUserAsync(userPrincipal);
+
+                Pair<string, string> parentPathAndName = GetParentPathAndName(destination);
+
+                Pair<bool, bool> connections = await FolderIsSharedInAppInWeb(parentPathAndName.First, parentPathAndName.Second);
+
+                await SetObjectAndUnderlyingObjectsState(destination, name, ChangeOwnerIdentification(ChangeRootName(destination), user.UserName), user, connections.First, connections.Second);
+
+                if (name == di.Name)
+                {
+                    return await Task.FromResult<string>(String.Empty);
+                }
+
+                return await Task.FromResult<string>(name);
+            }
+            catch (Exception)
+            {
+                throw new Exception("Error while pasting file");
+            }
         }
     }
 }
