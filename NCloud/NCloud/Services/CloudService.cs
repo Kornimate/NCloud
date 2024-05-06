@@ -14,7 +14,6 @@ using Microsoft.AspNetCore.Mvc;
 using System.IO.Compression;
 using System;
 using System.Xml.Linq;
-using Microsoft.VisualBasic.FileIO;
 
 namespace NCloud.Services
 {
@@ -1236,19 +1235,32 @@ namespace NCloud.Services
                 DirectoryInfo di = new DirectoryInfo(src);
 
                 string name = new string(di.Name);
+                string newDirectoryPath = Path.Combine(dest, RenameObject(dest, ref name, false));
 
-                Directory.CreateDirectory(Path.Combine(dest, RenameObject(dest,ref name, false)));
+                Directory.CreateDirectory(newDirectoryPath);
 
-                string destinationInnerDir = Path.Combine(dest, name);
+                Queue<DirectoryInfo> dirData = new Queue<DirectoryInfo>(new DirectoryInfo[] { di });
 
-                foreach(DirectoryInfo dir in di.GetDirectories())
+                while (dirData.Any())
                 {
-                    FileSystem.CopyDirectory(dir.FullName, destinationInnerDir);
-                }
+                    DirectoryInfo directory = dirData.Dequeue();
 
-                foreach(FileInfo fi in di.GetFiles())
-                {
-                    File.Copy(fi.FullName, Path.Combine(destinationInnerDir, fi.Name));
+                    newDirectoryPath = directory.FullName.Replace(src,newDirectoryPath);
+
+                    if (!Directory.Exists(newDirectoryPath))
+                    {
+                        Directory.CreateDirectory(newDirectoryPath);
+                    }
+
+                    foreach (FileInfo fi in directory.GetFiles())
+                    {
+                        File.Copy(fi.FullName, Path.Combine(newDirectoryPath, fi.Name));
+                    }
+
+                    foreach (DirectoryInfo dir in directory.GetDirectories())
+                    {
+                        dirData.Enqueue(dir);
+                    }
                 }
 
                 CloudUser user = await userManager.GetUserAsync(userPrincipal);
@@ -1268,7 +1280,7 @@ namespace NCloud.Services
             }
             catch (Exception)
             {
-                throw new Exception("Error while pasting file");
+                throw new Exception("Error while pasting directory");
             }
         }
     }
