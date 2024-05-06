@@ -1194,11 +1194,6 @@ namespace NCloud.Services
 
                 File.Copy(src,Path.Combine(dest, RenameObject(dest, ref name, true)));
 
-                if (name == fi.Name)
-                {
-                    return await Task.FromResult<string>(String.Empty);
-                }
-
                 CloudUser user = await userManager.GetUserAsync(userPrincipal);
 
                 Pair<string, string> parentPathAndName = GetParentPathAndName(destination);
@@ -1206,6 +1201,11 @@ namespace NCloud.Services
                 Pair<bool, bool> connections = await FolderIsSharedInAppInWeb(parentPathAndName.First, parentPathAndName.Second);
 
                 await SetFileConnectedState(destination, name, ChangeOwnerIdentification(ChangeRootName(destination), user.UserName), user, connections.First, connections.Second);
+
+                if (name == fi.Name)
+                {
+                    return await Task.FromResult<string>(String.Empty);
+                }
 
                 return await Task.FromResult<string>(name);
             }
