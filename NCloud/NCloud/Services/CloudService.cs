@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Mvc;
 using System.IO.Compression;
 using System;
 using System.Xml.Linq;
+using Microsoft.VisualBasic.FileIO;
 
 namespace NCloud.Services
 {
@@ -170,7 +171,7 @@ namespace NCloud.Services
 
             try
             {
-                string pathAndName = Path.Combine(path, RenameObject(path, ref newName));
+                string pathAndName = Path.Combine(path, RenameObject(path, ref newName, true));
 
                 using (FileStream stream = new FileStream(pathAndName, FileMode.Create))
                 {
@@ -1111,7 +1112,7 @@ namespace NCloud.Services
             {
                 string filePath = ParseRootName(currentPath);
 
-                File.Move(Path.Combine(filePath, fileName), Path.Combine(filePath, RenameObject(filePath, ref newFileName)));
+                File.Move(Path.Combine(filePath, fileName), Path.Combine(filePath, RenameObject(filePath, ref newFileName, true)));
 
                 SharedFile? file = await context.SharedFiles.FirstOrDefaultAsync(x => x.CloudPathFromRoot == currentPath && x.Name == fileName);
 
@@ -1131,33 +1132,84 @@ namespace NCloud.Services
             }
         }
 
-        private string RenameObject(string path, ref string name)
+        private string RenameObject(string path, ref string name, bool isFile)
         {
             int counter = 0;
 
             string pathAndName = Path.Combine(path, name);
 
-            while (System.IO.File.Exists(pathAndName))
+            if (isFile)
             {
-                FileInfo fi = new FileInfo(name);
+                string nameBase = new string(name);
+                string extension = String.Empty;
 
-                name = fi.Name.Split(Constants.FileExtensionDelimiter)[0] + Constants.FileNameDelimiter + $"{++counter}" + fi.Extension;
-                
-                pathAndName = Path.Combine(path, name);
+                if (name.Contains(Constants.FileExtensionDelimiter))
+                {
+                    nameBase = Path.GetFileNameWithoutExtension(name);
+                    extension = Path.GetExtension(name);
+                }
+
+                while (System.IO.File.Exists(pathAndName))
+                {
+                    name = nameBase + Constants.FileNameDelimiter + (++counter).ToString() + extension;
+
+                    pathAndName = Path.Combine(path, name);
+                }
+            }
+            else
+            {
+                string nameBase = new string(name);
+
+                while (System.IO.Directory.Exists(pathAndName))
+                {
+                    name = nameBase + Constants.FileNameDelimiter + (++counter).ToString();
+
+                    pathAndName = Path.Combine(path, name);
+                }
             }
 
             return name;
         }
 
-        public Task<bool> CopyFile(string? itemPath, string currentPath)
+        public async Task<string> CopyFile(string? source, string destination)
         {
-            //TODO: implement method
-            throw new Exception();
+            if (source is null || source == String.Empty)
+            {
+                throw new Exception("Invalid source of file");
+            }
+
+            if (destination is null || destination == String.Empty)
+            {
+                throw new Exception("Invalid destination for copy");
+            }
+
+            try
+            {
+                string src = ParseRootName(source);
+                string dest = ParseRootName(destination);
+
+                FileInfo fi = new FileInfo(src);
+
+                string name = new string(fi.Name);
+
+                File.Copy(src,Path.Combine(dest, RenameObject(dest, ref name, true)));
+
+                if (name == fi.Name)
+                {
+                    return await Task.FromResult<string>(String.Empty);
+                }
+
+                return await Task.FromResult<string>(name);
+            }
+            catch (Exception)
+            {
+                throw new Exception("Error while pasting file");
+            }
         }
 
-        public Task<bool> CopyFolder(string? itemPath, string currentPath)
+        public async Task<string> CopyFolder(string? source, string destination)
         {
-            //TODO: implement method
+
             throw new Exception();
         }
     }

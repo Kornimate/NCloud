@@ -831,23 +831,63 @@ namespace NCloud.Controllers
 
                 if (item.IsFile())
                 {
-                    if (!await service.CopyFile(item.ItemPath, pathData.CurrentPath))
+                    if (!SecurityManager.CheckIfFileExists(service.ServerPath(item.ItemPath!)))
                     {
-                        AddNewNotification(new Error("Error while pasting file"));
+                        AddNewNotification(new Error("Source file does not exist"));
 
                         return RedirectToAction("Details", "Drive");
                     }
-                }
 
-                if (item.IsFolder())
+                    try
+                    {
+                        string result = await service.CopyFile(item.ItemPath, pathData.CurrentPath);
+                        if (result != String.Empty)
+                        {
+                            AddNewNotification(new Warning("File has been renamed"));
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        AddNewNotification(new Error(ex.Message));
+
+                        return RedirectToAction("Details", "Drive");
+                    }
+
+                }
+                else if (item.IsFolder())
                 {
-                    if (!await service.CopyFolder(item.ItemPath, pathData.CurrentPath))
+                    if (!SecurityManager.CheckIfDirectoryExists(service.ServerPath(item.ItemPath!)))
                     {
-                        AddNewNotification(new Error("Error while pasting folder"));
+                        AddNewNotification(new Error("Source directory does not exist"));
 
                         return RedirectToAction("Details", "Drive");
                     }
+
+                    try
+                    {
+                        string result = await service.CopyFolder(item.ItemPath, pathData.CurrentPath);
+
+                        if (result != String.Empty)
+                        {
+                            AddNewNotification(new Warning("Directory has been renamed"));
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        AddNewNotification(new Error(ex.Message));
+
+                        return RedirectToAction("Details", "Drive");
+                    }
+
                 }
+                else
+                {
+                    AddNewNotification(new Error("Unknown item in cloud clipboard"));
+
+                    return RedirectToAction("Details", "Drive");
+                }
+
+                AddNewNotification(new Success("Successfully pasted item"));
 
                 return RedirectToAction("Details", "Drive");
             }
