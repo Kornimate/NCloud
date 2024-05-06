@@ -1,7 +1,7 @@
 ﻿@model DriveDetailsViewModel
 
 @{
-    ViewData["Title"] = "Drive";
+    ViewData["Title"] = "Cloud Files";
 }
 
 <div>
@@ -22,17 +22,18 @@
         </div>
     </form>
     <div class="d-flex justify-content-between">
-        <div class="">
+        <div>
             <a class="btn btn-primary" asp-controller="Drive" asp-action="Back"><img src="~/utilities/arrow-left-circle.svg" width=" 20" height="20" class="rounded align-middle" /></a>
         </div>
         <div class="">
             <div class="btn-group" role="group">
-                <button type="button" class="btn btn-primary" id="refreshBtn"><a asp-controller="Drive" asp-action="Details"><img src="~/utilities/arrow-repeat.svg" width=" 20" height="20" class="rounded-circle align-middle" /></a></button>
-                <button type="button" class="btn btn-secondary"><a asp-controller="Drive" asp-action="DownloadItems"><img src="~/utilities/cloud-download.svg" width=" 20" height="20" class="rounded-circle align-middle" /></a></button>
-                <button type="button" class="btn btn-secondary" id="addFileBtn"><img src="~/utilities/cloud-upload.svg" width=" 20" height="20" class="rounded-circle align-middle" /></button>
+                <a class="btn btn-primary" id="refreshBtn" asp-controller="Drive" asp-action="Details"><img src="~/utilities/arrow-repeat.svg" width=" 20" height="20" class="rounded align-middle" /></a>
+                <a class="btn btn-secondary" asp-controller="Drive" asp-action="DownloadItems"><img src="~/utilities/cloud-download.svg" width=" 20" height="20" class="rounded align-middle" /></a>
+                <a class="btn btn-secondary" asp-controller="Drive" asp-action="PasteDataFromClipBoard"><img src="~/utilities/paste.svg" width=" 20" height="20" class="rounded align-middle" /></a>
+                <button type="button" class="btn btn-secondary" id="addFileBtn"><img src="~/utilities/cloud-upload.svg" width=" 20" height="20" class="rounded align-middle" /></button>
                 <button type="button" class="btn btn-secondary" id="addFolderBtn"><img src="~/utilities/folder-plus.svg" width=" 20" height="20" class="rounded align-middle" /></button>
-                <button type="button" class="btn btn-secondary" id="terminalBtn"><a asp-controller="Terminal" asp-action="Index" asp-route-currentPath="@Model.CurrentPathShow"><img src="~/utilities/terminal.svg" width=" 20" height="20" class="align-middle" /></a></button>
-                <button type="button" class="btn btn-danger"><a asp-controller="Drive" asp-action="DeleteItems"><img src="~/utilities/trash.svg" width=" 20" height="20" class="rounded align-middle" /></a></button>
+                <a class="btn btn-secondary" asp-controller="Terminal" asp-action="Index" asp-route-currentPath="@Model.CurrentPathShow"><img src="~/utilities/terminal.svg" width=" 20" height="20" class="rounded align-middle" /></a>
+                <a class="btn btn-danger" asp-controller="Drive" asp-action="DeleteItems"><img src="~/utilities/trash.svg" width=" 20" height="20" class="rounded align-middle" /></a>
             </div>
         </div>
     </div>

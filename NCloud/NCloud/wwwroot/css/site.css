@@ -52,6 +52,13 @@ details[open] summary:before {
     top: 0px;
 }
 
+.fixed-notifications {
+    position: fixed;
+    right: 10px;
+    bottom: 10px;
+    z-index: 1000;
+}
+
 .maindiv {
     width: 85%;
     top: 0px;

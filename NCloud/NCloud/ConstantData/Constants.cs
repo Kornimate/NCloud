@@ -1,4 +1,5 @@
 ﻿using Castle.Core;
+using System.Security.Claims;
 
 namespace NCloud.ConstantData
 {
@@ -19,6 +20,7 @@ namespace NCloud.ConstantData
         public static string DateTimeFormat { get => "yyyy'-'MM'-'dd'T'HH'-'mm'-'ss"; }
         public static string UnkownFileType { get => "unknown"; }
         public static string FileTypePrefix { get => "filetype-"; }
+        public static string WebRootFolderName { get => "wwwroot"; }
         public static string IconsBasePath { get => Path.Combine("wwwroot", "utilities"); }
         public static string LogoPath { get => Path.Combine("wwwroot", "utilities", "cloud_logo.png"); }
         public static string TempFolderName { get => "temp"; }
@@ -32,9 +34,16 @@ namespace NCloud.ConstantData
         public static string PublicRootName { get => "@SHAREDROOT"; }
         public static string CompressedArchiveFileType { get => "zip"; }
         public static string NotSelectedResult { get => "false"; }
-        public static char SelectedFileStarterSymbol { get => '_'; }
+        public static string CodingExtensionsFilePath { get => "./Services/Resources/coding-extensions.json"; }
+        public static string TextDocumentExtensionsFilePath { get => "./Services/Resources/text-document-extensions.json"; }
+        public static string ControllerDataSeparator { get => "||"; }
+        public static string NotificationCookieKey { get => "Notification"; }
+        public static string CloudCookieKey { get => "pathDataCloud"; }
+        public static string SharedCookieKey { get => "pathDataShared"; }
+        public static char SelectedFileStarterSymbol { get => '@'; }
         public static char SelectedFolderStarterSymbol { get => '&'; }
         public static char FileNameDelimiter { get => '_'; }
+        public static char FileExtensionDelimiter { get => '.'; }
         public static char PathSeparator { get => '/'; }
         public static int DistanceToRootFolder { get => 4; }
         public static int EmptyFolderAttributeNumberZip { get => 16; }
@@ -43,9 +52,9 @@ namespace NCloud.ConstantData
         public static int GuidLength { get => 36; }
         public static TimeSpan TempFileDeleteTimeSpan { get => TimeSpan.FromMinutes(10); }
 
-        public static Pair<string,string> GetWebControllerAndActionForDetails()
+        public static Pair<string, string> GetWebControllerAndActionForDetails()
         {
-            return new Pair<string, string>("Web","SharingPage");
+            return new Pair<string, string>("Web", "SharingPage");
         }
 
         public static Pair<string, string> GetWebControllerAndActionForDownload()
@@ -61,6 +70,15 @@ namespace NCloud.ConstantData
         public static string GetSharingRootPathInDatabase(string userName)
         {
             return Path.Combine(PublicRootName, userName);
+        }
+        public static string GetDefaultFileSavingPath(Guid id)
+        {
+            return Path.Combine(GetCloudRootPathInDatabase(id), "Documents");
+        }
+
+        public static string GetDefaultFileShowingPath()
+        {
+            return String.Join(PathSeparator, PrivateRootName, "Documents");
         }
     }
 }

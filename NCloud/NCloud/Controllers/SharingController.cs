@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using NCloud.ConstantData;
+using NCloud.DTOs;
 using NCloud.Models;
 using NCloud.Services;
 using NCloud.Users;
@@ -88,7 +89,7 @@ namespace NCloud.Controllers
             },
             await service.ChangePathStructure((await GetSessionSharedPathData()).CurrentPath),
             RedirectToAction("Details", "Drive"),
-            connectedToApp:true);
+            connectedToApp: true);
         }
 
         public async Task<IActionResult> DownloadItems()
@@ -125,6 +126,38 @@ namespace NCloud.Controllers
         public async Task<IActionResult> DownloadItemsFromForm([Bind("ItemsForDownload")] DriveDownloadViewModel vm)
         {
             return await Download(vm.ItemsForDownload ?? new(), await service.ChangePathStructure((await GetSessionSharedPathData()).CurrentPath), RedirectToAction("Details", "Sharing"), connectedToApp: true);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DisconnectDirectoryFromApp([FromBody] string itemName)
+        {
+            SharedPathData pathData = await GetSessionSharedPathData();
+
+            if (await service.DisconnectDirectoryFromApp(await service.ChangePathStructure(pathData.CurrentPath), itemName, User))
+            {
+                return Json(new ConnectionDTO { Success = true, Message = "Directory and items inside disconnected from application" });
+            }
+            else
+            {
+                return Json(new ConnectionDTO { Success = false, Message = "Error while disconnecting directory from application" });
+            }
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<JsonResult> DisconnectFileFromApp([FromBody] string itemName)
+        {
+            SharedPathData pathData = await GetSessionSharedPathData();
+
+            if (await service.DisconnectFileFromApp(await service.ChangePathStructure(pathData.CurrentPath), itemName, User))
+            {
+                return Json(new ConnectionDTO { Success = true, Message = "File disconnected from application" });
+            }
+            else
+            {
+                return Json(new ConnectionDTO { Success = false, Message = "Error while disconnecting file from application!" });
+            }
         }
     }
 }

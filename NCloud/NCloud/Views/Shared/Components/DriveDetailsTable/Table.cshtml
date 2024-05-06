@@ -1,12 +1,9 @@
 ﻿@model DriveDetailsViewModel
 
-@{
-    ViewData["Title"] = "Cloud Files";
-
+@{  
     int counter = 0;
 }
 
-@Html.AntiForgeryToken()
 <table class="table">
     <thead>
         <tr>
@@ -107,7 +104,7 @@
                             </fieldset>
                             <div class="d-flex justify-content-end">
                                 <div class="btn-group mx-2" role="group">
-                                    <a asp-controller="Drive" class="btn btn-primary " asp-action="Settings" asp-route-id="@item.Info.Name"><img src="~/utilities/gear.svg" width=" 20" height="20" class="rounded align-middle" /></a>
+                                    <a asp-controller="Drive" class="btn btn-primary" asp-action="FolderSettings" asp-route-folderName="@item.Info.Name"><img src="~/utilities/gear.svg" width=" 20" height="20" class="rounded align-middle" /></a>
 
                                     <button class="btn btn-secondary @(item.IsConnectedToWeb ? "" : "hidden")" id="@(counter)_btnDisConnectDirWeb" type="button" onclick="disConnectDirectoryFromWeb('@Url.Action("DisConnectDirectoryFromWeb", "Drive")', '@item.Info.Name', '@counter')">
                                         <img src="~/utilities/nopublic.svg" width="20" height="20" class="rounded align-middle" id="@(counter)_logo_1" />
@@ -137,7 +134,8 @@
                                         </div>
                                     </button>
 
-                                    <a asp-controller="Drive" class="btn btn-secondary" asp-action="DownloadFolder" asp-route-folderName="@item.Info.Name"><img src="~/utilities/cloud-download.svg" width=" 20" height="20" class="rounded align-middle" download /></a>
+                                    <button type="button" class="btn btn-secondary" onclick="copyItemToCloudClipBoard('@Url.Action("CopyFolderToCloudClipboard","Drive")','@item.Info.Name')"><img src="~/utilities/copy.svg" width=" 20" height="20" class="align-middle"/></button>
+                                    <a asp-controller="Drive" class="btn btn-secondary" asp-action="DownloadFolder" asp-route-folderName="@item.Info.Name" download><img src="~/utilities/cloud-download.svg" width=" 20" height="20" class="rounded align-middle"/></a>
                                     <a asp-controller="Drive" class="btn btn-danger" asp-action="DeleteFolder" asp-route-folderName="@item.Info.Name"><img src="~/utilities/trash.svg" width=" 20" height="20" class="rounded align-middle" /></a>
                                 </div>
                             </div>
@@ -192,7 +190,7 @@
                                             Size
                                         </td>
                                         <td>
-                                            @item.Info.Length Byte(s)
+                                            @FileSizeManager.ConvertToReadableSize(item.Info.Length)
                                         </td>
                                     </tr>
                                     <tr>
@@ -246,7 +244,7 @@
                             </fieldset>
                             <div class="d-flex justify-content-end">
                                 <div class="btn-group mx-2" role="group">
-                                    <a asp-controller="Drive" class="btn btn-primary" asp-action="Settings" asp-route-id="@item.Info.Name"><img src="~/utilities/gear.svg" width=" 20" height="20" class="rounded align-middle" /></a>
+                                    <a asp-controller="Drive" class="btn btn-primary" asp-action="FileSettings" asp-route-fileName="@item.Info.Name"><img src="~/utilities/gear.svg" width=" 20" height="20" class="rounded align-middle" /></a>
 
                                     <button class="btn btn-secondary @(item.IsConnectedToWeb ? "" : "hidden")" id="@(counter)_btnDisConnectFileWeb" type="button" onclick="disConnectFileFromWeb('@Url.Action("DisConnectFileFromWeb", "Drive")', '@item.Info.Name', '@counter')">
                                         <img src="~/utilities/nopublic.svg" width="20" height="20" class="rounded align-middle" id="@(counter)_logo_1" />
@@ -276,8 +274,9 @@
                                         </div>
                                     </button>
 
-                                    <a asp-controller="Drive" class="btn btn-secondary" asp-action="DownloadFile" asp-route-fileName="@item.Info.Name"><img src="~/utilities/cloud-download.svg" width=" 20" height="20" class="rounded align-middle" download /></a>
-                                    <a asp-controller="Editor" class="btn btn-secondary" asp-action="Index" asp-route-fileName="@item.Info.Name"><img src="~/utilities/code-slash.svg" width=" 20" height="20" class="rounded align-middle" /></a>
+                                    <button type="button" class="btn btn-secondary" onclick="copyItemToCloudClipBoard('@Url.Action("CopyFileToCloudClipboard","Drive")','@item.Info.Name')"><img src="~/utilities/copy.svg" width=" 20" height="20" class="align-middle"/></button>
+                                    <a asp-controller="Drive" class="btn btn-secondary" asp-action="DownloadFile" asp-route-fileName="@item.Info.Name" download><img src="~/utilities/cloud-download.svg" width=" 20" height="20" class="rounded align-middle"/></a>
+                                    <a asp-controller="Editor" class="btn btn-secondary" asp-action="EditorHub" asp-route-fileName="@item.Info.Name"><img src="~/utilities/editor-general.svg" width=" 20" height="20" class="rounded align-middle" /></a>
                                     <a asp-controller="Drive" class="btn btn-danger" asp-action="DeleteFile" asp-route-fileName="@item.Info.Name"><img src="~/utilities/trash.svg" width=" 20" height="20" class="rounded align-middle" /></a>
                                 </div>
                             </div>
@@ -289,24 +288,9 @@
     </tbody>
 </table>
 
+@Html.AntiForgeryToken()
+
 @if(Model.Files?.Count == 0 && Model.Folders?.Count == 0)
 {
     <span class="w-100 d-flex justify-content-center text-muted fst-italic">No items</span>
-}
-
-@section Scripts {
-
-    <script type="text/javascript">
-        function copyToClipBoard(url) {
-
-            try {
-                navigator.clipboard.writeText(url);
-
-                ShowSuccessToast("Success", "Url copied to clipboard");
-            }
-            catch {
-                ShowErrorToast("Error", "Error while copying url to clipboard!");
-            }
-        }
-    </script>
 }

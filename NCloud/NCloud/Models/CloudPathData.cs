@@ -5,25 +5,25 @@ namespace NCloud.Models
 {
     public class CloudPathData
     {
-        public string CurrentDirectory { get; private set; }
         public List<string> PreviousDirectories { get; private set; }
         public string CurrentPath { get; private set; }
         public string CurrentPathShow { get; private set; }
+        public string ClipBoard { get; private set; }
 
         [JsonConstructor]
-        public CloudPathData(string currentDirectory, List<string> previousDirectories, string currentPath, string currentPathShow)
+        public CloudPathData(List<string> previousDirectories, string currentPath, string currentPathShow, string clipBoard)
         {
-            CurrentDirectory = currentDirectory;
             PreviousDirectories = previousDirectories;
             CurrentPath = currentPath;
             CurrentPathShow = currentPathShow;
+            ClipBoard = clipBoard;
         }
         public CloudPathData()
         {
             PreviousDirectories = new List<string>();
-            CurrentDirectory = String.Empty;
             CurrentPath = Constants.PrivateRootName;
             CurrentPathShow = Constants.PrivateRootName;
+            ClipBoard = String.Empty;
         }
 
         public void SetDefaultPathData(string? id)
@@ -57,7 +57,6 @@ namespace NCloud.Models
                 
                 PreviousDirectories.Add(folderName);
                 CurrentPath = $@"{currentPath}"; //for security reasons
-                CurrentDirectory = folderName!;
                 CurrentPathShow += Constants.PathSeparator + folderName;
             }
             
@@ -70,7 +69,6 @@ namespace NCloud.Models
             
             string? folder = PreviousDirectories.Last();
             
-            CurrentDirectory = folder;
             CurrentPath = Path.Combine(PreviousDirectories.ToArray());
             
             string end = String.Join(Constants.PathSeparator, PreviousDirectories.Skip(2).ToArray());
@@ -85,6 +83,21 @@ namespace NCloud.Models
             }
             
             return folder;
+        }
+
+        public void SetClipBoardData(string text, bool isFile)
+        {
+            ClipBoard = $"{(isFile ? Constants.SelectedFileStarterSymbol : Constants.SelectedFolderStarterSymbol)}{Constants.FileNameDelimiter}{new string(text)}"; //copy data
+        }
+
+        public CloudRegistration? GetClipBoardData()
+        {
+            if(ClipBoard is null || ClipBoard == String.Empty)
+            {
+                throw new MissingMemberException("No data in clipboard");
+            }
+
+            return CloudRegistration.RegistrationPathFactory(ClipBoard);
         }
     }
 }

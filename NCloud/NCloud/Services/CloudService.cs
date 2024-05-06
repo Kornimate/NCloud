@@ -163,26 +163,14 @@ namespace NCloud.Services
             }
         }
 
-        public async Task<int> CreateFile(IFormFile file, string currentPath, ClaimsPrincipal userPrincipal)
+        public async Task<string> CreateFile(IFormFile file, string currentPath, ClaimsPrincipal userPrincipal)
         {
-            int retNum = 1;
-
             string path = ParseRootName(currentPath);
             string newName = file.FileName;
-            string pathAndName = Path.Combine(path, newName);
 
             try
             {
-                int counter = 0;
-
-                while (System.IO.File.Exists(pathAndName))
-                {
-                    FileInfo fi = new FileInfo(file.FileName);
-
-                    newName = fi.Name.Split('.')[0] + Constants.FileNameDelimiter + $"{++counter}" + fi.Extension;
-                    pathAndName = Path.Combine(path, newName);
-                    retNum = 0;
-                }
+                string pathAndName = Path.Combine(path, RenameObject(path, ref newName, true));
 
                 using (FileStream stream = new FileStream(pathAndName, FileMode.Create))
                 {
@@ -204,10 +192,10 @@ namespace NCloud.Services
                     //TODO: logging action
                 }
 
-                retNum = -1; //error occurred
+                return String.Empty;
             }
 
-            return retNum;
+            return newName;
         }
 
         private async Task<Pair<bool, bool>> FolderIsSharedInAppInWeb(string cloudPath, string directoryName)
@@ -340,7 +328,7 @@ namespace NCloud.Services
 
                 CloudUser user = await userManager.GetUserAsync(userPrincipal);
 
-                await SetDirectoryConnectedState(currentPath, folderName, ChangeOwnerIdentification(ChangeRootName(currentPath), user.UserName), user, false, false);
+                await SetObjectAndUnderlyingObjectsState(currentPath, folderName, ChangeOwnerIdentification(ChangeRootName(currentPath), user.UserName), user, false, false);
 
             }
             catch (Exception)
@@ -418,7 +406,11 @@ namespace NCloud.Services
         private bool IsSystemFolder(string path)
         {
             List<string> pathFolders = path.Split(Path.DirectorySeparatorChar).ToList();
-            return Constants.SystemFolders.Contains(pathFolders[pathFolders.FindIndex(x => x == "wwwroot") + Constants.DistanceToRootFolder]);
+
+            if (pathFolders.Count < 1)
+                return false;
+
+            return Constants.SystemFolders.Contains(pathFolders.Last()) && ((pathFolders.Count - pathFolders.FindIndex(x => x == Constants.WebRootFolderName) - 1) == Constants.DistanceToRootFolder);
         }
 
         public string ServerPath(string currentPath)
@@ -446,6 +438,11 @@ namespace NCloud.Services
         {
             try
             {
+                if (!SecurityManager.CheckIfDirectoryExists(Path.Combine(ParseRootName(cloudPath), directoryName)))
+                {
+                    throw new FileNotFoundException("File does not exists!");
+                }
+
                 SharedFolder? sharedFolder = await context.SharedFolders.FirstOrDefaultAsync(x => x.CloudPathFromRoot == cloudPath && x.Name == directoryName && x.Owner == user);
 
                 if (sharedFolder is null)
@@ -585,7 +582,7 @@ namespace NCloud.Services
             }
         }
 
-        public async Task<bool> DisonnectDirectoryFromApp(string currentPath, string directoryName, ClaimsPrincipal userPrincipal)
+        public async Task<bool> DisconnectDirectoryFromApp(string currentPath, string directoryName, ClaimsPrincipal userPrincipal)
         {
             try
             {
@@ -618,6 +615,11 @@ namespace NCloud.Services
         {
             try
             {
+                if (!SecurityManager.CheckIfFileExists(Path.Combine(ParseRootName(cloudPath), fileName)))
+                {
+                    throw new FileNotFoundException("File does not exists!");
+                }
+
                 SharedFile? sharedFile = await context.SharedFiles.FirstOrDefaultAsync(x => x.CloudPathFromRoot == cloudPath && x.Name == fileName && x.Owner == user);
 
                 if (sharedFile is null)
@@ -717,7 +719,7 @@ namespace NCloud.Services
             }
         }
 
-        public async Task<bool> DisonnectFileFromApp(string currentPath, string fileName, ClaimsPrincipal userPrincipal)
+        public async Task<bool> DisconnectFileFromApp(string currentPath, string fileName, ClaimsPrincipal userPrincipal)
         {
             try
             {
@@ -732,7 +734,7 @@ namespace NCloud.Services
             }
         }
 
-        public async Task<bool> DisonnectFileFromWeb(string currentPath, string fileName, ClaimsPrincipal userPrincipal)
+        public async Task<bool> DisconnectFileFromWeb(string currentPath, string fileName, ClaimsPrincipal userPrincipal)
         {
             try
             {
@@ -1036,6 +1038,250 @@ namespace NCloud.Services
             }
 
             return currentPath;
+        }
+
+        public Task<bool> ModifyFileContent(string file, string content)
+        {
+            try
+            {
+                File.WriteAllText(ParseRootName(file), content);
+
+                return Task.FromResult<bool>(true);
+            }
+            catch (Exception)
+            {
+                return Task.FromResult<bool>(false);
+            }
+        }
+
+        public async Task<CloudFolder> GetFolder(string currentPath, string folderName)
+        {
+            var folder = await context.SharedFolders.FirstOrDefaultAsync(x => x.CloudPathFromRoot == currentPath && x.Name == folderName);
+
+            return await Task.FromResult<CloudFolder>(new CloudFolder(new DirectoryInfo(Path.Combine(ParseRootName(currentPath), folderName)), folder?.ConnectedToApp ?? false, folder?.ConnectedToWeb ?? false, Path.Combine(currentPath, folderName)));
+        }
+
+        public async Task<CloudFile> GetFile(string currentPath, string fileName)
+        {
+            var file = await context.SharedFiles.FirstOrDefaultAsync(x => x.CloudPathFromRoot == currentPath && x.Name == fileName);
+
+            return await Task.FromResult<CloudFile>(new CloudFile(new FileInfo(Path.Combine(ParseRootName(currentPath), fileName)), file?.ConnectedToApp ?? false, file?.ConnectedToWeb ?? false, Path.Combine(currentPath, fileName)));
+        }
+
+        public async Task<string> RenameFolder(string currentPath, string folderName, string newName)
+        {
+            try
+            {
+                string folderPath = ParseRootName(currentPath);
+                string folderPathAndName = Path.Combine(folderPath, folderName);
+
+                if (IsSystemFolder(folderPathAndName))
+                    throw new Exception("System Folders can not be renamed!");
+
+                string newFolderPathAndName = Path.Combine(folderPath, newName);
+
+                if (Directory.Exists(newFolderPathAndName))
+                    throw new Exception("Folder with this name already exists");
+
+                Directory.Move(folderPathAndName, newFolderPathAndName);
+
+                SharedFolder? folder = await context.SharedFolders.FirstOrDefaultAsync(x => x.CloudPathFromRoot == currentPath && x.Name == folderName);
+
+                if (folder is not null)
+                {
+                    folder.Name = newName;
+
+                    context.SharedFolders.Update(folder);
+                    await context.SaveChangesAsync();
+                }
+
+                return String.Empty;
+            }
+            catch (Exception ex)
+            {
+                return ex.Message;
+            }
+        }
+
+        public async Task<string> RenameFile(string currentPath, string fileName, string newName)
+        {
+            string newFileName = new string(newName);
+
+            try
+            {
+                string filePath = ParseRootName(currentPath);
+
+                File.Move(Path.Combine(filePath, fileName), Path.Combine(filePath, RenameObject(filePath, ref newFileName, true)));
+
+                SharedFile? file = await context.SharedFiles.FirstOrDefaultAsync(x => x.CloudPathFromRoot == currentPath && x.Name == fileName);
+
+                if (file is not null)
+                {
+                    file.Name = newFileName;
+
+                    context.SharedFiles.Update(file);
+                    await context.SaveChangesAsync();
+                }
+
+                return fileName;
+            }
+            catch (Exception)
+            {
+                throw new FileLoadException("Error while renaming file");
+            }
+        }
+
+        private string RenameObject(string path, ref string name, bool isFile)
+        {
+            int counter = 0;
+
+            string pathAndName = Path.Combine(path, name);
+
+            if (isFile)
+            {
+                string nameBase = new string(name);
+                string extension = String.Empty;
+
+                if (name.Contains(Constants.FileExtensionDelimiter))
+                {
+                    nameBase = Path.GetFileNameWithoutExtension(name);
+                    extension = Path.GetExtension(name);
+                }
+
+                while (System.IO.File.Exists(pathAndName))
+                {
+                    name = nameBase + Constants.FileNameDelimiter + (++counter).ToString() + extension;
+
+                    pathAndName = Path.Combine(path, name);
+                }
+            }
+            else
+            {
+                string nameBase = new string(name);
+
+                while (System.IO.Directory.Exists(pathAndName))
+                {
+                    name = nameBase + Constants.FileNameDelimiter + (++counter).ToString();
+
+                    pathAndName = Path.Combine(path, name);
+                }
+            }
+
+            return name;
+        }
+
+        public async Task<string> CopyFile(string? source, string destination, ClaimsPrincipal userPrincipal)
+        {
+            if (source is null || source == String.Empty)
+            {
+                throw new Exception("Invalid source of file");
+            }
+
+            if (destination is null || destination == String.Empty)
+            {
+                throw new Exception("Invalid destination for copy");
+            }
+
+            try
+            {
+                string src = ParseRootName(source);
+                string dest = ParseRootName(destination);
+
+                FileInfo fi = new FileInfo(src);
+
+                string name = new string(fi.Name);
+
+                File.Copy(src, Path.Combine(dest, RenameObject(dest, ref name, true)));
+
+                CloudUser user = await userManager.GetUserAsync(userPrincipal);
+
+                Pair<string, string> parentPathAndName = GetParentPathAndName(destination);
+
+                Pair<bool, bool> connections = await FolderIsSharedInAppInWeb(parentPathAndName.First, parentPathAndName.Second);
+
+                await SetFileConnectedState(destination, name, ChangeOwnerIdentification(ChangeRootName(destination), user.UserName), user, connections.First, connections.Second);
+
+                if (name == fi.Name)
+                {
+                    return await Task.FromResult<string>(String.Empty);
+                }
+
+                return await Task.FromResult<string>(name);
+            }
+            catch (Exception)
+            {
+                throw new Exception("Error while pasting file");
+            }
+        }
+
+        public async Task<string> CopyFolder(string? source, string destination, ClaimsPrincipal userPrincipal)
+        {
+
+            if (source is null || source == String.Empty)
+            {
+                throw new Exception("Invalid source of file");
+            }
+
+            if (destination is null || destination == String.Empty)
+            {
+                throw new Exception("Invalid destination for copy");
+            }
+
+            try
+            {
+                string src = ParseRootName(source);
+                string dest = ParseRootName(destination);
+
+                DirectoryInfo di = new DirectoryInfo(src);
+
+                string name = new string(di.Name);
+                string newDirectoryPath = Path.Combine(dest, RenameObject(dest, ref name, false));
+
+                Directory.CreateDirectory(newDirectoryPath);
+
+                Queue<DirectoryInfo> dirData = new Queue<DirectoryInfo>(new DirectoryInfo[] { di });
+
+                while (dirData.Any())
+                {
+                    DirectoryInfo directory = dirData.Dequeue();
+
+                    newDirectoryPath = directory.FullName.Replace(src,newDirectoryPath);
+
+                    if (!Directory.Exists(newDirectoryPath))
+                    {
+                        Directory.CreateDirectory(newDirectoryPath);
+                    }
+
+                    foreach (FileInfo fi in directory.GetFiles())
+                    {
+                        File.Copy(fi.FullName, Path.Combine(newDirectoryPath, fi.Name));
+                    }
+
+                    foreach (DirectoryInfo dir in directory.GetDirectories())
+                    {
+                        dirData.Enqueue(dir);
+                    }
+                }
+
+                CloudUser user = await userManager.GetUserAsync(userPrincipal);
+
+                Pair<string, string> parentPathAndName = GetParentPathAndName(destination);
+
+                Pair<bool, bool> connections = await FolderIsSharedInAppInWeb(parentPathAndName.First, parentPathAndName.Second);
+
+                await SetObjectAndUnderlyingObjectsState(destination, name, ChangeOwnerIdentification(ChangeRootName(destination), user.UserName), user, connections.First, connections.Second);
+
+                if (name == di.Name)
+                {
+                    return await Task.FromResult<string>(String.Empty);
+                }
+
+                return await Task.FromResult<string>(name);
+            }
+            catch (Exception)
+            {
+                throw new Exception("Error while pasting directory");
+            }
         }
     }
 }

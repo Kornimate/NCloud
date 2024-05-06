@@ -8,6 +8,34 @@ $(function () {
     $('[data-toggle="tooltip"]').tooltip();
 });
 
+async function copyItemToCloudClipBoard(url, itemName) {
+
+    console.log(itemName);
+
+    let response = await AjaxCall(url, itemName);
+
+    response = await response.json()
+
+    if (response.success) {
+        ShowSuccessToast("Success", response.message);
+    } else {
+        ShowErrorToast("Error", response.message);
+    }
+}
+
+
+function copyToClipBoard(url) {
+
+    try {
+        navigator.clipboard.writeText(url);
+
+        ShowSuccessToast("Success", "Url copied to clipboard");
+    }
+    catch {
+        ShowErrorToast("Error", "Error while copying url to clipboard!");
+    }
+}
+
 async function connectDirectoryToWeb(url, folder, id) {
 
     document.getElementById(`${id}_logo_2`).classList.add("hidden");
@@ -230,6 +258,23 @@ async function disConnectFileFromApp(url, file, id) {
     }
 }
 
+async function disConnectItemFromAppSharing(url, itemName, id, containerName) {
+
+    let result = await AjaxCall(url, itemName);
+
+    result = await result.json();
+
+    if (result.success) {
+
+        document.getElementById(containerName).removeChild(document.getElementById(id));
+
+        ShowSuccessToast("Success", result.message);
+    }
+    else {
+        ShowErrorToast("Error", result.message);
+    }
+}
+
 async function AjaxCall(address, itemName) {
     const forgeryToken = document.querySelector('input[name="__RequestVerificationToken"]').value;
 
@@ -241,6 +286,7 @@ async function AjaxCall(address, itemName) {
         },
         body: JSON.stringify(itemName)
     });
+
     return response;
 }
 

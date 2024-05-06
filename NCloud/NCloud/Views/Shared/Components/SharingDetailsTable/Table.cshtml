@@ -1,17 +1,21 @@
 ﻿@model SharingDetailsViewModel
 
+@{
+    int counter = 0;
+}
+
 <table class="table">
     <thead>
         <tr>
             <th></th>
         </tr>
     </thead>
-    <tbody>
+    <tbody id="shareditems">
         @foreach (CloudFolder? item in Model.Folders)
         {
             if (item != null)
             {
-                <tr>
+                <tr id="@(++counter)">
                     <td>
                         @if (item.Info is not null)
                         {
@@ -78,7 +82,7 @@
                                         <a asp-controller="Sharing" class="btn btn-primary" asp-action="DownloadFolder" asp-route-folderName="@item.Info.Name"><img src="~/utilities/cloud-download.svg" width=" 20" height="20" class="rounded align-middle" download /></a>
                                         @if (Model.Owner)
                                         {
-                                            <a class="btn btn-primary" asp-controller="Sharing" asp-action="DisconnectDirectoryFromApp" asp-route-id="@item.Info.Name"><img src="~/utilities/noshare.svg" width=" 20" height="20" class="rounded-circle align-middle" /></a>
+                                            <button type="button" class="btn btn-primary"  onclick="disConnectItemFromAppSharing('@Url.Action("DisconnectDirectoryFromApp", "Sharing")','@item.Info.Name', '@counter', 'shareditems')"><img src="~/utilities/noshare.svg" width=" 20" height="20" class="rounded-circle align-middle" /></button>
                                         }
                                     </div>
                                 </div>
@@ -101,7 +105,7 @@
         {
             if (item != null)
             {
-                <tr>
+                <tr id="@(++counter)">
                     <td>
                         @if (item.Info is not null)
                         {
@@ -136,7 +140,7 @@
                                             Size
                                         </td>
                                         <td>
-                                            @item.Info.Length Byte(s)
+                                            @FileSizeManager.ConvertToReadableSize(item.Info.Length)
                                         </td>
                                     </tr>
                                     <tr>
@@ -176,7 +180,7 @@
                                         <a asp-controller="Sharing" class="btn btn-secondary" asp-action="DownloadFile" asp-route-fileName="@item.Info.Name"><img src="~/utilities/cloud-download.svg" width=" 20" height="20" class="rounded align-middle" download /></a>
                                         @if (Model.Owner)
                                         {
-                                            <a class="btn btn-primary" asp-controller="Sharing" asp-action="DisconnectDirectoryFromApp" asp-route-id="@item.Info.Name"><img src="~/utilities/noshare.svg" width=" 20" height="20" class="rounded-circle align-middle" /></a>
+                                            <button type="button" class="btn btn-primary"  onclick="disConnectItemFromAppSharing('@Url.Action("DisconnectFileFromApp", "Sharing")','@item.Info.Name', '@counter', 'shareditems')"><img src="~/utilities/noshare.svg" width=" 20" height="20" class="rounded-circle align-middle" /></button>
                                         }
                                     </div>
                                 </div>

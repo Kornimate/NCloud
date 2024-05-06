@@ -1,47 +1,69 @@
-﻿@model CodeEditorViewModel
+﻿@model EditorViewModel
 
 @{
     ViewData["Title"] = "Code Editor";
 }
 
-<div class="d-flex justify-content-end mb-2 background-color w-100 rounded">
-    <div class="btn-group">
-        <div class="btn">&nbsp;</div>
-        <div class="btn btn-outline-white"><img src="/utilities/save.svg" /></div>
+<div class="d-flex justify-content-between mb-2 background-color w-100 rounded">
+    <div>
+        <a class="btn" asp-controller="Editor" asp-action="Back" asp-route-redirectionString="@Model.Redirection"><img src="~/utilities/arrow-left-circle.svg" width=" 20" height="20" class="rounded align-middle" /></a>
     </div>
-</div>
-<div class="border border-primary border-3 w-100 h-100 rounded">
-    <div class="w-100 bg-primary"></div>
-    <div id="CodeEditor" class="editor-class"></div>
+    <div class="btn-group">
+        <div class="btn">
+            <div class="spinner-border spinner-border-sm text-dark hidden" role="status" id="usersavespinner">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+        <button type="button" class="btn" id="usersavebtn" onclick="UserSave('@Model.FilePath',window.editor.getValue(),'@Url.Action("SaveData", "Editor")')"><img src="/utilities/save.svg" class="pb-1" /></button>
+    </div>
 </div>
 
-@* <div id="loadertoplevel">
-    <div class="loading-box">
-        <div class="loader"></div>
+<div class="d-flex w-100 justify-content-between">
+    <div class="w-50 text-break text-wrap">
+        <span class="w-75 text-secondary fw-bold">@Model.FilePath.Slice(Constants.PrivateRootName.Length, Constants.PrivateRootName.Length + Constants.GuidLength + 1)</span>
+        <span class="w-25 text-secondary fw-bold">(@Model.ExtensionData)</span>
     </div>
-</div> *@
+    <div>
+
+        <span class="text-muted fs-6 fst-italic me-2" id="statustext">Not saved yet</span>
+        <div class="spinner-border spinner-border-sm text-secondary align-baseline me-2 hidden" role="status" id="autosavespinner">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+</div>
+
+<div class="border border-primary border-3 w-100 h-100 rounded">
+    <div class="w-100 bg-primary"></div>
+    <div id="codeeditor" class="editor-class"></div>
+</div>
 
 <link rel="stylesheet"
       data-name="vs/editor/editor.main"
-      href="~/lib/monaco-editor/min/vs/editor/editor.main.css" />
+      href="~/monaco-editor/min/vs/editor/editor.main.css" />
 
 <script>
-    var require = { paths: { vs: '/lib/monaco-editor/min/vs' } };
-</script>
-<script src="~/lib/monaco-editor/min/vs/loader.js"></script>
-<script src="~/lib/monaco-editor/min/vs/editor/editor.main.nls.js"></script>
-<script src="~/lib/monaco-editor/min/vs/editor/editor.main.js"></script>
-
-<script>
-    var editor = monaco.editor.create(document.getElementById('CodeEditor'), {
-        value: "//write your code here",
-        language: 'csharp',
-        theme:"hc-black"
-    });
+    var require = { paths: { vs: '/monaco-editor/min/vs' } };
 </script>
 
-@* <script>
-    jQuery(document).ready(function () {
-        jQuery('.loadertoplevel').fadeOut(3000);
-    });
-</script> *@
+<script src="~/monaco-editor/min/vs/loader.js"></script>
+<script src="~/monaco-editor/min/vs/editor/editor.main.nls.js"></script>
+<script src="~/monaco-editor/min/vs/editor/editor.main.js"></script>
+
+@Html.AntiForgeryToken()
+
+@section Scripts {
+    <script type="text/javascript">
+        window.editor = monaco.editor.create(document.getElementById('codeeditor'), {
+            value: @Html.Raw(Json.Serialize(Model.Content)),
+            theme: "hc-black",
+            language: "javascript",
+            automaticLayout: true,
+        });
+    </script>
+
+    <script type="text/javascript" src="/js/editor.js"></script>
+
+    <script type="text/javascript">
+        setTimeout(async () => await PeriodicSave("@Model.FilePath", window.editor.getValue(), "@Url.Action("SaveData", "Editor")"), TIMEOUTMS);
+    </script>
+}

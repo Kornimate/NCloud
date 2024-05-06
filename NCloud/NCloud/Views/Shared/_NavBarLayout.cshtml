@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - @Constants.AppName</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/lib/select2/css/select2.min.css" />
+    <link rel="stylesheet" href="~/lib/select2/theme/select2-bootstrap-5-theme.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/NCloud.styles.css" asp-append-version="true" />
 </head>
@@ -12,6 +14,7 @@
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/lib/select2/js/select2.full.min.js"></script>
 
     <div class="container-fluid">
         <div class="row flex-nowrap">
@@ -37,13 +40,8 @@
                             </a>
                         </li>
                         <li class="nav-item my-2">
-                            <a asp-controller="Editor" asp-action="CodeEditor" class="align-middle px-0 text-decoration-none text-dark">
-                                <span class="d-inline m-1"><img src="~/utilities/code-slash.svg" width="20" height="20" class="rounded-circle" /></span> <span class="ms-1 d-none d-sm-inline">Code Editor</span>
-                            </a>
-                        </li>
-                        <li class="nav-item my-2">
-                            <a asp-controller="Editor" asp-action="TextEditor" class="align-middle px-0 text-decoration-none text-dark">
-                                <span class="d-inline m-1"><img src="~/utilities/window.svg" width="20" height="20" class="rounded" /></span> <span class="ms-1 d-none d-sm-inline">Text Editor</span>
+                            <a asp-controller="Editor" asp-action="Index" class="align-middle px-0 text-decoration-none text-dark">
+                                <span class="d-inline m-1"><img src="~/utilities/editor-general.svg" width="20" height="20" class="rounded" /></span> <span class="ms-1 d-none d-sm-inline">Editors</span>
                             </a>
                         </li>
                         <li class="nav-item my-2">
@@ -64,13 +62,13 @@
             </div>
             <div class="col py-3 maindiv">
                 @RenderBody()
-
-                @await Component.InvokeAsync("CloudNotification")
-
-                @await Component.InvokeAsync("CloudNotificationSingle")
             </div>
         </div>
     </div>
+
+    @await Component.InvokeAsync("CloudNotification")
+
+    @await Component.InvokeAsync("CloudNotificationSingle")
 
     <script src="~/js/site.js" asp-append-version="true"></script>
 
