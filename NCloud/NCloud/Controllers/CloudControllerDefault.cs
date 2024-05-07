@@ -32,29 +32,13 @@ namespace NCloud.Controllers
         [NonAction]
         protected async Task<CloudPathData> GetSessionCloudPathData()
         {
-            CloudPathData data = null!;
-            if (HttpContext.Session.Keys.Contains(Constants.CloudCookieKey))
-            {
-                data = JsonSerializer.Deserialize<CloudPathData>(HttpContext.Session.GetString(Constants.CloudCookieKey)!)!;
-            }
-            else
-            {
-                CloudUser? user = await userManager.GetUserAsync(User);
-                data = new CloudPathData();
-                data.SetDefaultPathData(user?.Id.ToString());
-                await SetSessionCloudPathData(data);
-            }
-            return data;
+            return await service.GetSessionCloudPathData();
         }
 
         [NonAction]
-        protected Task SetSessionCloudPathData(CloudPathData pathData)
+        protected async Task<bool> SetSessionCloudPathData(CloudPathData pathData)
         {
-            return Task.Run(() =>
-            {
-                if (pathData == null) return;
-                HttpContext.Session.SetString(Constants.CloudCookieKey, JsonSerializer.Serialize<CloudPathData>(pathData));
-            });
+            return await service.SetSessionCloudPathData(pathData);
         }
 
         [NonAction]
@@ -123,8 +107,6 @@ namespace NCloud.Controllers
                 return false;
             }
         }
-
-        
 
         public async Task<IActionResult> Download(List<string> itemsForDownload, string path, IActionResult returnAction, bool connectedToApp = false, bool connectedToWeb = false)
         {

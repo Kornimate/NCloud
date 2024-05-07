@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using NCloud.ConstantData;
 using NCloud.DTOs;
@@ -11,6 +12,7 @@ using System.Text.Json;
 
 namespace NCloud.Controllers
 {
+    [Authorize]
     public class SharingController : CloudControllerDefault
     {
         public SharingController(ICloudService service, UserManager<CloudUser> userManager, SignInManager<CloudUser> signInManager, IWebHostEnvironment env, ICloudNotificationService notifier) : base(service, userManager, signInManager, env, notifier) { }

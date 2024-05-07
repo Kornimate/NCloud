@@ -4,6 +4,6 @@ namespace NCloud.Services
 {
     public interface ICloudTerminalService
     {
-        Task<Pair<bool, string>> Execute(string first, List<string> second);
+        Task<(bool, string, string, bool)> Execute(string first, List<string> second);
     }
 }

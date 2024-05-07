@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using NCloud.Models;
 using NCloud.Services;
@@ -8,6 +9,7 @@ using System.Diagnostics;
 
 namespace NCloud.Controllers
 {
+    [AllowAnonymous]
     public class HomeController : CloudControllerDefault
     {
         public HomeController(ICloudService service, UserManager<CloudUser> userManager, SignInManager<CloudUser> signInManager, IWebHostEnvironment env, ICloudNotificationService notifier) : base(service, userManager, signInManager, env, notifier) { }

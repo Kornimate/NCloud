@@ -8,9 +8,11 @@ using CloudPathData = NCloud.Models.CloudPathData;
 using NCloud.ConstantData;
 using NCloud.DTOs;
 using NCloud.Security;
+using Microsoft.AspNetCore.Authorization;
 
 namespace NCloud.Controllers
 {
+    [Authorize]
     public class DriveController : CloudControllerDefault
     {
         public DriveController(ICloudService service, UserManager<CloudUser> userManager, SignInManager<CloudUser> signInManager, IWebHostEnvironment env, ICloudNotificationService notifier) : base(service, userManager, signInManager, env, notifier) { }
@@ -814,6 +816,7 @@ namespace NCloud.Controllers
                 return Json(new ConnectionDTO { Success = false, Message = "Error while copy file to cloud clipboard" });
             }
         }
+
         public async Task<IActionResult> PasteDataFromClipBoard()
         {
             CloudPathData pathData = await GetSessionCloudPathData();

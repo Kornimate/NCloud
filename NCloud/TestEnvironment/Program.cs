@@ -10,8 +10,8 @@ class Program
 {
     static void Main()
     {
-        var data = JsonSerializer.Serialize("&_oksa");
-        var write = JsonSerializer.Deserialize<string>(data);
-        Console.Write(write);
+        string path = Path.Combine(Directory.GetCurrentDirectory(), "Test", "..", "Test.txt");
+
+        Console.WriteLine(File.Exists(path) + " " + path);
     }
 }

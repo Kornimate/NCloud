@@ -1,0 +1,20 @@
+{
+  "commands": [
+    "cd",
+    "copy-file",
+    "copy-dir",
+    "download",
+    "edit",
+    "help",
+    "ls",
+    "mkdir",
+    "noshare-web",
+    "noshare-app",
+    "paste",
+    "rename",
+    "rm",
+    "search",
+    "share-app",
+    "share-web",
+  ]
+}

@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Mvc;
 using System.IO.Compression;
 using System;
 using System.Xml.Linq;
+using System.Text;
 
 namespace NCloud.Services
 {
@@ -21,13 +22,15 @@ namespace NCloud.Services
     {
         private readonly CloudDbContext context;
         private readonly IWebHostEnvironment env;
+        private readonly IHttpContextAccessor httpContext;
         private readonly UserManager<CloudUser> userManager;
         //private readonly ILogger logger;
 
-        public CloudService(CloudDbContext context, IWebHostEnvironment env, UserManager<CloudUser> userManager/*, ILogger logger*/)
+        public CloudService(CloudDbContext context, IWebHostEnvironment env, IHttpContextAccessor httpContext, UserManager<CloudUser> userManager/*, ILogger logger*/)
         {
             this.context = context;
             this.env = env;
+            this.httpContext = httpContext;
             this.userManager = userManager;
             //this.logger = logger;
         }
@@ -1245,7 +1248,7 @@ namespace NCloud.Services
                 {
                     DirectoryInfo directory = dirData.Dequeue();
 
-                    newDirectoryPath = directory.FullName.Replace(src,newDirectoryPath);
+                    newDirectoryPath = directory.FullName.Replace(src, newDirectoryPath);
 
                     if (!Directory.Exists(newDirectoryPath))
                     {
@@ -1282,6 +1285,122 @@ namespace NCloud.Services
             {
                 throw new Exception("Error while pasting directory");
             }
+        }
+
+        public async Task<CloudPathData> GetSessionCloudPathData()
+        {
+            CloudPathData data = null!;
+            if (httpContext.HttpContext!.Session.Keys.Contains(Constants.CloudCookieKey))
+            {
+                data = JsonSerializer.Deserialize<CloudPathData>(httpContext.HttpContext!.Session.GetString(Constants.CloudCookieKey)!)!;
+            }
+            else
+            {
+                CloudUser? user = await userManager.GetUserAsync(httpContext.HttpContext!.User);
+                data = new CloudPathData();
+                data.SetDefaultPathData(user?.Id.ToString());
+                await SetSessionCloudPathData(data);
+            }
+            return data;
+        }
+
+        public Task<bool> SetSessionCloudPathData(CloudPathData pathData)
+        {
+            if (pathData == null)
+                return Task.FromResult<bool>(false);
+
+            httpContext.HttpContext!.Session.SetString(Constants.CloudCookieKey, JsonSerializer.Serialize<CloudPathData>(pathData));
+
+            return Task.FromResult<bool>(true);
+        }
+
+        public async Task<string> ChangeToDirectory(string path)
+        {
+            CloudPathData pathData = await GetSessionCloudPathData();
+
+            if (path.StartsWith(Constants.AbsolutePathMarker))
+            {
+                if (Directory.Exists(ParseRootName(path)))
+                {
+                    pathData.SetPath(path);
+
+                    await SetSessionCloudPathData(pathData);
+
+                    return await Task.FromResult<string>(pathData.CurrentPathShow);
+                }
+
+                return await Task.FromResult<string>((await GetSessionCloudPathData()).CurrentPathShow);
+            }
+            else
+            {
+                string[] pathElements = path.Split(Path.DirectorySeparatorChar, StringSplitOptions.RemoveEmptyEntries);
+
+                foreach (string element in pathElements)
+                {
+                    if (element == Constants.DirectoryBack)
+                    {
+                        pathData.RemoveFolderFromPrevDirs();
+                    }
+                    else
+                    {
+                        if (Directory.Exists(ParseRootName(pathData.TrySetFolder(element) ?? String.Empty)))
+                        {
+                            pathData.SetFolder(element);
+                        }
+                        else
+                        {
+                            return await Task.FromResult<string>((await GetSessionCloudPathData()).CurrentPathShow);
+                        }
+                    }
+                }
+                await SetSessionCloudPathData(pathData);
+
+                return await Task.FromResult<string>(pathData.CurrentPathShow);
+            }
+        }
+
+        public async Task<string> ListCurrentSubDirectories()
+        {
+            CloudPathData pathData = await GetSessionCloudPathData();
+
+            StringBuilder sb = new StringBuilder();
+
+            int counter = 0;
+
+            sb.Append("Directories:\n");
+            sb.Append("Created time      Size     Shared in app  Shared on Web  Name\n");
+            sb.Append("----------------  -------  -------------  -------------  ------\n\n");
+
+            foreach (var dir in await GetCurrentDepthCloudDirectories(pathData.CurrentPath))
+            {
+                sb.Append(dir.ToString());
+
+                ++counter;
+            }
+
+            sb.Append('\n');
+
+            counter = 0;
+
+            sb.Append("Files:\n");
+            sb.Append("Created time      Size     Shared in app  Shared on Web  Name\n");
+            sb.Append("----------------  -------  -------------  -------------  ------\n\n");
+
+            foreach (var file in await GetCurrentDepthCloudFiles(pathData.CurrentPath))
+            {
+                sb.Append(file.ToString());
+
+                ++counter;
+            }
+
+            if (counter == 0)
+            {
+                sb.Append('\n');
+            }
+
+            sb.Append('\n');
+
+            return sb.ToString();
         }
     }
 }

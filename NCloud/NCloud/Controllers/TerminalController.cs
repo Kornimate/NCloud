@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using NCloud.DTOs;
 using NCloud.Models;
@@ -9,6 +10,7 @@ using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
 namespace NCloud.Controllers
 {
+    [Authorize]
     public class TerminalController : CloudControllerDefault
     {
         private readonly ICloudTerminalService terminalService;
@@ -35,14 +37,13 @@ namespace NCloud.Controllers
 
             try
             {
+                CloudTerminalTokenizationManager.CheckCorrectnessOfCommand(command);
 
-                TerminalTokenizationManager.CheckCorrectnessOfCommand(command);
+                var commandAndParamertes = CloudTerminalTokenizationManager.Tokenize(command, (await userManager.GetUserAsync(User)).Id.ToString());
 
-                var commandAndParamertes = TerminalTokenizationManager.Tokenize(command);
+                var successAndMsgAndPayLoadAndPrint = await terminalService.Execute(commandAndParamertes.First, commandAndParamertes.Second);
 
-                var successAndMsg = await terminalService.Execute(commandAndParamertes.First,commandAndParamertes.Second);
-
-                return Json(new ConnectionDTO { Success = successAndMsg.First, Message = successAndMsg.Second });
+                return Json(new ConnectionDTO { Success = successAndMsgAndPayLoadAndPrint.Item1, Message = successAndMsgAndPayLoadAndPrint.Item2, Payload = !successAndMsgAndPayLoadAndPrint.Item4 ? successAndMsgAndPayLoadAndPrint.Item3 : "", Result = successAndMsgAndPayLoadAndPrint.Item4 ? successAndMsgAndPayLoadAndPrint.Item3 : "", });
 
             }
             catch (InvalidDataException ex)
@@ -58,7 +59,7 @@ namespace NCloud.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        private async Task<IActionResult> EvaluateSingleLine(string command)
+        public async Task<IActionResult> EvaluateSingleLine(string command)
         {
             if (command is null || command == String.Empty)
             {
@@ -70,13 +71,17 @@ namespace NCloud.Controllers
             try
             {
 
-                TerminalTokenizationManager.CheckCorrectnessOfSingleLineCommand(command);
+                CloudTerminalTokenizationManager.CheckCorrectnessOfSingleLineCommand(command);
 
-                var commandAndParamertes = TerminalTokenizationManager.Tokenize(command);
+                var commandAndParamertes = CloudTerminalTokenizationManager.Tokenize(command, (await userManager.GetUserAsync(User)).Id.ToString());
 
                 var successAndMsg = await terminalService.Execute(commandAndParamertes.First, commandAndParamertes.Second);
 
-                return Json(new ConnectionDTO { Success = successAndMsg.First, Message = successAndMsg.Second });
+                CloudNotificationAbstarct notification = successAndMsg.Item1 ? new Success(successAndMsg.Item2) : new Error(successAndMsg.Item2);
+
+                AddNewNotification(notification);
+
+                return RedirectToAction("Details", "Drive");
 
             }
             catch (InvalidDataException ex)

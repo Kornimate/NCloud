@@ -45,5 +45,9 @@ namespace NCloud.Services
         Task<string> RenameFile(string currentPath, string fileName, string newName);
         Task<string> CopyFile(string? source, string destination, ClaimsPrincipal userPrincipal);
         Task<string> CopyFolder(string? source, string destination, ClaimsPrincipal userPrincipal);
+        Task<CloudPathData> GetSessionCloudPathData();
+        Task<bool> SetSessionCloudPathData(CloudPathData pathData);
+        Task<string> ChangeToDirectory(string path);
+        Task<string> ListCurrentSubDirectories();
     }
 }

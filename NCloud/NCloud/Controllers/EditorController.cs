@@ -1,19 +1,17 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using NCloud.Services;
 using NCloud.Models;
-using System.Text.Json;
 using NCloud.ViewModels;
 using Microsoft.AspNetCore.Identity;
 using NCloud.Users;
 using NCloud.DTOs;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.AspNetCore.Mvc.ModelBinding;
 using NCloud.ConstantData;
-using HarfBuzzSharp;
+using Microsoft.AspNetCore.Authorization;
 
 namespace NCloud.Controllers
 {
+    [Authorize]
     public class EditorController : CloudControllerDefault
     {
         public EditorController(ICloudService service, UserManager<CloudUser> userManager, SignInManager<CloudUser> signInManager, IWebHostEnvironment env, ICloudNotificationService notifier) : base(service, userManager, signInManager, env, notifier) { }

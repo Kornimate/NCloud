@@ -1,4 +1,5 @@
 ﻿using NCloud.ConstantData;
+using NCloud.Models.Extensions;
 using System.Text.Json.Serialization;
 
 namespace NCloud.Models
@@ -39,7 +40,7 @@ namespace NCloud.Models
         public string? TrySetFolder(string? folderName)
         {
             if (folderName is null) return null;
-            
+
             return Path.Combine(CurrentPath, folderName);
         }
 
@@ -54,25 +55,25 @@ namespace NCloud.Models
             else
             {
                 currentPath = Path.Combine(CurrentPath, folderName);
-                
+
                 PreviousDirectories.Add(folderName);
                 CurrentPath = $@"{currentPath}"; //for security reasons
                 CurrentPathShow += Constants.PathSeparator + folderName;
             }
-            
+
             return currentPath;
         }
 
         public string? RemoveFolderFromPrevDirs()
         {
             PreviousDirectories.RemoveAt(PreviousDirectories.Count - 1);
-            
+
             string? folder = PreviousDirectories.Last();
-            
+
             CurrentPath = Path.Combine(PreviousDirectories.ToArray());
-            
+
             string end = String.Join(Constants.PathSeparator, PreviousDirectories.Skip(2).ToArray());
-            
+
             if (end == String.Empty)
             {
                 CurrentPathShow = Constants.PrivateRootName;
@@ -81,7 +82,7 @@ namespace NCloud.Models
             {
                 CurrentPathShow = String.Join(Constants.PathSeparator, Constants.PrivateRootName, end);
             }
-            
+
             return folder;
         }
 
@@ -92,12 +93,19 @@ namespace NCloud.Models
 
         public CloudRegistration? GetClipBoardData()
         {
-            if(ClipBoard is null || ClipBoard == String.Empty)
+            if (ClipBoard is null || ClipBoard == String.Empty)
             {
                 throw new MissingMemberException("No data in clipboard");
             }
 
             return CloudRegistration.RegistrationPathFactory(ClipBoard);
+        }
+
+        public void SetPath(string path)
+        {
+            CurrentPath = path;
+            PreviousDirectories = path.Split(Path.DirectorySeparatorChar, StringSplitOptions.RemoveEmptyEntries).ToList();
+            CurrentPathShow = path.Slice(Constants.PrivateRootName.Length, Constants.PrivateRootName.Length + Constants.GuidLength + 1).Replace(Path.DirectorySeparatorChar, Constants.PathSeparator);
         }
     }
 }
