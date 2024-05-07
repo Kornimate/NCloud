@@ -77,51 +77,59 @@
     </div>
 </div>
 
-<script type="text/javascript">
-    window.onload = init;
+@section Scripts {
+    <script type="text/javascript">
 
-    function init() {
-        document.getElementById("addFolderBtn").addEventListener("click", AddFolderClicked, false);
-        document.getElementById("addFileBtn").addEventListener("click", AddFileClicked, false);
-        document.getElementById("refreshBtn").addEventListener("click", RefreshClicked, false);
-        document.getElementById("breadcrumbDiv").addEventListener("click", CrumbClicked, false);
-        document.getElementById("currentPath").addEventListener("focusout", InputFocusLost, false);
-        CheckSessionStorage();
-    }
-
-    function AddFolderClicked(e) {
-        document.getElementById("addFolderField").classList.toggle("hiddenfield");
-        document.getElementById("addFileField").classList.add("hiddenfield");
-    }
-    function AddFileClicked(e) {
-        document.getElementById("addFolderField").classList.add("hiddenfield");
-        document.getElementById("addFileField").classList.toggle("hiddenfield");
-    }
-    function RefreshClicked(e) {
-        let element = "";
-        if (!document.getElementById("addFolderField").classList.contains("hiddenfield")) element = "addFolderField";
-        if (!document.getElementById("addFileField").classList.contains("hiddenfield")) element = "addFileField";
-        sessionStorage.setItem("openedMiniWindow", element);
-    }
-    function CheckSessionStorage() {
-        let item = sessionStorage.getItem("openedMiniWindow");
-        if (item !== null) {
-            document.getElementById(item).classList.toggle("hiddenfield")
+        function init() {
+            document.getElementById("addFolderBtn").addEventListener("click", AddFolderClicked, false);
+            document.getElementById("addFileBtn").addEventListener("click", AddFileClicked, false);
+            document.getElementById("refreshBtn").addEventListener("click", RefreshClicked, false);
+            document.getElementById("breadcrumbDiv").addEventListener("click", CrumbClicked, false);
+            document.getElementById("currentPath").addEventListener("focusout", InputFocusLost, false);
+            CheckSessionStorage();
         }
-        sessionStorage.removeItem("openedMiniWindow");
-    }
-    function CrumbClicked(e) {
-        document.getElementById("breadcrumbDiv").classList.toggle("hidden");
-        document.getElementById("fastInputDiv").classList.toggle("hidden");
-        input = document.getElementById("currentPath");
-        input.focus();
-        input.value = '';
-        input.value = "@Model.CurrentPathShow";
-    }
-    function InputFocusLost(e) {
-        if (e.relatedTarget === null || e.relatedTarget.id !== "fastInputBtn") {
+
+        function AddFolderClicked(e) {
+            document.getElementById("addFolderField").classList.toggle("hiddenfield");
+            document.getElementById("addFileField").classList.add("hiddenfield");
+        }
+
+        function AddFileClicked(e) {
+            document.getElementById("addFolderField").classList.add("hiddenfield");
+            document.getElementById("addFileField").classList.toggle("hiddenfield");
+        }
+
+        function RefreshClicked(e) {
+            let element = "";
+            if (!document.getElementById("addFolderField").classList.contains("hiddenfield")) element = "addFolderField";
+            if (!document.getElementById("addFileField").classList.contains("hiddenfield")) element = "addFileField";
+            sessionStorage.setItem("openedMiniWindow", element);
+        }
+
+        function CheckSessionStorage() {
+            let item = sessionStorage.getItem("openedMiniWindow");
+            if (item !== null) {
+                document.getElementById(item).classList.toggle("hiddenfield")
+            }
+            sessionStorage.removeItem("openedMiniWindow");
+        }
+
+        function CrumbClicked(e) {
             document.getElementById("breadcrumbDiv").classList.toggle("hidden");
             document.getElementById("fastInputDiv").classList.toggle("hidden");
+            input = document.getElementById("currentPath");
+            input.focus();
+            input.value = '';
+            input.value = "@Model.CurrentPathShow";
         }
-    }
-</script>
+
+        function InputFocusLost(e) {
+            if (e.relatedTarget === null || e.relatedTarget.id !== "fastInputBtn") {
+                document.getElementById("breadcrumbDiv").classList.toggle("hidden");
+                document.getElementById("fastInputDiv").classList.toggle("hidden");
+            }
+        }
+
+        init();
+    </script>
+}

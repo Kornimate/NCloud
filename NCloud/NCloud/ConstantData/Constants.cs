@@ -42,9 +42,12 @@ namespace NCloud.ConstantData
         public static string SharedCookieKey { get => "pathDataShared"; }
         public static char SelectedFileStarterSymbol { get => '@'; }
         public static char SelectedFolderStarterSymbol { get => '&'; }
+        public static char SingleLineCommandMarker { get => '@'; }
         public static char FileNameDelimiter { get => '_'; }
         public static char FileExtensionDelimiter { get => '.'; }
         public static char PathSeparator { get => '/'; }
+        public static char TerminalStringMarker { get => '\"'; }
+        public static char TerminalWhiteSpace { get => ' '; }
         public static int DistanceToRootFolder { get => 4; }
         public static int EmptyFolderAttributeNumberZip { get => 16; }
         public static int OwnerPlaceInPath { get => 1; }

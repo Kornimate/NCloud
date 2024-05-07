@@ -1,8 +1,9 @@
-﻿namespace NCloud.Services
+﻿using Castle.Core;
+
+namespace NCloud.Services
 {
     public interface ICloudTerminalService
     {
-        string ExecuteCommand(string? input);
-        void ExecuteSingleLineCommand(string? command);
+        Task<Pair<bool, string>> Execute(string first, List<string> second);
     }
 }

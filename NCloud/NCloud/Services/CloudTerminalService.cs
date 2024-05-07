@@ -1,4 +1,7 @@
-﻿namespace NCloud.Services
+﻿using Castle.Core;
+using NCloud.DTOs;
+
+namespace NCloud.Services
 {
     public class CloudTerminalService : ICloudTerminalService
     {
@@ -6,15 +9,10 @@
         {
             //TODO: add command and names
         };
-        public string ExecuteCommand(string? input)
-        {
-            //TODO: implement command choosing and error handling
-            return "Hello Terminal!";
-        }
 
-        public void ExecuteSingleLineCommand(string? command)
+        public async Task<Pair<bool, string>> Execute(string first, List<string> second)
         {
-           //TODO: implement command execution
+            
         }
     }
 }
