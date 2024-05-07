@@ -89,19 +89,19 @@ namespace NCloud.ConstantData
 
         public static string TerminalRedText(string text)
         {
-            return $"<span style=\"color: red; \">{text}</span>";
+            return $"[[b;red;black]{text}]";
         }
         public static string TerminalGreenText(string text)
         {
-            return $"<span style=\"color: green; \">{text}</span>";
+            return $"[[b;green;black]{text}]";
         }
         public static string TerminalYellowText(string text)
         {
-            return $"<span style=\"color: yellow; \">{text}</span>";
+            return $"[[b;yellow;black]{text}]";
         }
         public static string TerminalWhiteText(string text)
         {
-            return $"<span style=\"color: white; \">{text}</span>";
+            return $"[[b;white;black]{text}]";
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using NCloud.ConstantData;
 using NCloud.DTOs;
 using NCloud.Models;
 using NCloud.Services;
@@ -24,7 +25,8 @@ namespace NCloud.Controllers
             currentPath ??= (await GetSessionCloudPathData()).CurrentPathShow;
             return View(new TerminalViewModel
             {
-                CurrentDirectory = currentPath
+                CurrentDirectory = currentPath,
+                Commands = terminalService.GetCommands()
             });
         }
 
@@ -43,17 +45,17 @@ namespace NCloud.Controllers
 
                 var successAndMsgAndPayLoadAndPrint = await terminalService.Execute(commandAndParamertes.First, commandAndParamertes.Second);
 
-                return Json(new ConnectionDTO { Success = successAndMsgAndPayLoadAndPrint.Item1, Message = successAndMsgAndPayLoadAndPrint.Item2, Payload = !successAndMsgAndPayLoadAndPrint.Item4 ? successAndMsgAndPayLoadAndPrint.Item3 : (await GetSessionCloudPathData()).CurrentPathShow, Result = successAndMsgAndPayLoadAndPrint.Item4 ? successAndMsgAndPayLoadAndPrint.Item3 : "", });
+                return Json(new ConnectionDTO { Success = successAndMsgAndPayLoadAndPrint.Item1, Message = successAndMsgAndPayLoadAndPrint.Item1 ? Constants.TerminalGreenText(successAndMsgAndPayLoadAndPrint.Item2) : Constants.TerminalRedText(successAndMsgAndPayLoadAndPrint.Item2), Payload = !successAndMsgAndPayLoadAndPrint.Item4 ? successAndMsgAndPayLoadAndPrint.Item3 : (await GetSessionCloudPathData()).CurrentPathShow, Result = successAndMsgAndPayLoadAndPrint.Item4 ? successAndMsgAndPayLoadAndPrint.Item3 : "", });
 
             }
             catch (InvalidDataException ex)
             {
-                return Json(new ConnectionDTO { Success = false, Message = $"Invalid command - {ex.Message}" });
+                return Json(new ConnectionDTO { Success = false, Message = Constants.TerminalRedText($"Invalid command - {ex.Message}") });
 
             }
             catch (Exception)
             {
-                return Json(new ConnectionDTO { Success = false, Message = "Invalid command" });
+                return Json(new ConnectionDTO { Success = false, Message = Constants.TerminalRedText("Error while executing command") });
             }
         }
 

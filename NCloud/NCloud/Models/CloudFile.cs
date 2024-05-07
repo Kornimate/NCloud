@@ -48,13 +48,13 @@ namespace NCloud.Models
             StringBuilder sb = new StringBuilder();
 
             sb.Append(Info.CreationTime.ToString(Constants.TerminalDateTimeFormat));
-            sb.Append("  ");
-            sb.Append(FileSizeManager.ConvertToReadableSize(Info.Length));
-            sb.Append("  ");
+            sb.Append("".PadRight(2));
+            sb.Append(FileSizeManager.ConvertToReadableSize(Info.Length).PadRight(10));
+            sb.Append("".PadRight(2));
             sb.Append(IsConnectedToApp ? "yes".PadRight(13) : "no".PadRight(13));
-            sb.Append("  ");
+            sb.Append("".PadRight(2));
             sb.Append(IsConnectedToApp ? "yes".PadRight(13) : "no".PadRight(13));
-            sb.Append("  ");
+            sb.Append("".PadRight(2));
             sb.Append(Info.Name);
             sb.Append('\n');
 

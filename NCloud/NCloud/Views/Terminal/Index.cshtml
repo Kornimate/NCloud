@@ -43,20 +43,33 @@
 
                     var result = await terminal.eval(command, "@Url.Action("Evaluate","Terminal")");
 
-                    this.echo(`${result.result} ${result.message}`);
+                    this.echo(`${result.result}\n${result.message}`);
 
                     if (result.payload !== "") {
                         this.set_prompt(`${result.payload}> `);
                     }
-                    
-                    console.log(result);
                 }
             },
                 {
-                    greetings: 'Hello @User.Identity!.Name',
+                    greetings: 'Hello [[b;white;]@User.Identity!.Name]',
                     prompt: '@Model.CurrentDirectory> ',
-                    checkArity: false
-                });
+                    checkArity: false,
+                    autocompleteMenu: true,
+                    completion: '@Html.Raw(Json.Serialize(Model.Commands))'
+                }
+            );
+
+            const keywords = '@Html.Raw(Json.Serialize(Model.Commands))';
+
+            $.terminal.defaults.formatters.push(function (string) {
+                return string.split(/((?:\s|&nbsp;)+)/).map(function (string) {
+                    if (keywords.indexOf(string) != -1) {
+                        return '[[b;yellow;]' + string + ']';
+                    } else {
+                        return string;
+                    }
+                }).join('');
+            });
         });
     </script>
 }

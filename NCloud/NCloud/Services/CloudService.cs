@@ -15,6 +15,7 @@ using System.IO.Compression;
 using System;
 using System.Xml.Linq;
 using System.Text;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
 namespace NCloud.Services
 {
@@ -1329,7 +1330,7 @@ namespace NCloud.Services
                     return await Task.FromResult<string>(pathData.CurrentPathShow);
                 }
 
-                return await Task.FromResult<string>((await GetSessionCloudPathData()).CurrentPathShow);
+                throw new InvalidDataException($"directory does not exist!");
             }
             else
             {
@@ -1349,7 +1350,7 @@ namespace NCloud.Services
                         }
                         else
                         {
-                            return await Task.FromResult<string>((await GetSessionCloudPathData()).CurrentPathShow);
+                            throw new InvalidDataException($"part of path does not exist");
                         }
                     }
                 }
@@ -1368,8 +1369,8 @@ namespace NCloud.Services
             int counter = 0;
 
             sb.Append("\nDirectories:\n");
-            sb.Append("Created time      Size     Shared in app  Shared on Web  Name\n");
-            sb.Append("----------------  -------  -------------  -------------  ------\n\n");
+            sb.Append("Created time      Size        Shared in app  Shared on Web  Name\n");
+            sb.Append("----------------  ----------  -------------  -------------  ------\n\n");
 
             foreach (var dir in await GetCurrentDepthCloudDirectories(pathData.CurrentPath))
             {
@@ -1383,8 +1384,8 @@ namespace NCloud.Services
             counter = 0;
 
             sb.Append("Files:\n");
-            sb.Append("Created time      Size     Shared in app  Shared on Web  Name\n");
-            sb.Append("----------------  -------  -------------  -------------  ------\n\n");
+            sb.Append("Created time      Size        Shared in app  Shared on Web  Name\n");
+            sb.Append("----------------  ----------  -------------  -------------  ------\n\n");
 
             foreach (var file in await GetCurrentDepthCloudFiles(pathData.CurrentPath))
             {
@@ -1392,8 +1393,6 @@ namespace NCloud.Services
 
                 ++counter;
             }
-
-            sb.Append('\n');
 
             return sb.ToString();
         }

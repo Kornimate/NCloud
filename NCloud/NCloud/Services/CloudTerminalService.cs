@@ -20,7 +20,7 @@ namespace NCloud.Services
                 new CloudCommandContainer("cd",1,false, async (List<string> parameters) => await service.ChangeToDirectory(parameters[0])),
                 new CloudCommandContainer("ls",0,true, async (List<string> parameters) => await service.ListCurrentSubDirectories()),
                 new CloudCommandContainer("copy-file",1,true, async (List<string> parameters) => await service.CopyFile(parameters[0],parameters[1],httpContext.HttpContext!.User)),
-                new CloudCommandContainer("copy-dir",1,true, async (List<string> parameters) => await service.CopyFolder(parameters[0],parameters[1],httpContext.HttpContext!.User)),
+                //new CloudCommandContainer("copy-dir",1,true, async (List<string> parameters) => await service.CopyFolder(parameters[0],parameters[1],httpContext.HttpContext!.User)),
             };
         }
 
@@ -40,10 +40,19 @@ namespace NCloud.Services
 
                 return (true, Constants.TerminalGreenText("command executed successfully"), result, commandData.PrintResult);
             }
+            catch (InvalidDataException ex)
+            {
+                throw new InvalidDataException(ex.Message);
+            }
             catch (Exception)
             {
-                return (false, Constants.TerminalRedText("error while executing command"), String.Empty, false);
+                return (false, "Error while executing command", String.Empty, false);
             }
+        }
+
+        public List<string> GetCommands()
+        {
+            return commands.Select(x => x.Command).ToList();
         }
     }
 }
