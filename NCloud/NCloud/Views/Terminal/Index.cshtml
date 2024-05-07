@@ -43,11 +43,13 @@
 
                     var result = await terminal.eval(command, "@Url.Action("Evaluate","Terminal")");
 
-                    this.echo(`${result.result}${result.message}`);
+                    this.echo(`${result.result} ${result.message}`);
 
                     if (result.payload !== "") {
                         this.set_prompt(`${result.payload}> `);
                     }
+                    
+                    console.log(result);
                 }
             },
                 {

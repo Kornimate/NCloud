@@ -1367,7 +1367,7 @@ namespace NCloud.Services
 
             int counter = 0;
 
-            sb.Append("Directories:\n");
+            sb.Append("\nDirectories:\n");
             sb.Append("Created time      Size     Shared in app  Shared on Web  Name\n");
             sb.Append("----------------  -------  -------------  -------------  ------\n\n");
 
@@ -1391,11 +1391,6 @@ namespace NCloud.Services
                 sb.Append(file.ToString());
 
                 ++counter;
-            }
-
-            if (counter == 0)
-            {
-                sb.Append('\n');
             }
 
             sb.Append('\n');

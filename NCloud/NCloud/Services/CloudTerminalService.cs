@@ -17,10 +17,10 @@ namespace NCloud.Services
 
             commands = new List<CloudCommandContainer>() //configure commands for terminal
             {
-                new CloudCommandContainer("cd",1,true, async (List<string> parameters) => await service.ChangeToDirectory(parameters[0])),
-                new CloudCommandContainer("ls",0,false, async (List<string> parameters) => await service.ListCurrentSubDirectories()),
-                new CloudCommandContainer("copy-file",1,false, async (List<string> parameters) => await service.CopyFile(parameters[0],parameters[1],httpContext.HttpContext!.User)),
-                new CloudCommandContainer("copy-dir",1,false, async (List<string> parameters) => await service.CopyFolder(parameters[0],parameters[1],httpContext.HttpContext!.User)),
+                new CloudCommandContainer("cd",1,false, async (List<string> parameters) => await service.ChangeToDirectory(parameters[0])),
+                new CloudCommandContainer("ls",0,true, async (List<string> parameters) => await service.ListCurrentSubDirectories()),
+                new CloudCommandContainer("copy-file",1,true, async (List<string> parameters) => await service.CopyFile(parameters[0],parameters[1],httpContext.HttpContext!.User)),
+                new CloudCommandContainer("copy-dir",1,true, async (List<string> parameters) => await service.CopyFolder(parameters[0],parameters[1],httpContext.HttpContext!.User)),
             };
         }
 
@@ -38,11 +38,11 @@ namespace NCloud.Services
             {
                 string result = await commandData.ExecutionAction(parameters);
 
-                return (true, "command executed successfully", result, commandData.PrintResult);
+                return (true, Constants.TerminalGreenText("command executed successfully"), result, commandData.PrintResult);
             }
             catch (Exception)
             {
-                return (false, "error while executing command", String.Empty, false);
+                return (false, Constants.TerminalRedText("error while executing command"), String.Empty, false);
             }
         }
     }

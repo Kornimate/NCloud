@@ -18,7 +18,7 @@ namespace NCloud.ConstantData
         public static string ZipMimeType { get => "application/zip"; }
         public static string DefaultMimeType { get => "application/octet-stream"; }
         public static string DateTimeFormat { get => "yyyy'-'MM'-'dd'T'HH'-'mm'-'ss"; }
-        public static string TerminalDateTimeFormat { get => "'yyyy'-'MM'-'dd' 'HH':'mm'"; }
+        public static string TerminalDateTimeFormat { get => "yyyy'-'MM'-'dd' 'HH':'mm"; }
         public static string UnkownFileType { get => "unknown"; }
         public static string FileTypePrefix { get => "filetype-"; }
         public static string WebRootFolderName { get => "wwwroot"; }
@@ -85,6 +85,23 @@ namespace NCloud.ConstantData
         public static string GetDefaultFileShowingPath()
         {
             return String.Join(PathSeparator, PrivateRootName, "Documents");
+        }
+
+        public static string TerminalRedText(string text)
+        {
+            return $"<span style=\"color: red; \">{text}</span>";
+        }
+        public static string TerminalGreenText(string text)
+        {
+            return $"<span style=\"color: green; \">{text}</span>";
+        }
+        public static string TerminalYellowText(string text)
+        {
+            return $"<span style=\"color: yellow; \">{text}</span>";
+        }
+        public static string TerminalWhiteText(string text)
+        {
+            return $"<span style=\"color: white; \">{text}</span>";
         }
     }
 }
