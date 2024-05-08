@@ -26,7 +26,7 @@ namespace NCloud.Controllers
             return View(new TerminalViewModel
             {
                 CurrentDirectory = currentPath,
-                Commands = terminalService.GetCommands()
+                Commands = terminalService.GetServerSideCommands()
             });
         }
 
@@ -98,6 +98,36 @@ namespace NCloud.Controllers
 
                 return RedirectToAction("Details", "Drive");
             }
+        }
+
+        public async Task<IActionResult> DownloadFolder(string? folderName)
+        {
+            if (folderName is null || folderName == String.Empty)
+            {
+                return View("Error");
+            }
+
+            return await Download(new List<string>()
+            {
+                Constants.SelectedFolderStarterSymbol + folderName
+            },
+            (await GetSessionCloudPathData()).CurrentPath,
+            RedirectToAction("Details", "Drive"));
+        }
+
+        public async Task<IActionResult> DownloadFile(string? fileName)
+        {
+            if (fileName is null || fileName == String.Empty)
+            {
+                return View("Error");
+            }
+
+            return await Download(new List<string>()
+            {
+                Constants.SelectedFileStarterSymbol + fileName
+            },
+            (await GetSessionCloudPathData()).CurrentPath,
+            RedirectToAction("Details", "Drive"));
         }
     }
 }

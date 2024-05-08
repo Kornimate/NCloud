@@ -18,62 +18,71 @@
         @Html.AntiForgeryToken()
     </div>
 </div>
+<div class="hidden">
+    <a asp-controller="Drive" asp-action="Download"></a>
+</div>
 
 <link rel="stylesheet" href="~/lib/jquery.terminal/css/jquery.terminal.min.css" />
 
 @section Scripts {
 
-    <script src="~/lib/jquery.terminal/js/jquery.terminal.min.js"></script>
-    <script src="~/lib/jquery.terminal/js/autocomplete_menu.js"></script>
-    <script src="~/js/terminal.js"></script>
+        <script src="~/lib/jquery.terminal/js/jquery.terminal.min.js"></script>
+        <script src="~/lib/jquery.terminal/js/autocomplete_menu.js"></script>
+        <script src="~/js/terminal.js"></script>
 
-    <script type="text/javascript">
-        jQuery(function ($, undefined) {
+        <script type="text/javascript">
+            jQuery(function ($, undefined) {
 
-            const keywords = @Html.Raw(Json.Serialize(Model.Commands));
+                const terminal = new TerminalCommand;
+                
+                const keywords = @Html.Raw(Json.Serialize(Model.Commands));
 
-            keywords.push("exit", "clear");
-            
-            $('#terminal').terminal(async function (command) {
+                keywords.push("exit", "clear",  ...terminal.clientSideCommands);
 
-                if (command !== '') {
+                $('#terminal').terminal(async function (command) {
 
-                    if (command === 'exit') {
-                        window.open('@Url.Action("Details","Drive")', '_self');
+                    if (command !== '') {
 
-                        return;
+                        if (command === 'exit') {
+                            window.open('@Url.Action("Details","Drive")', '_self');
+                            this.set_prompt("");
+                            this.disable();
+                            return;
+                        }
+
+
+                        if(terminal.ExecuteClientSideCommand(command)){
+                            return;
+                        }
+
+                        var result = await terminal.eval(command, "@Url.Action("Evaluate","Terminal")");
+
+                        this.echo(`${result.result}\n${result.message}`);
+
+                        if (result.payload !== "") {
+                            this.set_prompt(`${result.payload}> `);
+                        }
                     }
-
-                    terminal = new TerminalCommand;
-
-                    var result = await terminal.eval(command, "@Url.Action("Evaluate","Terminal")");
-
-                    this.echo(`${result.result}\n${result.message}`);
-
-                    if (result.payload !== "") {
-                        this.set_prompt(`${result.payload}> `);
+                },
+                    {
+                        greetings: 'Hello [[b;white;]@User.Identity!.Name]',
+                        prompt: '@Model.CurrentDirectory> ',
+                        checkArity: false,
+                        autocompleteMenu: true,
+                        tabcompletion: true,
+                        completion: keywords
                     }
-                }
-            },
-                {
-                    greetings: 'Hello [[b;white;]@User.Identity!.Name]',
-                    prompt: '@Model.CurrentDirectory> ',
-                    checkArity: false,
-                    autocompleteMenu: true,
-                    tabcompletion: true,
-                    completion: keywords
-                }
-            );
+                );
 
-            $.terminal.defaults.formatters.push(function (string) {
-                return string.split(/((?:\s|&nbsp;)+)/).map(function (string) {
-                    if (keywords.indexOf(string) != -1) {
-                        return '[[b;yellow;]' + string + ']';
-                    } else {
-                        return string;
-                    }
-                }).join('');
+                $.terminal.defaults.formatters.push(function (string) {
+                    return string.split(/((?:\s|&nbsp;)+)/).map(function (string) {
+                        if (keywords.indexOf(string) != -1) {
+                            return '[[b;yellow;]' + string + ']';
+                        } else {
+                            return string;
+                        }
+                    }).join('');
+                });
             });
-        });
-    </script>
+        </script>
 }

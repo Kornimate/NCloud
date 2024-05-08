@@ -9,24 +9,25 @@ namespace NCloud.Services
     {
         private readonly ICloudService service;
         private readonly IHttpContextAccessor httpContext;
-        private readonly List<CloudCommandContainer> commands;
+        private readonly List<CloudCommandContainer> serverSideCommands;
         public CloudTerminalService(ICloudService service, IHttpContextAccessor httpContext)
         {
             this.service = service;
             this.httpContext = httpContext;
 
-            commands = new List<CloudCommandContainer>() //configure commands for terminal
+            serverSideCommands = new List<CloudCommandContainer>() //configure commands for terminal
             {
                 new CloudCommandContainer("cd",1,false, async (List<string> parameters) => await service.ChangeToDirectory(parameters[0])),
+                new CloudCommandContainer("copy-file",1,true, async (List<string> parameters) => await service.CopyFile(await RelativeToAbsolutePath(parameters[0]),await RelativeToAbsolutePath(parameters[1]),httpContext.HttpContext!.User)),
+                new CloudCommandContainer("copy-dir",1,true, async (List<string> parameters) => await service.CopyFolder(await RelativeToAbsolutePath(parameters[0]),await RelativeToAbsolutePath(parameters[1]),httpContext.HttpContext!.User)),
                 new CloudCommandContainer("ls",0,true, async (List<string> parameters) => await service.ListCurrentSubDirectories()),
-                new CloudCommandContainer("copy-file",1,true, async (List<string> parameters) => await service.CopyFile(parameters[0],parameters[1],httpContext.HttpContext!.User)),
-                new CloudCommandContainer("copy-dir",1,true, async (List<string> parameters) => await service.CopyFolder(parameters[0],parameters[1],httpContext.HttpContext!.User)),
+                new CloudCommandContainer("ls",0,true, async (List<string> parameters) => await service.ListCurrentSubDirectories()),
             };
         }
 
         public async Task<(bool, string, string, bool)> Execute(string command, List<string> parameters)
         {
-            CloudCommandContainer? commandData = commands.FirstOrDefault(x => x.Command == command);
+            CloudCommandContainer? commandData = serverSideCommands.FirstOrDefault(x => x.Command == command);
 
             if (commandData is null)
                 throw new InvalidDataException($"no command with name: {command}");
@@ -50,9 +51,17 @@ namespace NCloud.Services
             }
         }
 
-        public List<string> GetCommands()
+        public List<string> GetServerSideCommands()
         {
-            return commands.Select(x => x.Command).ToList();
+            return serverSideCommands.Select(x => x.Command).ToList();
+        }
+
+        private async Task<string> RelativeToAbsolutePath(string path)
+        {
+            if (path.StartsWith(Constants.AbsolutePathMarker))
+                return path;
+
+            return Path.Combine((await service.GetSessionCloudPathData()).CurrentPath,path);
         }
     }
 }
