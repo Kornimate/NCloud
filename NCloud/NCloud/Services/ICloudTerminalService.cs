@@ -6,5 +6,7 @@ namespace NCloud.Services
     {
         Task<(bool, string, string, bool)> Execute(string first, List<string> second);
         List<string> GetServerSideCommands();
+        List<string> GetClientSideCommands();
+        List<string> GetCommands();
     }
 }

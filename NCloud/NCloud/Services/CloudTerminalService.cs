@@ -10,6 +10,7 @@ namespace NCloud.Services
         private readonly ICloudService service;
         private readonly IHttpContextAccessor httpContext;
         private readonly List<CloudCommandContainer> serverSideCommands;
+        private readonly List<CloudCommandContainer> clientSideCommands;
         public CloudTerminalService(ICloudService service, IHttpContextAccessor httpContext)
         {
             this.service = service;
@@ -23,6 +24,8 @@ namespace NCloud.Services
                 new CloudCommandContainer("ls",0,true, async (List<string> parameters) => await service.ListCurrentSubDirectories()),
                 new CloudCommandContainer("ls",0,true, async (List<string> parameters) => await service.ListCurrentSubDirectories()),
             };
+
+            clientSideCommands = new List<CloudCommandContainer>() { };
         }
 
         public async Task<(bool, string, string, bool)> Execute(string command, List<string> parameters)
@@ -54,6 +57,16 @@ namespace NCloud.Services
         public List<string> GetServerSideCommands()
         {
             return serverSideCommands.Select(x => x.Command).ToList();
+        }
+
+        public List<string> GetClientSideCommands()
+        {
+            return serverSideCommands.Select(x => x.Command).ToList();
+        }
+
+        public List<string> GetCommands()
+        {
+            return GetServerSideCommands().Union(GetClientSideCommands()).ToList();
         }
 
         private async Task<string> RelativeToAbsolutePath(string path)

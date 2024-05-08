@@ -26,7 +26,7 @@ namespace NCloud.Controllers
             return View(new TerminalViewModel
             {
                 CurrentDirectory = currentPath,
-                Commands = terminalService.GetServerSideCommands()
+                Commands = terminalService.GetCommands()
             });
         }
 

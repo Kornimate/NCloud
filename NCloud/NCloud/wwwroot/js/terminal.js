@@ -1,22 +1,30 @@
 ﻿class TerminalCommand {
-    constructor() {
-        this.clientSideCommands = ["download-file", "download-dir"];
-    }
+    constructor() { }
 
 
-    async eval(command, address) {
+    async ExecuteServerSideCommand(command, address) {
 
         var response = await AjaxCall(address, command);
 
         return await response.json();
     }
 
-    ExecuteClientSideCommand(command) {
-        if (!this.clientSideCommands.includes(command)) {
-            return false;
-        }
+    async ExecuteClientSideCommand(command, address, terminal) {
 
-        return true;
-        //execute command
+        let response = await AjaxCall(address), command);
+
+        response = await response.json();
+
+        terminal.resume();
+
+        if (!response.isClientSideCommand)
+            return ["",false];
+
+        if (!response.noErrorWithSyntax)
+            return [response.errorMessage,true];
+
+         //execute command
+
+        return ["command executed successfully", true];
     }
 }
