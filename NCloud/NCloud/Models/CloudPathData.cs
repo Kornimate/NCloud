@@ -11,6 +11,8 @@ namespace NCloud.Models
         public string CurrentPathShow { get; private set; }
         public string ClipBoard { get; private set; }
 
+        public bool CanGoBack { get => PreviousDirectories.Count > 2; }
+
         [JsonConstructor]
         public CloudPathData(List<string> previousDirectories, string currentPath, string currentPathShow, string clipBoard)
         {
@@ -66,24 +68,29 @@ namespace NCloud.Models
 
         public string? RemoveFolderFromPrevDirs()
         {
-            PreviousDirectories.RemoveAt(PreviousDirectories.Count - 1);
-
-            string? folder = PreviousDirectories.Last();
-
-            CurrentPath = Path.Combine(PreviousDirectories.ToArray());
-
-            string end = String.Join(Constants.PathSeparator, PreviousDirectories.Skip(2).ToArray());
-
-            if (end == String.Empty)
+            if (PreviousDirectories.Count > 2)
             {
-                CurrentPathShow = Constants.PrivateRootName;
-            }
-            else
-            {
-                CurrentPathShow = String.Join(Constants.PathSeparator, Constants.PrivateRootName, end);
+                PreviousDirectories.RemoveAt(PreviousDirectories.Count - 1);
+
+                string? folder = PreviousDirectories.Last();
+
+                CurrentPath = Path.Combine(PreviousDirectories.ToArray());
+
+                string end = String.Join(Constants.PathSeparator, PreviousDirectories.Skip(2).ToArray());
+
+                if (end == String.Empty)
+                {
+                    CurrentPathShow = Constants.PrivateRootName;
+                }
+                else
+                {
+                    CurrentPathShow = String.Join(Constants.PathSeparator, Constants.PrivateRootName, end);
+                }
+
+                return folder;
             }
 
-            return folder;
+            return null;
         }
 
         public void SetClipBoardData(string text, bool isFile)

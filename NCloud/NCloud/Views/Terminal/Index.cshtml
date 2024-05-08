@@ -24,11 +24,16 @@
 @section Scripts {
 
     <script src="~/lib/jquery.terminal/js/jquery.terminal.min.js"></script>
+    <script src="~/lib/jquery.terminal/js/autocomplete_menu.js"></script>
     <script src="~/js/terminal.js"></script>
 
     <script type="text/javascript">
         jQuery(function ($, undefined) {
 
+            const keywords = @Html.Raw(Json.Serialize(Model.Commands));
+
+            keywords.push("exit", "clear");
+            
             $('#terminal').terminal(async function (command) {
 
                 if (command !== '') {
@@ -55,11 +60,10 @@
                     prompt: '@Model.CurrentDirectory> ',
                     checkArity: false,
                     autocompleteMenu: true,
-                    completion: '@Html.Raw(Json.Serialize(Model.Commands))'
+                    tabcompletion: true,
+                    completion: keywords
                 }
             );
-
-            const keywords = '@Html.Raw(Json.Serialize(Model.Commands))';
 
             $.terminal.defaults.formatters.push(function (string) {
                 return string.split(/((?:\s|&nbsp;)+)/).map(function (string) {

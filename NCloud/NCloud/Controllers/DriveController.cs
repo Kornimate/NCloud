@@ -4,7 +4,6 @@ using NCloud.Models;
 using NCloud.Services;
 using NCloud.Users;
 using NCloud.ViewModels;
-using CloudPathData = NCloud.Models.CloudPathData;
 using NCloud.ConstantData;
 using NCloud.DTOs;
 using NCloud.Security;
@@ -60,7 +59,7 @@ namespace NCloud.Controllers
         {
             CloudPathData pathdata = await GetSessionCloudPathData();
 
-            if (pathdata.PreviousDirectories.Count > 2)
+            if (pathdata.CanGoBack)
             {
                 pathdata.RemoveFolderFromPrevDirs();
 

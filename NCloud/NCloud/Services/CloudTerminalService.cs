@@ -20,7 +20,7 @@ namespace NCloud.Services
                 new CloudCommandContainer("cd",1,false, async (List<string> parameters) => await service.ChangeToDirectory(parameters[0])),
                 new CloudCommandContainer("ls",0,true, async (List<string> parameters) => await service.ListCurrentSubDirectories()),
                 new CloudCommandContainer("copy-file",1,true, async (List<string> parameters) => await service.CopyFile(parameters[0],parameters[1],httpContext.HttpContext!.User)),
-                //new CloudCommandContainer("copy-dir",1,true, async (List<string> parameters) => await service.CopyFolder(parameters[0],parameters[1],httpContext.HttpContext!.User)),
+                new CloudCommandContainer("copy-dir",1,true, async (List<string> parameters) => await service.CopyFolder(parameters[0],parameters[1],httpContext.HttpContext!.User)),
             };
         }
 
