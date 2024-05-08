@@ -100,11 +100,37 @@ namespace NCloud.Controllers
             }
         }
 
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<JsonResult> CheckClientSideCommand([FromBody] string command)
+        {
+            try
+            {
+                CloudTerminalTokenizationManager.CheckCorrectnessOfCommand(command);
+
+                var commandAndParameters = CloudTerminalTokenizationManager.Tokenize(command, (await userManager.GetUserAsync(User)).Id.ToString());
+
+                CloudTerminalTokenizationManager.CheckClientSideCommandSyntax(commandAndParameters.First,commandAndParameters.Second.Count,terminalService.GetClientSideCommandsObjectList());
+
+                return await Task.FromResult<JsonResult>(Json(new CommandDTO { IsClientSide = true, NoErrorWithSyntax=true,  ErrorMessage = "" }));
+            }
+            catch(InvalidOperationException ex)
+            {
+                return await Task.FromResult<JsonResult>(Json(new CommandDTO { IsClientSide = false, NoErrorWithSyntax = false, ErrorMessage = ex.Message }));
+            }
+            catch (Exception ex)
+            {
+                return await Task.FromResult<JsonResult>(Json(new CommandDTO { IsClientSide=true, NoErrorWithSyntax=false, ErrorMessage = ex.Message }));
+            }
+        }
+
         public async Task<IActionResult> DownloadFolder(string? folderName)
         {
             if (folderName is null || folderName == String.Empty)
             {
-                return View("Error");
+                AddNewNotification(new Error("No directory name specified"));
+                
+                return RedirectToAction("Index");
             }
 
             return await Download(new List<string>()
@@ -112,14 +138,16 @@ namespace NCloud.Controllers
                 Constants.SelectedFolderStarterSymbol + folderName
             },
             (await GetSessionCloudPathData()).CurrentPath,
-            RedirectToAction("Details", "Drive"));
+            RedirectToAction("Index", "Terminal"));
         }
 
         public async Task<IActionResult> DownloadFile(string? fileName)
         {
             if (fileName is null || fileName == String.Empty)
             {
-                return View("Error");
+                AddNewNotification(new Error("No file name specified"));
+
+                return RedirectToAction("Index");
             }
 
             return await Download(new List<string>()
@@ -127,7 +155,7 @@ namespace NCloud.Controllers
                 Constants.SelectedFileStarterSymbol + fileName
             },
             (await GetSessionCloudPathData()).CurrentPath,
-            RedirectToAction("Details", "Drive"));
+            RedirectToAction("Index", "Terminal"));
         }
     }
 }

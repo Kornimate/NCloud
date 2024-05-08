@@ -11,7 +11,7 @@
 
     async ExecuteClientSideCommand(command, address, terminal) {
 
-        let response = await AjaxCall(address), command);
+        let response = await AjaxCall(address, command);
 
         response = await response.json();
 

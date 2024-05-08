@@ -1,5 +1,6 @@
 ﻿using Castle.Core;
 using NCloud.ConstantData;
+using NCloud.Models;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
 namespace NCloud.Services
@@ -56,6 +57,14 @@ namespace NCloud.Services
             }
 
             CheckCorrectnessOfCommand(command);
+        }
+
+        public static void CheckClientSideCommandSyntax(string command,int paramCount,  List<ClientSideCommandContainer> commands)
+        {
+            var commandItem = commands.FirstOrDefault(x => x.Command == command) ?? throw new InvalidOperationException($"no command with name: {command}");
+
+            if (commandItem.Parameters != paramCount)
+                throw new InvalidDataException("wrong number of parameters");
         }
     }
 }

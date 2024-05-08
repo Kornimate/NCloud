@@ -3,17 +3,23 @@
     "cd",
     "copy-file",
     "copy-dir",
-    "download",
+    "download-file",
+    "download-folder",
     "edit",
     "help",
     "ls",
     "mkdir",
+    "noshare-dir-app",
+    "noshare-dir-web",
+    "noshare-file-app",
     "noshare-file-web",
-    "noshare-app",
     "rename",
-    "rm",
+    "rm-file",
+    "rm-dir",
     "search",
-    "share-app",
-    "share-web"
+    "share-file-app",
+    "share-file-web",
+    "share-dir-app",
+    "share-dir-web"
   ]
 }

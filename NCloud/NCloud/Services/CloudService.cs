@@ -118,16 +118,16 @@ namespace NCloud.Services
             }
         }
 
-        public async Task CreateDirectory(string folderName, string currentPath, ClaimsPrincipal userPrincipal)
+        public async Task<string> CreateDirectory(string folderName, string currentPath, ClaimsPrincipal userPrincipal)
         {
             if (folderName == null || folderName == String.Empty)
             {
-                throw new Exception("Invalid Folder Name!");
+                throw new InvalidDataException("Invalid directory name!");
             }
 
             if (currentPath == null || currentPath == String.Empty)
             {
-                throw new Exception("Invalid Path!");
+                throw new InvalidDataException("Invalid path!");
             }
 
             string path = ParseRootName(currentPath);
@@ -151,6 +151,8 @@ namespace NCloud.Services
                 {
                     throw new InvalidOperationException("Folder already exists!");
                 }
+
+                return folderName; //TODO: revise later
             }
             catch (InvalidOperationException)
             {
@@ -1395,6 +1397,11 @@ namespace NCloud.Services
             }
 
             return sb.ToString();
+        }
+
+        public async Task<string> GetTerminalHelpText()
+        {
+            return await Task.FromResult<string>("Read file here");
         }
     }
 }

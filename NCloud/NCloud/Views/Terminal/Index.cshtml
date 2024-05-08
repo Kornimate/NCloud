@@ -54,7 +54,7 @@
 
                     const ajaxData = terminal.ExecuteClientSideCommand(command, '@Url.Action("CheckClientSideCommand","Terminal")', this));
 
-                    if(ajaxData[] !== ""){
+                    if(ajaxData[0] !== ""){
                         this.echo(ajaxData);
                     }
                     

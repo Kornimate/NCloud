@@ -10,7 +10,7 @@ namespace NCloud.Services
         Task<List<CloudFile>> GetCurrentDepthCloudFiles(string currentPath, bool connectToApp = false, bool connectToWeb = false);
         Task<CloudUser?> GetAdmin();
         Task<bool> CreateBaseDirectory(CloudUser cloudUser);
-        Task CreateDirectory(string folderName, string currentPath, ClaimsPrincipal userPrincipal);
+        Task<string> CreateDirectory(string folderName, string currentPath, ClaimsPrincipal userPrincipal);
         Task<string> CreateFile(IFormFile file, string currentPath, ClaimsPrincipal userPrincipal);
         Task<bool> RemoveDirectory(string folderName, string currentPath, ClaimsPrincipal userPrincipal);
         Task<bool> RemoveFile(string fileName, string currentPath, ClaimsPrincipal userPrincipal);
@@ -49,5 +49,6 @@ namespace NCloud.Services
         Task<bool> SetSessionCloudPathData(CloudPathData pathData);
         Task<string> ChangeToDirectory(string path);
         Task<string> ListCurrentSubDirectories();
+        Task<string> GetTerminalHelpText();
     }
 }
