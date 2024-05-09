@@ -67,7 +67,7 @@ namespace NCloud.Services
                 {
                     if (success)
                     {
-                        return (true, Constants.TerminalGreenText("command executed successfully"), result, commandData.PrintResult);
+                        return (true, Constants.TerminalGreenText("command executed successfully"), String.Empty, commandData.PrintResult);
                     }
                     else
                     {
