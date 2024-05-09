@@ -6,8 +6,8 @@ namespace NCloud.Services
 {
     public interface ICloudService
     {
-        Task<List<CloudFolder>> GetCurrentDepthCloudDirectories(string currentPath, bool connectToApp = false, bool connectToWeb = false);
-        Task<List<CloudFile>> GetCurrentDepthCloudFiles(string currentPath, bool connectToApp = false, bool connectToWeb = false);
+        Task<List<CloudFolder>> GetCurrentDepthCloudDirectories(string currentPath, bool connectToApp = false, bool connectToWeb = false, string? pattern = null);
+        Task<List<CloudFile>> GetCurrentDepthCloudFiles(string currentPath, bool connectToApp = false, bool connectToWeb = false, string? pattern = null);
         Task<CloudUser?> GetAdmin();
         Task<bool> CreateBaseDirectory(CloudUser cloudUser);
         Task<string> CreateDirectory(string folderName, string currentPath, ClaimsPrincipal userPrincipal);
@@ -37,7 +37,7 @@ namespace NCloud.Services
         Task<List<CloudFile>> GetCurrentDepthWebSharingFiles(string path);
         Task<List<CloudFolder>> GetCurrentDepthWebSharingDirectories(string path);
         Task<string?> CreateZipFile(List<string> itemsForDownload, string currentPath, string filePath, bool connectedToApp, bool connectedToWeb);
-        Task <string> ChangePathStructure(string currentPath);
+        Task<string> ChangePathStructure(string currentPath);
         Task<bool> ModifyFileContent(string file, string content);
         Task<CloudFolder> GetFolder(string currentPath, string folderName);
         Task<CloudFile> GetFile(string currentPath, string fileName);
@@ -50,5 +50,8 @@ namespace NCloud.Services
         Task<string> ChangeToDirectory(string path);
         Task<string> ListCurrentSubDirectories();
         Task<string> GetTerminalHelpText();
+        Task<string> PrintWorkingDirectory();
+        Task<List<CloudFolder>> SearchDirectoryInCurrentDirectory(string currentPath, string pattern);
+        Task<List<CloudFile>> SearchFileInCurrentDirectory(string currentPath, string pattern);
     }
 }

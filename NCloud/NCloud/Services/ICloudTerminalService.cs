@@ -5,7 +5,7 @@ namespace NCloud.Services
 {
     public interface ICloudTerminalService
     {
-        Task<(bool, string, string, bool)> Execute(string first, List<string> second);
+        Task<(bool, string, object?, bool)> Execute(string first, List<string> second);
         List<string> GetServerSideCommands();
         List<string> GetClientSideCommands();
         List<ClientSideCommandContainer> GetClientSideCommandsObjectList();

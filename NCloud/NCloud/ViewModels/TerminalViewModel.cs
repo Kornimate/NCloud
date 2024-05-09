@@ -3,6 +3,7 @@
     public class TerminalViewModel
     {
         public string? CurrentDirectory { get; set; }
-        public List<string> Commands { get; set; } = new();
+        public List<string> ClientSideCommands { get; set; } = new();
+        public List<string> ServerSideCommands { get; set; } = new();
     }
 }

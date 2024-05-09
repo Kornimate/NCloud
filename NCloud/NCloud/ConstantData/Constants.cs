@@ -15,6 +15,8 @@ namespace NCloud.ConstantData
         public static string AesKey { get => "bT7TAqTu32JxED0qTPac8w=="; }
         public static string IV { get => "IJ/UpiC2sYsmrq7fbFyemw=="; }
         public static string NoFileType { get => "notype"; }
+        public static string FolderAndFileRegex { get => @"^[0-9a-zA-Z_!%+=.()-$\s]+$"; }
+        public static string CommandRegex { get => @"^[0-9a-zA-Z_!%+=.()-/$\s""]+$"; }
         public static string ZipMimeType { get => "application/zip"; }
         public static string DefaultMimeType { get => "application/octet-stream"; }
         public static string DateTimeFormat { get => "yyyy'-'MM'-'dd'T'HH'-'mm'-'ss"; }
@@ -37,6 +39,7 @@ namespace NCloud.ConstantData
         public static string NotSelectedResult { get => "false"; }
         public static string CodingExtensionsFilePath { get => "./Services/Resources/coding-extensions.json"; }
         public static string TextDocumentExtensionsFilePath { get => "./Services/Resources/text-document-extensions.json"; }
+        public static string TerminalCommandsDataFilePath { get => "./Services/Resources/terminal-commands.json"; }
         public static string ControllerDataSeparator { get => "||"; }
         public static string NotificationCookieKey { get => "Notification"; }
         public static string CloudCookieKey { get => "pathDataCloud"; }
@@ -48,6 +51,7 @@ namespace NCloud.ConstantData
         public static char AbsolutePathMarker { get => '@'; }
         public static char FileNameDelimiter { get => '_'; }
         public static char FileExtensionDelimiter { get => '.'; }
+        public static char CommandCurrentPathMarker { get => '.'; }
         public static char PathSeparator { get => '/'; }
         public static char TerminalStringMarker { get => '\"'; }
         public static char TerminalWhiteSpace { get => ' '; }

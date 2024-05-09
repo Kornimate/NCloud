@@ -26,7 +26,8 @@ namespace NCloud.Controllers
             return View(new TerminalViewModel
             {
                 CurrentDirectory = currentPath,
-                Commands = terminalService.GetCommands()
+                ClientSideCommands = terminalService.GetClientSideCommands(),
+                ServerSideCommands = terminalService.GetServerSideCommands()
             });
         }
 
@@ -34,8 +35,10 @@ namespace NCloud.Controllers
         [ValidateAntiForgeryToken]
         public async Task<JsonResult> Evaluate([FromBody] string command)
         {
-            if (command is null || command == String.Empty)
-                return Json(new ConnectionDTO { Success = false, Message = "No command" });
+            command = command.Trim();
+
+            if (String.IsNullOrEmpty(command))
+                return Json(new ConnectionDTO { Success = true, Message = "", Result = "", Payload = "" });
 
             try
             {
@@ -45,7 +48,13 @@ namespace NCloud.Controllers
 
                 var successAndMsgAndPayLoadAndPrint = await terminalService.Execute(commandAndParamertes.First, commandAndParamertes.Second);
 
-                return Json(new ConnectionDTO { Success = successAndMsgAndPayLoadAndPrint.Item1, Message = successAndMsgAndPayLoadAndPrint.Item1 ? Constants.TerminalGreenText(successAndMsgAndPayLoadAndPrint.Item2) : Constants.TerminalRedText(successAndMsgAndPayLoadAndPrint.Item2), Payload = !successAndMsgAndPayLoadAndPrint.Item4 ? successAndMsgAndPayLoadAndPrint.Item3 : (await GetSessionCloudPathData()).CurrentPathShow, Result = successAndMsgAndPayLoadAndPrint.Item4 ? successAndMsgAndPayLoadAndPrint.Item3 : "", });
+                if (successAndMsgAndPayLoadAndPrint.Item3 is List<CloudFile> files)
+                    return Json(new ConnectionDTO { Success = successAndMsgAndPayLoadAndPrint.Item1, Message = successAndMsgAndPayLoadAndPrint.Item1 ? Constants.TerminalGreenText(successAndMsgAndPayLoadAndPrint.Item2) : Constants.TerminalRedText(successAndMsgAndPayLoadAndPrint.Item2), Payload = String.Empty, Result = $"\n{String.Join('\n', files.Select(x => x.Info.Name))}\n\n" });
+
+                if (successAndMsgAndPayLoadAndPrint.Item3 is List<CloudFolder> folders)
+                    return Json(new ConnectionDTO { Success = successAndMsgAndPayLoadAndPrint.Item1, Message = successAndMsgAndPayLoadAndPrint.Item1 ? Constants.TerminalGreenText(successAndMsgAndPayLoadAndPrint.Item2) : Constants.TerminalRedText(successAndMsgAndPayLoadAndPrint.Item2), Payload = String.Empty, Result = $"\n{String.Join('\n', folders.Select(x => x.Info.Name))}\n\n" });
+
+                return Json(new ConnectionDTO { Success = successAndMsgAndPayLoadAndPrint.Item1, Message = successAndMsgAndPayLoadAndPrint.Item1 ? Constants.TerminalGreenText(successAndMsgAndPayLoadAndPrint.Item2) : Constants.TerminalRedText(successAndMsgAndPayLoadAndPrint.Item2), Payload = (!successAndMsgAndPayLoadAndPrint.Item4 ? successAndMsgAndPayLoadAndPrint.Item3?.ToString() : (await GetSessionCloudPathData()).CurrentPathShow) ?? String.Empty, Result = !String.IsNullOrEmpty(successAndMsgAndPayLoadAndPrint.Item3?.ToString() ?? String.Empty) && successAndMsgAndPayLoadAndPrint.Item4 ? ($"\n{successAndMsgAndPayLoadAndPrint.Item3}\n") : "" });
 
             }
             catch (InvalidDataException ex)
@@ -77,11 +86,17 @@ namespace NCloud.Controllers
 
                 var commandAndParamertes = CloudTerminalTokenizationManager.Tokenize(command, (await userManager.GetUserAsync(User)).Id.ToString());
 
-                var successAndMsg = await terminalService.Execute(commandAndParamertes.First, commandAndParamertes.Second);
+                var successAndMsgAndPayLoadAndPrint = await terminalService.Execute(commandAndParamertes.First, commandAndParamertes.Second);
 
-                CloudNotificationAbstarct notification = successAndMsg.Item1 ? new Success(successAndMsg.Item2) : new Error(successAndMsg.Item2);
+                CloudNotificationAbstarct notification = successAndMsgAndPayLoadAndPrint.Item1 ? new Success(successAndMsgAndPayLoadAndPrint.Item2) : new Error(successAndMsgAndPayLoadAndPrint.Item2);
 
                 AddNewNotification(notification);
+
+                if (successAndMsgAndPayLoadAndPrint.Item3 is List<CloudFile> files)
+                    return RedirectToAction("Details", "Drive", new { files = files});
+
+                if (successAndMsgAndPayLoadAndPrint.Item3 is List<CloudFolder> folders)
+                    return RedirectToAction("Details", "Drive", new { folders = folders });
 
                 return RedirectToAction("Details", "Drive");
 
@@ -110,17 +125,17 @@ namespace NCloud.Controllers
 
                 var commandAndParameters = CloudTerminalTokenizationManager.Tokenize(command, (await userManager.GetUserAsync(User)).Id.ToString());
 
-                CloudTerminalTokenizationManager.CheckClientSideCommandSyntax(commandAndParameters.First,commandAndParameters.Second.Count,terminalService.GetClientSideCommandsObjectList());
+                CloudTerminalTokenizationManager.CheckClientSideCommandSyntax(commandAndParameters.First, commandAndParameters.Second.Count, terminalService.GetClientSideCommandsObjectList());
 
-                return await Task.FromResult<JsonResult>(Json(new CommandDTO { IsClientSide = true, NoErrorWithSyntax=true,  ErrorMessage = "" }));
+                return await Task.FromResult<JsonResult>(Json(new CommandDTO { IsClientSide = true, CommandName = commandAndParameters.First, Parameters = commandAndParameters.Second, NoErrorWithSyntax = true, ErrorMessage = "" }));
             }
-            catch(InvalidOperationException ex)
+            catch (InvalidOperationException ex)
             {
                 return await Task.FromResult<JsonResult>(Json(new CommandDTO { IsClientSide = false, NoErrorWithSyntax = false, ErrorMessage = ex.Message }));
             }
             catch (Exception ex)
             {
-                return await Task.FromResult<JsonResult>(Json(new CommandDTO { IsClientSide=true, NoErrorWithSyntax=false, ErrorMessage = ex.Message }));
+                return await Task.FromResult<JsonResult>(Json(new CommandDTO { IsClientSide = true, NoErrorWithSyntax = false, ErrorMessage = ex.Message }));
             }
         }
 
@@ -129,7 +144,7 @@ namespace NCloud.Controllers
             if (folderName is null || folderName == String.Empty)
             {
                 AddNewNotification(new Error("No directory name specified"));
-                
+
                 return RedirectToAction("Index");
             }
 

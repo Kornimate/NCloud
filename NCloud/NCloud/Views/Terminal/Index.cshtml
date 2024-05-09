@@ -33,11 +33,11 @@
     <script type="text/javascript">
         jQuery(function ($, undefined) {
 
-            const terminal = new TerminalCommand;
+            const terminal = new TerminalCommand(@Html.Raw(Json.Serialize(Model.ClientSideCommands)));
 
-            const keywords = @Html.Raw(Json.Serialize(Model.Commands));
+            const keywords = @Html.Raw(Json.Serialize(Model.ServerSideCommands));
 
-            keywords.push("exit", "clear", ...terminal.clientSideCommands);
+            keywords.push("exit", "clear", ...terminal.Commands);
 
             $('#terminal').terminal(async function (command) {
 
@@ -52,18 +52,25 @@
 
                     this.pause();
 
-                    const ajaxData = terminal.ExecuteClientSideCommand(command, '@Url.Action("CheckClientSideCommand","Terminal")', this));
+                    const ajaxData = terminal.ExecuteClientSideCommand(command, '@Url.Action("CheckClientSideCommand","Terminal")', this);
 
-                    if(ajaxData[0] !== ""){
-                        this.echo(ajaxData);
+                    if(ajaxData[1]){
+                        
+                        if(ajaxData[0] !== ""){
+                            this.echo(ajaxData);
+                        }
+                        
+                        return;
                     }
                     
-                    if(ajaxData[1])
-                        return;
 
-                    var result = await terminal.ExecuteServerSideCommand(command, "@Url.Action("Evaluate","Terminal")");
+                    var result = await terminal.ExecuteServerSideCommand(command, '@Url.Action("Evaluate","Terminal")');
 
-                    this.echo(`${result.result}\n${result.message}`);
+                    const toPrint = `${result.result}${result.message}`
+
+                    if (toPrint !== ""){
+                        this.echo(toPrint);
+                    }
 
                     if (result.payload !== "") {
                         this.set_prompt(`${result.payload}> `);

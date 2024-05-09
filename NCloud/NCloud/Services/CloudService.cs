@@ -135,7 +135,7 @@ namespace NCloud.Services
 
             try
             {
-                if (!DirectoryExists(pathAndName))
+                if (!Directory.Exists(pathAndName))
                 {
                     await Task.Run(() => Directory.CreateDirectory(pathAndName));
 
@@ -247,7 +247,7 @@ namespace NCloud.Services
             return await context.Users.FirstOrDefaultAsync(x => x.UserName == Constants.AdminUserName);
         }
 
-        public async Task<List<CloudFile>> GetCurrentDepthCloudFiles(string currentPath, bool connectedToApp = false, bool connectedToWeb = false)
+        public async Task<List<CloudFile>> GetCurrentDepthCloudFiles(string currentPath, bool connectedToApp = false, bool connectedToWeb = false, string? pattern = null)
         {
             string path = ParseRootName(currentPath);
 
@@ -256,7 +256,9 @@ namespace NCloud.Services
 
             try
             {
-                var items = await Task.FromResult<IEnumerable<CloudFile>>(Directory.GetFiles(path).Select(x => new CloudFile(new FileInfo(x), appsharedfiles.Contains(Path.GetFileName(x)!), websharedfiles.Contains(Path.GetFileName(x)!), Path.Combine(currentPath, Path.GetFileName(x)))).OrderBy(x => x.Info.Name));
+                var files = pattern is null ? Directory.GetFiles(path) : Directory.GetFiles(path, pattern);
+
+                var items = await Task.FromResult<IEnumerable<CloudFile>>(files.Select(x => new CloudFile(new FileInfo(x), appsharedfiles.Contains(Path.GetFileName(x)!), websharedfiles.Contains(Path.GetFileName(x)!), Path.Combine(currentPath, Path.GetFileName(x)))).OrderBy(x => x.Info.Name));
 
                 if (connectedToApp)
                 {
@@ -275,7 +277,7 @@ namespace NCloud.Services
             }
         }
 
-        public async Task<List<CloudFolder>> GetCurrentDepthCloudDirectories(string currentPath, bool connectedToApp = false, bool connectedToWeb = false)
+        public async Task<List<CloudFolder>> GetCurrentDepthCloudDirectories(string currentPath, bool connectedToApp = false, bool connectedToWeb = false, string? pattern = null)
         {
             string path = ParseRootName(currentPath);
 
@@ -284,7 +286,9 @@ namespace NCloud.Services
 
             try
             {
-                var items = await Task.FromResult<IEnumerable<CloudFolder>>(Directory.GetDirectories(path).Select(x => new CloudFolder(new DirectoryInfo(x), appsharedfolders.Contains(Path.GetFileName(x)!), websharedfolders.Contains(Path.GetFileName(x)!), Path.Combine(currentPath, Path.GetFileName(x)))).OrderBy(x => x.Info.Name));
+                var folders = pattern is null ? Directory.GetDirectories(path) : Directory.GetDirectories(path, pattern);
+
+                var items = await Task.FromResult<IEnumerable<CloudFolder>>(folders.Select(x => new CloudFolder(new DirectoryInfo(x), appsharedfolders.Contains(Path.GetFileName(x)!), websharedfolders.Contains(Path.GetFileName(x)!), Path.Combine(currentPath, Path.GetFileName(x)))).OrderBy(x => x.Info.Name));
 
                 if (connectedToApp)
                 {
@@ -1336,19 +1340,36 @@ namespace NCloud.Services
             }
             else
             {
-                string[] pathElements = path.Split(Path.DirectorySeparatorChar, StringSplitOptions.RemoveEmptyEntries);
+                if (path == String.Empty)
+                {
+                    return await Task.FromResult<string>(pathData.CurrentPathShow);
+                }
+
+                string[] pathElements = path.Split(Path.DirectorySeparatorChar);
 
                 foreach (string element in pathElements)
                 {
+                    if (element == String.Empty)
+                    {
+                        throw new InvalidDataException($"part of path does not exist (empty path element)");
+                    }
+
                     if (element == Constants.DirectoryBack)
                     {
                         pathData.RemoveFolderFromPrevDirs();
                     }
                     else
                     {
-                        if (Directory.Exists(ParseRootName(pathData.TrySetFolder(element) ?? String.Empty)))
+                        DirectoryInfo di = new DirectoryInfo(ParseRootName(pathData.TrySetFolder(element) ?? String.Empty));
+
+                        if (di.Exists)
                         {
-                            pathData.SetFolder(element);
+                            if (di.Parent is not null && di.Parent.Exists)
+                            {
+                                di = di.Parent.GetDirectories().FirstOrDefault(x => x.Name.Equals(element, StringComparison.OrdinalIgnoreCase)) ?? di;
+                            }
+
+                            pathData.SetFolder((di.Name));
                         }
                         else
                         {
@@ -1370,7 +1391,7 @@ namespace NCloud.Services
 
             int counter = 0;
 
-            sb.Append("\nDirectories:\n");
+            sb.Append("Directories:\n");
             sb.Append("Created time      Size        Shared in app  Shared on Web  Name\n");
             sb.Append("----------------  ----------  -------------  -------------  ------\n\n");
 
@@ -1401,7 +1422,24 @@ namespace NCloud.Services
 
         public async Task<string> GetTerminalHelpText()
         {
-            return await Task.FromResult<string>("Read file here");
+            List<CommandDataContainer>? commands = JsonSerializer.Deserialize<List<CommandDataContainer>>(File.ReadAllText(Constants.TerminalCommandsDataFilePath));
+
+            return await Task.FromResult<string>(String.Join('\n',commands?.Select(x => $"{Constants.TerminalYellowText(x.Name)} : {x.Description}") ?? Array.Empty<string>()) ?? Constants.TerminalRedText("no command data available"));
+        }
+
+        public async Task<string> PrintWorkingDirectory()
+        {
+            return (await GetSessionCloudPathData()).CurrentPathShow;
+        }
+
+        public async Task<List<CloudFolder>> SearchDirectoryInCurrentDirectory(string currentPath, string pattern)
+        {
+            return await GetCurrentDepthCloudDirectories(currentPath, pattern: pattern);
+        }
+
+        public async Task<List<CloudFile>> SearchFileInCurrentDirectory(string currentPath, string pattern)
+        {
+            return await GetCurrentDepthCloudFiles(currentPath, pattern: pattern);
         }
     }
 }

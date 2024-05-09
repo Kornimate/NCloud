@@ -17,7 +17,7 @@ namespace NCloud.Controllers
         public DriveController(ICloudService service, UserManager<CloudUser> userManager, SignInManager<CloudUser> signInManager, IWebHostEnvironment env, ICloudNotificationService notifier) : base(service, userManager, signInManager, env, notifier) { }
 
         // GET: DriveController/Details/Documents
-        public async Task<IActionResult> Details(string? folderName = null)
+        public async Task<IActionResult> Details(string? folderName = null, List<CloudFile>? files = null, List<CloudFolder>? folders = null)
         {
             CloudPathData pathdata = await GetSessionCloudPathData();
 
@@ -36,8 +36,8 @@ namespace NCloud.Controllers
 
             try
             {
-                return View(new DriveDetailsViewModel(await service.GetCurrentDepthCloudFiles(currentPath),
-                                                      await service.GetCurrentDepthCloudDirectories(currentPath),
+                return View(new DriveDetailsViewModel(files ?? await service.GetCurrentDepthCloudFiles(currentPath),
+                                                      folders ?? await service.GetCurrentDepthCloudDirectories(currentPath),
                                                       pathdata.CurrentPathShow,
                                                       pathdata.CurrentPath,
                                                       Constants.GetWebControllerAndActionForDetails(),

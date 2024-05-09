@@ -348,8 +348,10 @@ h6 {
     background: black;
     color: #7AFB4C;
     padding: 10px;
-    overflow: scroll;
+    overflow: hidden;
+    padding-bottom:30px;
 }
+
 .space {
     margin: 25px;
 }

@@ -1,12 +1,18 @@
 ﻿class TerminalCommand {
-    constructor() { }
-
+    constructor(clientSideCommands) {
+        this.clientSideCommands = clientSideCommands;
+    }
 
     async ExecuteServerSideCommand(command, address) {
 
         var response = await AjaxCall(address, command);
 
         return await response.json();
+    }
+
+    get Commands() {
+
+        return this.clientSideCommands;
     }
 
     async ExecuteClientSideCommand(command, address, terminal) {
@@ -18,12 +24,12 @@
         terminal.resume();
 
         if (!response.isClientSideCommand)
-            return ["",false];
+            return ["", false];
 
         if (!response.noErrorWithSyntax)
-            return [response.errorMessage,true];
+            return [response.errorMessage, true];
 
-         //execute command
+        //execute command
 
         return ["command executed successfully", true];
     }

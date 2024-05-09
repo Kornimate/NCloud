@@ -10,8 +10,13 @@ class Program
 {
     static void Main()
     {
-        string path = Path.Combine(Directory.GetCurrentDirectory(), "Test", "..", "Test.txt");
+        //string path = Path.Combine(Directory.GetCurrentDirectory(), "Test", "..", "Test.txt");
 
-        Console.WriteLine(File.Exists(path) + " " + path);
+        string path = ".";
+
+        Console.WriteLine(path);
+        path = path[..^1];
+
+        Console.WriteLine(path);
     }
 }

@@ -1,25 +1,94 @@
-{
-  "commands": [
-    "cd",
-    "copy-file",
-    "copy-dir",
-    "download-file",
-    "download-folder",
-    "edit",
-    "help",
-    "ls",
-    "mkdir",
-    "noshare-dir-app",
-    "noshare-dir-web",
-    "noshare-file-app",
-    "noshare-file-web",
-    "rename",
-    "rm-file",
-    "rm-dir",
-    "search",
-    "share-file-app",
-    "share-file-web",
-    "share-dir-app",
-    "share-dir-web"
-  ]
-}
+[
+  {
+    "name": "cd",
+    "description": ""
+  },
+  {
+    "name": "copy-file",
+    "description": ""
+  },
+  {
+    "name": "copy-dir",
+    "description": ""
+  },
+  {
+    "name": "download-file",
+    "description": ""
+  },
+  {
+    "name": "download-folder",
+    "description": ""
+  },
+  {
+    "name": "edit",
+    "description": ""
+  },
+  {
+    "name": "help",
+    "description": ""
+  },
+  {
+    "name": "ls",
+    "description": ""
+  },
+  {
+    "name": "mkdir",
+    "description": ""
+  },
+  {
+    "name": "noshare-dir-app",
+    "description": ""
+  },
+  {
+    "name": "noshare-dir-web",
+    "description": ""
+  },
+  {
+    "name": "noshare-file-app",
+    "description": ""
+  },
+  {
+    "name": "noshare-file-web",
+    "description": ""
+  },
+  {
+    "name": "pwd",
+    "description": ""
+  },
+  {
+    "name": "rename",
+    "description": ""
+  },
+  {
+    "name": "rm-file",
+    "description": ""
+  },
+  {
+    "name": "rm-dir",
+    "description": ""
+  },
+  {
+    "name": "search-dir",
+    "description": ""
+  },
+  {
+    "name": "search-file",
+    "description": ""
+  },
+  {
+    "name": "share-file-app",
+    "description": ""
+  },
+  {
+    "name": "share-file-web",
+    "description": ""
+  },
+  {
+    "name": "share-dir-app",
+    "description": ""
+  },
+  {
+    "name": "share-dir-web",
+    "description": ""
+  }
+]
