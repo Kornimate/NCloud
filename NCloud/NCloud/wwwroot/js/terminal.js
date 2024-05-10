@@ -35,6 +35,8 @@
 
         document.getElementById(response.actionHTMLElementId).click();
 
+        document.getElementById("addElement").innerHTML = "";
+
         return ["command executed successfully", true];
     }
 }
