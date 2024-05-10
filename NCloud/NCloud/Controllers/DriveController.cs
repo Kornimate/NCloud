@@ -699,8 +699,10 @@ namespace NCloud.Controllers
                     {
                         string name = await service.RenameFile(pathData.CurrentPath, vm.OldName!, newFileName);
 
-                        if (name != (vm.NewName + vm.Extension))
+                        if (name != newFileName)
                         {
+                            newFileName = name;
+                            
                             AddNewNotification(new Warning("File has been renamed"));
                         }
 

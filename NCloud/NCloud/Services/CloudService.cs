@@ -1121,7 +1121,10 @@ namespace NCloud.Services
             {
                 string filePath = ParseRootName(currentPath);
 
-                File.Move(Path.Combine(filePath, fileName), Path.Combine(filePath, RenameObject(filePath, ref newFileName, true)));
+                if (File.Exists(Path.Combine(filePath,newFileName)) && fileName.ToLower() != newName.ToLower())
+                    RenameObject(filePath, ref newFileName, true);
+
+                File.Move(Path.Combine(filePath, fileName), Path.Combine(filePath, newFileName));
 
                 SharedFile? file = await context.SharedFiles.FirstOrDefaultAsync(x => x.CloudPathFromRoot == currentPath && x.Name == fileName);
 
@@ -1133,7 +1136,7 @@ namespace NCloud.Services
                     await context.SaveChangesAsync();
                 }
 
-                return fileName;
+                return newFileName;
             }
             catch (Exception)
             {
