@@ -69,6 +69,17 @@ namespace NCloud.Controllers
             return RedirectToAction("Details", "Drive");
         }
 
+        public async Task<IActionResult> Home()
+        {
+            CloudPathData pathData = await GetSessionCloudPathData();
+
+            pathData.SetDefaultPathData((await userManager.GetUserAsync(User)).Id.ToString());
+
+            await SetSessionCloudPathData(pathData);
+
+            return RedirectToAction("Details", "Drive");
+        }
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AddNewFolder(string? folderName)

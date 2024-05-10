@@ -62,6 +62,13 @@ namespace NCloud.Controllers
             return RedirectToAction("Details", "Sharing");
         }
 
+
+        public async Task<IActionResult> Home()
+        {
+            await SetSessionSharedPathData(new SharedPathData());
+
+            return RedirectToAction("Details", "Sharing");
+        }
         public async Task<IActionResult> DownloadFolder(string? folderName)
         {
             if (folderName is null || folderName == String.Empty)

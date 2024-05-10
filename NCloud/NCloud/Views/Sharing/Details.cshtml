@@ -5,15 +5,17 @@
 }
 
 <div>
-    <div class="background-color rounded w-100 px-3 pt-3" id="breadcrumbDiv">
-        <nav aria-label="breadcrumb">
-            <ol class="breadcrumb">
-                @foreach (string item in Model.CurrentPath.Split("/", StringSplitOptions.RemoveEmptyEntries))
-                {
-                    <li class="breadcrumb-item text-darkeybinding fw-bold" aria-current="page">@item</li>
-                }
-            </ol>
-        </nav>
+    <div class="input-group mb-3">
+        <div class="background-color rounded w-100 px-3 pt-3" id="breadcrumbDiv">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    @foreach (string item in Model.CurrentPath.Split("/", StringSplitOptions.RemoveEmptyEntries))
+                    {
+                        <li class="breadcrumb-item text-darkeybinding fw-bold" aria-current="page">@item</li>
+                    }
+                </ol>
+            </nav>
+        </div>
     </div>
     <div class="d-flex justify-content-between">
         <div class="">
@@ -21,8 +23,9 @@
         </div>
         <div class="">
             <div class="btn-group" role="group">
-                <a class="btn btn-primary" id="refreshBtn" asp-controller="Sharing" asp-action="Details"><img src="~/utilities/arrow-repeat.svg" width=" 20" height="20" class="rounded-circle align-middle" /></a>
-                <a class="btn btn-primary" asp-controller="Sharing" asp-action="DownloadItems"><img src="~/utilities/cloud-download.svg" width=" 20" height="20" class="rounded-circle align-middle" /></a>
+                <a class="btn btn-primary" asp-controller="Sharing" asp-action="Home"><img src="~/utilities/home.svg" width=" 20" height="20" class="rounded align-middle" /></a>
+                <a class="btn btn-secondary" id="refreshBtn" asp-controller="Sharing" asp-action="Details"><img src="~/utilities/arrow-repeat.svg" width=" 20" height="20" class="rounded align-middle" /></a>
+                <a class="btn btn-primary" asp-controller="Sharing" asp-action="DownloadItems"><img src="~/utilities/cloud-download.svg" width=" 20" height="20" class="rounded align-middle" /></a>
             </div>
         </div>
     </div>

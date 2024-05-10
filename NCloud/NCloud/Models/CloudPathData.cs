@@ -1,5 +1,6 @@
 ﻿using NCloud.ConstantData;
 using NCloud.Models.Extensions;
+using System.Security.Claims;
 using System.Text.Json.Serialization;
 
 namespace NCloud.Models
@@ -35,6 +36,7 @@ namespace NCloud.Models
 
             CurrentPath = Constants.PrivateRootName;
             CurrentPath = Path.Combine(CurrentPath, id);
+            CurrentPathShow = Constants.PrivateRootName;
             PreviousDirectories.Clear();
             PreviousDirectories.Add(Constants.PrivateRootName);
             PreviousDirectories.Add(id);
