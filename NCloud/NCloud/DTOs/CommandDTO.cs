@@ -3,8 +3,8 @@
     public class CommandDTO
     {
         public bool IsClientSide { get; set; } = false;
-        public string CommandName { get; set; } = String.Empty;
-        public List<string> Parameters { get; set; } = new();
+        public string ActionHTMLElement { get; set; } = String.Empty;
+        public string ActionHTMLElementId { get; set; } = String.Empty;
         public bool NoErrorWithSyntax { get; set; } = false;
         public string ErrorMessage { get; set; } = String.Empty;
     }

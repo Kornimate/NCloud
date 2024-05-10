@@ -15,6 +15,8 @@
         return this.clientSideCommands;
     }
 
+    //returns errorMessage (string) and stopExecution (bool) value
+
     async ExecuteClientSideCommand(command, address, terminal) {
 
         let response = await AjaxCall(address, command);
@@ -23,13 +25,15 @@
 
         terminal.resume();
 
-        if (!response.isClientSideCommand)
+        if (response.isClientSideCommand === false)
             return ["", false];
 
-        if (!response.noErrorWithSyntax)
+        if (response.noErrorWithSyntax === false)
             return [response.errorMessage, true];
 
-        //execute command
+        document.getElementById("addElement").innerHTML = response.actionHTMLElement;
+
+        document.getElementById(response.actionHTMLElementId).click();
 
         return ["command executed successfully", true];
     }

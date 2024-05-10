@@ -42,6 +42,7 @@ namespace NCloud.ConstantData
         public static string TerminalCommandsDataFilePath { get => "./Services/Resources/terminal-commands.json"; }
         public static string ControllerDataSeparator { get => "||"; }
         public static string NotificationCookieKey { get => "Notification"; }
+        public static string DownloadHTMLElementId { get => "actionTrigger"; }
         public static string CloudCookieKey { get => "pathDataCloud"; }
         public static string SharedCookieKey { get => "pathDataShared"; }
         public static string DirectoryBack { get => ".."; }

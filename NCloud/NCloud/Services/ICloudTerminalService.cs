@@ -10,5 +10,6 @@ namespace NCloud.Services
         List<string> GetClientSideCommands();
         List<ClientSideCommandContainer> GetClientSideCommandsObjectList();
         List<string> GetCommands();
+        Task<string> GetClientSideCommandHTMLElement(string first, List<string> second);
     }
 }

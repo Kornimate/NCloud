@@ -1,7 +1,10 @@
 ﻿using Castle.Core;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Routing;
 using NCloud.ConstantData;
 using NCloud.Models;
 using Newtonsoft.Json.Linq;
+using System.Security.Policy;
 
 namespace NCloud.Services
 {
@@ -11,10 +14,12 @@ namespace NCloud.Services
         private readonly IHttpContextAccessor httpContext;
         private readonly List<ServerSideCommandContainer> serverSideCommands;
         private readonly List<ClientSideCommandContainer> clientSideCommands;
-        public CloudTerminalService(ICloudService service, IHttpContextAccessor httpContext)
+        private readonly IUrlHelper urlGenerator;
+        public CloudTerminalService(ICloudService service, IHttpContextAccessor httpContext, IUrlHelper urlGenerator)
         {
             this.service = service;
             this.httpContext = httpContext;
+            this.urlGenerator = urlGenerator;
 
             serverSideCommands = new List<ServerSideCommandContainer>() //configure commands for terminal
             {
@@ -43,9 +48,9 @@ namespace NCloud.Services
 
             clientSideCommands = new List<ClientSideCommandContainer>()
             {
-                new ClientSideCommandContainer("download-file",1),
-                new ClientSideCommandContainer("download-folder",1),
-                new ClientSideCommandContainer("edit",1),
+                new ClientSideCommandContainer("download-file",1,true,async (List<string> parameters) => await Task.FromResult<string>(urlGenerator.Action("DownloadFile","Drive", new { fileName = parameters[0]}) ?? throw new Exception("Invalid url"))),
+                new ClientSideCommandContainer("download-folder",1,true,async (List<string> parameters) => await Task.FromResult<string>(urlGenerator.Action("DownloadFolder","Drive", new { folderName = parameters[0]}) ?? throw new Exception("Invalid url"))),
+                new ClientSideCommandContainer("edit",1,false,async (List<string> parameters) => urlGenerator.Action("EditorHub","Editor", new { fileName = parameters[0], path=(await service.GetSessionCloudPathData()).CurrentPath, redirectData = RedirectionManager.CreateRedirectionString("Terminal","Index") }) ?? throw new Exception("Invalid url")),
             };
         }
 
@@ -115,6 +120,15 @@ namespace NCloud.Services
         public List<ClientSideCommandContainer> GetClientSideCommandsObjectList()
         {
             return clientSideCommands;
+        }
+
+        public async Task<string> GetClientSideCommandHTMLElement(string command, List<string> parameters)
+        {
+            var commandObject = clientSideCommands.FirstOrDefault(x => x.Command == command);
+
+            string url = await (commandObject?.UrlGenerator(parameters) ?? throw new InvalidDataException($"no command with name: {command}"));
+
+            return $"<div style=\"display:none\"><a href=\"{url}\" {(commandObject.Downloadable ? "download" : "")} id=\"{Constants.DownloadHTMLElementId}\"></a></div>";
         }
     }
 }

@@ -59,12 +59,12 @@ namespace NCloud.Controllers
             }
             catch (InvalidDataException ex)
             {
-                return Json(new ConnectionDTO { Success = false, Message = Constants.TerminalRedText($"Invalid command - {ex.Message}") });
+                return Json(new ConnectionDTO { Success = false, Message = Constants.TerminalRedText($"invalid command - {ex.Message}") });
 
             }
             catch (Exception)
             {
-                return Json(new ConnectionDTO { Success = false, Message = Constants.TerminalRedText("Error while executing command") });
+                return Json(new ConnectionDTO { Success = false, Message = Constants.TerminalRedText("error while executing command") });
             }
         }
 
@@ -93,10 +93,10 @@ namespace NCloud.Controllers
                 AddNewNotification(notification);
 
                 if (successAndMsgAndPayLoadAndPrint.Item3 is List<CloudFile> files)
-                    return RedirectToAction("Details", "Drive", new { files = files});
+                    return RedirectToAction("Details", "Drive", new { files = files , folders = new List<CloudFolder>(), passedItems = true});
 
                 if (successAndMsgAndPayLoadAndPrint.Item3 is List<CloudFolder> folders)
-                    return RedirectToAction("Details", "Drive", new { folders = folders });
+                    return RedirectToAction("Details", "Drive", new { files = new List<CloudFile>(), folders = folders, passedItems = true });
 
                 return RedirectToAction("Details", "Drive");
 
@@ -109,7 +109,7 @@ namespace NCloud.Controllers
             }
             catch (Exception)
             {
-                AddNewNotification(new Error("error while executing command"));
+                AddNewNotification(new Error("Error while executing command"));
 
                 return RedirectToAction("Details", "Drive");
             }
@@ -127,15 +127,17 @@ namespace NCloud.Controllers
 
                 CloudTerminalTokenizationManager.CheckClientSideCommandSyntax(commandAndParameters.First, commandAndParameters.Second.Count, terminalService.GetClientSideCommandsObjectList());
 
-                return await Task.FromResult<JsonResult>(Json(new CommandDTO { IsClientSide = true, CommandName = commandAndParameters.First, Parameters = commandAndParameters.Second, NoErrorWithSyntax = true, ErrorMessage = "" }));
+                string elementHTML = await terminalService.GetClientSideCommandHTMLElement(commandAndParameters.First, commandAndParameters.Second);
+
+                return await Task.FromResult<JsonResult>(Json(new CommandDTO { IsClientSide = true, ActionHTMLElement = elementHTML, ActionHTMLElementId= Constants.DownloadHTMLElementId, NoErrorWithSyntax = true, ErrorMessage = "" }));
             }
             catch (InvalidOperationException ex)
             {
-                return await Task.FromResult<JsonResult>(Json(new CommandDTO { IsClientSide = false, NoErrorWithSyntax = false, ErrorMessage = ex.Message }));
+                return await Task.FromResult<JsonResult>(Json(new CommandDTO { IsClientSide = false, NoErrorWithSyntax = false, ErrorMessage = Constants.TerminalRedText($"invalid command - {ex.Message}") }));
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                return await Task.FromResult<JsonResult>(Json(new CommandDTO { IsClientSide = true, NoErrorWithSyntax = false, ErrorMessage = ex.Message }));
+                return await Task.FromResult<JsonResult>(Json(new CommandDTO { IsClientSide = true, NoErrorWithSyntax = false, ErrorMessage = Constants.TerminalRedText("error while executing command") }));
             }
         }
 

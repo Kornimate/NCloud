@@ -18,9 +18,8 @@
         @Html.AntiForgeryToken()
     </div>
 </div>
-<div class="hidden">
-    <a href="" download id="downloadTrigger"></a>
-</div>
+
+<div id="addElement" class="hidden"></div>
 
 <link rel="stylesheet" href="~/lib/jquery.terminal/css/jquery.terminal.min.css" />
 
@@ -52,12 +51,12 @@
 
                     this.pause();
 
-                    const ajaxData = terminal.ExecuteClientSideCommand(command, '@Url.Action("CheckClientSideCommand","Terminal")', this);
+                    const ajaxData = await terminal.ExecuteClientSideCommand(command, '@Url.Action("CheckClientSideCommand","Terminal")', this);
 
                     if(ajaxData[1]){
                         
                         if(ajaxData[0] !== ""){
-                            this.echo(ajaxData);
+                            this.echo(ajaxData[0]);
                         }
                         
                         return;
