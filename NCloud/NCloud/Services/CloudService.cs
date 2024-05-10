@@ -1090,7 +1090,7 @@ namespace NCloud.Services
 
                 string newFolderPathAndName = Path.Combine(folderPath, newName);
 
-                if (Directory.Exists(newFolderPathAndName))
+                if (Directory.Exists(newFolderPathAndName) && folderName.ToLower() != newName.ToLower())
                     throw new Exception("Folder with this name already exists");
 
                 Directory.Move(folderPathAndName, newFolderPathAndName);

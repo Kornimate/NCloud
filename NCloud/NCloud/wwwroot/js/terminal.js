@@ -25,10 +25,10 @@
 
         terminal.resume();
 
-        if (response.isClientSideCommand === false)
+        if (!response.isClientSideCommand)
             return ["", false];
 
-        if (response.noErrorWithSyntax === false)
+        if (!response.noErrorWithSyntax)
             return [response.errorMessage, true];
 
         document.getElementById("addElement").innerHTML = response.actionHTMLElement;

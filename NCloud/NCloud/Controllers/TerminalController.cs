@@ -133,7 +133,7 @@ namespace NCloud.Controllers
             }
             catch (InvalidOperationException ex)
             {
-                return await Task.FromResult<JsonResult>(Json(new CommandDTO { IsClientSide = false, NoErrorWithSyntax = false, ErrorMessage = Constants.TerminalRedText($"invalid command - {ex.Message}") }));
+                return await Task.FromResult<JsonResult>(Json(new CommandDTO { IsClientSide = false, NoErrorWithSyntax = true, ErrorMessage = Constants.TerminalRedText($"invalid command - {ex.Message}") }));
             }
             catch (Exception)
             {
