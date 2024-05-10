@@ -1372,7 +1372,15 @@ namespace NCloud.Services
                                 di = di.Parent.GetDirectories().FirstOrDefault(x => x.Name.Equals(element, StringComparison.OrdinalIgnoreCase)) ?? di;
                             }
 
-                            pathData.SetFolder((di.Name));
+
+                            if (Directory.Exists(ParseRootName(pathData.TrySetFolder(di.Name) ?? String.Empty)))
+                            {
+                                pathData.SetFolder((di.Name)); 
+                            }
+                            else
+                            {
+                                throw new InvalidDataException($"part of path does not exist");
+                            }
                         }
                         else
                         {
