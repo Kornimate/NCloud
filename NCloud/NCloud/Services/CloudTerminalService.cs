@@ -23,7 +23,7 @@ namespace NCloud.Services
 
             serverSideCommands = new List<ServerSideCommandContainer>() //configure commands for terminal
             {
-                new ServerSideCommandContainer("cd",1,false,true, async (List<string> parameters) => await service.ChangeToDirectory(CloudTerminalTokenizationManager.NormalizeCommandPath(parameters[0]))),
+                new ServerSideCommandContainer("cd",1,false,true, async (List<string> parameters) => await service.ChangeToDirectory(await PathNormalizationForChangingDirectory(parameters[0]))),
                 new ServerSideCommandContainer("copy-file",2,false,true, async (List<string> parameters) => await service.CopyFile(await RelativeToAbsolutePathAndNormalize(parameters[0]),await RelativeToAbsolutePathAndNormalize(parameters[1]),httpContext.HttpContext!.User)),
                 new ServerSideCommandContainer("copy-dir",2,false,true, async (List<string> parameters) => await service.CopyFolder(await RelativeToAbsolutePathAndNormalize(parameters[0]),await RelativeToAbsolutePathAndNormalize(parameters[1]),httpContext.HttpContext!.User)),
                 new ServerSideCommandContainer("help",0,true,false, async (List<string> parameters) => await service.GetTerminalHelpText()),
@@ -111,10 +111,24 @@ namespace NCloud.Services
         {
             path = CloudTerminalTokenizationManager.NormalizeCommandPath(path);
 
-            if (path.StartsWith(Constants.AbsolutePathMarker))
-                return path;
+            CloudPathData pathData = await service.GetSessionCloudPathData();
 
-            return Path.Combine((await service.GetSessionCloudPathData()).CurrentPath, path);
+            if (path.StartsWith(Constants.AbsolutePathMarker))
+                return pathData.AddUserInfoToAbsolutePath(path);
+
+            return Path.Combine(pathData.CurrentPath, path);
+        }
+
+        private async Task<string> PathNormalizationForChangingDirectory(string path)
+        {
+            path = CloudTerminalTokenizationManager.NormalizeCommandPath(path);
+
+            CloudPathData pathData = await service.GetSessionCloudPathData();
+
+            if (path.StartsWith(Constants.AbsolutePathMarker))
+                return pathData.AddUserInfoToAbsolutePath(path);
+
+            return path;
         }
 
         public List<ClientSideCommandContainer> GetClientSideCommandsObjectList()

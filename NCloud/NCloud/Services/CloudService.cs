@@ -1332,11 +1332,18 @@ namespace NCloud.Services
             {
                 if (Directory.Exists(ParseRootName(path)))
                 {
-                    pathData.SetPath(path);
+                    try
+                    {
+                        await pathData.SetPath(path, ParseRootName(Constants.PrivateRootName));
 
-                    await SetSessionCloudPathData(pathData);
+                        await SetSessionCloudPathData(pathData);
 
-                    return await Task.FromResult<string>(pathData.CurrentPathShow);
+                        return await Task.FromResult<string>(pathData.CurrentPathShow);
+                    }
+                    catch (Exception)
+                    {
+                        throw new InvalidDataException("unable to modify path");
+                    }
                 }
 
                 throw new InvalidDataException($"directory does not exist!");

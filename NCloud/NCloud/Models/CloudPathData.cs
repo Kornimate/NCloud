@@ -1,6 +1,7 @@
 ﻿using NCloud.ConstantData;
 using NCloud.Models.Extensions;
 using System.Security.Claims;
+using System.Text;
 using System.Text.Json.Serialization;
 
 namespace NCloud.Models
@@ -110,11 +111,55 @@ namespace NCloud.Models
             return CloudRegistration.RegistrationPathFactory(ClipBoard);
         }
 
-        public void SetPath(string path)
+        public async Task SetPath(string path, string pathStart)
         {
-            CurrentPath = path;
-            PreviousDirectories = path.Split(Path.DirectorySeparatorChar, StringSplitOptions.RemoveEmptyEntries).ToList();
-            CurrentPathShow = path.Slice(Constants.PrivateRootName.Length, Constants.PrivateRootName.Length + Constants.GuidLength + 1).Replace(Path.DirectorySeparatorChar, Constants.PathSeparator);
+            CurrentPath = await GetFoldersRealName(new string(path), pathStart);
+            PreviousDirectories = CurrentPath.Split(Path.DirectorySeparatorChar, StringSplitOptions.RemoveEmptyEntries).ToList();
+            CurrentPathShow = CurrentPath.Slice(Constants.PrivateRootName.Length, Constants.PrivateRootName.Length + Constants.GuidLength + 1).Replace(Path.DirectorySeparatorChar, Constants.PathSeparator);
+        }
+
+        private Task<string> GetFoldersRealName(string path, string pathStart)
+        {
+            string[] paths = path.Split(Path.DirectorySeparatorChar, StringSplitOptions.RemoveEmptyEntries);
+
+            if (paths.Length < 2)
+                throw new InvalidDataException("error while adjusting path");
+
+            string[] realNames = new string[paths.Length - 1];
+
+            realNames[0] = paths[1];
+
+            for (int i = 2; i < paths.Length; i++)
+            {
+                DirectoryInfo dirInfo = new DirectoryInfo(Path.Combine(pathStart, Path.Combine(realNames[..(i - 1)])));
+
+                if (dirInfo.Exists)
+                {
+                    realNames[i - 1] = new string(dirInfo.GetDirectories().First(x => x.Name.ToLower() == paths[i].ToLower()).Name);
+                }
+            }
+
+            return Task.FromResult<string>(Path.Combine(Constants.PrivateRootName, Path.Combine(realNames)));
+        }
+
+        public string AddUserInfoToAbsolutePath(string path)
+        {
+            if (!path.StartsWith(Constants.PrivateRootName))
+                return String.Empty;
+
+            int ind = path.IndexOf(Path.DirectorySeparatorChar);
+
+            try
+            {
+                if (ind == -1)
+                    return Path.Combine(path, PreviousDirectories[1]);
+                else
+                    return Path.Combine(PreviousDirectories[0], PreviousDirectories[1], path[(ind + 1)..]);
+            }
+            catch (Exception)
+            {
+                return String.Empty;
+            }
         }
     }
 }
