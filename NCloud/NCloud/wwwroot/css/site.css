@@ -64,6 +64,8 @@ details[open] summary:before {
     top: 0px;
     right: 0px;
     position: absolute;
+    overflow-y: scroll;
+    height: 100vh;
 }
 
 .hiddenfield {
@@ -443,9 +445,9 @@ h6 {
     .progress-bar::before {
         counter-reset: percentage var(--progress-value);
         content: counter(percentage) "%";
-        color:black;
-        font-weight:bold;
-        font-size:40px;
+        color: black;
+        font-weight: bold;
+        font-size: 40px;
     }
 
 .html {
