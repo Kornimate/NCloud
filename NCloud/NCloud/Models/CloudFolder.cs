@@ -53,7 +53,7 @@ namespace NCloud.Models
             sb.Append("".PadRight(14));
             sb.Append(IsConnectedToApp ? "yes".PadRight(13) : "no".PadRight(13));
             sb.Append("".PadRight(2));
-            sb.Append(IsConnectedToApp ? "yes".PadRight(13) : "no".PadRight(13));
+            sb.Append(IsConnectedToWeb? "yes".PadRight(13) : "no".PadRight(13));
             sb.Append("".PadRight(2));
             sb.Append(Info.Name);
             sb.Append('\n');

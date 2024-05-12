@@ -33,11 +33,11 @@ namespace NCloud.Services
                 new ServerSideCommandContainer("noshare-file-web",1,false,true, async (List<string> parameters) => (await service.DisconnectFileFromWeb((await service.GetSessionCloudPathData()).CurrentPath, parameters[0], httpContext.HttpContext!.User)).ToString()),
                 new ServerSideCommandContainer("noshare-file-app",1,false,true, async (List<string> parameters) => (await service.DisconnectFileFromApp((await service.GetSessionCloudPathData()).CurrentPath, parameters[0], httpContext.HttpContext!.User)).ToString()),
                 new ServerSideCommandContainer("noshare-dir-web",1,false,true, async (List<string> parameters) => (await service.DisconnectDirectoryFromWeb((await service.GetSessionCloudPathData()).CurrentPath, parameters[0], httpContext.HttpContext!.User)).ToString()),
-                new ServerSideCommandContainer("noshare-dir-web",1,false,true, async (List<string> parameters) => (await service.DisconnectDirectoryFromApp((await service.GetSessionCloudPathData()).CurrentPath, parameters[0], httpContext.HttpContext!.User)).ToString()),
+                new ServerSideCommandContainer("noshare-dir-app",1,false,true, async (List<string> parameters) => (await service.DisconnectDirectoryFromApp((await service.GetSessionCloudPathData()).CurrentPath, parameters[0], httpContext.HttpContext!.User)).ToString()),
                 new ServerSideCommandContainer("share-file-web",1,false,true, async (List<string> parameters) => (await service.ConnectFileToWeb((await service.GetSessionCloudPathData()).CurrentPath, parameters[0], httpContext.HttpContext!.User)).ToString()),
                 new ServerSideCommandContainer("share-file-app",1,false,true, async (List<string> parameters) => (await service.ConnectFileToApp((await service.GetSessionCloudPathData()).CurrentPath, parameters[0], httpContext.HttpContext!.User)).ToString()),
                 new ServerSideCommandContainer("share-dir-web",1,false,true, async (List<string> parameters) => (await service.ConnectDirectoryToWeb((await service.GetSessionCloudPathData()).CurrentPath, parameters[0], httpContext.HttpContext!.User)).ToString()),
-                new ServerSideCommandContainer("share-dir-web",1,false,true, async (List<string> parameters) => (await service.ConnectDirectoryToApp((await service.GetSessionCloudPathData()).CurrentPath, parameters[0], httpContext.HttpContext!.User)).ToString()),
+                new ServerSideCommandContainer("share-dir-app",1,false,true, async (List<string> parameters) => (await service.ConnectDirectoryToApp((await service.GetSessionCloudPathData()).CurrentPath, parameters[0], httpContext.HttpContext!.User)).ToString()),
                 new ServerSideCommandContainer("rm-dir",1,false,true, async (List<string> parameters) => (await service.RemoveDirectory(parameters[0],(await service.GetSessionCloudPathData()).CurrentPath, httpContext.HttpContext!.User)).ToString()),
                 new ServerSideCommandContainer("rm-file",1,false,true, async (List<string> parameters) => (await service.RemoveFile(parameters[0],(await service.GetSessionCloudPathData()).CurrentPath, httpContext.HttpContext!.User)).ToString()),
                 new ServerSideCommandContainer("rename-dir",2,false,true, async (List<string> parameters) => (await service.RenameFolder((await service.GetSessionCloudPathData()).CurrentPath, parameters[0], parameters[1]))),
@@ -49,7 +49,7 @@ namespace NCloud.Services
             clientSideCommands = new List<ClientSideCommandContainer>()
             {
                 new ClientSideCommandContainer("download-file",1,true,async (List<string> parameters) => await Task.FromResult<string>(urlGenerator.Action("DownloadFile","Drive", new { fileName = parameters[0]}) ?? throw new Exception("Invalid url"))),
-                new ClientSideCommandContainer("download-folder",1,true,async (List<string> parameters) => await Task.FromResult<string>(urlGenerator.Action("DownloadFolder","Drive", new { folderName = parameters[0]}) ?? throw new Exception("Invalid url"))),
+                new ClientSideCommandContainer("download-dir",1,true,async (List<string> parameters) => await Task.FromResult<string>(urlGenerator.Action("DownloadFolder","Drive", new { folderName = parameters[0]}) ?? throw new Exception("Invalid url"))),
                 new ClientSideCommandContainer("edit",1,false,async (List<string> parameters) => urlGenerator.Action("EditorHub","Editor", new { fileName = parameters[0], path=(await service.GetSessionCloudPathData()).CurrentPath, redirectData = RedirectionManager.CreateRedirectionString("Terminal","Index") }) ?? throw new Exception("Invalid url")),
             };
         }
@@ -113,8 +113,10 @@ namespace NCloud.Services
 
             CloudPathData pathData = await service.GetSessionCloudPathData();
 
-            if (path.StartsWith(Constants.AbsolutePathMarker))
+            if (path.StartsWith(Constants.AbsolutePathMarker) && path.StartsWith(Constants.PrivateRootName))
                 return pathData.AddUserInfoToAbsolutePath(path);
+            else if ((path.StartsWith(Constants.AbsolutePathMarker) && !path.StartsWith(Constants.PrivateRootName)))
+                throw new InvalidDataException("wrong root name");
 
             return Path.Combine(pathData.CurrentPath, path);
         }
@@ -125,8 +127,10 @@ namespace NCloud.Services
 
             CloudPathData pathData = await service.GetSessionCloudPathData();
 
-            if (path.StartsWith(Constants.AbsolutePathMarker))
+            if (path.StartsWith(Constants.AbsolutePathMarker) && path.StartsWith(Constants.PrivateRootName))
                 return pathData.AddUserInfoToAbsolutePath(path);
+            else if ((path.StartsWith(Constants.AbsolutePathMarker) && !path.StartsWith(Constants.PrivateRootName)))
+                throw new InvalidDataException("wrong root name");
 
             return path;
         }
