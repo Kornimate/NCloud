@@ -16,9 +16,7 @@ namespace NCloud.Controllers
         {
             await signInManager.PasswordSignInAsync("Admin", "Admin_1234", true, false);
 
-            var result = service.GetCurrentUserIndexData(); //TODO: implement function
-
-            return View(new DashBoardViewModel(result.Item1, result.Item2, await service.GetUserSharedFolderUrls(User), await service.GetUserSharedFileUrls(User), Constants.GetWebControllerAndActionForDetails(), Constants.GetWebControllerAndActionForDownload()));
+            return View(new DashBoardViewModel(await service.GetUserSharedFolderUrls(User), await service.GetUserSharedFileUrls(User), Constants.GetWebControllerAndActionForDetails(), Constants.GetWebControllerAndActionForDownload()));
         }
     }
 }

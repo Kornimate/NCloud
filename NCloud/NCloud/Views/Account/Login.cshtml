@@ -6,7 +6,7 @@
 <div class="container py-5 h-100">
     <div class="row d-flex justify-content-center align-items-center h-100">
         <div class="col-12 col-md-8 col-lg-6 col-xl-5">
-            <div class="card bg-dark text-white" style="border-radius: 1rem;">
+            <div class="card bg-light text-dark" style="border-radius: 1rem;">
                 <div class="card-body px-5 pt-3 pb-5 text-center">
                     <form asp-controller="Account" asp-action="Login" asp-route-returnUrl="@ViewBag.ReturnUrl">
                         <div asp-validation-summary="All" class="text-danger"></div>
@@ -24,7 +24,7 @@
                                 <input type="password" asp-for="Password" id="typePasswordX" class="form-control form-control-lg" />
                                 <span asp-validation-for="Password" class="text-danger"></span>
                             </div>
-                            <p class="small mb-5 pb-lg-2"><a class="text-white-50" href="#!">Forgot password?</a></p>
+                            @* <p class="small mb-5 pb-lg-2"><a class="text-white-50" href="#!">Forgot password?</a></p> *@
                             <button class="btn btn-outline-light btn-lg px-5" type="submit">Login</button>
                         </div>
                         <div>

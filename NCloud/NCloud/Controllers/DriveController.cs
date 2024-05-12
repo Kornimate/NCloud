@@ -119,13 +119,6 @@ namespace NCloud.Controllers
 
             for (int i = 0; i < files.Count; i++)
             {
-                FileInfo fi = new FileInfo(files[i].FileName);
-                //TODO: check if allowed filetype
-
-            }
-
-            for (int i = 0; i < files.Count; i++)
-            {
                 string res = await service.CreateFile(files[i], pathData.CurrentPath, User);
 
                 if (res != files[i].FileName)
