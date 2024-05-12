@@ -63,6 +63,7 @@ namespace NCloud.ConstantData
         public static int OwnerPlaceInPath { get => 1; }
         public static int RootProviderPlaceinPath { get => 0; }
         public static int GuidLength { get => 36; }
+        public static double UserSpaceSize { get => 5_242_880.0; } //for better readability (5 GB)
         public static TimeSpan TempFileDeleteTimeSpan { get => TimeSpan.FromMinutes(10); }
 
         public static Pair<string, string> GetWebControllerAndActionForDetails()

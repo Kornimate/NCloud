@@ -11,8 +11,8 @@ using NCloud.Models;
 namespace NCloud.Migrations
 {
     [DbContext(typeof(CloudDbContext))]
-    [Migration("20240403215434_mig-sqlite-initial")]
-    partial class migsqliteinitial
+    [Migration("20240512222352_user-db-files-folders")]
+    partial class userdbfilesfolders
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -124,7 +124,14 @@ namespace NCloud.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("TEXT");
 
-                    b.Property<bool>("InnerShared")
+                    b.Property<string>("CloudPathFromRoot")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("ConnectedToApp")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("ConnectedToWeb")
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("Name")
@@ -134,12 +141,9 @@ namespace NCloud.Migrations
                     b.Property<Guid>("OwnerId")
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("PathFromRoot")
+                    b.Property<string>("SharedPathFromRoot")
                         .IsRequired()
                         .HasColumnType("TEXT");
-
-                    b.Property<bool>("PublicShared")
-                        .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
 
@@ -154,7 +158,14 @@ namespace NCloud.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("TEXT");
 
-                    b.Property<bool>("InnerShared")
+                    b.Property<string>("CloudPathFromRoot")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("ConnectedToApp")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("ConnectedToWeb")
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("Name")
@@ -164,12 +175,9 @@ namespace NCloud.Migrations
                     b.Property<Guid>("OwnerId")
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("PathFromRoot")
+                    b.Property<string>("SharedPathFromRoot")
                         .IsRequired()
                         .HasColumnType("TEXT");
-
-                    b.Property<bool>("PublicShared")
-                        .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
 
@@ -207,6 +215,9 @@ namespace NCloud.Migrations
                     b.Property<DateTimeOffset?>("LockoutEnd")
                         .HasColumnType("TEXT");
 
+                    b.Property<double>("MaxSpace")
+                        .HasColumnType("REAL");
+
                     b.Property<string>("NormalizedEmail")
                         .HasMaxLength(256)
                         .HasColumnType("TEXT");
@@ -229,6 +240,9 @@ namespace NCloud.Migrations
 
                     b.Property<bool>("TwoFactorEnabled")
                         .HasColumnType("INTEGER");
+
+                    b.Property<double>("UsedSpace")
+                        .HasColumnType("REAL");
 
                     b.Property<string>("UserName")
                         .HasMaxLength(256)

@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace NCloud.Migrations
 {
-    public partial class migsqliteinitial : Migration
+    public partial class userdbfilesfolders : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -30,6 +30,8 @@ namespace NCloud.Migrations
                 {
                     Id = table.Column<Guid>(type: "TEXT", nullable: false),
                     FullName = table.Column<string>(type: "TEXT", nullable: true),
+                    UsedSpace = table.Column<double>(type: "REAL", nullable: false),
+                    MaxSpace = table.Column<double>(type: "REAL", nullable: false, defaultValue: 5_242_880.0),
                     UserName = table.Column<string>(type: "TEXT", maxLength: 256, nullable: true),
                     NormalizedUserName = table.Column<string>(type: "TEXT", maxLength: 256, nullable: true),
                     Email = table.Column<string>(type: "TEXT", maxLength: 256, nullable: true),
@@ -162,10 +164,11 @@ namespace NCloud.Migrations
                 {
                     Id = table.Column<Guid>(type: "TEXT", nullable: false),
                     Name = table.Column<string>(type: "TEXT", nullable: false),
-                    PathFromRoot = table.Column<string>(type: "TEXT", nullable: false),
+                    SharedPathFromRoot = table.Column<string>(type: "TEXT", nullable: false),
+                    CloudPathFromRoot = table.Column<string>(type: "TEXT", nullable: false),
                     OwnerId = table.Column<Guid>(type: "TEXT", nullable: false),
-                    PublicShared = table.Column<bool>(type: "INTEGER", nullable: false),
-                    InnerShared = table.Column<bool>(type: "INTEGER", nullable: false)
+                    ConnectedToWeb = table.Column<bool>(type: "INTEGER", nullable: false),
+                    ConnectedToApp = table.Column<bool>(type: "INTEGER", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -184,10 +187,11 @@ namespace NCloud.Migrations
                 {
                     Id = table.Column<Guid>(type: "TEXT", nullable: false),
                     Name = table.Column<string>(type: "TEXT", nullable: false),
-                    PathFromRoot = table.Column<string>(type: "TEXT", nullable: false),
+                    SharedPathFromRoot = table.Column<string>(type: "TEXT", nullable: false),
+                    CloudPathFromRoot = table.Column<string>(type: "TEXT", nullable: false),
                     OwnerId = table.Column<Guid>(type: "TEXT", nullable: false),
-                    PublicShared = table.Column<bool>(type: "INTEGER", nullable: false),
-                    InnerShared = table.Column<bool>(type: "INTEGER", nullable: false)
+                    ConnectedToWeb = table.Column<bool>(type: "INTEGER", nullable: false),
+                    ConnectedToApp = table.Column<bool>(type: "INTEGER", nullable: false)
                 },
                 constraints: table =>
                 {

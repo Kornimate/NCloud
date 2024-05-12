@@ -4,6 +4,32 @@
     ViewData["Title"] = "DashBoard";
 }
 
+<style>
+    @@-webkit-keyframes first-progress {
+        to {
+            --progress-value: @Model.UserPercent;
+        }
+    }
+
+    @@keyframes first-progress {
+        to {
+            --progress-value: @Model.UserPercent;
+        }
+    }
+
+    @@-webkit-keyframes second-progress {
+        to {
+            --progress-value: @Model.RemainingPercent;
+        }
+    }
+
+    @@keyframes second-progress {
+        to {
+            --progress-value: @Model.RemainingPercent;
+        }
+    }
+</style>
+
 <div class="w-100 text-dark">
     <div class="row w-100 justify-content-center my-5 text-center">
         <h1 class="mb-5">
@@ -18,13 +44,13 @@
             </h2>
         </div>
         <div class="col w-50 d-flex justify-content-center align-items-center">
-            <div class="progress-bar css">
-                <progress id="usedSpace" min="0" max="100" value="87">OK</progress>
+            <div class="progress-bar first">
+                <progress id="usedSpace" min="0" max="100" value="10"></progress>
             </div>
         </div>
         <div class="col w-50 col d-flex justify-content-center align-items-center">
-            <div class="progress-bar css">
-                <progress id="remainingSpace" min="0" max="100" value="87"></progress>
+            <div class="progress-bar second">
+                <progress id="remainingSpace" min="0" max="100" value="@Model.RemainingPercent"></progress>
             </div>
         </div>
     </div>

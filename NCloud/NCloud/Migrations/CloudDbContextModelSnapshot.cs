@@ -213,6 +213,9 @@ namespace NCloud.Migrations
                     b.Property<DateTimeOffset?>("LockoutEnd")
                         .HasColumnType("TEXT");
 
+                    b.Property<double>("MaxSpace")
+                        .HasColumnType("REAL");
+
                     b.Property<string>("NormalizedEmail")
                         .HasMaxLength(256)
                         .HasColumnType("TEXT");
@@ -235,6 +238,9 @@ namespace NCloud.Migrations
 
                     b.Property<bool>("TwoFactorEnabled")
                         .HasColumnType("INTEGER");
+
+                    b.Property<double>("UsedSpace")
+                        .HasColumnType("REAL");
 
                     b.Property<string>("UserName")
                         .HasMaxLength(256)

@@ -16,7 +16,11 @@ namespace NCloud.Controllers
         {
             await signInManager.PasswordSignInAsync("Admin", "Admin_1234", true, false);
 
-            return View(new DashBoardViewModel(await service.GetUserSharedFolderUrls(User), await service.GetUserSharedFileUrls(User), Constants.GetWebControllerAndActionForDetails(), Constants.GetWebControllerAndActionForDownload()));
+            CloudUser user = await userManager.GetUserAsync(User);
+
+            double usedPercent = Math.Ceiling(user.UsedSpace / user.MaxSpace);
+
+            return View(new DashBoardViewModel(await service.GetUserSharedFolderUrls(User), await service.GetUserSharedFileUrls(User), Constants.GetWebControllerAndActionForDetails(), Constants.GetWebControllerAndActionForDownload(), usedPercent));
         }
     }
 }
