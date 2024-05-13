@@ -20,41 +20,27 @@ namespace NCloud.Controllers
         protected readonly ICloudNotificationService notifier;
         protected readonly UserManager<CloudUser> userManager;
         protected readonly SignInManager<CloudUser> signInManager;
-        public CloudControllerDefault(ICloudService service, UserManager<CloudUser> userManager, SignInManager<CloudUser> signInManager, IWebHostEnvironment env, ICloudNotificationService notifier)
+        protected readonly ILogger<CloudControllerDefault> logger;
+        public CloudControllerDefault(ICloudService service, UserManager<CloudUser> userManager, SignInManager<CloudUser> signInManager, IWebHostEnvironment env, ICloudNotificationService notifier, ILogger<CloudControllerDefault> logger)
         {
             this.service = service;
             this.userManager = userManager;
             this.signInManager = signInManager;
             this.env = env;
             this.notifier = notifier;
+            this.logger = logger;
         }
 
         [NonAction]
         protected async Task<CloudPathData> GetSessionCloudPathData()
         {
-            CloudPathData data = null!;
-            if (HttpContext.Session.Keys.Contains(Constants.CloudCookieKey))
-            {
-                data = JsonSerializer.Deserialize<CloudPathData>(HttpContext.Session.GetString(Constants.CloudCookieKey)!)!;
-            }
-            else
-            {
-                CloudUser? user = await userManager.GetUserAsync(User);
-                data = new CloudPathData();
-                data.SetDefaultPathData(user?.Id.ToString());
-                await SetSessionCloudPathData(data);
-            }
-            return data;
+            return await service.GetSessionCloudPathData();
         }
 
         [NonAction]
-        protected Task SetSessionCloudPathData(CloudPathData pathData)
+        protected async Task<bool> SetSessionCloudPathData(CloudPathData pathData)
         {
-            return Task.Run(() =>
-            {
-                if (pathData == null) return;
-                HttpContext.Session.SetString(Constants.CloudCookieKey, JsonSerializer.Serialize<CloudPathData>(pathData));
-            });
+            return await service.SetSessionCloudPathData(pathData);
         }
 
         [NonAction]
@@ -123,8 +109,6 @@ namespace NCloud.Controllers
                 return false;
             }
         }
-
-        
 
         public async Task<IActionResult> Download(List<string> itemsForDownload, string path, IActionResult returnAction, bool connectedToApp = false, bool connectedToWeb = false)
         {

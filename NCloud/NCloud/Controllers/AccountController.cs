@@ -1,11 +1,9 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using System.Diagnostics;
 using NCloud.Users;
 using NCloud.ViewModels;
-using NCloud.Controllers;
-using System.IO;
+using NCloud.ConstantData;
 using DNTCaptcha.Core;
 using NCloud.Services;
 
@@ -14,7 +12,7 @@ namespace NCloud.Controllers
     [Authorize]
     public class AccountController : CloudControllerDefault
     {
-        public AccountController(ICloudService service, UserManager<CloudUser> userManager, SignInManager<CloudUser> signInManager, IWebHostEnvironment env, ICloudNotificationService notifier) : base(service, userManager, signInManager, env, notifier) { }
+        public AccountController(ICloudService service, UserManager<CloudUser> userManager, SignInManager<CloudUser> signInManager, IWebHostEnvironment env, ICloudNotificationService notifier, ILogger<CloudControllerDefault> logger) : base(service, userManager, signInManager, env, notifier, logger) { }
         public IActionResult Back(string returnUrl)
         {
             return Redirect(returnUrl);
@@ -23,11 +21,12 @@ namespace NCloud.Controllers
         public async Task<IActionResult> Index(string returnUrl)
         {
             CloudUser user = await userManager.GetUserAsync(User);
+
             ViewBag.ReturnUrl = returnUrl;
+            
             return View(new AccountViewModel(user.UserName, user.FullName, user.Email));
         }
 
-        [HttpGet]
         [AllowAnonymous]
         public IActionResult Login(string? returnUrl = null)
         {
@@ -105,7 +104,7 @@ namespace NCloud.Controllers
                     {
                         CloudUser newUser = await userManager.FindByNameAsync(vm.UserName);
                         
-                        await service.CreateBaseDirectory(newUser);
+                        await service.CreateBaseDirectoryForUser(newUser);
                         
                         await signInManager.SignInAsync(newUser, false);
                         

@@ -17,7 +17,7 @@
             </nav>
         </div>
         <div class="input-group hidden" id="fastInputDiv">
-            <input type="text" class="form-control py-3" name="commandLine" id="currentPath" value="@Model.CurrentPathShow" />
+            <input type="text" class="form-control py-3" name="command" id="currentPath" value="@Model.CurrentPathShow" />
             <button type="submit" value="" class="btn btn-primary" form="pathform" id="fastInputBtn"><img src="~/utilities/arrow-right-circle.svg" width=" 20" height="20" class="rounded-circle align-middle" /></button>
         </div>
     </form>
@@ -27,11 +27,12 @@
         </div>
         <div class="">
             <div class="btn-group" role="group">
-                <a class="btn btn-primary" id="refreshBtn" asp-controller="Drive" asp-action="Details"><img src="~/utilities/arrow-repeat.svg" width=" 20" height="20" class="rounded align-middle" /></a>
+                <a class="btn btn-primary" asp-controller="Drive" asp-action="Home"><img src="~/utilities/home.svg" width=" 20" height="20" class="rounded align-middle" /></a>
+                <a class="btn btn-secondary" id="refreshBtn" asp-controller="Drive" asp-action="Details"><img src="~/utilities/arrow-repeat.svg" width=" 20" height="20" class="rounded align-middle" /></a>
                 <a class="btn btn-secondary" asp-controller="Drive" asp-action="DownloadItems"><img src="~/utilities/cloud-download.svg" width=" 20" height="20" class="rounded align-middle" /></a>
                 <a class="btn btn-secondary" asp-controller="Drive" asp-action="PasteDataFromClipBoard"><img src="~/utilities/paste.svg" width=" 20" height="20" class="rounded align-middle" /></a>
-                <button type="button" class="btn btn-secondary" id="addFileBtn"><img src="~/utilities/cloud-upload.svg" width=" 20" height="20" class="rounded align-middle" /></button>
-                <button type="button" class="btn btn-secondary" id="addFolderBtn"><img src="~/utilities/folder-plus.svg" width=" 20" height="20" class="rounded align-middle" /></button>
+                <button type="button" class="btn btn-secondary" id="addFileBtn" data-bs-toggle="collapse" data-bs-target="#addFileField" aria-expanded="false" aria-controls="addFileField"><img src="~/utilities/cloud-upload.svg" width=" 20" height="20" class="rounded align-middle" /></button>
+                <button type="button" class="btn btn-secondary" id="addFolderBtn" data-bs-toggle="collapse" data-bs-target="#addFolderField" aria-expanded="false" aria-controls="addFolderField"><img src="~/utilities/folder-plus.svg" width=" 20" height="20" class="rounded align-middle" /></button>
                 <a class="btn btn-secondary" asp-controller="Terminal" asp-action="Index" asp-route-currentPath="@Model.CurrentPathShow"><img src="~/utilities/terminal.svg" width=" 20" height="20" class="rounded align-middle" /></a>
                 <a class="btn btn-danger" asp-controller="Drive" asp-action="DeleteItems"><img src="~/utilities/trash.svg" width=" 20" height="20" class="rounded align-middle" /></a>
             </div>
@@ -40,29 +41,32 @@
 </div>
 
 <div class="w-100">
-    <fieldset class="bg-secondary border border-4 border-dark p-2 m-2 rounded @(TempData["FolderError"] is null ? "hiddenfield" : "")" id="addFolderField">
-        <legend class="btn btn-outline-dark rounded-pill w-auto">Add Folder</legend>
-        <div class="d-flex justify-content-center w-100">
-            <form asp-action="AddNewFolder" class="w-100">
-                <div class="w-100 d-inline-flex input-group form-group">
-                    <input type="text" name="folderName" placeholder="Write new Folder name here..." class="d-inline form-control" />
-                    <button type="submit" class="btn btn-primary d-inline"><img src="~/utilities/folder-plus.svg" width=" 20" height="20" class="rounded align-middle" /></button>
-                </div>
-            </form>
-        </div>
-    </fieldset>
-    <!------------------------------------------------------------->
-    <fieldset class="bg-secondary border border-4 border-dark p-2 m-2 rounded @(TempData["FileError"] is null ? "hiddenfield" : "")" id="addFileField">
-        <legend class="btn btn-outline-dark rounded-pill w-auto">Add Files</legend>
-        <div class="d-flex justify-content-center w-100">
-            <form asp-action="AddNewFiles" class="w-100" enctype="multipart/form-data">
-                <div class="w-100 d-inline-flex input-group form-group">
-                    <input type="file" multiple name="files" class="d-inline form-control" />
-                    <button type="submit" class="btn btn-primary d-inline"><img src="~/utilities/file-plus.svg" width=" 20" height="20" class="rounded align-middle" /></button>
-                </div>
-            </form>
-        </div>
-    </fieldset>
+    <div class="collapse" id="addFolderField">
+        <fieldset class="bg-light border border-4 border-primary p-2 m-2 rounded">
+            <legend class="text-dark fw-bold rounded-pill w-auto">Add Folder</legend>
+            <div class="d-flex justify-content-center w-100">
+                <form asp-action="AddNewFolder" class="w-100">
+                    <div class="w-100 d-inline-flex input-group form-group">
+                        <input type="text" name="folderName" placeholder="Write new directory name here..." class="d-inline form-control" />
+                        <button type="submit" class="btn btn-primary d-inline"><img src="~/utilities/folder-plus.svg" width=" 20" height="20" class="rounded align-middle" /></button>
+                    </div>
+                </form>
+            </div>
+        </fieldset>
+    </div>
+    <div class="collapse" id="addFileField">
+        <fieldset class="bg-light border border-4 border-primary p-2 m-2 rounded">
+            <legend class="text-dark fw-bold rounded-pill w-auto">Add Files</legend>
+            <div class="d-flex justify-content-center w-100">
+                <form asp-action="AddNewFiles" class="w-100" enctype="multipart/form-data">
+                    <div class="w-100 d-inline-flex input-group form-group">
+                        <input type="file" multiple name="files" class="d-inline form-control" />
+                        <button type="submit" class="btn btn-primary d-inline"><img src="~/utilities/file-plus.svg" width=" 20" height="20" class="rounded align-middle" /></button>
+                    </div>
+                </form>
+            </div>
+        </fieldset>
+    </div>
 </div>
 
 <div class="w-100" id="itemsTable">
@@ -77,51 +81,63 @@
     </div>
 </div>
 
-<script type="text/javascript">
-    window.onload = init;
+@section Scripts {
+    <script type="text/javascript">
 
-    function init() {
-        document.getElementById("addFolderBtn").addEventListener("click", AddFolderClicked, false);
-        document.getElementById("addFileBtn").addEventListener("click", AddFileClicked, false);
-        document.getElementById("refreshBtn").addEventListener("click", RefreshClicked, false);
-        document.getElementById("breadcrumbDiv").addEventListener("click", CrumbClicked, false);
-        document.getElementById("currentPath").addEventListener("focusout", InputFocusLost, false);
-        CheckSessionStorage();
-    }
 
-    function AddFolderClicked(e) {
-        document.getElementById("addFolderField").classList.toggle("hiddenfield");
-        document.getElementById("addFileField").classList.add("hiddenfield");
-    }
-    function AddFileClicked(e) {
-        document.getElementById("addFolderField").classList.add("hiddenfield");
-        document.getElementById("addFileField").classList.toggle("hiddenfield");
-    }
-    function RefreshClicked(e) {
-        let element = "";
-        if (!document.getElementById("addFolderField").classList.contains("hiddenfield")) element = "addFolderField";
-        if (!document.getElementById("addFileField").classList.contains("hiddenfield")) element = "addFileField";
-        sessionStorage.setItem("openedMiniWindow", element);
-    }
-    function CheckSessionStorage() {
-        let item = sessionStorage.getItem("openedMiniWindow");
-        if (item !== null) {
-            document.getElementById(item).classList.toggle("hiddenfield")
+        const addFolderField = new bootstrap.Collapse(document.getElementById('addFolderField'), { toggle: false });
+        const addFileField = new bootstrap.Collapse(document.getElementById('addFileField'), { toggle: false });
+
+        function init() {
+            document.getElementById("addFolderBtn").addEventListener("click", AddFolderClicked, false);
+            document.getElementById("addFileBtn").addEventListener("click", AddFileClicked, false);
+            document.getElementById("breadcrumbDiv").addEventListener("click", CrumbClicked, false);
+            document.getElementById("currentPath").addEventListener("focusout", InputFocusLost, false);
+            CheckSessionStorage();
         }
-        sessionStorage.removeItem("openedMiniWindow");
-    }
-    function CrumbClicked(e) {
-        document.getElementById("breadcrumbDiv").classList.toggle("hidden");
-        document.getElementById("fastInputDiv").classList.toggle("hidden");
-        input = document.getElementById("currentPath");
-        input.focus();
-        input.value = '';
-        input.value = "@Model.CurrentPathShow";
-    }
-    function InputFocusLost(e) {
-        if (e.relatedTarget === null || e.relatedTarget.id !== "fastInputBtn") {
+
+        function AddFolderClicked(e) {
+            addFileField.hide();
+            sessionStorage.setItem("openedMiniWindow", "folder");
+        }
+
+        function AddFileClicked(e) {
+            addFolderField.hide();
+            sessionStorage.setItem("openedMiniWindow", "file");
+
+        }
+
+        function CheckSessionStorage() {
+            let item = sessionStorage.getItem("openedMiniWindow");
+            if (item !== null) {
+
+                if (item == 'file') {
+                    addFileField.show();
+                }
+
+                if (item == 'folder') {
+                    AddFolderClicked.show();
+                }
+            }
+            sessionStorage.removeItem("openedMiniWindow");
+        }
+
+        function CrumbClicked(e) {
             document.getElementById("breadcrumbDiv").classList.toggle("hidden");
             document.getElementById("fastInputDiv").classList.toggle("hidden");
+            input = document.getElementById("currentPath");
+            input.focus();
+            input.value = '';
+            input.value = "@Model.CurrentPathShow";
         }
-    }
-</script>
+
+        function InputFocusLost(e) {
+            if (e.relatedTarget === null || e.relatedTarget.id !== "fastInputBtn") {
+                document.getElementById("breadcrumbDiv").classList.toggle("hidden");
+                document.getElementById("fastInputDiv").classList.toggle("hidden");
+            }
+        }
+
+        init();
+    </script>
+}

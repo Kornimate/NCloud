@@ -4,19 +4,20 @@ using NCloud.Models;
 using NCloud.Services;
 using NCloud.Users;
 using NCloud.ViewModels;
-using CloudPathData = NCloud.Models.CloudPathData;
 using NCloud.ConstantData;
 using NCloud.DTOs;
 using NCloud.Security;
+using Microsoft.AspNetCore.Authorization;
 
 namespace NCloud.Controllers
 {
+    [Authorize]
     public class DriveController : CloudControllerDefault
     {
         public DriveController(ICloudService service, UserManager<CloudUser> userManager, SignInManager<CloudUser> signInManager, IWebHostEnvironment env, ICloudNotificationService notifier) : base(service, userManager, signInManager, env, notifier) { }
 
         // GET: DriveController/Details/Documents
-        public async Task<IActionResult> Details(string? folderName = null)
+        public async Task<IActionResult> Details(string? folderName = null, List<CloudFile>? files = null, List<CloudFolder>? folders = null, bool passedItems = false)
         {
             CloudPathData pathdata = await GetSessionCloudPathData();
 
@@ -35,8 +36,8 @@ namespace NCloud.Controllers
 
             try
             {
-                return View(new DriveDetailsViewModel(await service.GetCurrentDepthCloudFiles(currentPath),
-                                                      await service.GetCurrentDepthCloudDirectories(currentPath),
+                return View(new DriveDetailsViewModel(passedItems && files is not null ? files : await service.GetCurrentDepthCloudFiles(currentPath),
+                                                      passedItems && folders is not null ? folders : await service.GetCurrentDepthCloudDirectories(currentPath),
                                                       pathdata.CurrentPathShow,
                                                       pathdata.CurrentPath,
                                                       Constants.GetWebControllerAndActionForDetails(),
@@ -58,12 +59,23 @@ namespace NCloud.Controllers
         {
             CloudPathData pathdata = await GetSessionCloudPathData();
 
-            if (pathdata.PreviousDirectories.Count > 2)
+            if (pathdata.CanGoBack)
             {
                 pathdata.RemoveFolderFromPrevDirs();
 
                 await SetSessionCloudPathData(pathdata);
             }
+
+            return RedirectToAction("Details", "Drive");
+        }
+
+        public async Task<IActionResult> Home()
+        {
+            CloudPathData pathData = await GetSessionCloudPathData();
+
+            pathData.SetDefaultPathData((await userManager.GetUserAsync(User)).Id.ToString());
+
+            await SetSessionCloudPathData(pathData);
 
             return RedirectToAction("Details", "Drive");
         }
@@ -104,13 +116,6 @@ namespace NCloud.Controllers
             }
 
             CloudPathData pathData = await GetSessionCloudPathData();
-
-            for (int i = 0; i < files.Count; i++)
-            {
-                FileInfo fi = new FileInfo(files[i].FileName);
-                //TODO: check if allowed filetype
-
-            }
 
             for (int i = 0; i < files.Count; i++)
             {
@@ -698,8 +703,10 @@ namespace NCloud.Controllers
                     {
                         string name = await service.RenameFile(pathData.CurrentPath, vm.OldName!, newFileName);
 
-                        if (name != (vm.NewName + vm.Extension))
+                        if (name != newFileName)
                         {
+                            newFileName = name;
+                            
                             AddNewNotification(new Warning("File has been renamed"));
                         }
 
@@ -814,6 +821,7 @@ namespace NCloud.Controllers
                 return Json(new ConnectionDTO { Success = false, Message = "Error while copy file to cloud clipboard" });
             }
         }
+
         public async Task<IActionResult> PasteDataFromClipBoard()
         {
             CloudPathData pathData = await GetSessionCloudPathData();

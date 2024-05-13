@@ -28,7 +28,7 @@
                         break;
                     default:
                         result = bytes;
-                        unit = $"byte{(result > 1 ? "s" : "")}";
+                        unit = $"B";
                         break;
                 }
 

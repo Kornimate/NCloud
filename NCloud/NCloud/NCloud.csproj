@@ -27,6 +27,7 @@
 		</PackageReference>
 		<PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="6.0.16" />
 		<PackageReference Include="QRCoder" Version="1.4.1" />
+		<PackageReference Include="Serilog.Extensions.Logging.File" Version="3.0.0" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -229,6 +230,9 @@
 	  <Content Update="wwwroot\utilities\gear.svg">
 	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 	  </Content>
+	  <Content Update="wwwroot\utilities\home.svg">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </Content>
 	  <Content Update="wwwroot\utilities\nopublic.svg">
 	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 	  </Content>
@@ -268,6 +272,11 @@
 	  <Content Update="wwwroot\utilities\window.svg">
 	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 	  </Content>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Folder Include="Logs\" />
+	  <Folder Include="Migrations\" />
 	</ItemGroup>
 	
 </Project>

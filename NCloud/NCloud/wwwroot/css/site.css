@@ -64,14 +64,16 @@ details[open] summary:before {
     top: 0px;
     right: 0px;
     position: absolute;
+    overflow-y: scroll;
+    height: 100vh;
 }
 
 .hiddenfield {
     display: none;
 }
 
-.hidden{
-    display:none;
+.hidden {
+    display: none;
 }
 
 .notificationdiv {
@@ -317,48 +319,129 @@ h6 {
     border-radius: 5px 5px 5px 5px;
     position: relative;
 }
-.terminal .top {
-    background: #E8E6E8;
-    color: gray;
-    padding: 5px;
-    border-radius: 5px 5px 0 0;
-}
-.terminal .btns {
-    position: absolute;
-    top: 7px;
-    left: 5px;
-}
-.terminal .circle {
-    width: 12px;
-    height: 12px;
-    display: inline-block;
-    border-radius: 15px;
-    margin-left: 2px;
-    border-width: 1px;
-    border-style: solid;
-}
-.title{
+
+    .terminal .top {
+        background: #E8E6E8;
+        color: gray;
+        padding: 5px;
+        border-radius: 5px 5px 0 0;
+    }
+
+    .terminal .btns {
+        position: absolute;
+        top: 7px;
+        left: 5px;
+    }
+
+    .terminal .circle {
+        width: 12px;
+        height: 12px;
+        display: inline-block;
+        border-radius: 15px;
+        margin-left: 2px;
+        border-width: 1px;
+        border-style: solid;
+    }
+
+.title {
     text-align: center;
 }
-.red { background: #EC6A5F; border-color: #D04E42; }
-.green { background: #64CC57; border-color: #4EA73B; }
-.yellow{ background: #F5C04F; border-color: #D6A13D; }
-.clear{clear: both;}
+
+.red {
+    background: #EC6A5F;
+    border-color: #D04E42;
+}
+
+.green {
+    background: #64CC57;
+    border-color: #4EA73B;
+}
+
+.yellow {
+    background: #F5C04F;
+    border-color: #D6A13D;
+}
+
+.clear {
+    clear: both;
+}
+
 .terminal .body {
     background: black;
     color: #7AFB4C;
     padding: 10px;
-    overflow: scroll;
+    overflow: hidden;
+    padding-bottom: 30px;
 }
+
 .space {
     margin: 25px;
 }
-.shadow { box-shadow: 0px 0px 10px rgba(0,0,0,.4)}
 
-.terminalstyle{
-    max-height:83vh;
-    min-height:83vh;
-    background:black;
+.shadow {
+    box-shadow: 0px 0px 10px rgba(0,0,0,.4)
+}
+
+.terminalstyle {
+    max-height: 83vh;
+    min-height: 83vh;
+    background: black;
 }
 
 /*Terminal Style End*/
+/*Circular progressbar Start*/
+@property --progress-value {
+    syntax: "<integer>";
+    inherits: false;
+    initial-value: 0;
+}
+
+.progress-bar {
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+    .progress-bar::before {
+        counter-reset: percentage var(--progress-value);
+        content: counter(percentage) "%";
+        color: black;
+        font-weight: bold;
+        font-size: 40px;
+    }
+
+.first {
+    background: radial-gradient(closest-side, white 79%, transparent 80% 100%), conic-gradient(deepskyblue calc(var(--progress-value) * 1%), cornflowerblue 0);
+    -webkit-animation: first-progress 2s 1 forwards;
+    animation: first-progress 2s 1 forwards;
+}
+
+    .first::before {
+        -webkit-animation: first-progress 2s 1 forwards;
+        animation: first-progress 2s 1 forwards;
+    }
+
+.second {
+    background: radial-gradient(closest-side, white 79%, transparent 80% 100%, white 0), conic-gradient(deepskyblue calc(var(--progress-value) * 1%), cornflowerblue 0);
+    -webkit-animation: second-progress 2s 1 forwards;
+    animation: second-progress 2s 1 forwards;
+}
+
+    .second::before {
+        -webkit-animation: second-progress 2s 1 forwards;
+        animation: second-progress 2s 1 forwards;
+    }
+
+h2 {
+    text-align: center;
+}
+
+progress {
+    visibility: hidden;
+    width: 0;
+    height: 0;
+}
+/*Circular progressbar End*/

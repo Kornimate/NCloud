@@ -9,7 +9,7 @@ using System.Text.Json;
 
 namespace NCloud.Services
 {
-    public static class DbStartUpManager
+    public static class AppStartUpManager
     {
         private static CloudDbContext context = null!;
         private static UserManager<CloudUser> userManager = null!;
@@ -35,19 +35,25 @@ namespace NCloud.Services
                 roleManager.CreateAsync(new CloudRole(userRole, 1)).Wait();
             }
 
-            //if (!Directory.Exists(Path.Combine(env.WebRootPath, "CloudData", "Public")))
-            //{
-            //    Directory.CreateDirectory(Path.Combine(env.WebRootPath, "CloudData", "Public"));
-            //}
+            string pathHelper = Constants.GetPrivateBaseDirectory();
 
-            if (!Directory.Exists(Path.Combine(env.WebRootPath, "CloudData", "Private")))
+            if (!Directory.Exists(pathHelper))
             {
-                Directory.CreateDirectory(Path.Combine(env.WebRootPath, "CloudData", "Private"));
+                Directory.CreateDirectory(pathHelper);
             }
 
-            if (!Directory.Exists(Path.Combine(env.WebRootPath, Constants.TempFilePath)))
+            pathHelper = Constants.GetTempFileDirectory();
+
+            if (!Directory.Exists(pathHelper))
             {
-                Directory.CreateDirectory(Path.Combine(env.WebRootPath, Constants.TempFilePath));
+                Directory.CreateDirectory(pathHelper);
+            }
+
+            pathHelper = Constants.GetLogFilesDirectory();
+
+            if (!Directory.Exists(pathHelper))
+            {
+                Directory.CreateDirectory(pathHelper);
             }
 
             if (!context.Users.Any())
@@ -65,7 +71,7 @@ namespace NCloud.Services
 
                 Task.Run(async () =>
                 {
-                    if (!await service.CreateBaseDirectory(adminUser))
+                    if (!await service.CreateBaseDirectoryForUser(adminUser))
                     {
                         throw new Exception("App unable to create base resources!");
                     }

@@ -1,15 +1,42 @@
 ﻿class TerminalCommand {
-    constructor() { }
+    constructor(clientSideCommands) {
+        this.clientSideCommands = clientSideCommands;
+    }
 
-    async eval(command, address, forgeryToken) {
-        var response = await fetch(address, {
-            method: "POST",
-            headers: {
-                "Content-Type": 'application/json',
-                "X-CSRF-TOKEN": forgeryToken
-            },
-            body: JSON.stringify(command)
-        });
-        return response.text();
+    async ExecuteServerSideCommand(command, address) {
+
+        var response = await AjaxCall(address, command);
+
+        return await response.json();
+    }
+
+    get Commands() {
+
+        return this.clientSideCommands;
+    }
+
+    //returns errorMessage (string) and stopExecution (bool) value
+
+    async ExecuteClientSideCommand(command, address, terminal) {
+
+        let response = await AjaxCall(address, command);
+
+        response = await response.json();
+
+        terminal.resume();
+
+        if (!response.isClientSideCommand)
+            return ["", false];
+
+        if (!response.noErrorWithSyntax)
+            return [response.errorMessage, true];
+
+        document.getElementById("addElement").innerHTML = response.actionHTMLElement;
+
+        document.getElementById(response.actionHTMLElementId).click();
+
+        document.getElementById("addElement").innerHTML = "";
+
+        return ["command executed successfully", true];
     }
 }

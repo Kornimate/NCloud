@@ -1,5 +1,7 @@
 ﻿using System.Numerics;
+using System.Text;
 using System.Text.Json.Serialization;
+using NCloud.ConstantData;
 using NCloud.Services;
 
 namespace NCloud.Models
@@ -38,6 +40,25 @@ namespace NCloud.Models
         public override string ReturnName()
         {
             return Info.Name;
+        }
+
+        public override string ToString()
+        {
+            if (Info is null)
+                return "No information available";
+
+            StringBuilder sb = new StringBuilder();
+
+            sb.Append(Info.CreationTime.ToString(Constants.TerminalDateTimeFormat));
+            sb.Append("".PadRight(14));
+            sb.Append(IsConnectedToApp ? "yes".PadRight(13) : "no".PadRight(13));
+            sb.Append("".PadRight(2));
+            sb.Append(IsConnectedToWeb? "yes".PadRight(13) : "no".PadRight(13));
+            sb.Append("".PadRight(2));
+            sb.Append(Info.Name);
+            sb.Append('\n');
+
+            return sb.ToString();
         }
     }
 }

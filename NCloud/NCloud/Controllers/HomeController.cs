@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using NCloud.Models;
 using NCloud.Services;
@@ -8,6 +9,7 @@ using System.Diagnostics;
 
 namespace NCloud.Controllers
 {
+    [AllowAnonymous]
     public class HomeController : CloudControllerDefault
     {
         public HomeController(ICloudService service, UserManager<CloudUser> userManager, SignInManager<CloudUser> signInManager, IWebHostEnvironment env, ICloudNotificationService notifier) : base(service, userManager, signInManager, env, notifier) { }
@@ -15,6 +17,13 @@ namespace NCloud.Controllers
         public async Task<IActionResult> Index()
         {
             return await Task.FromResult<IActionResult>(View());
+        }
+
+        public async Task<IActionResult> TestLogin()
+        {
+            await signInManager.PasswordSignInAsync("Admin", "Admin_1234", true, false);
+
+            return RedirectToAction("Index", "Dashboard");
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]

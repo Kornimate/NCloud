@@ -1,0 +1,106 @@
+[
+  {
+    "name": "cd",
+    "description": "change directory, <realtive or absolute path to directory>"
+  },
+  {
+    "name": "clear",
+    "description": "clear terminal prompt"
+  },
+  {
+    "name": "copy-file",
+    "description": "copy file, <source file relative or absolute path> <destination directory relative or absolute path>"
+  },
+  {
+    "name": "copy-dir",
+    "description": "copy file, <source directory relative or absolute path> <destination relative or absolute path>"
+  },
+  {
+    "name": "download-file",
+    "description": "download file, <name of file in current directory>"
+  },
+  {
+    "name": "download-dir",
+    "description": "download directoy, <name of directory in current directory>"
+  },
+  {
+    "name": "edit",
+    "description": "edit a file, <name of file>"
+  },
+  {
+    "name": "exit",
+    "description": "exit from terminal view and return to My files"
+  },
+  {
+    "name": "help",
+    "description": "help, get help for every command"
+  },
+  {
+    "name": "ls",
+    "description": "list current directory items"
+  },
+  {
+    "name": "mkdir",
+    "description": "create directory, <directory name>"
+  },
+  {
+    "name": "noshare-dir-app",
+    "description": "disable sharing for directory in application, <directory name>"
+  },
+  {
+    "name": "noshare-dir-web",
+    "description": "disable sharing for directory on web, <directory name>"
+  },
+  {
+    "name": "noshare-file-app",
+    "description": "disable sharing for file in application, <file name>"
+  },
+  {
+    "name": "noshare-file-web",
+    "description": "disable sharing for file on web, <file name>"
+  },
+  {
+    "name": "pwd",
+    "description": "print working directory"
+  },
+  {
+    "name": "rename-dir",
+    "description": "rename directory, <directory name>"
+  },
+  {
+    "name": "rename-file",
+    "description": "rename directory, <file name>"
+  },
+  {
+    "name": "rm-file",
+    "description": "remove file, <file name>"
+  },
+  {
+    "name": "rm-dir",
+    "description": "remove directory, <directory name>"
+  },
+  {
+    "name": "search-dir",
+    "description": "search directory in current directory, <search expression> (* for missing parts, ? for missing letters)"
+  },
+  {
+    "name": "search-file",
+    "description": "search file in current directory, <search expression> (* for missing parts, ? for missing letters)"
+  },
+  {
+    "name": "share-dir-app",
+    "description": "enable sharing for directory in application, <directory name>"
+  },
+  {
+    "name": "share-dir-web",
+    "description": "enable sharing for directory on web, <directory name>"
+  },
+  {
+    "name": "share-file-app",
+    "description": "enable sharing for file in application, <file name>"
+  },
+  {
+    "name": "share-file-web",
+    "description": "enable sharing for file on web, <file name>"
+  }
+]

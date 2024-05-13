@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using NCloud.ConstantData;
 using NCloud.Models;
@@ -8,17 +9,24 @@ using NCloud.ViewModels;
 
 namespace NCloud.Controllers
 {
+    [Authorize]
     public class DashBoardController : CloudControllerDefault
     {
         public DashBoardController(ICloudService service, UserManager<CloudUser> userManager, SignInManager<CloudUser> signInManager, IWebHostEnvironment env, ICloudNotificationService notifier) : base(service, userManager, signInManager, env, notifier) { }
 
         public async Task<ActionResult> Index()
         {
-            await signInManager.PasswordSignInAsync("Admin", "Admin_1234", true, false);
+            CloudUser user = await userManager.GetUserAsync(User);
 
-            var result = service.GetCurrentUserIndexData(); //TODO: implement function
+            double usedPercent = Math.Ceiling(user.UsedSpace / user.MaxSpace);
 
-            return View(new DashBoardViewModel(result.Item1, result.Item2, await service.GetUserSharedFolderUrls(User), await service.GetUserSharedFileUrls(User), Constants.GetWebControllerAndActionForDetails(), Constants.GetWebControllerAndActionForDownload()));
+            if (usedPercent < 0.0)
+                usedPercent = 0.0;
+
+            if(usedPercent > 100.0)
+                usedPercent = 100.0;
+
+            return View(new DashBoardViewModel(await service.GetUserSharedFolderUrls(User), await service.GetUserSharedFileUrls(User), Constants.GetWebControllerAndActionForDetails(), Constants.GetWebControllerAndActionForDownload(), usedPercent));
         }
     }
 }

@@ -3,65 +3,138 @@
 @{
     ViewData["Title"] = "DashBoard";
 }
-<div>
-    <h1>Available Space</h1>
-    <div>@(User.Identity?.Name ?? "Unassigned")</div>
+
+<style>
+    @@-webkit-keyframes first-progress {
+        to {
+            --progress-value: @Model.UserPercent;
+        }
+    }
+
+    @@keyframes first-progress {
+        to {
+            --progress-value: @Model.UserPercent;
+        }
+    }
+
+    @@-webkit-keyframes second-progress {
+        to {
+            --progress-value: @Model.RemainingPercent;
+        }
+    }
+
+    @@keyframes second-progress {
+        to {
+            --progress-value: @Model.RemainingPercent;
+        }
+    }
+</style>
+
+<div class="w-100 text-dark">
+    <div class="row w-100 justify-content-center my-5 text-center">
+        <h1 class="mb-5">
+            @(User.Identity?.Name ?? "Unassigned")
+        </h1>
+        <div class="row w-100 text-center">
+            <h2 class="col w-50 mb-3">
+                <label for="usedSpace">Used Space</label>
+            </h2>
+            <h2 class="col w-50 mb-3">
+                <label for="remainingSpace">Remaining Space</label>
+            </h2>
+        </div>
+        <div class="col w-50 d-flex justify-content-center align-items-center">
+            <div class="progress-bar first">
+                <progress id="usedSpace" min="0" max="100" value="10"></progress>
+            </div>
+        </div>
+        <div class="col w-50 col d-flex justify-content-center align-items-center">
+            <div class="progress-bar second">
+                <progress id="remainingSpace" min="0" max="100" value="@Model.RemainingPercent"></progress>
+            </div>
+        </div>
+    </div>
 </div>
-<div class="mt-2">
-    <h1>Recent Folders</h1>
-    <div></div>
-</div>
-<div class="mt-2">
-    <h1>Recent Files</h1>
-    <div></div>
-</div>
-<div class="mt-2">
-    <h1>Shared Folders</h1>
-    <div class="list-group" id="sharedfolders">
+
+<div class="mt-5">
+    <table class="table" id="sharedfolders">
+        <thead>
+            <tr>
+                <th colspan="3">
+                    <h2>Shared Directories</h2>
+                </th>
+            </tr>
+        </thead>
         @foreach (var folderUrl in Model.SharedFolderUrls)
         {
             string? url = Url.Action(Model.WebControllerAndActionForDetails.Second, Model.WebControllerAndActionForDetails.First, new { path = HashManager.EncryptString(folderUrl) }, Context.Request.Scheme);
             string path = folderUrl.Replace(System.IO.Path.DirectorySeparatorChar, Constants.PathSeparator);
 
-            <div class="my-1">
-                <ul class="list-group list-group-horizontal text-center fw-bold">
-                    <li class="list-group-item list-group-item-action text-dark">@path.Slice(Constants.PrivateRootName.Length, Constants.PrivateRootName.Length + Constants.GuidLength + 1)</li>
-                </ul>
-                <div class="list-group list-group-horizontal">
+            <tr class="text-center">
+                <td>
                     <button type="button" class="btn btn-secondary" onclick="copyToClipBoard('@(@url)')"><img src="/utilities/link.svg" width=" 20" height="20" class="item rounded align-center"></button>
-                    <a href="@url" class="list-group-item list-group-item-action text-primary text-center" target="_blank">Link to shared directory</a>
+                </td>
+                <td>
+                    <a href="@url" class="list-group-item list-group-item-action text-primary text-center text-truncate" target="_blank">@path.Slice(Constants.PrivateRootName.Length, Constants.PrivateRootName.Length + Constants.GuidLength + 1)</a>
+                </td>
+                <td>
                     <form asp-action="DisConnectDirectoryFromWebDashboard" asp-controller="Drive">
                         <input type="hidden" value="@path" name="folder" />
                         <button type="submit" class="btn btn-danger"><img src="/utilities/nopublic.svg" width=" 20" height="20" class="item rounded align-center"></button>
                     </form>
-                </div>
-            </div>
+                </td>
+            </tr>
         }
-    </div>
+
+        @if (Model.SharedFolderUrls is null || Model.SharedFolderUrls.Count == 0)
+        {
+            <tr>
+                <td>
+                    <span class="w-100 d-flex justify-content-center text-muted fst-italic">No shared items</span>
+                </td>
+            </tr>
+        }
+
+    </table>
 </div>
-<div class="mt-2">
-    <h1>Shared Files</h1>
-    <div class="list-group " id="sharedfiles">
+<div class="mt-5">
+    <table class="table" id="sharedfiles">
+        <thead>
+            <tr>
+                <th colspan="3">
+                    <h2>Shared Files</h2>
+                </th>
+            </tr>
+        </thead>
         @foreach (var fileUrl in Model.SharedFileUrls)
         {
             string? url = Url.Action(Model.WebControllerAndActionForDownload.Second, Model.WebControllerAndActionForDownload.First, new { path = HashManager.EncryptString(fileUrl) }, Context.Request.Scheme);
             string path = fileUrl.Replace(System.IO.Path.DirectorySeparatorChar, Constants.PathSeparator);
 
-            <div class="my-1">
-                <ul class="list-group list-group-horizontal">
-                    <li class="list-group-item list-group-item-action text-dark">@path.Slice(Constants.PrivateRootName.Length, Constants.PrivateRootName.Length + Constants.GuidLength + 1)</li>
-                </ul>
-                <div class="list-group list-group-horizontal">
+            <tr class="text-center">
+                <td>
                     <button type="button" class="btn btn-secondary" onclick="copyToClipBoard('@(url)')"><img src="/utilities/link.svg" width=" 20" height="20" class="item rounded align-center"></button>
-                    <a href="@url" class="list-group-item list-group-item-action text-primary text-center" target="_blank">Link to shared file</a>
+                </td>
+                <td>
+                    <a href="@url" class="list-group-item list-group-item-action text-primary text-center text-truncate" target="_blank">@path.Slice(Constants.PrivateRootName.Length, Constants.PrivateRootName.Length + Constants.GuidLength + 1)</a>
+                </td>
+                <td>
                     <form asp-action="DisConnectFileFromWebDashboard" asp-controller="Drive">
                         <input type="hidden" value="@path" name="file" />
                         <button type="submit" class="btn btn-danger"><img src="/utilities/nopublic.svg" width=" 20" height="20" class="item rounded align-center"></button>
                     </form>
-                </div>
-            </div>
+                </td>
+            </tr>
         }
-    </div>
-</div>
 
-@Html.AntiForgeryToken()
+        @if (Model.SharedFileUrls is null || Model.SharedFileUrls.Count == 0)
+        {
+            <tr>
+                <td>
+                    <span class="w-100 d-flex justify-content-center text-muted fst-italic">No shared items</span>
+                </td>
+            </tr>
+        }
+
+    </table>
+</div>

@@ -1,5 +1,6 @@
 ﻿using NCloud.ConstantData;
 using NCloud.Security;
+using System.Text;
 
 namespace NCloud.Models
 {
