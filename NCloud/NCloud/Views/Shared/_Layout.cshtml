@@ -1,7 +1,7 @@
 ﻿<!DOCTYPE html>
 <html lang="en">
 <head>
-    
+
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - @Constants.AppName</title>
@@ -13,14 +13,14 @@
 
 </head>
 <body class="bg-light">
-   
+
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
-    
+
     <nav class="navbar background-color">
         <div class="container-fluid">
-            <a asp-controller="Home" asp-action="Index" class="navbar-brand"><img src="~/utilities/cloud_logo_no_text.png" width="50" height="50" alt="" class="me-2"/>@Constants.AppName</a>
+            <a asp-controller="Home" asp-action="Index" class="navbar-brand"><img src="~/utilities/cloud_logo_no_text.png" width="50" height="50" alt="" class="me-2" />@Constants.AppName</a>
             <!--Identitiy platform data-->
         </div>
     </nav>
@@ -28,13 +28,13 @@
     <div class="container">
         <main role="main" class="pt-3">
             @RenderBody()
-
-            @await Component.InvokeAsync("CloudNotification")
-
-            @await Component.InvokeAsync("CloudNotificationSingle")
         </main>
     </div>
-    
+
+    @await Component.InvokeAsync("CloudNotification")
+
+    @await Component.InvokeAsync("CloudNotificationSingle")
+
     @await RenderSectionAsync("Scripts", required: false)
 
 </body>

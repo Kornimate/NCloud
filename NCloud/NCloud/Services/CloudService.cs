@@ -33,8 +33,6 @@ namespace NCloud.Services
         {
             string privateFolderPath = Constants.GetPrivateBaseDirectoryForUser(cloudUser.Id.ToString());
 
-            logger.LogInformation($"Base directory for {cloudUser.UserName} added");
-
             try
             {
                 if (!Directory.Exists(privateFolderPath))
@@ -136,7 +134,7 @@ namespace NCloud.Services
             {
                 if (!(await RemoveDirectory(folderName, currentPath, userPrincipal)))
                 {
-                    //TODO: logging action
+                    logger.LogError($"Directory not removeable : {Path.Combine(ParseRootName(currentPath), folderName)}");
                 }
 
                 throw;

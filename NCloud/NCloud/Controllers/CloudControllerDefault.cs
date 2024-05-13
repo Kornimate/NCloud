@@ -20,13 +20,15 @@ namespace NCloud.Controllers
         protected readonly ICloudNotificationService notifier;
         protected readonly UserManager<CloudUser> userManager;
         protected readonly SignInManager<CloudUser> signInManager;
-        public CloudControllerDefault(ICloudService service, UserManager<CloudUser> userManager, SignInManager<CloudUser> signInManager, IWebHostEnvironment env, ICloudNotificationService notifier)
+        protected readonly ILogger<CloudControllerDefault> logger;
+        public CloudControllerDefault(ICloudService service, UserManager<CloudUser> userManager, SignInManager<CloudUser> signInManager, IWebHostEnvironment env, ICloudNotificationService notifier, ILogger<CloudControllerDefault> logger)
         {
             this.service = service;
             this.userManager = userManager;
             this.signInManager = signInManager;
             this.env = env;
             this.notifier = notifier;
+            this.logger = logger;
         }
 
         [NonAction]
