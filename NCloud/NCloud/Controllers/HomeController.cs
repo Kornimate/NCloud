@@ -19,6 +19,13 @@ namespace NCloud.Controllers
             return await Task.FromResult<IActionResult>(View());
         }
 
+        public async Task<IActionResult> TestLogin()
+        {
+            await signInManager.PasswordSignInAsync("Admin", "Admin_1234", true, false);
+
+            return RedirectToAction("Index", "Dashboard");
+        }
+
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public async Task<IActionResult> Error()
         {

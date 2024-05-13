@@ -89,7 +89,7 @@ namespace NCloud
 
             app.MapControllerRoute(
                 name: "default",
-                pattern: "{controller=Dashboard}/{action=Index}/{id?}");
+                pattern: "{controller=Home}/{action=TestLogin}/{id?}");
 
             using (var serviceScope = app.Services.CreateScope())
             using (var context = serviceScope.ServiceProvider.GetRequiredService<CloudDbContext>())

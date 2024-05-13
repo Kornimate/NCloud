@@ -8,16 +8,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="Test.txt" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Content Include="Test.txt">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\NCloud\NCloud.csproj" />
   </ItemGroup>
 
