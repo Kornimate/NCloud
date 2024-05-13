@@ -9,7 +9,7 @@ namespace NCloud.Services
         Task<List<CloudFolder>> GetCurrentDepthCloudDirectories(string currentPath, bool connectToApp = false, bool connectToWeb = false, string? pattern = null);
         Task<List<CloudFile>> GetCurrentDepthCloudFiles(string currentPath, bool connectToApp = false, bool connectToWeb = false, string? pattern = null);
         Task<CloudUser?> GetAdmin();
-        Task<bool> CreateBaseDirectory(CloudUser cloudUser);
+        Task<bool> CreateBaseDirectoryForUser(CloudUser cloudUser);
         Task<string> CreateDirectory(string folderName, string currentPath, ClaimsPrincipal userPrincipal);
         Task<string> CreateFile(IFormFile file, string currentPath, ClaimsPrincipal userPrincipal);
         Task<bool> RemoveDirectory(string folderName, string currentPath, ClaimsPrincipal userPrincipal);

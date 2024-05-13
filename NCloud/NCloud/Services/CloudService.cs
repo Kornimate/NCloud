@@ -19,21 +19,21 @@ namespace NCloud.Services
         private readonly IWebHostEnvironment env;
         private readonly IHttpContextAccessor httpContext;
         private readonly UserManager<CloudUser> userManager;
-        //private readonly ILogger logger;
+        private readonly ILogger<CloudService> logger;
 
-        public CloudService(CloudDbContext context, IWebHostEnvironment env, IHttpContextAccessor httpContext, UserManager<CloudUser> userManager/*, ILogger logger*/)
+        public CloudService(CloudDbContext context, IWebHostEnvironment env, IHttpContextAccessor httpContext, UserManager<CloudUser> userManager, ILogger<CloudService> logger)
         {
             this.context = context;
             this.env = env;
             this.httpContext = httpContext;
             this.userManager = userManager;
-            //this.logger = logger;
+            this.logger = logger;
         }
-        public async Task<bool> CreateBaseDirectory(CloudUser cloudUser)
+        public async Task<bool> CreateBaseDirectoryForUser(CloudUser cloudUser)
         {
-            string privateFolderPath = Path.Combine(env.WebRootPath, "CloudData", "Private", cloudUser.Id.ToString());
-            string publicFolderPath = Path.Combine(env.WebRootPath, "CloudData", "Public");
-            string pathHelper = Path.Combine(env.WebRootPath, "CloudData", "Public", cloudUser.UserName);
+            string privateFolderPath = Constants.GetPrivateBaseDirectoryForUser(cloudUser.Id.ToString());
+
+            logger.LogInformation($"Base directory for {cloudUser.UserName} added");
 
             try
             {
@@ -42,19 +42,9 @@ namespace NCloud.Services
                     Directory.CreateDirectory(privateFolderPath);
                 }
 
-                if (!Directory.Exists(publicFolderPath))
-                {
-                    Directory.CreateDirectory(publicFolderPath);
-                }
-
-                if (!Directory.Exists(pathHelper))
-                {
-                    Directory.CreateDirectory(pathHelper);
-                }
-
                 foreach (string folder in Constants.SystemFolders)
                 {
-                    pathHelper = Path.Combine(privateFolderPath, folder);
+                    string pathHelper = Path.Combine(privateFolderPath, folder);
 
                     if (!Directory.Exists(pathHelper))
                     {
@@ -66,16 +56,16 @@ namespace NCloud.Services
             }
             catch (Exception)
             {
-                if (!await DeleteDirectoriesForUser(publicFolderPath, privateFolderPath, pathHelper))
+                if (!await DeleteDirectoriesForUser(privateFolderPath))
                 {
-                    //TODO: logging for failed clean up
+                    logger.LogError($"Directory not removeable : {privateFolderPath}");
                 }
 
                 return false; //if anything can not be created -> fail the whole task
             }
         }
 
-        private Task<bool> DeleteDirectoriesForUser(string publicFolderPath, string privateFolderPath, string pathHelper)
+        private Task<bool> DeleteDirectoriesForUser(string privateFolderPath)
         {
             try
             {
@@ -84,21 +74,11 @@ namespace NCloud.Services
                     Directory.Delete(privateFolderPath, true);
                 }
 
-                if (!Directory.Exists(publicFolderPath))
-                {
-                    Directory.Delete(publicFolderPath, true);
-                }
-
-                if (!Directory.Exists(pathHelper))
-                {
-                    Directory.Delete(pathHelper);
-                }
-
                 foreach (string folder in Constants.SystemFolders)
                 {
-                    pathHelper = Path.Combine(privateFolderPath, folder);
+                    string pathHelper = Path.Combine(privateFolderPath, folder);
 
-                    if (!Directory.Exists(pathHelper))
+                    if (Directory.Exists(pathHelper))
                     {
                         Directory.Delete(pathHelper, true);
                     }
@@ -383,11 +363,7 @@ namespace NCloud.Services
         {
             if (currentPath.StartsWith(Constants.PrivateRootName))
             {
-                return currentPath.Replace(Constants.PrivateRootName, Path.Combine(env.WebRootPath, "CloudData", "Private"));
-            }
-            else if (currentPath.StartsWith(Constants.PublicRootName))
-            {
-                return currentPath.Replace(Constants.PublicRootName, Path.Combine(env.WebRootPath, "CloudData", "Public"));
+                return currentPath.Replace(Constants.PrivateRootName, Constants.GetPrivateBaseDirectory());
             }
 
             return String.Empty;

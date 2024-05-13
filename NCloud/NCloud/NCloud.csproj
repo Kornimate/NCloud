@@ -27,6 +27,7 @@
 		</PackageReference>
 		<PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="6.0.16" />
 		<PackageReference Include="QRCoder" Version="1.4.1" />
+		<PackageReference Include="Serilog.Extensions.Logging.File" Version="3.0.0" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -274,6 +275,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <Folder Include="Logs\" />
 	  <Folder Include="Migrations\" />
 	</ItemGroup>
 	

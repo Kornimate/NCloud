@@ -67,6 +67,8 @@ namespace NCloud
                             .WithEncryptionKey(builder.Configuration.GetSection("EncryptionKey").Value)
             );
 
+            builder.Logging.AddFile(Constants.GetLogFilePath());
+
             var app = builder.Build();
 
             if (!app.Environment.IsDevelopment())
@@ -94,7 +96,7 @@ namespace NCloud
             using (var serviceScope = app.Services.CreateScope())
             using (var context = serviceScope.ServiceProvider.GetRequiredService<CloudDbContext>())
             {
-                DbStartUpManager.Initialize(serviceScope.ServiceProvider, app.Environment);
+                AppStartUpManager.Initialize(serviceScope.ServiceProvider, app.Environment);
             }
 
             Timer timer = new Timer(_ => new Thread(() =>

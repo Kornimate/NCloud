@@ -20,6 +20,12 @@ namespace NCloud.Controllers
 
             double usedPercent = Math.Ceiling(user.UsedSpace / user.MaxSpace);
 
+            if (usedPercent < 0.0)
+                usedPercent = 0.0;
+
+            if(usedPercent > 100.0)
+                usedPercent = 100.0;
+
             return View(new DashBoardViewModel(await service.GetUserSharedFolderUrls(User), await service.GetUserSharedFileUrls(User), Constants.GetWebControllerAndActionForDetails(), Constants.GetWebControllerAndActionForDownload(), usedPercent));
         }
     }

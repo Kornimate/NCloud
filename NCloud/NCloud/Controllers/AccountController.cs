@@ -105,7 +105,7 @@ namespace NCloud.Controllers
                     {
                         CloudUser newUser = await userManager.FindByNameAsync(vm.UserName);
                         
-                        await service.CreateBaseDirectory(newUser);
+                        await service.CreateBaseDirectoryForUser(newUser);
                         
                         await signInManager.SignInAsync(newUser, false);
                         

@@ -1,4 +1,5 @@
 ﻿using Castle.Core;
+using NCloud.Users;
 using System.Security.Claims;
 
 namespace NCloud.ConstantData
@@ -17,17 +18,18 @@ namespace NCloud.ConstantData
         public static string NoFileType { get => "notype"; }
         public static string FolderAndFileRegex { get => @"^[0-9a-zA-Z_!%+=.()$\s]+$"; }
         public static string CommandRegex { get => @"^[0-9a-zA-Z_!%+=.()-/$\s""@]+$"; }
+        public static string UserRegex { get => @"^[0-9a-zA-Z_!%+=.()/$\s""]+$"; }
         public static string ZipMimeType { get => "application/zip"; }
         public static string DefaultMimeType { get => "application/octet-stream"; }
         public static string DateTimeFormat { get => "yyyy'-'MM'-'dd'T'HH'-'mm'-'ss"; }
         public static string TerminalDateTimeFormat { get => "yyyy'-'MM'-'dd' 'HH':'mm"; }
         public static string UnkownFileType { get => "unknown"; }
         public static string FileTypePrefix { get => "filetype-"; }
-        public static string WebRootFolderName { get => "wwwroot"; }
+        public static string WebRootFolderName { get => ".__CloudData__"; }
         public static string IconsBasePath { get => Path.Combine("wwwroot", "utilities"); }
         public static string LogoPath { get => Path.Combine("wwwroot", "utilities", "cloud_logo.png"); }
         public static string TempFolderName { get => "temp"; }
-        public static string TempFilePath { get => Path.Combine("wwwroot", TempFolderName); }
+        public static string TempFilePath { get => Path.Combine(".__TempFiles__", TempFolderName); }
         public static string FolderIcon { get => "/utilities/folder.svg"; }
         public static string PrefixForIcons { get => "/utilities/filetype-"; }
         public static string SuffixForIcons { get => ".svg"; }
@@ -76,9 +78,29 @@ namespace NCloud.ConstantData
             return new Pair<string, string>("Web", "DownloadPage");
         }
 
+        public static string GetPrivateBaseDirectoryForUser(string userId)
+        {
+            return Path.Combine(GetPrivateBaseDirectory(), userId);
+        }
+        public static string GetPrivateBaseDirectory()
+        {
+            return Path.Combine(Directory.GetCurrentDirectory(), ".__CloudData__", "Private");
+        }
+        public static string GetTempFileDirectory()
+        {
+            return Path.Combine(Directory.GetCurrentDirectory(), TempFilePath);
+        }
         public static string GetCloudRootPathInDatabase(Guid id)
         {
             return Path.Combine(PrivateRootName, id.ToString());
+        }
+        public static string GetLogFilesDirectory()
+        {
+            return Path.Combine(Directory.GetCurrentDirectory(), ".__Logs__");
+        }
+        public static string GetLogFilePath()
+        {
+            return $".__Logs__/{Constants.AppName}-{{Date}}.txt";
         }
 
         public static string GetSharingRootPathInDatabase(string userName)
