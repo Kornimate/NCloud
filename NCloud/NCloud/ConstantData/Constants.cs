@@ -60,7 +60,7 @@ namespace NCloud.ConstantData
         public static char PathSeparator { get => '/'; }
         public static char TerminalStringMarker { get => '\"'; }
         public static char TerminalWhiteSpace { get => ' '; }
-        public static int DistanceToRootFolder { get => 4; }
+        public static int DistanceToRootFolder { get => 3; }
         public static int EmptyFolderAttributeNumberZip { get => 16; }
         public static int OwnerPlaceInPath { get => 1; }
         public static int RootProviderPlaceinPath { get => 0; }

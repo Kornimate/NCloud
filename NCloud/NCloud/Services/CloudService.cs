@@ -6,28 +6,25 @@ using Microsoft.AspNetCore.Identity;
 using NCloud.ConstantData;
 using System.Security.Claims;
 using Castle.Core;
-using NCloud.Security;
+using NCloud.Services.Exceptions;
 using System.IO.Compression;
 using System.Text;
 using Newtonsoft.Json.Linq;
+using System.Text.RegularExpressions;
 
 namespace NCloud.Services
 {
     public class CloudService : ICloudService
     {
         private readonly CloudDbContext context;
-        private readonly IWebHostEnvironment env;
         private readonly IHttpContextAccessor httpContext;
         private readonly UserManager<CloudUser> userManager;
-        private readonly ILogger<CloudService> logger;
 
-        public CloudService(CloudDbContext context, IWebHostEnvironment env, IHttpContextAccessor httpContext, UserManager<CloudUser> userManager, ILogger<CloudService> logger)
+        public CloudService(CloudDbContext context, IHttpContextAccessor httpContext, UserManager<CloudUser> userManager)
         {
             this.context = context;
-            this.env = env;
             this.httpContext = httpContext;
             this.userManager = userManager;
-            this.logger = logger;
         }
         public async Task<bool> CreateBaseDirectoryForUser(CloudUser cloudUser)
         {
@@ -56,7 +53,7 @@ namespace NCloud.Services
             {
                 if (!await DeleteDirectoriesForUser(privateFolderPath))
                 {
-                    logger.LogError($"Directory not removeable : {privateFolderPath}");
+                    throw new CloudLoggerException($"Directory not removeable : {privateFolderPath}");
                 }
 
                 return false; //if anything can not be created -> fail the whole task
@@ -90,19 +87,18 @@ namespace NCloud.Services
             }
         }
 
-        public async Task<string> CreateDirectory(string folderName, string currentPath, ClaimsPrincipal userPrincipal)
+        public async Task<string> CreateDirectory(string folderName, string cloudPath, CloudUser user)
         {
-            if (folderName == null || folderName == String.Empty)
-            {
-                throw new InvalidDataException("Invalid directory name!");
-            }
+            if (String.IsNullOrWhiteSpace(folderName))
+                throw new CloudFunctionStopException("no directory name");
 
-            if (currentPath == null || currentPath == String.Empty)
-            {
-                throw new InvalidDataException("Invalid path!");
-            }
+            if(!Regex.IsMatch(folderName,Constants.FolderAndFileRegex))
+                throw new CloudFunctionStopException("invalid directory name");
 
-            string path = ParseRootName(currentPath);
+            if (String.IsNullOrWhiteSpace(cloudPath))
+                throw new InvalidDataException("invalid path!");
+
+            string path = ParseRootName(cloudPath);
             string pathAndName = Path.Combine(path, folderName);
 
             try
@@ -111,17 +107,15 @@ namespace NCloud.Services
                 {
                     await Task.Run(() => Directory.CreateDirectory(pathAndName));
 
-                    CloudUser user = await userManager.GetUserAsync(userPrincipal);
-
-                    Pair<string, string> parentPathAndName = GetParentPathAndName(currentPath);
+                    Pair<string, string> parentPathAndName = GetParentPathAndName(cloudPath);
 
                     Pair<bool, bool> connections = await FolderIsSharedInAppInWeb(parentPathAndName.First, parentPathAndName.Second);
 
-                    await SetDirectoryConnectedState(currentPath, folderName, ChangeOwnerIdentification(ChangeRootName(currentPath), user.UserName), user, connections.First, connections.Second);
+                    await SetDirectoryConnectedState(cloudPath, folderName, ChangeOwnerIdentification(ChangeRootName(cloudPath), user.UserName), user, connections.First, connections.Second);
                 }
                 else
                 {
-                    throw new InvalidOperationException("Folder already exists!");
+                    throw new CloudFunctionStopException("directory already exists!");
                 }
 
                 return folderName; //TODO: revise later
@@ -132,9 +126,9 @@ namespace NCloud.Services
             }
             catch (Exception)
             {
-                if (!(await RemoveDirectory(folderName, currentPath, userPrincipal)))
+                if (!(await RemoveDirectory(folderName, cloudPath, null))) //change later
                 {
-                    logger.LogError($"Directory not removeable : {Path.Combine(ParseRootName(currentPath), folderName)}");
+                    throw new CloudLoggerException($"Directory not removeable : {Path.Combine(ParseRootName(cloudPath), folderName)}");
                 }
 
                 throw;
@@ -357,11 +351,11 @@ namespace NCloud.Services
             return true;
         }
 
-        private string ParseRootName(string currentPath)
+        private string ParseRootName(string cloudPath)
         {
-            if (currentPath.StartsWith(Constants.PrivateRootName))
+            if (cloudPath.StartsWith(Constants.PrivateRootName))
             {
-                return currentPath.Replace(Constants.PrivateRootName, Constants.GetPrivateBaseDirectory());
+                return cloudPath.Replace(Constants.PrivateRootName, Constants.GetPrivateBaseDirectory());
             }
 
             return String.Empty;

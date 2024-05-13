@@ -14,7 +14,7 @@ namespace NCloud.Controllers
     [Authorize]
     public class DriveController : CloudControllerDefault
     {
-        public DriveController(ICloudService service, UserManager<CloudUser> userManager, SignInManager<CloudUser> signInManager, IWebHostEnvironment env, ICloudNotificationService notifier) : base(service, userManager, signInManager, env, notifier) { }
+        public DriveController(ICloudService service, UserManager<CloudUser> userManager, SignInManager<CloudUser> signInManager, IWebHostEnvironment env, ICloudNotificationService notifier, ILogger<CloudControllerDefault> logger) : base(service, userManager, signInManager, env, notifier, logger) { }
 
         // GET: DriveController/Details/Documents
         public async Task<IActionResult> Details(string? folderName = null, List<CloudFile>? files = null, List<CloudFolder>? folders = null, bool passedItems = false)
@@ -91,7 +91,7 @@ namespace NCloud.Controllers
                     throw new Exception("Folder name must be at least one character!");
                 }
 
-                await service.CreateDirectory(folderName!, (await GetSessionCloudPathData()).CurrentPath, User);
+                await service.CreateDirectory(folderName!, (await GetSessionCloudPathData()).CurrentPath, await userManager.GetUserAsync(User));
 
                 AddNewNotification(new Success("Folder is created!"));
             }

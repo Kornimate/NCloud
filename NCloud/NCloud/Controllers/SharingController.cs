@@ -15,7 +15,7 @@ namespace NCloud.Controllers
     [Authorize]
     public class SharingController : CloudControllerDefault
     {
-        public SharingController(ICloudService service, UserManager<CloudUser> userManager, SignInManager<CloudUser> signInManager, IWebHostEnvironment env, ICloudNotificationService notifier) : base(service, userManager, signInManager, env, notifier) { }
+        public SharingController(ICloudService service, UserManager<CloudUser> userManager, SignInManager<CloudUser> signInManager, IWebHostEnvironment env, ICloudNotificationService notifier, ILogger<CloudControllerDefault> logger) : base(service, userManager, signInManager, env, notifier, logger) { }
 
         public async Task<IActionResult> Details(string? folderName = null)
         {

@@ -16,7 +16,7 @@ namespace NCloud.Controllers
     [AllowAnonymous]
     public class WebController : CloudControllerDefault
     {
-        public WebController(ICloudService service, UserManager<CloudUser> userManager, SignInManager<CloudUser> signInManager, IWebHostEnvironment env, ICloudNotificationService notifier) : base(service, userManager, signInManager, env, notifier) { }
+        public WebController(ICloudService service, UserManager<CloudUser> userManager, SignInManager<CloudUser> signInManager, IWebHostEnvironment env, ICloudNotificationService notifier, ILogger<CloudControllerDefault> logger) : base(service, userManager, signInManager, env, notifier, logger) { }
 
         public async Task<IActionResult> SharingPage(string path)
         {
