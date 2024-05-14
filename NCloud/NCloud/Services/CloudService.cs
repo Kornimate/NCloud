@@ -26,6 +26,8 @@ namespace NCloud.Services
             this.httpContext = httpContext;
             this.userManager = userManager;
         }
+
+        #region Public Methods 
         public async Task<bool> CreateBaseDirectoryForUser(CloudUser cloudUser)
         {
             string privateFolderPath = Constants.GetPrivateBaseDirectoryForUser(cloudUser.Id.ToString());
@@ -51,39 +53,12 @@ namespace NCloud.Services
             }
             catch (Exception)
             {
-                if (!await DeleteDirectoriesForUser(privateFolderPath))
+                if (!await DeleteDirectoriesForUser(privateFolderPath, cloudUser))
                 {
-                    throw new CloudLoggerException($"Directory not removeable : {privateFolderPath}");
+                    throw new CloudLoggerException($"Directory not removeable or data remained in database : {privateFolderPath}, {cloudUser.UserName}");
                 }
 
                 return false; //if anything can not be created -> fail the whole task
-            }
-        }
-
-        private Task<bool> DeleteDirectoriesForUser(string privateFolderPath)
-        {
-            try
-            {
-                if (!Directory.Exists(privateFolderPath))
-                {
-                    Directory.Delete(privateFolderPath, true);
-                }
-
-                foreach (string folder in Constants.SystemFolders)
-                {
-                    string pathHelper = Path.Combine(privateFolderPath, folder);
-
-                    if (Directory.Exists(pathHelper))
-                    {
-                        Directory.Delete(pathHelper, true);
-                    }
-                }
-
-                return Task.FromResult<bool>(true);
-            }
-            catch (Exception)
-            {
-                return Task.FromResult<bool>(false);
             }
         }
 
@@ -92,11 +67,11 @@ namespace NCloud.Services
             if (String.IsNullOrWhiteSpace(folderName))
                 throw new CloudFunctionStopException("no directory name");
 
-            if(!Regex.IsMatch(folderName,Constants.FolderAndFileRegex))
+            if (!Regex.IsMatch(folderName, Constants.FolderAndFileRegex))
                 throw new CloudFunctionStopException("invalid directory name");
 
             if (String.IsNullOrWhiteSpace(cloudPath))
-                throw new InvalidDataException("invalid path!");
+                throw new CloudFunctionStopException("invalid path!");
 
             string path = ParseRootName(cloudPath);
             string pathAndName = Path.Combine(path, folderName);
@@ -134,6 +109,8 @@ namespace NCloud.Services
                 throw;
             }
         }
+
+        #endregion
 
         public async Task<string> CreateFile(IFormFile file, string currentPath, ClaimsPrincipal userPrincipal)
         {
@@ -955,32 +932,6 @@ namespace NCloud.Services
             }
         }
 
-        private async Task AddFileToArchive(ZipArchive archive, string currentPath, string name, bool connectedToApp = false, bool connectedToWeb = false)
-        {
-            if (connectedToApp)
-            {
-                var connections = await FileIsSharedInAppInWeb(currentPath, name);
-
-                if (connections.First)
-                {
-                    archive.CreateEntryFromFile(Path.Combine(ParseRootName(currentPath), name), name);
-                }
-            }
-            else if (connectedToWeb)
-            {
-                var connections = await FileIsSharedInAppInWeb(currentPath, name);
-
-                if (connections.Second)
-                {
-                    archive.CreateEntryFromFile(Path.Combine(ParseRootName(currentPath), name), name);
-                }
-            }
-            else
-            {
-                archive.CreateEntryFromFile(Path.Combine(ParseRootName(currentPath), name), name);
-            }
-        }
-
         public async Task<string> ChangePathStructure(string currentPath)
         {
             string[] pathElements = currentPath.Split(Path.DirectorySeparatorChar, StringSplitOptions.RemoveEmptyEntries);
@@ -1119,45 +1070,6 @@ namespace NCloud.Services
             {
                 throw new FileLoadException("Error while renaming file");
             }
-        }
-
-        private string RenameObject(string path, ref string name, bool isFile)
-        {
-            int counter = 0;
-
-            string pathAndName = Path.Combine(path, name);
-
-            if (isFile)
-            {
-                string nameBase = new string(name);
-                string extension = String.Empty;
-
-                if (name.Contains(Constants.FileExtensionDelimiter))
-                {
-                    nameBase = Path.GetFileNameWithoutExtension(name);
-                    extension = Path.GetExtension(name);
-                }
-
-                while (System.IO.File.Exists(pathAndName))
-                {
-                    name = nameBase + Constants.FileNameDelimiter + (++counter).ToString() + extension;
-
-                    pathAndName = Path.Combine(path, name);
-                }
-            }
-            else
-            {
-                string nameBase = new string(name);
-
-                while (System.IO.Directory.Exists(pathAndName))
-                {
-                    name = nameBase + Constants.FileNameDelimiter + (++counter).ToString();
-
-                    pathAndName = Path.Combine(path, name);
-                }
-            }
-
-            return name;
         }
 
         public async Task<string> CopyFile(string? source, string destination, ClaimsPrincipal userPrincipal)
@@ -1436,5 +1348,133 @@ namespace NCloud.Services
         {
             return await GetCurrentDepthCloudFiles(currentPath, pattern: pattern);
         }
+
+        #region Private Methods
+
+        /// <summary>
+        /// Method to delete the root folder of the user and database items
+        /// </summary>
+        /// <param name="privateFolderPath">The path to the root folder of the user</param>
+        /// <param name="cloudUser">The user itself from the database</param>
+        /// <returns>Boolean value if method was successful</returns>
+        private async Task<bool> DeleteDirectoriesForUser(string privateFolderPath, CloudUser cloudUser)
+        {
+            try
+            {
+                if (!Directory.Exists(privateFolderPath)) //deleting user folder
+                {
+                    Directory.Delete(privateFolderPath, true);
+                }
+
+                var userFiles = await context.SharedFiles.Where(x => x.Owner == cloudUser).ToListAsync(); //deleting user files and folders
+                var userFolders = await context.SharedFolders.Where(x => x.Owner == cloudUser).ToListAsync();
+
+                context.SharedFiles.RemoveRange(userFiles);
+                context.SharedFolders.RemoveRange(userFolders);
+
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Method to rename a file or folder to a non-existent in the actual folder
+        /// </summary>
+        /// <param name="actualPath">path to the folder or file (on disk)</param>
+        /// <param name="name">name of file, folder (due to ref keyword, it will be modified)</param>
+        /// <param name="isFile">Boolean value if passed data refer to file</param>
+        /// <returns>The modified name</returns>
+        private string RenameObject(string actualPath, ref string name, bool isFile)
+        {
+            int counter = 0;
+
+            string pathAndName = Path.Combine(actualPath, name);
+
+            if (isFile)
+            {
+                string nameBase = new string(name);
+                string extension = String.Empty;
+
+                if (name.Contains(Constants.FileExtensionDelimiter))
+                {
+                    nameBase = Path.GetFileNameWithoutExtension(name);
+                    extension = Path.GetExtension(name);
+                }
+
+                while (System.IO.File.Exists(pathAndName))
+                {
+                    name = nameBase + Constants.FileNameDelimiter + (++counter).ToString() + extension;
+
+                    pathAndName = Path.Combine(actualPath, name);
+                }
+            }
+            else
+            {
+                string nameBase = new string(name);
+
+                while (System.IO.Directory.Exists(pathAndName))
+                {
+                    name = nameBase + Constants.FileNameDelimiter + (++counter).ToString();
+
+                    pathAndName = Path.Combine(actualPath, name);
+                }
+            }
+
+            return name;
+        }
+
+        /// <summary>
+        /// Method to add an existing file to the zipArchive
+        /// </summary>
+        /// <param name="archive">Archive for the file to be added to</param>
+        /// <param name="cloudPath">Path to the file in app</param>
+        /// <param name="name">Name of the file</param>
+        /// <param name="connectedToApp">Parameter to filter only app connected files (default false)</param>
+        /// <param name="connectedToWeb">Parameter to filter only web connected files (default false)</param>
+        /// <returns>Task (need to be awaited)</returns>
+        private async Task<bool> AddFileToArchive(ZipArchive archive, string cloudPath, string name, bool connectedToApp = false, bool connectedToWeb = false)
+        {
+            try
+            {
+                FileInfo fi = new FileInfo(Path.Combine(ParseRootName(cloudPath), name));
+
+                if (!fi.Exists)
+                    throw new FileNotFoundException("File does not exist");
+
+                if (connectedToApp)
+                {
+                    var connections = await FileIsSharedInAppInWeb(cloudPath, name);
+
+                    if (connections.First)
+                    {
+                        archive.CreateEntryFromFile(fi.FullName, name);
+                    }
+                }
+                else if (connectedToWeb)
+                {
+                    var connections = await FileIsSharedInAppInWeb(cloudPath, name);
+
+                    if (connections.Second)
+                    {
+                        archive.CreateEntryFromFile(fi.FullName, name);
+                    }
+                }
+                else
+                {
+                    archive.CreateEntryFromFile(fi.FullName, name);
+                }
+
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
+        #endregion
     }
 }

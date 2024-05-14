@@ -29,7 +29,7 @@ namespace NCloud.Services
                 new ServerSideCommandContainer("help",0,true,false, async (List<string> parameters) => await service.GetTerminalHelpText()),
                 new ServerSideCommandContainer("ls",0,true,false, async (List<string> parameters) => await service.ListCurrentSubDirectories()),
                 new ServerSideCommandContainer("pwd",0,true,false, async (List<string> parameters) => await service.PrintWorkingDirectory()),
-                new ServerSideCommandContainer("mkdir",1,false,true, async (List<string> parameters) => await service.CreateDirectory(parameters[0],(await service.GetSessionCloudPathData()).CurrentPath, httpContext.HttpContext!.User)),
+                new ServerSideCommandContainer("mkdir",1,false,true, async (List<string> parameters) => await service.CreateDirectory(parameters[0],(await service.GetSessionCloudPathData()).CurrentPath, /*httpContext.HttpContext!.User*/ null!)),
                 new ServerSideCommandContainer("noshare-file-web",1,false,true, async (List<string> parameters) => (await service.DisconnectFileFromWeb((await service.GetSessionCloudPathData()).CurrentPath, parameters[0], httpContext.HttpContext!.User)).ToString()),
                 new ServerSideCommandContainer("noshare-file-app",1,false,true, async (List<string> parameters) => (await service.DisconnectFileFromApp((await service.GetSessionCloudPathData()).CurrentPath, parameters[0], httpContext.HttpContext!.User)).ToString()),
                 new ServerSideCommandContainer("noshare-dir-web",1,false,true, async (List<string> parameters) => (await service.DisconnectDirectoryFromWeb((await service.GetSessionCloudPathData()).CurrentPath, parameters[0], httpContext.HttpContext!.User)).ToString()),

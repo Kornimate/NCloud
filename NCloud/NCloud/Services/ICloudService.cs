@@ -6,8 +6,25 @@ namespace NCloud.Services
 {
     public interface ICloudService
     {
-        Task<List<CloudFolder>> GetCurrentDepthCloudDirectories(string currentPath, bool connectToApp = false, bool connectToWeb = false, string? pattern = null);
-        Task<List<CloudFile>> GetCurrentDepthCloudFiles(string currentPath, bool connectToApp = false, bool connectToWeb = false, string? pattern = null);
+        /// <summary>
+        /// Method to get current state files
+        /// </summary>
+        /// <param name="cloudPath">The actual path in the cloud</param>
+        /// <param name="connectToApp">Parameter if listed folders are only connected to app</param>
+        /// <param name="connectToWeb">Parameter if listed folders are only connected to web/param>
+        /// <param name="pattern">Pattern to get only folders matching the given pattern</param>
+        /// <returns></returns>
+        Task<List<CloudFolder>> GetCurrentDepthCloudDirectories(string cloudPath, bool connectToApp = false, bool connectToWeb = false, string? pattern = null);
+
+        /// <summary>
+        /// Method to get current state files
+        /// </summary>
+        /// <param name="cloudPath">The actual path in the cloud</param>
+        /// <param name="connectToApp">Parameter if listed files are only connected to app</param>
+        /// <param name="connectToWeb">Parameter if listed files are only connected to web/param>
+        /// <param name="pattern">Pattern to get only files matching the given pattern</param>
+        /// <returns></returns>
+        Task<List<CloudFile>> GetCurrentDepthCloudFiles(string cloudPath, bool connectToApp = false, bool connectToWeb = false, string? pattern = null);
         Task<CloudUser?> GetAdmin();
         Task<bool> CreateBaseDirectoryForUser(CloudUser cloudUser);
         Task<string> CreateDirectory(string folderName, string currentPath, CloudUser user);

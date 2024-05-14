@@ -8,6 +8,7 @@ using NCloud.ConstantData;
 using NCloud.DTOs;
 using NCloud.Security;
 using Microsoft.AspNetCore.Authorization;
+using NCloud.Services.Exceptions;
 
 namespace NCloud.Controllers
 {
@@ -16,7 +17,14 @@ namespace NCloud.Controllers
     {
         public DriveController(ICloudService service, UserManager<CloudUser> userManager, SignInManager<CloudUser> signInManager, IWebHostEnvironment env, ICloudNotificationService notifier, ILogger<CloudControllerDefault> logger) : base(service, userManager, signInManager, env, notifier, logger) { }
 
-        // GET: DriveController/Details/Documents
+        /// <summary>
+        ///  Action method lists the current directory's items
+        /// </summary>
+        /// <param name="folderName">Name of the directory to be listed</param>
+        /// <param name="files">files to display on UI if passed as parameter, optional</param>
+        /// <param name="folders">folders to display on if passed as parameter, optional</param>
+        /// <param name="passedItems">bool if passed items shoold be displayed on UI</param>
+        /// <returns>The View with the specified elements or current path elements</returns>
         public async Task<IActionResult> Details(string? folderName = null, List<CloudFile>? files = null, List<CloudFolder>? folders = null, bool passedItems = false)
         {
             CloudPathData pathdata = await GetSessionCloudPathData();
@@ -49,12 +57,16 @@ namespace NCloud.Controllers
                 return View(new DriveDetailsViewModel(new List<CloudFile>(),
                                                       new List<CloudFolder>(),
                                                       pathdata.CurrentPathShow,
-                                                      String.Empty,
+                                                      pathdata.CurrentPath,
                                                       null!,
                                                       null!));
             }
         }
 
+        /// <summary>
+        /// Action method to move up a directory from current state
+        /// </summary>
+        /// <returns>Redirection to Details action with adjusted current state</returns>
         public async Task<IActionResult> Back()
         {
             CloudPathData pathdata = await GetSessionCloudPathData();
@@ -69,6 +81,10 @@ namespace NCloud.Controllers
             return RedirectToAction("Details", "Drive");
         }
 
+        /// <summary>
+        /// Action method to navigate back to root
+        /// </summary>
+        /// <returns>Redirection to Details action with adjusted current state</returns>
         public async Task<IActionResult> Home()
         {
             CloudPathData pathData = await GetSessionCloudPathData();
@@ -80,20 +96,30 @@ namespace NCloud.Controllers
             return RedirectToAction("Details", "Drive");
         }
 
+        /// <summary>
+        /// Action method to create new physical folder in user's space
+        /// </summary>
+        /// <param name="folderName">name of the folder to be created</param>
+        /// <returns>Redirection to details with current state</returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AddNewFolder(string? folderName)
         {
             try
             {
-                if (folderName is null || folderName == String.Empty)
-                {
-                    throw new Exception("Folder name must be at least one character!");
-                }
-
                 await service.CreateDirectory(folderName!, (await GetSessionCloudPathData()).CurrentPath, await userManager.GetUserAsync(User));
 
-                AddNewNotification(new Success("Folder is created!"));
+                AddNewNotification(new Success("directory is created"));
+            }
+            catch (CloudFunctionStopException ex)
+            {
+                AddNewNotification(new Error($"Error: {ex.Message}"));
+            }
+            catch (CloudLoggerException ex)
+            {
+                logger.LogError(ex.Message);
+
+                AddNewNotification(new Error("Error while executing action"));
             }
             catch (Exception ex)
             {

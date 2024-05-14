@@ -12,11 +12,6 @@ class Program
     {
         //string path = Path.Combine(Directory.GetCurrentDirectory(), "Test", "..", "Test.txt");
 
-        string path = ".";
-
-        Console.WriteLine(path);
-        path = path[..^1];
-
-        Console.WriteLine(path);
+        FileInfo f = new FileInfo("ihsbfuvebufb\\iebvbeihbvubeibvfewibfibei\\bviebshvbeibsbves\\vihbeihbsvihbeshivbihdbsh\\uvdihsbvhbdihbfvidbvibdih\\0bvihbsihfvbidhsbvihebsihvdbi\\hs\\bvibsihfbvusbfi\\dbsfibsihbgvijdb\\igbvojdbngovnsojbfojv\\sbihbfvosnbihvbosnb\\fivbsofbosinbfown\\soefbsobfvisbvoiuwebsvousbvo\\ubsofbsiybfouwsbfvosubf\\ousbvousbviosbvoiusbvojbeojsbfvousbfouvbsifb\\shbdvihsdbviebvihbisdvihsdivbisdhbfisbfisbficbsibdvishbvisbvisiovsibdvisbfvoiusbvdiusboudvbsoufdbosubfousebfvousbvs.exe");
     }
 }
