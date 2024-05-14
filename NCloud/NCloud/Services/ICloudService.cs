@@ -25,17 +25,85 @@ namespace NCloud.Services
         /// <param name="pattern">Pattern to get only files matching the given pattern</param>
         /// <returns></returns>
         Task<List<CloudFile>> GetCurrentDepthCloudFiles(string cloudPath, bool connectToApp = false, bool connectToWeb = false, string? pattern = null);
+        
+        /// <summary>
+        /// Method to get admin user from database
+        /// </summary>
+        /// <returns>The admin if there is admin in database</returns>
         Task<CloudUser?> GetAdmin();
+
+        /// <summary>
+        /// Method to create base folder and system folder for user
+        /// </summary>
+        /// <param name="cloudUser">The user</param>
+        /// <returns>Boolean value if creating directory was successful</returns>
         Task<bool> CreateBaseDirectoryForUser(CloudUser cloudUser);
-        Task<string> CreateDirectory(string folderName, string currentPath, CloudUser user);
-        Task<string> CreateFile(IFormFile file, string currentPath, ClaimsPrincipal userPrincipal);
-        Task<bool> RemoveDirectory(string folderName, string currentPath, ClaimsPrincipal userPrincipal);
-        Task<bool> RemoveFile(string fileName, string currentPath, ClaimsPrincipal userPrincipal);
-        string ServerPath(string currentPath);
-        string ChangeRootName(string currentPath);
-        Tuple<List<CloudFile?>, List<CloudFolder?>> GetCurrentUserIndexData();
-        bool DirectoryExists(string? pathAndName);
-        Task<DirectoryInfo> GetFolderByPath(string path, string folderName);
+
+        /// <summary>
+        /// Method to delete the root folder of the user and database items
+        /// </summary>
+        /// <param name="privateFolderPath">The path to the root folder of the user</param>
+        /// <param name="cloudUser">The user itself from the database</param>
+        /// <returns>Boolean value if method was successful</returns>
+        Task<bool> DeleteDirectoriesForUser(string privateFolderPath, CloudUser cloudUser);
+
+        /// <summary>
+        /// Method to create physical folder for user
+        /// </summary>
+        /// <param name="folderName">Name of the folder to be created</param>
+        /// <param name="cloudPath">Path to the folder in app</param>
+        /// <param name="user">The owner of the folder</param>
+        /// <returns>The name of the created folder</returns>
+        Task<string> CreateDirectory(string folderName, string cloudPath, CloudUser user);
+
+        /// <summary>
+        /// Method to create physical file for user
+        /// </summary>
+        /// <param name="file">IFormFile from controller</param>
+        /// <param name="cloudPath">Path to the file in app</param>
+        /// <param name="user">The owner of the file</param>
+        /// <returns>The name of the created file</returns>
+        Task<string> CreateFile(IFormFile file, string cloudPath, CloudUser user);
+
+        /// <summary>
+        /// Method to remove physical folder form user space
+        /// </summary>
+        /// <param name="folderName">Name of the folder to be removed</param>
+        /// <param name="cloudPath">Path to the folder in app</param>
+        /// <param name="user">The owner of folder</param>
+        /// <returns>Boolean indicating the success of action</returns>
+        Task<bool> RemoveDirectory(string folderName, string cloudPath, CloudUser user);
+
+        /// <summary>
+        /// Method to remove physical folder form user space
+        /// </summary>
+        /// <param name="fileName">Name of the folder to be removed</param>
+        /// <param name="cloudPath">Path to the folder in app</param>
+        /// <param name="user">The owner of folder</param>
+        /// <returns>Boolean indicating the success of action</returns>
+        Task<bool> RemoveFile(string fileName, string cloudPath, CloudUser user);
+
+        /// <summary>
+        /// Method to return full path of physical objects (files/folders)
+        /// </summary>
+        /// <param name="cloudPath">Path in the app</param>
+        /// <returns>The full physical path of file/folder</returns>
+        string ServerPath(string cloudPath);
+
+        /// <summary>
+        /// Changes root name of path
+        /// </summary>
+        /// <param name="path">Path in app or shared path in app</param>
+        /// <returns>The changed path , changes : shared -> cloud and vice versa</returns>
+        string ChangeRootName(string path);
+
+        /// <summary>
+        /// Method to get CloudFolder object by full path
+        /// </summary>
+        /// <param name="physicalPath">Physical path to the folder</param>
+        /// <param name="folderName">Name of the folder</param>
+        /// <returns>CloudFolder object with physical data in it</returns>
+        Task<DirectoryInfo> GetFolderByPath(string physicalPath, string folderName);
         Task<bool> ConnectDirectoryToWeb(string currentPath, string directoryName, ClaimsPrincipal userPrincipal);
         Task<bool> ConnectDirectoryToApp(string currentPath, string directoryName, ClaimsPrincipal userPrincipal);
         Task<bool> DisconnectDirectoryFromApp(string currentPath, string directoryName, ClaimsPrincipal userPrincipal);

@@ -5,6 +5,7 @@ using NCloud.ConstantData;
 using NCloud.DTOs;
 using NCloud.Models;
 using NCloud.Services;
+using NCloud.Services.Exceptions;
 using NCloud.Users;
 using NCloud.ViewModels;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
@@ -37,7 +38,7 @@ namespace NCloud.Controllers
         {
             command = command.Trim();
 
-            if (String.IsNullOrEmpty(command))
+            if (String.IsNullOrWhiteSpace(command))
                 return Json(new ConnectionDTO { Success = true, Message = "", Result = "", Payload = "" });
 
             try
@@ -57,7 +58,7 @@ namespace NCloud.Controllers
                 return Json(new ConnectionDTO { Success = successAndMsgAndPayLoadAndPrint.Item1, Message = successAndMsgAndPayLoadAndPrint.Item1 ? Constants.TerminalGreenText(successAndMsgAndPayLoadAndPrint.Item2) : Constants.TerminalRedText(successAndMsgAndPayLoadAndPrint.Item2), Payload = (!successAndMsgAndPayLoadAndPrint.Item4 ? successAndMsgAndPayLoadAndPrint.Item3?.ToString() : (await GetSessionCloudPathData()).CurrentPathShow) ?? String.Empty, Result = !String.IsNullOrEmpty(successAndMsgAndPayLoadAndPrint.Item3?.ToString() ?? String.Empty) && successAndMsgAndPayLoadAndPrint.Item4 ? ($"\n{successAndMsgAndPayLoadAndPrint.Item3}\n") : "" });
 
             }
-            catch (InvalidDataException ex)
+            catch (CloudFunctionStopException ex)
             {
                 return Json(new ConnectionDTO { Success = false, Message = Constants.TerminalRedText($"invalid command - {ex.Message}") });
 
@@ -72,7 +73,9 @@ namespace NCloud.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> EvaluateSingleLine(string command)
         {
-            if (command is null || command == String.Empty)
+            command = command.Trim();
+
+            if (String.IsNullOrWhiteSpace(command))
             {
                 AddNewNotification(new Error("No command"));
 
@@ -101,7 +104,7 @@ namespace NCloud.Controllers
                 return RedirectToAction("Details", "Drive");
 
             }
-            catch (InvalidDataException ex)
+            catch (CloudFunctionStopException ex)
             {
                 AddNewNotification(new Error($"Invalid command - {ex.Message}"));
 

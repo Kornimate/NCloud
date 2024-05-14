@@ -10,8 +10,25 @@ class Program
 {
     static void Main()
     {
-        //string path = Path.Combine(Directory.GetCurrentDirectory(), "Test", "..", "Test.txt");
+        string file = "./Test2.txt";
+        string file2 = file;
 
-        FileInfo f = new FileInfo("ihsbfuvebufb\\iebvbeihbvubeibvfewibfibei\\bviebshvbeibsbves\\vihbeihbsvihbeshivbihdbsh\\uvdihsbvhbdihbfvidbvibdih\\0bvihbsihfvbidhsbvihebsihvdbi\\hs\\bvibsihfbvusbfi\\dbsfibsihbgvijdb\\igbvojdbngovnsojbfojv\\sbihbfvosnbihvbosnb\\fivbsofbosinbfown\\soefbsobfvisbvoiuwebsvousbvo\\ubsofbsiybfouwsbfvosubf\\ousbvousbviosbvoiusbvojbeojsbfvousbfouvbsifb\\shbdvihsdbviebvihbisdvihsdivbisdhbfisbfisbficbsibdvishbvisbvisiovsibdvisbfvoiusbvdiusboudvbsoufdbosubfousebfvousbvs.exe");
+        Console.WriteLine(file);
+        Console.WriteLine(file2);
+
+        file = "ok";
+
+        Console.WriteLine(file);
+        Console.WriteLine(file2);
+
+        //FileInfo f = new FileInfo(file);
+
+        //Console.WriteLine(f.Exists.ToString());
+
+        //using (FileStream fs = File.Create(file)) { }
+
+        //f = new FileInfo(file);
+
+        //Console.WriteLine(f.Exists.ToString());
     }
 }

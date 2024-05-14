@@ -1,6 +1,7 @@
 ﻿using Castle.Core;
 using NCloud.ConstantData;
 using NCloud.Models;
+using NCloud.Services.Exceptions;
 using System.Text;
 using System.Text.RegularExpressions;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
@@ -105,10 +106,10 @@ namespace NCloud.Services
         public static void CheckCorrectnessOfCommand(string command)
         {
             if (!Regex.IsMatch(command, Constants.CommandRegex))
-                throw new InvalidDataException("invalid data in path");
+                throw new CloudFunctionStopException("invalid data in path");
 
             if (command.Count(x => x == Constants.TerminalStringMarker) % 2 != 0)
-                throw new InvalidDataException("string markers incorrect");
+                throw new CloudFunctionStopException("string markers incorrect");
 
         }
 
@@ -116,7 +117,7 @@ namespace NCloud.Services
         {
             if (!command.StartsWith(Constants.SingleLineCommandMarker))
             {
-                throw new InvalidDataException("command should start with '@'");
+                throw new CloudFunctionStopException("command should start with '@'");
             }
 
             CheckCorrectnessOfCommand(command);

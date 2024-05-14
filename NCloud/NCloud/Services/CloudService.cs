@@ -11,6 +11,8 @@ using System.IO.Compression;
 using System.Text;
 using Newtonsoft.Json.Linq;
 using System.Text.RegularExpressions;
+using System.Reflection;
+using NCloud.Security;
 
 namespace NCloud.Services
 {
@@ -28,18 +30,23 @@ namespace NCloud.Services
         }
 
         #region Public Methods 
+        public async Task<CloudUser?> GetAdmin()
+        {
+            return await context.Users.FirstOrDefaultAsync(x => x.UserName == Constants.AdminUserName);
+        }
+
         public async Task<bool> CreateBaseDirectoryForUser(CloudUser cloudUser)
         {
             string privateFolderPath = Constants.GetPrivateBaseDirectoryForUser(cloudUser.Id.ToString());
 
             try
             {
-                if (!Directory.Exists(privateFolderPath))
+                if (!Directory.Exists(privateFolderPath)) //creating user folder
                 {
                     Directory.CreateDirectory(privateFolderPath);
                 }
 
-                foreach (string folder in Constants.SystemFolders)
+                foreach (string folder in Constants.SystemFolders) //creating system folders
                 {
                     string pathHelper = Path.Combine(privateFolderPath, folder);
 
@@ -62,146 +69,206 @@ namespace NCloud.Services
             }
         }
 
+        public async Task<bool> DeleteDirectoriesForUser(string privateFolderPath, CloudUser cloudUser)
+        {
+            try
+            {
+                if (!Directory.Exists(privateFolderPath)) //deleting user folder
+                {
+                    Directory.Delete(privateFolderPath, true);
+                }
+
+                var userFiles = await context.SharedFiles.Where(x => x.Owner == cloudUser).ToListAsync(); //deleting user files and folders
+                var userFolders = await context.SharedFolders.Where(x => x.Owner == cloudUser).ToListAsync();
+
+                context.SharedFiles.RemoveRange(userFiles);
+                context.SharedFolders.RemoveRange(userFolders);
+
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
         public async Task<string> CreateDirectory(string folderName, string cloudPath, CloudUser user)
         {
-            if (String.IsNullOrWhiteSpace(folderName))
+            if (String.IsNullOrWhiteSpace(folderName)) //checking restrictions
                 throw new CloudFunctionStopException("no directory name");
 
             if (!Regex.IsMatch(folderName, Constants.FolderAndFileRegex))
                 throw new CloudFunctionStopException("invalid directory name");
 
             if (String.IsNullOrWhiteSpace(cloudPath))
-                throw new CloudFunctionStopException("invalid path!");
+                throw new CloudFunctionStopException("invalid path");
 
-            string path = ParseRootName(cloudPath);
-            string pathAndName = Path.Combine(path, folderName);
+            DirectoryInfo di = new DirectoryInfo(Path.Combine(ParseRootName(cloudPath), folderName));
 
             try
             {
-                if (!Directory.Exists(pathAndName))
+                if (!di.Exists)
                 {
-                    await Task.Run(() => Directory.CreateDirectory(pathAndName));
+                    await Task.Run(() => di.Create()); //creating folder
 
-                    Pair<string, string> parentPathAndName = GetParentPathAndName(cloudPath);
+                    Pair<string, string> parentPathAndName = GetParentPathAndName(cloudPath); //add sharing to folder (inherits parent sharing)
 
                     Pair<bool, bool> connections = await FolderIsSharedInAppInWeb(parentPathAndName.First, parentPathAndName.Second);
 
-                    await SetDirectoryConnectedState(cloudPath, folderName, ChangeOwnerIdentification(ChangeRootName(cloudPath), user.UserName), user, connections.First, connections.Second);
+                    if (!await SetDirectoryConnectedState(cloudPath, folderName, ChangeOwnerIdentification(ChangeRootName(cloudPath), user.UserName), user, connections.First, connections.Second))
+                        throw new CloudFunctionStopException("failed to adjust folder rights");
+
+                    return di.Name;
                 }
                 else
                 {
-                    throw new CloudFunctionStopException("directory already exists!");
+                    throw new CloudFunctionStopException("directory already exists");
                 }
-
-                return folderName; //TODO: revise later
-            }
-            catch (InvalidOperationException)
-            {
-                throw;
             }
             catch (Exception)
             {
-                if (!(await RemoveDirectory(folderName, cloudPath, null))) //change later
+                try
                 {
-                    throw new CloudLoggerException($"Directory not removeable : {Path.Combine(ParseRootName(cloudPath), folderName)}");
+                    if (!(await RemoveDirectory(folderName, cloudPath, user)))
+                    {
+                        throw new CloudLoggerException($"Directory not removeable : {Path.Combine(ParseRootName(cloudPath), folderName)}"); //logging serious problem
+                    }
+                }
+                catch (Exception ex)
+                {
+                    throw new CloudLoggerException($"Directory not removeable : {Path.Combine(ParseRootName(cloudPath), folderName)} {ex.Message}"); //logging serious problem
                 }
 
-                throw;
+                throw new CloudFunctionStopException("error while adding directory");
             }
         }
 
-        #endregion
-
-        public async Task<string> CreateFile(IFormFile file, string currentPath, ClaimsPrincipal userPrincipal)
+        public async Task<bool> RemoveDirectory(string folderName, string cloudPath, CloudUser user)
         {
-            string path = ParseRootName(currentPath);
-            string newName = file.FileName;
+            if (String.IsNullOrWhiteSpace(folderName)) //check for constraints
+            {
+                throw new CloudFunctionStopException("invalid folder name");
+            }
+
+            DirectoryInfo di = new DirectoryInfo(Path.Combine(ParseRootName(cloudPath), folderName));
+
+            if (!di.Exists)
+            {
+                throw new CloudFunctionStopException("directory does not exist");
+            }
+
+            if (IsSystemFolder(di.FullName))
+            {
+                return false;
+            }
 
             try
             {
-                string pathAndName = Path.Combine(path, RenameObject(path, ref newName, true));
+                await Task.Run(() => di.Delete(true)); //delete folder
 
-                using (FileStream stream = new FileStream(pathAndName, FileMode.Create))
+                await SetObjectAndUnderlyingObjectsState(cloudPath, folderName, ChangeOwnerIdentification(ChangeRootName(cloudPath), user.UserName), user, false, false); //delete folder from database
+            }
+            catch (Exception)
+            {
+                throw new CloudFunctionStopException("error while removing directory");
+            }
+
+            return true;
+        }
+
+        public async Task<string> CreateFile(IFormFile file, string cloudPath, CloudUser user)
+        {
+            if (file is null) //checking restrictions
+                throw new CloudFunctionStopException("no file");
+
+            if (!Regex.IsMatch(file.FileName, Constants.FolderAndFileRegex))
+                throw new CloudFunctionStopException("invalid file name");
+
+            if (String.IsNullOrWhiteSpace(cloudPath))
+                throw new CloudFunctionStopException("invalid path");
+
+            string path = ParseRootName(cloudPath);
+            string newName = new string(file.FileName);
+
+            try
+            {
+                FileInfo fi = new FileInfo(Path.Combine(path, RenameObject(path, ref newName, true)));
+
+                using (FileStream stream = fi.Create())
                 {
                     await file.CopyToAsync(stream);
                 }
 
-                CloudUser user = await userManager.GetUserAsync(userPrincipal);
+                fi.SetAccessControl(SecurityManager.GetFileRights());
 
-                Pair<string, string> parentPathAndName = GetParentPathAndName(currentPath);
+                Pair<string, string> parentPathAndName = GetParentPathAndName(cloudPath);
 
                 Pair<bool, bool> connections = await FolderIsSharedInAppInWeb(parentPathAndName.First, parentPathAndName.Second);
 
-                await SetFileConnectedState(currentPath, newName, ChangeOwnerIdentification(ChangeRootName(currentPath), user.UserName), user, connections.First, connections.Second);
+                if (!await SetFileConnectedState(cloudPath, newName, ChangeOwnerIdentification(ChangeRootName(cloudPath), user.UserName), user, connections.First, connections.Second))
+                    throw new CloudFunctionStopException("failed to adjust file rights");
+
+                return newName;
             }
-            catch
+            catch (Exception)
             {
-                if (!(await RemoveFile(path, newName, userPrincipal)))
+                try
                 {
-                    //TODO: logging action
+                    if (!(await RemoveFile(path, newName, user)))
+                    {
+                        throw new CloudLoggerException($"File not removeable : {Path.Combine(ParseRootName(cloudPath), newName)}");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    throw new CloudLoggerException($"File not removeable : {Path.Combine(ParseRootName(cloudPath), newName)} {ex.Message}");
                 }
 
-                return String.Empty;
+                throw new CloudFunctionStopException("error while adding file");
             }
-
-            return newName;
         }
 
-        private async Task<Pair<bool, bool>> FolderIsSharedInAppInWeb(string cloudPath, string directoryName)
+        public async Task<bool> RemoveFile(string fileName, string cloudPath, CloudUser user)
         {
-            SharedFolder? sharedFolder = await context.SharedFolders.FirstOrDefaultAsync(x => x.CloudPathFromRoot == cloudPath && x.Name == directoryName);
 
-            if (sharedFolder is null)
+            if (String.IsNullOrWhiteSpace(fileName))
             {
-                return new Pair<bool, bool>(false, false);
+                throw new ArgumentException("invalid folder name");
             }
 
-            return new Pair<bool, bool>(sharedFolder.ConnectedToApp, sharedFolder.ConnectedToWeb);
-        }
+            FileInfo fi = new FileInfo(Path.Combine(ParseRootName(cloudPath), fileName));
 
-        private async Task<Pair<bool, bool>> FileIsSharedInAppInWeb(string cloudPath, string directoryName)
-        {
-            SharedFile? sharedFile = await context.SharedFiles.FirstOrDefaultAsync(x => x.CloudPathFromRoot == cloudPath && x.Name == directoryName);
-
-            if (sharedFile is null)
+            if (!fi.Exists)
             {
-                return new Pair<bool, bool>(false, false);
+                throw new CloudFunctionStopException("file does not exist");
             }
-
-            return new Pair<bool, bool>(sharedFile.ConnectedToApp, sharedFile.ConnectedToWeb);
-        }
-
-        private Pair<string, string> GetParentPathAndName(string path)
-        {
-            int index = path.LastIndexOf(Path.DirectorySeparatorChar);
-
-            if (index > -1 && index < path.Length - 1)
-            {
-                return new Pair<string, string>(path[..index], path[(index + 1)..]);
-            }
-            else
-            {
-                return new Pair<string, string>(String.Empty, String.Empty);
-            }
-        }
-
-        public async Task<CloudUser?> GetAdmin()
-        {
-            return await context.Users.FirstOrDefaultAsync(x => x.UserName == Constants.AdminUserName);
-        }
-
-        public async Task<List<CloudFile>> GetCurrentDepthCloudFiles(string currentPath, bool connectedToApp = false, bool connectedToWeb = false, string? pattern = null)
-        {
-            string path = ParseRootName(currentPath);
-
-            var appsharedfiles = context.SharedFiles.Where(x => x.ConnectedToApp && x.CloudPathFromRoot == currentPath).Select(x => x.Name.ToLower()).ToList() ?? new();
-            var websharedfiles = context.SharedFiles.Where(x => x.ConnectedToWeb && x.CloudPathFromRoot == currentPath).Select(x => x.Name.ToLower()).ToList() ?? new();
 
             try
             {
+                await Task.Run(() => fi.Delete());
+
+                await SetFileConnectedState(cloudPath, fileName, ChangeOwnerIdentification(ChangeRootName(cloudPath), user.UserName), user, false, false);
+            }
+            catch
+            {
+                throw new CloudFunctionStopException("error while removing file");
+            }
+
+            return true;
+        }
+
+        public async Task<List<CloudFile>> GetCurrentDepthCloudFiles(string cloudPath, bool connectedToApp = false, bool connectedToWeb = false, string? pattern = null)
+        {
+            try
+            {
+                string path = ParseRootName(cloudPath);
+
+                var appsharedfiles = context.SharedFiles.Where(x => x.ConnectedToApp && x.CloudPathFromRoot == cloudPath).Select(x => x.Name.ToLower()).ToList() ?? new();
+                var websharedfiles = context.SharedFiles.Where(x => x.ConnectedToWeb && x.CloudPathFromRoot == cloudPath).Select(x => x.Name.ToLower()).ToList() ?? new();
+
                 var files = pattern is null ? Directory.GetFiles(path) : Directory.GetFiles(path, pattern);
 
-                var items = await Task.FromResult<IEnumerable<CloudFile>>(files.Select(x => new CloudFile(new FileInfo(x), appsharedfiles.Contains(Path.GetFileName(x)?.ToLower()!), websharedfiles.Contains(Path.GetFileName(x)?.ToLower()!), Path.Combine(currentPath, Path.GetFileName(x)))).OrderBy(x => x.Info.Name));
+                var items = await Task.FromResult<IEnumerable<CloudFile>>(files.Select(x => new CloudFile(new FileInfo(x), appsharedfiles.Contains(Path.GetFileName(x)?.ToLower()!), websharedfiles.Contains(Path.GetFileName(x)?.ToLower()!), Path.Combine(cloudPath, Path.GetFileName(x)))).OrderBy(x => x.Info.Name));
 
                 if (connectedToApp)
                 {
@@ -216,19 +283,19 @@ namespace NCloud.Services
             }
             catch
             {
-                throw new Exception("Error occurred while getting Files!");
+                throw new CloudFunctionStopException("error occurred while getting files");
             }
         }
 
         public async Task<List<CloudFolder>> GetCurrentDepthCloudDirectories(string currentPath, bool connectedToApp = false, bool connectedToWeb = false, string? pattern = null)
         {
-            string path = ParseRootName(currentPath);
-
-            var appsharedfolders = await context.SharedFolders.Where(x => x.ConnectedToApp && x.CloudPathFromRoot == currentPath).Select(x => x.Name.ToLower()).ToListAsync() ?? new();
-            var websharedfolders = await context.SharedFolders.Where(x => x.ConnectedToWeb && x.CloudPathFromRoot == currentPath).Select(x => x.Name.ToLower()).ToListAsync() ?? new();
-
             try
             {
+                string path = ParseRootName(currentPath);
+
+                var appsharedfolders = await context.SharedFolders.Where(x => x.ConnectedToApp && x.CloudPathFromRoot == currentPath).Select(x => x.Name.ToLower()).ToListAsync() ?? new();
+                var websharedfolders = await context.SharedFolders.Where(x => x.ConnectedToWeb && x.CloudPathFromRoot == currentPath).Select(x => x.Name.ToLower()).ToListAsync() ?? new();
+
                 var folders = pattern is null ? Directory.GetDirectories(path) : Directory.GetDirectories(path, pattern);
 
                 var items = await Task.FromResult<IEnumerable<CloudFolder>>(folders.Select(x => new CloudFolder(new DirectoryInfo(x), appsharedfolders.Contains(Path.GetFileName(x)?.ToLower()!), websharedfolders.Contains(Path.GetFileName(x)?.ToLower()!), Path.Combine(currentPath, Path.GetFileName(x)))).OrderBy(x => x.Info.Name));
@@ -246,142 +313,35 @@ namespace NCloud.Services
             }
             catch
             {
-                throw new Exception("Error occurred while getting Folders!");
+                throw new CloudFunctionStopException("error occurred while getting folders");
             }
         }
 
-        public async Task<bool> RemoveDirectory(string folderName, string currentPath, ClaimsPrincipal userPrincipal)
+        public string ChangeRootName(string path)
         {
-            string path = ParseRootName(currentPath);
-            string pathAndName = Path.Combine(path, folderName);
-
-            if (!Directory.Exists(pathAndName))
+            if (path.StartsWith(Constants.PrivateRootName))
             {
-                throw new Exception("The Folder does not exists!");
+                return path.Replace(Constants.PrivateRootName, Constants.PublicRootName);
+            }
+            else if (path.StartsWith(Constants.PublicRootName))
+            {
+                return path.Replace(Constants.PublicRootName, Constants.PrivateRootName);
             }
 
-            if (IsSystemFolder(pathAndName))
-            {
-                return false;
-            }
-
-            if (path is null || path == String.Empty)
-            {
-                throw new ArgumentException("Invalid path!");
-            }
-
-            if (folderName is null || folderName == String.Empty)
-            {
-                throw new ArgumentException("Invalid Folder Name!");
-            }
-
-            try
-            {
-                await Task.Run(() => Directory.Delete(pathAndName, true));
-
-                CloudUser user = await userManager.GetUserAsync(userPrincipal);
-
-                await SetObjectAndUnderlyingObjectsState(currentPath, folderName, ChangeOwnerIdentification(ChangeRootName(currentPath), user.UserName), user, false, false);
-
-            }
-            catch (Exception)
-            {
-                throw new Exception("Could not remove directory");
-            }
-
-            return true;
+            return path;
         }
 
-        public async Task<bool> RemoveFile(string fileName, string currentPath, ClaimsPrincipal userPrincipal)
+        public string ServerPath(string cloudPath)
         {
-            string path = ParseRootName(currentPath);
-            string pathAndName = Path.Combine(path, fileName);
-
-            if (!File.Exists(pathAndName))
-            {
-                throw new Exception("The File does not exists!");
-            }
-
-            if (path is null || path == String.Empty)
-            {
-                throw new ArgumentException("Invalid path!");
-            }
-
-            if (fileName is null || fileName == String.Empty)
-            {
-                throw new ArgumentException("Invalid Folder Name!");
-            }
-
-            try
-            {
-                await Task.Run(() => File.Delete(pathAndName));
-
-                CloudUser user = await userManager.GetUserAsync(userPrincipal);
-
-                await SetFileConnectedState(currentPath, fileName, ChangeOwnerIdentification(ChangeRootName(currentPath), user.UserName), user, false, false);
-            }
-            catch
-            {
-                throw new Exception("Could not remove file");
-            }
-
-            return true;
-        }
-
-        private string ParseRootName(string cloudPath)
-        {
-            if (cloudPath.StartsWith(Constants.PrivateRootName))
-            {
-                return cloudPath.Replace(Constants.PrivateRootName, Constants.GetPrivateBaseDirectory());
-            }
-
-            return String.Empty;
-        }
-
-        public string ChangeRootName(string currentPath)
-        {
-            if (currentPath.StartsWith(Constants.PrivateRootName))
-            {
-                return currentPath.Replace(Constants.PrivateRootName, Constants.PublicRootName);
-            }
-            else if (currentPath.StartsWith(Constants.PublicRootName))
-            {
-                return currentPath.Replace(Constants.PublicRootName, Constants.PrivateRootName);
-            }
-
-            return currentPath;
-        }
-
-        private bool IsSystemFolder(string path)
-        {
-            List<string> pathFolders = path.Split(Path.DirectorySeparatorChar).ToList();
-
-            if (pathFolders.Count < 1)
-                return false;
-
-            return Constants.SystemFolders.Contains(pathFolders.Last()) && ((pathFolders.Count - pathFolders.FindIndex(x => x == Constants.WebRootFolderName) - 1) == Constants.DistanceToRootFolder);
-        }
-
-        public string ServerPath(string currentPath)
-        {
-            return ParseRootName(currentPath);
-        }
-
-        public Tuple<List<CloudFile?>, List<CloudFolder?>> GetCurrentUserIndexData()
-        {
-            return new Tuple<List<CloudFile?>, List<CloudFolder?>>(new(), new());
-        }
-
-        public bool DirectoryExists(string? pathAndName)
-        {
-            if (pathAndName is null) return false;
-            return Directory.Exists(ParseRootName(pathAndName));
+            return ParseRootName(cloudPath);
         }
 
         public async Task<DirectoryInfo> GetFolderByPath(string serverPath, string folderName)
         {
             return await Task.FromResult<DirectoryInfo>(new DirectoryInfo(Directory.GetDirectories(serverPath, folderName).First()));
         }
+
+        #endregion
 
         private async Task<bool> SetDirectoryConnectedState(string cloudPath, string directoryName, string sharingPath, CloudUser user, bool? connectToApp = null, bool? connectToWeb = null)
         {
@@ -1352,35 +1312,6 @@ namespace NCloud.Services
         #region Private Methods
 
         /// <summary>
-        /// Method to delete the root folder of the user and database items
-        /// </summary>
-        /// <param name="privateFolderPath">The path to the root folder of the user</param>
-        /// <param name="cloudUser">The user itself from the database</param>
-        /// <returns>Boolean value if method was successful</returns>
-        private async Task<bool> DeleteDirectoriesForUser(string privateFolderPath, CloudUser cloudUser)
-        {
-            try
-            {
-                if (!Directory.Exists(privateFolderPath)) //deleting user folder
-                {
-                    Directory.Delete(privateFolderPath, true);
-                }
-
-                var userFiles = await context.SharedFiles.Where(x => x.Owner == cloudUser).ToListAsync(); //deleting user files and folders
-                var userFolders = await context.SharedFolders.Where(x => x.Owner == cloudUser).ToListAsync();
-
-                context.SharedFiles.RemoveRange(userFiles);
-                context.SharedFolders.RemoveRange(userFolders);
-
-                return true;
-            }
-            catch (Exception)
-            {
-                return false;
-            }
-        }
-
-        /// <summary>
         /// Method to rename a file or folder to a non-existent in the actual folder
         /// </summary>
         /// <param name="actualPath">path to the folder or file (on disk)</param>
@@ -1473,6 +1404,92 @@ namespace NCloud.Services
             {
                 return false;
             }
+        }
+
+        /// <summary>
+        /// Method to get folder is shared in app and in web from database
+        /// </summary>
+        /// <param name="cloudPath">Path to directory in app</param>
+        /// <param name="directoryName">Name of directory to be searched</param>
+        /// <returns>A pair indicating if the folder is shared in app and in web in this order</returns>
+        private async Task<Pair<bool, bool>> FolderIsSharedInAppInWeb(string cloudPath, string directoryName)
+        {
+            SharedFolder? sharedFolder = await context.SharedFolders.FirstOrDefaultAsync(x => x.CloudPathFromRoot == cloudPath && x.Name == directoryName);
+
+            if (sharedFolder is null)
+            {
+                return new Pair<bool, bool>(false, false);
+            }
+
+            return new Pair<bool, bool>(sharedFolder.ConnectedToApp, sharedFolder.ConnectedToWeb);
+        }
+
+        /// <summary>
+        /// Method to get folder is shared in app and in web from database
+        /// </summary>
+        /// <param name="cloudPath">Path to directory in app</param>
+        /// <param name="directoryName">Name of directory to be searched</param>
+        /// <returns>A pair indicating if the folder is shared in app and in web in this order</returns>
+
+        private async Task<Pair<bool, bool>> FileIsSharedInAppInWeb(string cloudPath, string directoryName)
+        {
+            SharedFile? sharedFile = await context.SharedFiles.FirstOrDefaultAsync(x => x.CloudPathFromRoot == cloudPath && x.Name == directoryName);
+
+            if (sharedFile is null)
+            {
+                return new Pair<bool, bool>(false, false);
+            }
+
+            return new Pair<bool, bool>(sharedFile.ConnectedToApp, sharedFile.ConnectedToWeb);
+        }
+
+        /// <summary>
+        /// Method to split the path into the last folder and the remaining path string
+        /// </summary>
+        /// <param name="path">The path to be splitted</param>
+        /// <returns>A pair containing the path to the last folder and the folder</returns>
+        private Pair<string, string> GetParentPathAndName(string path)
+        {
+            int index = path.LastIndexOf(Path.DirectorySeparatorChar);
+
+            if (index > -1 && index < path.Length - 1)
+            {
+                return new Pair<string, string>(path[..index], path[(index + 1)..]);
+            }
+            else
+            {
+                return new Pair<string, string>(String.Empty, String.Empty);
+            }
+        }
+
+        /// <summary>
+        /// Method to parse cloud path to physical path
+        /// </summary>
+        /// <param name="cloudPath">Path in the app</param>
+        /// <returns>The psysical path</returns>
+        private string ParseRootName(string cloudPath)
+        {
+            if (cloudPath.StartsWith(Constants.PrivateRootName))
+            {
+                return cloudPath.Replace(Constants.PrivateRootName, Constants.GetPrivateBaseDirectory());
+            }
+
+            return String.Empty;
+        }
+
+        /// <summary>
+        /// Method to check if folder is system folder (no remove, no rename)
+        /// </summary>
+        /// <param name="physicalPath">Path to the folder</param>
+        /// <returns></returns>
+        private bool IsSystemFolder(string physicalPath)
+        {
+            List<string> pathFolders = physicalPath.Split(Path.DirectorySeparatorChar).ToList();
+
+            if (pathFolders.Count < 1)
+                return false;
+
+            return Constants.SystemFolders.Contains(pathFolders.Last()) && ((pathFolders.Count - pathFolders.FindIndex(x => x == Constants.WebRootFolderName) - 1) == Constants.DistanceToRootFolder);
         }
 
         #endregion

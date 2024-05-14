@@ -9,6 +9,7 @@ using NCloud.DTOs;
 using NCloud.Security;
 using Microsoft.AspNetCore.Authorization;
 using NCloud.Services.Exceptions;
+using System.IO;
 
 namespace NCloud.Controllers
 {
@@ -29,16 +30,13 @@ namespace NCloud.Controllers
         {
             CloudPathData pathdata = await GetSessionCloudPathData();
 
-            string currentPath = String.Empty;
+            string currentPath;
 
-            if (service.DirectoryExists(pathdata.TrySetFolder(folderName)))
-            {
+            if (SecurityManager.CheckIfDirectoryExists(pathdata.TrySetFolder(folderName)))
                 currentPath = pathdata.SetFolder(folderName);
-            }
+
             else
-            {
                 currentPath = pathdata.CurrentPath;
-            }
 
             await SetSessionCloudPathData(pathdata);
 
@@ -53,7 +51,8 @@ namespace NCloud.Controllers
             }
             catch (Exception ex)
             {
-                AddNewNotification(new Error(ex.Message));
+                AddNewNotification(new Error($"Error - {ex.Message}"));
+
                 return View(new DriveDetailsViewModel(new List<CloudFile>(),
                                                       new List<CloudFolder>(),
                                                       pathdata.CurrentPathShow,
@@ -107,7 +106,10 @@ namespace NCloud.Controllers
         {
             try
             {
-                await service.CreateDirectory(folderName!, (await GetSessionCloudPathData()).CurrentPath, await userManager.GetUserAsync(User));
+                string newFolder = await service.CreateDirectory(folderName!, (await GetSessionCloudPathData()).CurrentPath, await userManager.GetUserAsync(User));
+
+                if (newFolder != folderName)
+                    throw new CloudFunctionStopException("error while naming directory");
 
                 AddNewNotification(new Success("directory is created"));
             }
@@ -119,16 +121,22 @@ namespace NCloud.Controllers
             {
                 logger.LogError(ex.Message);
 
-                AddNewNotification(new Error("Error while executing action"));
+                AddNewNotification(new Error("Error while adding directory"));
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                AddNewNotification(new Error(ex.Message));
+                AddNewNotification(new Error("Error while adding directory"));
             }
 
             return RedirectToAction("Details");
         }
 
+
+        /// <summary>
+        /// Action method to add new files to the cloud storage
+        /// </summary>
+        /// <param name="files">List of IFormFiles from form</param>
+        /// <returns>Redirection to details action</returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AddNewFiles(List<IFormFile>? files = null)
@@ -138,6 +146,7 @@ namespace NCloud.Controllers
             if (files == null || files.Count == 0)
             {
                 AddNewNotification(new Warning("No Files were uploaded!"));
+
                 return RedirectToAction("Details", "Drive");
             }
 
@@ -145,18 +154,36 @@ namespace NCloud.Controllers
 
             for (int i = 0; i < files.Count; i++)
             {
-                string res = await service.CreateFile(files[i], pathData.CurrentPath, User);
-
-                if (res != files[i].FileName)
+                try
                 {
-                    AddNewNotification(new Warning($"A file has been renamed!"));
+                    string newFileName = await service.CreateFile(files[i], pathData.CurrentPath, await userManager.GetUserAsync(User));
+
+                    if (newFileName != files[i].FileName)
+                    {
+                        AddNewNotification(new Warning($"A file has been renamed! New name: {newFileName}"));
+                    }
                 }
-                else if (res == String.Empty)
+                catch (CloudFunctionStopException ex)
+                {
+                    errorPresent = true;
+
+                    AddNewNotification(new Error($"Error - {ex.Message}"));
+                }
+                catch (CloudLoggerException ex)
+                {
+                    logger.LogError(ex.Message);
+
+                    errorPresent = true;
+
+                    AddNewNotification(new Error($"There was error adding the file {files[i].FileName}!"));
+                }
+                catch (Exception)
                 {
                     errorPresent = true;
 
                     AddNewNotification(new Error($"There was error adding the file {files[i].FileName}!"));
                 }
+
             }
 
             if (!errorPresent)
@@ -167,54 +194,66 @@ namespace NCloud.Controllers
             return RedirectToAction("Details", "Drive");
         }
 
+        /// <summary>
+        /// Action method to delete a single folder anc it's content
+        /// </summary>
+        /// <param name="folderName">The name of the folder</param>
+        /// <returns>Redirection to details</returns>
         public async Task<IActionResult> DeleteFolder(string folderName)
         {
             try
             {
-                if (folderName is null || folderName == String.Empty)
+                if (!(await service.RemoveDirectory(folderName, (await GetSessionCloudPathData()).CurrentPath, await userManager.GetUserAsync(User))))
                 {
-                    throw new Exception("Folder name must be at least one character!");
+                    throw new CloudFunctionStopException("folder is system folder");
                 }
 
-                if (!(await service.RemoveDirectory(folderName!, (await GetSessionCloudPathData()).CurrentPath, User)))
-                {
-                    throw new Exception("Folder is System Folder!");
-                }
-
-                AddNewNotification(new Success("Folder is removed!"));
+                AddNewNotification(new Success("Directory is removed"));
+            }
+            catch (CloudFunctionStopException ex)
+            {
+                AddNewNotification(new Error($"Error - {ex.Message}"));
             }
             catch (Exception)
             {
-                AddNewNotification(new Error("Failed to remove Folder!"));
+                AddNewNotification(new Error($"Error while removing directory"));
             }
 
             return RedirectToAction("Details", "Drive");
         }
 
+        /// <summary>
+        /// Action method to delete a single file
+        /// </summary>
+        /// <param name="fileName">The name of the file</param>
+        /// <returns>Redirection to details</returns>
         public async Task<IActionResult> DeleteFile(string fileName)
         {
             try
             {
-                if (fileName is null || fileName == String.Empty)
+                if (!(await service.RemoveFile(fileName!, (await GetSessionCloudPathData()).CurrentPath, await userManager.GetUserAsync(User))))
                 {
-                    throw new Exception("File name must be at least one character!");
+                    throw new CloudFunctionStopException("error while removing file");
                 }
 
-                if (!(await service.RemoveFile(fileName!, (await GetSessionCloudPathData()).CurrentPath, User)))
-                {
-                    throw new Exception("File is System Folder!");
-                }
-
-                AddNewNotification(new Success("File is removed!"));
+                AddNewNotification(new Success("File is removed"));
+            }
+            catch (CloudFunctionStopException ex)
+            {
+                AddNewNotification(new Error($"Error - {ex.Message}"));
             }
             catch (Exception)
             {
-                AddNewNotification(new Error("Failed to remove File!"));
+                AddNewNotification(new Error($"Error while removing file"));
             }
 
             return RedirectToAction("Details", "Drive");
         }
 
+        /// <summary>
+        /// Action method to list items for delete in current state
+        /// </summary>
+        /// <returns>The view with items in it</returns>
         public async Task<IActionResult> DeleteItems()
         {
             CloudPathData pathData = await GetSessionCloudPathData();
@@ -263,7 +302,7 @@ namespace NCloud.Controllers
 
                         try
                         {
-                            if (!(await service.RemoveFile(itemForDelete, pathData.CurrentPath, User)))
+                            if (!(await service.RemoveFile(itemForDelete, pathData.CurrentPath, await userManager.GetUserAsync(User))))
                             {
                                 AddNewNotification(new Error($"Error removing file {itemForDelete}"));
 
@@ -283,7 +322,7 @@ namespace NCloud.Controllers
 
                         try
                         {
-                            if (!(await service.RemoveDirectory(itemForDelete, pathData.CurrentPath, User)))
+                            if (!(await service.RemoveDirectory(itemForDelete, pathData.CurrentPath, await userManager.GetUserAsync(User))))
                             {
                                 AddNewNotification(new Error($"Error removing folder {itemForDelete}"));
 
@@ -732,7 +771,7 @@ namespace NCloud.Controllers
                         if (name != newFileName)
                         {
                             newFileName = name;
-                            
+
                             AddNewNotification(new Warning("File has been renamed"));
                         }
 
