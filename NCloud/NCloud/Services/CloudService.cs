@@ -186,6 +186,9 @@ namespace NCloud.Services
             if (String.IsNullOrWhiteSpace(cloudPath))
                 throw new CloudFunctionStopException("invalid path");
 
+            if (user.UsedSpace + file.Length > user.MaxSpace)
+                throw new CloudFunctionStopException("not enough space");
+
             string path = ParseRootName(cloudPath);
             string newName = new string(file.FileName);
 
@@ -761,70 +764,63 @@ namespace NCloud.Services
             return await Task.FromResult<CloudFile>(new CloudFile(new FileInfo(Path.Combine(ParseRootName(currentPath), fileName)), file?.ConnectedToApp ?? false, file?.ConnectedToWeb ?? false, Path.Combine(currentPath, fileName)));
         }
 
-        public async Task<string> RenameFolder(string currentPath, string folderName, string newName)
+        public async Task<string> RenameFolder(string cloudPath, string folderName, string newName)
         {
-            try
+            string folderPath = ParseRootName(cloudPath);
+            string folderPathAndName = Path.Combine(folderPath, folderName);
+
+            if (!Directory.Exists(folderPathAndName))
+                throw new CloudFunctionStopException("source directory does not exist");
+
+            if (IsSystemFolder(folderPathAndName))
+                throw new CloudFunctionStopException("system directories can not be renamed");
+
+            string newFolderPathAndName = Path.Combine(folderPath, newName);
+
+            if (Directory.Exists(newFolderPathAndName) && folderName.ToLower() != newName.ToLower())
+                throw new CloudFunctionStopException("directory with this name already exists");
+
+            Directory.Move(folderPathAndName, newFolderPathAndName);
+
+            SharedFolder? folder = await context.SharedFolders.FirstOrDefaultAsync(x => x.CloudPathFromRoot == cloudPath && x.Name == folderName);
+
+            if (folder is not null)
             {
-                string folderPath = ParseRootName(currentPath);
-                string folderPathAndName = Path.Combine(folderPath, folderName);
+                folder.Name = newName;
 
-                if (IsSystemFolder(folderPathAndName))
-                    throw new Exception("System Folders can not be renamed!");
-
-                string newFolderPathAndName = Path.Combine(folderPath, newName);
-
-                if (Directory.Exists(newFolderPathAndName) && folderName.ToLower() != newName.ToLower())
-                    throw new Exception("Folder with this name already exists");
-
-                Directory.Move(folderPathAndName, newFolderPathAndName);
-
-                SharedFolder? folder = await context.SharedFolders.FirstOrDefaultAsync(x => x.CloudPathFromRoot == currentPath && x.Name == folderName);
-
-                if (folder is not null)
-                {
-                    folder.Name = newName;
-
-                    context.SharedFolders.Update(folder);
-                    await context.SaveChangesAsync();
-                }
-
-                return String.Empty;
+                context.SharedFolders.Update(folder);
+                await context.SaveChangesAsync();
             }
-            catch (Exception ex)
-            {
-                return ex.Message;
-            }
+
+            return String.Empty;
         }
 
         public async Task<string> RenameFile(string currentPath, string fileName, string newName)
         {
             string newFileName = new string(newName);
+            string filePath = ParseRootName(currentPath);
+            string filePathAndName = Path.Combine(filePath, fileName);
+            string newFilePathAndName = Path.Combine(filePath, newFileName);
 
-            try
+            if (!File.Exists(filePathAndName))
+                throw new CloudFunctionStopException("file does not exist");
+
+            if (File.Exists(newFilePathAndName) && fileName.ToLower() != newName.ToLower())
+                RenameObject(filePath, ref newFileName, true);
+
+            File.Move(filePathAndName, newFilePathAndName);
+
+            SharedFile? file = await context.SharedFiles.FirstOrDefaultAsync(x => x.CloudPathFromRoot == currentPath && x.Name == fileName);
+
+            if (file is not null)
             {
-                string filePath = ParseRootName(currentPath);
+                file.Name = newFileName;
 
-                if (File.Exists(Path.Combine(filePath, newFileName)) && fileName.ToLower() != newName.ToLower())
-                    RenameObject(filePath, ref newFileName, true);
-
-                File.Move(Path.Combine(filePath, fileName), Path.Combine(filePath, newFileName));
-
-                SharedFile? file = await context.SharedFiles.FirstOrDefaultAsync(x => x.CloudPathFromRoot == currentPath && x.Name == fileName);
-
-                if (file is not null)
-                {
-                    file.Name = newFileName;
-
-                    context.SharedFiles.Update(file);
-                    await context.SaveChangesAsync();
-                }
-
-                return newFileName;
+                context.SharedFiles.Update(file);
+                await context.SaveChangesAsync();
             }
-            catch (Exception)
-            {
-                throw new FileLoadException("Error while renaming file");
-            }
+
+            return newFileName;
         }
 
         public async Task<string> CopyFile(string? source, string destination, ClaimsPrincipal userPrincipal)

@@ -267,7 +267,14 @@ namespace NCloud.Services
         /// <param name="folderName">Name of folder</param>
         /// <returns>CloudFolder object with specified folder data in it</returns>
         Task<CloudFolder> GetFolder(string cloudPath, string folderName);
-        Task<CloudFile> GetFile(string currentPath, string fileName);
+
+        /// <summary>
+        /// Method to get CloudFile object from a specified physical file
+        /// </summary>
+        /// <param name="cloudPath">Path in the app</param>
+        /// <param name="fileName">Name of file</param>
+        /// <returns>CloudFile object with specified file data in it</returns>
+        Task<CloudFile> GetFile(string cloudPath, string fileName);
 
         /// <summary>
         /// Method to rename a folder
@@ -277,7 +284,15 @@ namespace NCloud.Services
         /// <param name="newName">User defined new name of folder</param>
         /// <returns>The renamed folder name</returns>
         Task<string> RenameFolder(string cloudPath, string folderName, string newName);
-        Task<string> RenameFile(string currentPath, string fileName, string newName);
+
+        /// <summary>
+        /// Method to rename a file
+        /// </summary>
+        /// <param name="cloudPath">Path in app</param>
+        /// <param name="fileName">Original name of file</param>
+        /// <param name="newName">User defined new name of file</param>
+        /// <returns>The renamed file name</returns>
+        Task<string> RenameFile(string cloudPath, string fileName, string newName);
         Task<string> CopyFile(string? source, string destination, ClaimsPrincipal userPrincipal);
         Task<string> CopyFolder(string? source, string destination, ClaimsPrincipal userPrincipal);
         Task<CloudPathData> GetSessionCloudPathData();

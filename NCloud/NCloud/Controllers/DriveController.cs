@@ -827,7 +827,7 @@ namespace NCloud.Controllers
                     return View(new FolderSettingsViewModel(folder.Info.Name, folder.Info.Name, pathData.CurrentPathShow, folder.IsConnectedToApp, folder.IsConnectedToWeb, folder.Info));
 
                 else
-                    throw new Exception("Directory does not exist");
+                    throw new CloudFunctionStopException("Directory does not exist");
 
             }
             catch (Exception)
@@ -856,30 +856,68 @@ namespace NCloud.Controllers
 
                 if (vm.NewName != vm.OldName)
                 {
-                    string msg = await service.RenameFolder(pathData.CurrentPath, vm.OldName!, vm.NewName!);
-
-                    if (msg != String.Empty)
+                    try
                     {
-                        AddNewNotification(new Error(msg));
+                        string msg = await service.RenameFolder(pathData.CurrentPath, vm.OldName!, vm.NewName!);
+                    }
+                    catch (CloudFunctionStopException ex)
+                    {
+                        AddNewNotification(new Error($"Error - {ex.Message}"));
 
-                        return RedirectToAction("Details", "Drive");
+                        noError = false;
+                    }
+                    catch (Exception)
+                    {
+                        AddNewNotification(new Error($"Error while renaming directory"));
+
+                        noError = false;
                     }
                 }
 
                 if (vm.ConnectedToWeb)
                 {
-                    if (!await service.ConnectDirectoryToWeb(pathData.CurrentPath, vm.NewName!, await userManager.GetUserAsync(User)))
+                    try
                     {
-                        AddNewNotification(new Error("Error while applying settings (web connect)"));
+                        if (!await service.ConnectDirectoryToWeb(pathData.CurrentPath, vm.NewName!, await userManager.GetUserAsync(User)))
+                        {
+                            AddNewNotification(new Error("Error while applying settings (web connect)"));
+
+                            noError = false;
+                        }
+                    }
+                    catch (CloudFunctionStopException ex)
+                    {
+                        AddNewNotification(new Error($"Error - {ex.Message}"));
+
+                        noError = false;
+                    }
+                    catch (Exception)
+                    {
+                        AddNewNotification(new Error($"Error while connecting directory to web"));
 
                         noError = false;
                     }
                 }
                 else
                 {
-                    if (!await service.DisconnectDirectoryFromWeb(pathData.CurrentPath, vm.NewName!, await userManager.GetUserAsync(User)))
+                    try
                     {
-                        AddNewNotification(new Error("Error while applying settings (web disconnect)"));
+                        if (!await service.DisconnectDirectoryFromWeb(pathData.CurrentPath, vm.NewName!, await userManager.GetUserAsync(User)))
+                        {
+                            AddNewNotification(new Error("Error while applying settings (web disconnect)"));
+
+                            noError = false;
+                        }
+                    }
+                    catch (CloudFunctionStopException ex)
+                    {
+                        AddNewNotification(new Error($"Error - {ex.Message}"));
+
+                        noError = false;
+                    }
+                    catch (Exception)
+                    {
+                        AddNewNotification(new Error($"Error while disconnecting directory from web"));
 
                         noError = false;
                     }
@@ -887,18 +925,48 @@ namespace NCloud.Controllers
 
                 if (vm.ConnectedToApp)
                 {
-                    if (!await service.ConnectDirectoryToApp(pathData.CurrentPath, vm.NewName!, await userManager.GetUserAsync(User)))
+                    try
                     {
-                        AddNewNotification(new Error("Error while applying settings (app connect)"));
+                        if (!await service.ConnectDirectoryToApp(pathData.CurrentPath, vm.NewName!, await userManager.GetUserAsync(User)))
+                        {
+                            AddNewNotification(new Error("Error while applying settings (app connect)"));
+
+                            noError = false;
+                        }
+                    }
+                    catch (CloudFunctionStopException ex)
+                    {
+                        AddNewNotification(new Error($"Error - {ex.Message}"));
+
+                        noError = false;
+                    }
+                    catch (Exception)
+                    {
+                        AddNewNotification(new Error($"Error while connecting directory to app"));
 
                         noError = false;
                     }
                 }
                 else
                 {
-                    if (!await service.DisconnectDirectoryFromApp(pathData.CurrentPath, vm.NewName!, User))
+                    try
                     {
-                        AddNewNotification(new Error("Error while applying settings (app disconnect)"));
+                        if (!await service.DisconnectDirectoryFromApp(pathData.CurrentPath, vm.NewName!, await userManager.GetUserAsync(User)))
+                        {
+                            AddNewNotification(new Error("Error while applying settings (app disconnect)"));
+
+                            noError = false;
+                        }
+                    }
+                    catch (CloudFunctionStopException ex)
+                    {
+                        AddNewNotification(new Error($"Error - {ex.Message}"));
+
+                        noError = false;
+                    }
+                    catch (Exception)
+                    {
+                        AddNewNotification(new Error($"Error while disconnecting directory from app"));
 
                         noError = false;
                     }
@@ -919,24 +987,21 @@ namespace NCloud.Controllers
 
         public async Task<IActionResult> FileSettings(string fileName)
         {
-            CloudPathData pathData = await GetSessionCloudPathData();
-
-            if (!SecurityManager.CheckIfFileExists(Path.Combine(service.ServerPath(pathData.CurrentPath), fileName)))
-            {
-                AddNewNotification(new Error("File does not exists"));
-
-                return RedirectToAction("Details", "Drive");
-            }
-
             try
             {
+                CloudPathData pathData = await GetSessionCloudPathData();
+
                 CloudFile file = await service.GetFile(pathData.CurrentPath, fileName);
 
-                return View(new FileSettingsViewModel(file.Info.Name, Path.GetFileNameWithoutExtension(file.Info.Name) ?? String.Empty, Path.GetExtension(file.Info.Name), pathData.CurrentPathShow, file.IsConnectedToApp, file.IsConnectedToWeb, file.Info));
+                if (file.Info.Exists)
+                    return View(new FileSettingsViewModel(file.Info.Name, Path.GetFileNameWithoutExtension(file.Info.Name) ?? String.Empty, Path.GetExtension(file.Info.Name), pathData.CurrentPathShow, file.IsConnectedToApp, file.IsConnectedToWeb, file.Info));
+
+                else
+                    throw new CloudFunctionStopException("File does not exist");
             }
             catch (Exception)
             {
-                AddNewNotification(new Error("File does not exists"));
+                AddNewNotification(new Error("Error while getting file data"));
 
                 return RedirectToAction("Details", "Drive");
             }
@@ -952,13 +1017,6 @@ namespace NCloud.Controllers
                 CloudPathData pathData = await GetSessionCloudPathData();
 
                 bool noError = true;
-
-                if (!SecurityManager.CheckIfFileExists(Path.Combine(service.ServerPath(pathData.CurrentPath), vm.OldName!)))
-                {
-                    AddNewNotification(new Error("File does not exist"));
-
-                    return RedirectToAction("Details", "Drive");
-                }
 
                 string newFileName = vm.NewName! + vm.Extension!; // already has the "." delimiter
 
@@ -976,28 +1034,64 @@ namespace NCloud.Controllers
                         }
 
                     }
-                    catch (Exception ex)
+                    catch (CloudFunctionStopException ex)
                     {
-                        AddNewNotification(new Error(ex.Message));
+                        AddNewNotification(new Error($"Error - {ex.Message}"));
 
-                        return RedirectToAction("Details", "Drive");
+                        noError = false;
+                    }
+                    catch (Exception)
+                    {
+                        AddNewNotification(new Error("Error while renaming file"));
+
+                        noError = false;
                     }
                 }
 
                 if (vm.ConnectedToWeb)
                 {
-                    if (!await service.ConnectFileToWeb(pathData.CurrentPath, newFileName, User))
+                    try
                     {
-                        AddNewNotification(new Error("Error while applying settings (web connect)"));
+                        if (!await service.ConnectFileToWeb(pathData.CurrentPath, newFileName, await userManager.GetUserAsync(User)))
+                        {
+                            AddNewNotification(new Error("Error while applying settings (web connect)"));
+
+                            noError = false;
+                        }
+                    }
+                    catch (CloudFunctionStopException ex)
+                    {
+                        AddNewNotification(new Error($"Error - {ex.Message}"));
+
+                        noError = false;
+                    }
+                    catch (Exception)
+                    {
+                        AddNewNotification(new Error($"Error while connecting file to web"));
 
                         noError = false;
                     }
                 }
                 else
                 {
-                    if (!await service.DisconnectFileFromWeb(pathData.CurrentPath, newFileName, User))
+                    try
                     {
-                        AddNewNotification(new Error("Error while applying settings (web disconnect)"));
+                        if (!await service.DisconnectFileFromWeb(pathData.CurrentPath, newFileName, await userManager.GetUserAsync(User)))
+                        {
+                            AddNewNotification(new Error("Error while applying settings (web disconnect)"));
+
+                            noError = false;
+                        }
+                    }
+                    catch (CloudFunctionStopException ex)
+                    {
+                        AddNewNotification(new Error($"Error - {ex.Message}"));
+
+                        noError = false;
+                    }
+                    catch (Exception)
+                    {
+                        AddNewNotification(new Error($"Error while disconnecting file from web"));
 
                         noError = false;
                     }
@@ -1005,18 +1099,48 @@ namespace NCloud.Controllers
 
                 if (vm.ConnectedToApp)
                 {
-                    if (!await service.ConnectFileToApp(pathData.CurrentPath, newFileName, User))
+                    try
                     {
-                        AddNewNotification(new Error("Error while applying settings (app connect)"));
+                        if (!await service.ConnectFileToApp(pathData.CurrentPath, newFileName, await userManager.GetUserAsync(User)))
+                        {
+                            AddNewNotification(new Error("Error while applying settings (app connect)"));
+
+                            noError = false;
+                        }
+                    }
+                    catch (CloudFunctionStopException ex)
+                    {
+                        AddNewNotification(new Error($"Error - {ex.Message}"));
+
+                        noError = false;
+                    }
+                    catch (Exception)
+                    {
+                        AddNewNotification(new Error($"Error while connecting file to app"));
 
                         noError = false;
                     }
                 }
                 else
                 {
-                    if (!await service.DisconnectFileFromApp(pathData.CurrentPath, newFileName, User))
+                    try
                     {
-                        AddNewNotification(new Error("Error while applying settings (app disconnect)"));
+                        if (!await service.DisconnectFileFromApp(pathData.CurrentPath, newFileName, await userManager.GetUserAsync(User)))
+                        {
+                            AddNewNotification(new Error("Error while applying settings (app disconnect)"));
+
+                            noError = false;
+                        }
+                    }
+                    catch (CloudFunctionStopException ex)
+                    {
+                        AddNewNotification(new Error($"Error - {ex.Message}"));
+
+                        noError = false;
+                    }
+                    catch (Exception)
+                    {
+                        AddNewNotification(new Error($"Error while disconnecting file from app"));
 
                         noError = false;
                     }
