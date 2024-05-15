@@ -250,7 +250,9 @@ namespace NCloud.Services
             {
                 await Task.Run(() => fi.Delete());
 
-                await SetFileConnectedState(cloudPath, fileName, ChangeOwnerIdentification(ChangeRootName(cloudPath), user.UserName), user, false, false);
+                if(!await SetFileConnectedState(cloudPath, fileName, ChangeOwnerIdentification(ChangeRootName(cloudPath), user.UserName), user, false, false))
+                    throw new CloudFunctionStopException("failed to adjust file rights");
+
             }
             catch (Exception)
             {
@@ -339,145 +341,21 @@ namespace NCloud.Services
             return ParseRootName(cloudPath);
         }
 
-        public async Task<DirectoryInfo> GetFolderByPath(string serverPath, string folderName)
+        public async Task<DirectoryInfo> GetFolderByPath(string cloudPath, string folderName)
         {
-            return await Task.FromResult<DirectoryInfo>(new DirectoryInfo(Directory.GetDirectories(serverPath, folderName).First()));
+            return await Task.FromResult<DirectoryInfo>(new DirectoryInfo(Directory.GetDirectories(ParseRootName(cloudPath), folderName).First()));
         }
 
-        #endregion
-
-        private async Task<bool> SetDirectoryConnectedState(string cloudPath, string directoryName, string sharingPath, CloudUser user, bool? connectToApp = null, bool? connectToWeb = null)
-        {
-            try
-            {
-                DirectoryInfo di = new DirectoryInfo(ParseRootName(cloudPath));
-
-                DirectoryInfo? entryInfo = di.GetDirectories().FirstOrDefault(x => x.Name.ToLower() == directoryName.ToLower());
-
-                if ((connectToApp == true || connectToWeb == true) && (entryInfo is null || !entryInfo.Exists))
-                {
-                    throw new InvalidDataException("Directory does not exists!");
-                }
-
-                SharedFolder? sharedFolder = await context.SharedFolders.FirstOrDefaultAsync(x => x.CloudPathFromRoot.ToLower() == cloudPath.ToLower() && x.Name.ToLower() == directoryName.ToLower() && x.Owner == user);
-
-                if (sharedFolder is null)
-                {
-                    sharedFolder = new SharedFolder
-                    {
-                        Name = entryInfo?.Name ?? directoryName,
-                        SharedPathFromRoot = sharingPath,
-                        CloudPathFromRoot = cloudPath,
-                        Owner = user,
-                    };
-
-                    if (connectToWeb is not null)
-                    {
-                        sharedFolder.ConnectedToWeb = connectToWeb.Value;
-                    }
-                    if (connectToApp is not null)
-                    {
-                        sharedFolder.ConnectedToApp = connectToApp.Value;
-                        sharedFolder.SharedPathFromRoot = sharingPath;
-
-                    }
-
-                    if (sharedFolder.ConnectedToWeb != false || sharedFolder.ConnectedToApp != false)
-                    {
-                        await context.SharedFolders.AddAsync(sharedFolder);
-                    }
-                }
-                else
-                {
-                    if (connectToWeb is not null)
-                    {
-                        sharedFolder.ConnectedToWeb = connectToWeb.Value;
-                    }
-                    if (connectToApp is not null)
-                    {
-                        sharedFolder.ConnectedToApp = connectToApp.Value;
-                        sharedFolder.SharedPathFromRoot = sharingPath;
-                    }
-
-                    if (sharedFolder.ConnectedToWeb == false && sharedFolder.ConnectedToApp == false)
-                    {
-                        context.SharedFolders.Remove(sharedFolder);
-                    }
-                    else
-                    {
-                        context.SharedFolders.Update(sharedFolder);
-                    }
-                }
-
-                await context.SaveChangesAsync();
-
-                return true;
-            }
-            catch (Exception)
-            {
-                return false;
-            }
-        }
-
-        private async Task<bool> SetObjectAndUnderlyingObjectsState(string currentPath, string directoryName, string dbPath, CloudUser user, bool? connectToApp = null, bool? connectToWeb = null)
-        {
-            try
-            {
-                DirectoryInfo di = new DirectoryInfo(ParseRootName(currentPath));
-
-                DirectoryInfo? entryInfo = di.GetDirectories().FirstOrDefault(x => x.Name.ToLower() == directoryName.ToLower());
-
-                if (entryInfo is null)
-                    throw new InvalidDataException("part of path does not exist");
-
-                Queue<Tuple<string, string, DirectoryInfo>> underlyingDirectories = new Queue<Tuple<string, string, DirectoryInfo>>(new List<Tuple<string, string, DirectoryInfo>>() { new Tuple<string, string, DirectoryInfo>(currentPath, dbPath, new DirectoryInfo(Path.Combine(ParseRootName(currentPath), entryInfo.Name))) });
-
-                while (underlyingDirectories.Any())
-                {
-                    var dir = underlyingDirectories.Dequeue();
-
-                    await SetDirectoryConnectedState(dir.Item1, dir.Item3.Name, dir.Item2, user, connectToApp, connectToWeb);
-
-                    string cloudPath = Path.Combine(dir.Item1, dir.Item3.Name);
-                    string sharingPath = Path.Combine(dir.Item2, dir.Item3.Name);
-
-                    foreach (string subDirectory in Directory.GetDirectories(dir.Item3.FullName))
-                    {
-                        DirectoryInfo info = new DirectoryInfo(subDirectory);
-
-                        underlyingDirectories.Enqueue(new Tuple<string, string, DirectoryInfo>(cloudPath, sharingPath, info));
-
-                        await SetDirectoryConnectedState(cloudPath, info.Name, sharingPath, user, connectToApp, connectToWeb);
-                    }
-
-                    foreach (string subFile in Directory.GetFiles(dir.Item3.FullName))
-                    {
-                        await SetFileConnectedState(cloudPath, Path.GetFileName(subFile), sharingPath, user, connectToApp, connectToWeb);
-                    }
-                }
-
-                return true;
-            }
-            catch (Exception)
-            {
-                return false;
-            }
-        }
-
-        public async Task<bool> ConnectDirectoryToWeb(string currentPath, string directoryName, CloudUser user)
+        public async Task<bool> ConnectDirectoryToWeb(string cloudPath, string directoryName, CloudUser user)
         {
 
             try
             {
-                return await SetObjectAndUnderlyingObjectsState(currentPath, directoryName, currentPath, user, connectToWeb: true);
+                return await SetObjectAndUnderlyingObjectsState(cloudPath, directoryName, cloudPath, user, connectToWeb: true);
             }
             catch (CloudFunctionStopException ex)
             {
                 throw new CloudFunctionStopException(ex.Message);
-            }
-            catch (CloudLoggerException ex)
-            {
-                throw new CloudLoggerException(ex.Message);
             }
             catch (Exception)
             {
@@ -507,9 +385,22 @@ namespace NCloud.Services
             {
                 throw new CloudFunctionStopException(ex.Message);
             }
-            catch (CloudLoggerException ex)
+            catch (Exception)
             {
-                throw new CloudLoggerException(ex.Message);
+                return false;
+            }
+        }
+
+        public async Task<bool> DisconnectDirectoryFromApp(string cloudPath, string directoryName, CloudUser user)
+        {
+            try
+            {
+                return await SetObjectAndUnderlyingObjectsState(cloudPath, directoryName, ChangeOwnerIdentification(ChangeRootName(cloudPath), user.UserName), user, connectToApp: false)
+                    && await SetObjectAndUnderlyingObjectsState(cloudPath, directoryName, Constants.GetSharingRootPathInDatabase(user.UserName), user, connectToApp: false);
+            }
+            catch (CloudFunctionStopException ex)
+            {
+                throw new CloudFunctionStopException(ex.Message);
             }
             catch (Exception)
             {
@@ -517,14 +408,15 @@ namespace NCloud.Services
             }
         }
 
-        public async Task<bool> DisconnectDirectoryFromApp(string currentPath, string directoryName, ClaimsPrincipal userPrincipal)
+        public async Task<bool> DisconnectDirectoryFromWeb(string cloudPath, string directoryName, CloudUser user)
         {
             try
             {
-                CloudUser user = await userManager.GetUserAsync(userPrincipal);
-
-                return await SetObjectAndUnderlyingObjectsState(currentPath, directoryName, ChangeOwnerIdentification(ChangeRootName(currentPath), user.UserName), user, connectToApp: false)
-                    && await SetObjectAndUnderlyingObjectsState(currentPath, directoryName, Constants.GetSharingRootPathInDatabase(user.UserName), user, connectToApp: false);
+                return await SetObjectAndUnderlyingObjectsState(cloudPath, directoryName, cloudPath, user, connectToWeb: false);
+            }
+            catch (CloudFunctionStopException ex)
+            {
+                throw new CloudFunctionStopException(ex.Message);
             }
             catch (Exception)
             {
@@ -532,125 +424,43 @@ namespace NCloud.Services
             }
         }
 
-        public async Task<bool> DisconnectDirectoryFromWeb(string currentPath, string directoryName, ClaimsPrincipal userPrincipal)
+        public async Task<bool> ConnectFileToApp(string cloudPath, string fileName, CloudUser user)
         {
             try
             {
-                CloudUser user = await userManager.GetUserAsync(userPrincipal);
-
-                return await SetObjectAndUnderlyingObjectsState(currentPath, directoryName, currentPath, user, connectToWeb: false);
-            }
-            catch (Exception)
-            {
-                return false;
-            }
-        }
-
-        private async Task<bool> SetFileConnectedState(string cloudPath, string fileName, string sharingPath, CloudUser user, bool? connectToApp = null, bool? connectToWeb = null)
-        {
-            try
-            {
-                DirectoryInfo di = new DirectoryInfo(ParseRootName(cloudPath));
-
-                FileInfo? entryInfo = di.GetFiles().FirstOrDefault(x => x.Name.ToLower() == fileName.ToLower());
-
-                if ((connectToApp == true || connectToWeb == true) && (entryInfo is null || !entryInfo.Exists))
-                {
-                    throw new InvalidDataException("File does not exists!");
-                }
-
-                SharedFile? sharedFile = await context.SharedFiles.FirstOrDefaultAsync(x => x.CloudPathFromRoot.ToLower() == cloudPath.ToLower() && x.Name.ToLower() == fileName.ToLower() && x.Owner == user);
-
-                if (sharedFile is null)
-                {
-                    sharedFile = new SharedFile
-                    {
-                        Name = entryInfo?.Name ?? fileName,
-                        SharedPathFromRoot = sharingPath,
-                        CloudPathFromRoot = cloudPath,
-                        Owner = user,
-                    };
-
-                    if (connectToWeb is not null)
-                    {
-                        sharedFile.ConnectedToWeb = connectToWeb.Value;
-                    }
-                    if (connectToApp is not null)
-                    {
-                        sharedFile.ConnectedToApp = connectToApp.Value;
-                        sharedFile.SharedPathFromRoot = sharingPath;
-                    }
-
-                    if (sharedFile.ConnectedToWeb != false || sharedFile.ConnectedToApp != false)
-                    {
-                        await context.SharedFiles.AddAsync(sharedFile);
-                    }
-                }
-                else
-                {
-                    if (connectToWeb is not null)
-                    {
-                        sharedFile.ConnectedToWeb = connectToWeb.Value;
-                    }
-                    if (connectToApp is not null)
-                    {
-                        sharedFile.ConnectedToApp = connectToApp.Value;
-                        sharedFile.SharedPathFromRoot = sharingPath;
-                    }
-
-                    if (sharedFile.ConnectedToWeb == false && sharedFile.ConnectedToApp == false)
-                    {
-                        context.SharedFiles.Remove(sharedFile);
-                    }
-                    else
-                    {
-                        context.SharedFiles.Update(sharedFile);
-                    }
-                }
-
-                await context.SaveChangesAsync();
-
-                return true;
-            }
-            catch (Exception)
-            {
-                return false;
-            }
-        }
-
-        public async Task<bool> ConnectFileToApp(string currentPath, string fileName, ClaimsPrincipal userPrincipal)
-        {
-            try
-            {
-                CloudUser user = await userManager.GetUserAsync(userPrincipal);
-
-                Pair<string, string> parentPathAndName = GetParentPathAndName(currentPath);
+                Pair<string, string> parentPathAndName = GetParentPathAndName(cloudPath);
 
                 Pair<bool, bool> connections = await FolderIsSharedInAppInWeb(parentPathAndName.First, parentPathAndName.Second);
 
-                if (connections.First && currentPath != Constants.GetCloudRootPathInDatabase(user.Id))
+                if (connections.First && cloudPath != Constants.GetCloudRootPathInDatabase(user.Id))
                 {
-                    return await SetFileConnectedState(currentPath, fileName, ChangeOwnerIdentification(ChangeRootName(currentPath), user.UserName), user, connectToApp: true)
-                        && await SetFileConnectedState(currentPath, fileName, Constants.GetSharingRootPathInDatabase(user.UserName), user, connectToApp: true);
+                    return await SetFileConnectedState(cloudPath, fileName, ChangeOwnerIdentification(ChangeRootName(cloudPath), user.UserName), user, connectToApp: true)
+                        && await SetFileConnectedState(cloudPath, fileName, Constants.GetSharingRootPathInDatabase(user.UserName), user, connectToApp: true);
                 }
                 else
                 {
-                    return await SetFileConnectedState(currentPath, fileName, Constants.GetSharingRootPathInDatabase(user.UserName), user, connectToApp: true);
+                    return await SetFileConnectedState(cloudPath, fileName, Constants.GetSharingRootPathInDatabase(user.UserName), user, connectToApp: true);
                 }
             }
+            catch (CloudFunctionStopException ex)
+            {
+                throw new CloudFunctionStopException(ex.Message);
+            }
             catch (Exception)
             {
                 return false;
             }
         }
 
-        public async Task<bool> ConnectFileToWeb(string currentPath, string fileName, ClaimsPrincipal userPrincipal)
+        public async Task<bool> ConnectFileToWeb(string cloudPath, string fileName, CloudUser user)
         {
             try
             {
-                CloudUser user = await userManager.GetUserAsync(userPrincipal);
-
-                return await SetFileConnectedState(currentPath, fileName, currentPath, user, connectToWeb: true);
+                return await SetFileConnectedState(cloudPath, fileName, cloudPath, user, connectToWeb: true);
+            }
+            catch (CloudFunctionStopException ex)
+            {
+                throw new CloudFunctionStopException(ex.Message);
             }
             catch (Exception)
             {
@@ -658,14 +468,16 @@ namespace NCloud.Services
             }
         }
 
-        public async Task<bool> DisconnectFileFromApp(string currentPath, string fileName, ClaimsPrincipal userPrincipal)
+        public async Task<bool> DisconnectFileFromApp(string cloudPath, string fileName, CloudUser user)
         {
             try
             {
-                CloudUser user = await userManager.GetUserAsync(userPrincipal);
-
-                return await SetFileConnectedState(currentPath, fileName, ChangeOwnerIdentification(ChangeRootName(currentPath), user.UserName), user, connectToApp: false)
-                    && await SetFileConnectedState(currentPath, fileName, Constants.GetSharingRootPathInDatabase(user.UserName), user, connectToApp: false);
+                return await SetFileConnectedState(cloudPath, fileName, ChangeOwnerIdentification(ChangeRootName(cloudPath), user.UserName), user, connectToApp: false)
+                    && await SetFileConnectedState(cloudPath, fileName, Constants.GetSharingRootPathInDatabase(user.UserName), user, connectToApp: false);
+            }
+            catch (CloudFunctionStopException ex)
+            {
+                throw new CloudFunctionStopException(ex.Message);
             }
             catch (Exception)
             {
@@ -673,13 +485,15 @@ namespace NCloud.Services
             }
         }
 
-        public async Task<bool> DisconnectFileFromWeb(string currentPath, string fileName, ClaimsPrincipal userPrincipal)
+        public async Task<bool> DisconnectFileFromWeb(string cloudPath, string fileName, CloudUser user)
         {
             try
             {
-                CloudUser user = await userManager.GetUserAsync(userPrincipal);
-
-                return await SetFileConnectedState(currentPath, fileName, currentPath, user, connectToWeb: false);
+                return await SetFileConnectedState(cloudPath, fileName, cloudPath, user, connectToWeb: false);
+            }
+            catch (CloudFunctionStopException ex)
+            {
+                throw new CloudFunctionStopException(ex.Message);
             }
             catch (Exception)
             {
@@ -687,25 +501,26 @@ namespace NCloud.Services
             }
         }
 
-        public Task<List<CloudFolder>> GetSharingUsersSharingDirectories(string currentPath)
+        public Task<List<CloudFolder>> GetSharingUsersSharingDirectories()
         {
             return context.Users.Where(x => x.SharedFiles.Where(x => x.ConnectedToApp).Count() > 0 || x.SharedFolders.Where(x => x.ConnectedToApp).Count() > 0).Select(x => new CloudFolder(x.UserName, null)).ToListAsync();
         }
 
-        public async Task<List<CloudFile>> GetCurrentDepthAppSharingFiles(string currentPath)
+        public async Task<List<CloudFile>> GetCurrentDepthAppSharingFiles(string sharedPath)
         {
-            CloudUser? user = await context.Users.FirstOrDefaultAsync(x => x.UserName == GetSharedPathOwnerUser(currentPath));
+            CloudUser? user = await context.Users.FirstOrDefaultAsync(x => x.UserName == GetSharedPathOwnerUser(sharedPath));
 
-            return (await context.SharedFiles.Where(x => x.ConnectedToApp && x.Owner == user && x.SharedPathFromRoot == currentPath).ToListAsync()).Select(x => new CloudFile(new FileInfo(Path.Combine(ParseRootName(x.CloudPathFromRoot), x.Name)), x.ConnectedToApp, x.ConnectedToWeb, String.Empty)).Where(x => x.Info.Exists).OrderBy(x => x.Info.Name).ToList() ?? new();
+            return (await context.SharedFiles.Where(x => x.ConnectedToApp && x.Owner == user && x.SharedPathFromRoot == sharedPath).ToListAsync()).Select(x => new CloudFile(new FileInfo(Path.Combine(ParseRootName(x.CloudPathFromRoot), x.Name)), x.ConnectedToApp, x.ConnectedToWeb, String.Empty)).Where(x => x.Info.Exists).OrderBy(x => x.Info.Name).ToList() ?? new();
         }
 
-        public async Task<List<CloudFolder>> GetCurrentDepthAppSharingDirectories(string currentPath)
+        public async Task<List<CloudFolder>> GetCurrentDepthAppSharingDirectories(string sharedPath)
         {
-            CloudUser? user = await context.Users.FirstOrDefaultAsync(x => x.UserName == GetSharedPathOwnerUser(currentPath));
+            CloudUser? user = await context.Users.FirstOrDefaultAsync(x => x.UserName == GetSharedPathOwnerUser(sharedPath));
 
-            return (await context.SharedFolders.Where(x => x.ConnectedToApp && x.Owner == user && x.SharedPathFromRoot == currentPath).ToListAsync()).Select(x => new CloudFolder(new DirectoryInfo(Path.Combine(ParseRootName(x.CloudPathFromRoot), x.Name)), x.ConnectedToApp, x.ConnectedToWeb, String.Empty)).Where(x => x.Info.Exists).OrderBy(x => x.Info.Name).ToList() ?? new();
+            return (await context.SharedFolders.Where(x => x.ConnectedToApp && x.Owner == user && x.SharedPathFromRoot == sharedPath).ToListAsync()).Select(x => new CloudFolder(new DirectoryInfo(Path.Combine(ParseRootName(x.CloudPathFromRoot), x.Name)), x.ConnectedToApp, x.ConnectedToWeb, String.Empty)).Where(x => x.Info.Exists).OrderBy(x => x.Info.Name).ToList() ?? new();
         }
 
+        #endregion
         private static string ChangeOwnerIdentification(string path, string? itemForChange)
         {
             if (itemForChange is null)
@@ -1505,6 +1320,264 @@ namespace NCloud.Services
                 return false;
 
             return Constants.SystemFolders.Contains(pathFolders.Last()) && ((pathFolders.Count - pathFolders.FindIndex(x => x == Constants.WebRootFolderName) - 1) == Constants.DistanceToRootFolder);
+        }
+
+        /// <summary>
+        /// Method to make / remove / alter database entry
+        /// </summary>
+        /// <param name="cloudPath">Path in app</param>
+        /// <param name="directoryName">Name of folder</param>
+        /// <param name="sharingPath">Path in app (sharing)</param>
+        /// <param name="user">Owner of folder</param>
+        /// <param name="connectToApp">Boolean to connect folder to app</param>
+        /// <param name="connectToWeb">Boolean to connect folder to web</param>
+        /// <returns>Boolean value if action is successful</returns>
+        /// <exception cref="CloudFunctionStopException">throw exception if given data invalid</exception>
+        private async Task<bool> SetDirectoryConnectedState(string cloudPath, string directoryName, string sharingPath, CloudUser user, bool? connectToApp = null, bool? connectToWeb = null)
+        {
+            try
+            {
+                DirectoryInfo di = new DirectoryInfo(ParseRootName(cloudPath));
+
+                DirectoryInfo? entryInfo = di.GetDirectories().FirstOrDefault(x => x.Name.ToLower() == directoryName.ToLower());
+
+                if ((connectToApp == true || connectToWeb == true) && (entryInfo is null || !entryInfo.Exists))
+                {
+                    throw new CloudFunctionStopException("directory does not exist");
+                }
+
+                SharedFolder? sharedFolder = await context.SharedFolders.FirstOrDefaultAsync(x => x.CloudPathFromRoot.ToLower() == cloudPath.ToLower() && x.Name.ToLower() == directoryName.ToLower() && x.Owner == user);
+
+                if (sharedFolder is null)
+                {
+                    sharedFolder = new SharedFolder
+                    {
+                        Name = entryInfo?.Name ?? directoryName,
+                        SharedPathFromRoot = sharingPath,
+                        CloudPathFromRoot = cloudPath,
+                        Owner = user,
+                    };
+
+                    if (connectToWeb is not null)
+                    {
+                        sharedFolder.ConnectedToWeb = connectToWeb.Value;
+                    }
+                    if (connectToApp is not null)
+                    {
+                        sharedFolder.ConnectedToApp = connectToApp.Value;
+                        sharedFolder.SharedPathFromRoot = sharingPath;
+
+                    }
+
+                    if (sharedFolder.ConnectedToWeb != false || sharedFolder.ConnectedToApp != false)
+                    {
+                        await context.SharedFolders.AddAsync(sharedFolder);
+                    }
+                }
+                else
+                {
+                    if (connectToWeb is not null)
+                    {
+                        sharedFolder.ConnectedToWeb = connectToWeb.Value;
+                    }
+                    if (connectToApp is not null)
+                    {
+                        sharedFolder.ConnectedToApp = connectToApp.Value;
+                        sharedFolder.SharedPathFromRoot = sharingPath;
+                    }
+
+                    if (sharedFolder.ConnectedToWeb == false && sharedFolder.ConnectedToApp == false)
+                    {
+                        context.SharedFolders.Remove(sharedFolder);
+                    }
+                    else
+                    {
+                        context.SharedFolders.Update(sharedFolder);
+                    }
+                }
+
+                await context.SaveChangesAsync();
+
+                return true;
+            }
+            catch (CloudFunctionStopException ex)
+            {
+                throw new CloudFunctionStopException(ex.Message);
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Method to make / remove / alter database entry
+        /// </summary>
+        /// <param name="cloudPath">Path in app</param>
+        /// <param name="fileName">Name of file</param>
+        /// <param name="sharingPath">Path in app (sharing)</param>
+        /// <param name="user">Owner of file</param>
+        /// <param name="connectToApp">Boolean to connect file to app</param>
+        /// <param name="connectToWeb">Boolean to connect file to web</param>
+        /// <returns>Boolean value if action is successful</returns>
+        /// <exception cref="CloudFunctionStopException">throw exception if given data invalid</exception>
+        private async Task<bool> SetFileConnectedState(string cloudPath, string fileName, string sharingPath, CloudUser user, bool? connectToApp = null, bool? connectToWeb = null)
+        {
+            try
+            {
+                DirectoryInfo di = new DirectoryInfo(ParseRootName(cloudPath));
+
+                FileInfo? entryInfo = di.GetFiles().FirstOrDefault(x => x.Name.ToLower() == fileName.ToLower());
+
+                if ((connectToApp == true || connectToWeb == true) && (entryInfo is null || !entryInfo.Exists))
+                {
+                    throw new CloudFunctionStopException("file does not exist");
+                }
+
+                SharedFile? sharedFile = await context.SharedFiles.FirstOrDefaultAsync(x => x.CloudPathFromRoot.ToLower() == cloudPath.ToLower() && x.Name.ToLower() == fileName.ToLower() && x.Owner == user);
+
+                if (sharedFile is null)
+                {
+                    sharedFile = new SharedFile
+                    {
+                        Name = entryInfo?.Name ?? fileName,
+                        SharedPathFromRoot = sharingPath,
+                        CloudPathFromRoot = cloudPath,
+                        Owner = user,
+                    };
+
+                    if (connectToWeb is not null)
+                    {
+                        sharedFile.ConnectedToWeb = connectToWeb.Value;
+                    }
+                    if (connectToApp is not null)
+                    {
+                        sharedFile.ConnectedToApp = connectToApp.Value;
+                        sharedFile.SharedPathFromRoot = sharingPath;
+                    }
+
+                    if (sharedFile.ConnectedToWeb != false || sharedFile.ConnectedToApp != false)
+                    {
+                        await context.SharedFiles.AddAsync(sharedFile);
+                    }
+                }
+                else
+                {
+                    if (connectToWeb is not null)
+                    {
+                        sharedFile.ConnectedToWeb = connectToWeb.Value;
+                    }
+                    if (connectToApp is not null)
+                    {
+                        sharedFile.ConnectedToApp = connectToApp.Value;
+                        sharedFile.SharedPathFromRoot = sharingPath;
+                    }
+
+                    if (sharedFile.ConnectedToWeb == false && sharedFile.ConnectedToApp == false)
+                    {
+                        context.SharedFiles.Remove(sharedFile);
+                    }
+                    else
+                    {
+                        context.SharedFiles.Update(sharedFile);
+                    }
+                }
+
+                await context.SaveChangesAsync();
+
+                return true;
+            }
+            catch (CloudFunctionStopException ex)
+            {
+                throw new CloudFunctionStopException(ex.Message);
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Method to set a create / remove / edit a folder and it's content (underlying tree) database entries
+        /// </summary>
+        /// <param name="cloudPath">Path in cloud</param>
+        /// <param name="directoryName">Name of folder</param>
+        /// <param name="sharingPath">Path in app (sharing)</param>
+        /// <param name="user">Owner of folder</param>
+        /// <param name="connectToApp">Boolean if folder connects to app</param>
+        /// <param name="connectToWeb">Boolean if folder connects to web</param>
+        /// <returns>Booelan value if action was successful</returns>
+        /// <exception cref="CloudFunctionStopException">Throw is execution should be stopped</exception>
+        private async Task<bool> SetObjectAndUnderlyingObjectsState(string cloudPath, string directoryName, string sharingPath, CloudUser user, bool? connectToApp = null, bool? connectToWeb = null)
+        {
+            try
+            {
+                bool noError = true;
+
+                DirectoryInfo di = new DirectoryInfo(ParseRootName(cloudPath));
+
+                DirectoryInfo? entryInfo = di.GetDirectories().FirstOrDefault(x => x.Name.ToLower() == directoryName.ToLower());
+
+                if (entryInfo is null || !entryInfo.Exists)
+                    throw new CloudFunctionStopException("part of path does not exist");
+
+                Queue<Tuple<string, string, DirectoryInfo>> underlyingDirectories = new Queue<Tuple<string, string, DirectoryInfo>>(new List<Tuple<string, string, DirectoryInfo>>() { new Tuple<string, string, DirectoryInfo>(cloudPath, sharingPath, new DirectoryInfo(Path.Combine(ParseRootName(cloudPath), entryInfo.Name))) });
+
+                while (underlyingDirectories.Any())
+                {
+                    var dir = underlyingDirectories.Dequeue();
+
+                    try
+                    {
+                        noError = noError && await SetDirectoryConnectedState(dir.Item1, dir.Item3.Name, dir.Item2, user, connectToApp, connectToWeb);
+                    }
+                    catch (Exception)
+                    {
+                        noError = false;
+                    }
+
+                    string cloudPathForItem = Path.Combine(dir.Item1, dir.Item3.Name);
+                    string sharingPathForItem = Path.Combine(dir.Item2, dir.Item3.Name);
+
+                    foreach (string subDirectory in Directory.GetDirectories(dir.Item3.FullName))
+                    {
+                        DirectoryInfo info = new DirectoryInfo(subDirectory);
+
+                        underlyingDirectories.Enqueue(new Tuple<string, string, DirectoryInfo>(cloudPathForItem, sharingPathForItem, info));
+
+                        try
+                        {
+                            noError = noError && await SetDirectoryConnectedState(cloudPathForItem, info.Name, sharingPathForItem, user, connectToApp, connectToWeb);
+                        }
+                        catch (Exception)
+                        {
+                            noError = false;
+                        }
+                    }
+
+                    foreach (string subFile in Directory.GetFiles(dir.Item3.FullName))
+                    {
+                        try
+                        {
+                            noError = noError && await SetFileConnectedState(cloudPathForItem, Path.GetFileName(subFile), sharingPathForItem, user, connectToApp, connectToWeb);
+                        }
+                        catch (Exception)
+                        {
+                            noError = false;
+                        }
+                    }
+                }
+
+                return noError;
+            }
+            catch (CloudFunctionStopException ex)
+            {
+                throw new CloudFunctionStopException(ex.Message);
+            }
+            catch (Exception)
+            {
+                return false;
+            }
         }
 
         #endregion

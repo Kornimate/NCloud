@@ -100,10 +100,10 @@ namespace NCloud.Services
         /// <summary>
         /// Method to get CloudFolder object by full path
         /// </summary>
-        /// <param name="physicalPath">Physical path to the folder</param>
+        /// <param name="cloudPath">Path in app to the folder</param>
         /// <param name="folderName">Name of the folder</param>
         /// <returns>CloudFolder object with physical data in it</returns>
-        Task<DirectoryInfo> GetFolderByPath(string physicalPath, string folderName);
+        Task<DirectoryInfo> GetFolderByPath(string cloudPath, string folderName);
 
         /// <summary>
         /// Method to handle directory connection in database
@@ -113,13 +113,69 @@ namespace NCloud.Services
         /// <param name="user">Owner of the folder</param>
         /// <returns>Boolean indication the success of activity</returns>
         Task<bool> ConnectDirectoryToWeb(string cloudPath, string directoryName, CloudUser user);
-        Task<bool> ConnectDirectoryToApp(string currentPath, string directoryName, CloudUser user);
-        Task<bool> DisconnectDirectoryFromApp(string currentPath, string directoryName, ClaimsPrincipal userPrincipal);
-        Task<bool> DisconnectDirectoryFromWeb(string currentPath, string directoryName, ClaimsPrincipal userPrincipal);
-        Task<bool> ConnectFileToApp(string currentPath, string fileName, ClaimsPrincipal userPrincipal);
-        Task<bool> ConnectFileToWeb(string currentPath, string fileName, ClaimsPrincipal userPrincipal);
-        Task<bool> DisconnectFileFromApp(string currentPath, string fileName, ClaimsPrincipal userPrincipal);
-        Task<bool> DisconnectFileFromWeb(string currentPath, string fileName, ClaimsPrincipal userPrincipal);
+
+        /// <summary>
+        /// Method to handle directory connection in database
+        /// </summary>
+        /// <param name="cloudPath">Path to folder in app</param>
+        /// <param name="directoryName">Name of folder</param>
+        /// <param name="user">Owner of the folder</param>
+        /// <returns>Boolean indication the success of activity</returns>
+        Task<bool> ConnectDirectoryToApp(string cloudPath, string directoryName, CloudUser user);
+
+        /// <summary>
+        /// Method to handle directory connection in database
+        /// </summary>
+        /// <param name="cloudPath">Path to folder in app</param>
+        /// <param name="directoryName">Name of folder</param>
+        /// <param name="user">Owner of the folder</param>
+        /// <returns>Boolean indication the success of activity</returns>
+        Task<bool> DisconnectDirectoryFromApp(string cloudPath, string directoryName, CloudUser user);
+
+        /// <summary>
+        /// Method to handle directory connection in database
+        /// </summary>
+        /// <param name="cloudPath">Path to folder in app</param>
+        /// <param name="directoryName">Name of folder</param>
+        /// <param name="user">Owner of the folder</param>
+        /// <returns>Boolean indication the success of activity</returns>
+        Task<bool> DisconnectDirectoryFromWeb(string cloudPath, string directoryName, CloudUser user);
+
+        /// <summary>
+        /// Method to share file in app
+        /// </summary>
+        /// <param name="cloudPath">Path to file in app</param>
+        /// <param name="fileName">Name of file</param>
+        /// <param name="user">Owner of file</param>
+        /// <returns>Booelan value indicating the success of action</returns>
+        Task<bool> ConnectFileToApp(string cloudPath, string fileName, CloudUser user);
+
+        /// <summary>
+        /// Method to share file on web
+        /// </summary>
+        /// <param name="cloudPath">Path to file on web</param>
+        /// <param name="fileName">Name of file</param>
+        /// <param name="user">Owner of file</param>
+        /// <returns>Booelan value indicating the success of action</returns>
+        Task<bool> ConnectFileToWeb(string cloudPath, string fileName, CloudUser user);
+
+        /// <summary>
+        /// Method to stop sharing file in app
+        /// </summary>
+        /// <param name="cloudPath">Path to file in app</param>
+        /// <param name="fileName">Name of file</param>
+        /// <param name="user">Owner of file</param>
+        /// <returns>Booelan value indicating the success of action</returns>
+        Task<bool> DisconnectFileFromApp(string cloudPath, string fileName, CloudUser user);
+
+        /// <summary>
+        /// Method to stop sharing file on web
+        /// </summary>
+        /// <param name="cloudPath">Path to file on web</param>
+        /// <param name="fileName">Name of file</param>
+        /// <param name="user">Owner of file</param>
+        /// <returns>Booelan value indicating the success of action</returns>
+        Task<bool> DisconnectFileFromWeb(string cloudPath, string fileName, CloudUser user);
         Task<List<CloudFolder>> GetSharingUsersSharingDirectories(string currentPath);
         Task<List<CloudFile>> GetCurrentDepthAppSharingFiles(string currentPath);
         Task<List<CloudFolder>> GetCurrentDepthAppSharingDirectories(string currentPath);

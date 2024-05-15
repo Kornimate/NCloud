@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using NCloud.ConstantData;
 using NCloud.Models;
 using NCloud.Services;
+using NCloud.Services.Exceptions;
 using NCloud.Users;
 using NuGet.Protocol;
 using System.Drawing.Drawing2D;
@@ -162,14 +163,15 @@ namespace NCloud.Controllers
                         {
                             tempFile = await service.CreateZipFile(itemsForDownload, path, GetTempFileNameAndPath(), connectedToApp, connectedToWeb);
                         }
-                        catch (Exception ex)
+                        catch(Exception)
                         {
-                            AddNewNotification(new Error(ex.Message));
+                            throw new CloudFunctionStopException("Error while creating zip file");
                         }
+
                         try
                         {
                             if (tempFile is null)
-                                throw new Exception("File was not created");
+                                throw new CloudFunctionStopException("File was not created");
 
                             FileStream stream = new FileStream(tempFile, FileMode.Open, FileAccess.Read, FileShare.Read, 4096, FileOptions.DeleteOnClose);
 
@@ -180,7 +182,7 @@ namespace NCloud.Controllers
                             throw;
                         }
                     }
-                    else
+                    else //this case can only be a single file in the collection
                     {
                         try
                         {
@@ -199,10 +201,14 @@ namespace NCloud.Controllers
                                     throw;
                                 }
                             }
+                            else 
+                            {
+                                throw new CloudFunctionStopException("Invalid data in request"); 
+                            }
                         }
                         catch (Exception)
                         {
-                            AddNewNotification(new Error($"Invalid filename: {itemsForDownload[0]}"));
+                            throw;
                         }
                     }
                 }
@@ -211,7 +217,7 @@ namespace NCloud.Controllers
             }
             catch (Exception)
             {
-                AddNewNotification(new Error($"App unable to create file for download"));
+                AddNewNotification(new Error($"App unable to download requested item(s)"));
             }
 
             return returnAction;
