@@ -985,6 +985,11 @@ namespace NCloud.Controllers
             return View(vm);
         }
 
+        /// <summary>
+        /// Action method to get a specified file settings from current state
+        /// </summary>
+        /// <param name="fileName">Name of file</param>
+        /// <returns>View with file settings in it</returns>
         public async Task<IActionResult> FileSettings(string fileName)
         {
             try
@@ -1007,6 +1012,11 @@ namespace NCloud.Controllers
             }
         }
 
+        /// <summary>
+        /// Action method to handle post request to modify file data
+        /// </summary>
+        /// <param name="vm">File settings encapsulated in a view model</param>
+        /// <returns>Redirection to drive details, in case of error the view itself</returns>
         [HttpPost]
         [ActionName("FileSettings")]
         [ValidateAntiForgeryToken]
