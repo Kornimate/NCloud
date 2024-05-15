@@ -29,18 +29,29 @@ namespace NCloud.Controllers
 
         public async Task<IActionResult> Details(string path, string? folderName = null)
         {
-            if (folderName is not null && folderName != String.Empty)
+            try
             {
-                path = Path.Combine(path, folderName);
-            }
+                if (!String.IsNullOrWhiteSpace(folderName))
+                {
+                    path = Path.Combine(path, folderName);
+                }
 
-            return await Task.FromResult<IActionResult>(View("Details", new WebDetailsViewModel(await service.GetCurrentDepthWebSharingFiles(path),
-                                                                         await service.GetCurrentDepthWebSharingDirectories(path),
-                                                                         path)));
+                return await Task.FromResult<IActionResult>(View("Details", new WebDetailsViewModel(await service.GetCurrentDepthWebSharingFiles(path),
+                                                                                                    await service.GetCurrentDepthWebSharingDirectories(path),
+                                                                                                    path)));
+            }
+            catch (Exception)
+            {
+                AddNewNotification(new Error("Error while getting files and directories"));
+
+                return await Task.FromResult<IActionResult>(View("Details", new WebDetailsViewModel(new List<CloudFile>(),
+                                                                                                    new List<CloudFolder>(),
+                                                                                                    path)));
+            }
         }
         public async Task<IActionResult> Back(string path)
         {
-            if (path is not null && path != String.Empty)
+            if (!String.IsNullOrWhiteSpace(path))
             {
                 path = await service.WebBackCheck(path);
             }

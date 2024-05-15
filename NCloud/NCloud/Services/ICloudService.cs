@@ -190,14 +190,74 @@ namespace NCloud.Services
         /// <param name="sharedPath">Path in app (shared path)</param>
         /// <returns>List of CloudFolders from current sharing state</returns>
         Task<List<CloudFolder>> GetCurrentDepthAppSharingDirectories(string sharedPath);
-        Task<bool> OwnerOfPathIsActualUser(string currentPath, ClaimsPrincipal userPrincipal);
-        Task<List<string>> GetUserSharedFolderUrls(ClaimsPrincipal userPrincipal);
-        Task<List<string>> GetUserSharedFileUrls(ClaimsPrincipal userPrincipal);
+
+        /// <summary>
+        /// Method to decide if logged in user is owner of path
+        /// </summary>
+        /// <param name="sharedPath">Pat in app (shared path)</param>
+        /// <param name="user">Logged in user</param>
+        /// <returns></returns>
+        Task<bool> OwnerOfPathIsActualUser(string sharedPath, CloudUser user);
+
+        /// <summary>
+        /// Method to get every shared folder for user
+        /// </summary>
+        /// <param name="user">The logged in user</param>
+        /// <returns>List of urls in string format</returns>
+        Task<List<string>> GetUserSharedFolderUrls(CloudUser user);
+
+        /// <summary>
+        /// Method to get every shared file for user
+        /// </summary>
+        /// <param name="user">The logged in user</param>
+        /// <returns>List of urls in string format</returns>
+        Task<List<string>> GetUserSharedFileUrls(CloudUser user);
+
+        /// <summary>
+        /// Method to check if Back action is possible on web sharing path
+        /// </summary>
+        /// <param name="path">Web sharing path</param>
+        /// <returns>New modified path (if possible Back action the reduced path, otherwise the original)</returns>
         Task<string> WebBackCheck(string path);
+
+        /// <summary>
+        /// Method to get current web sharing state files
+        /// </summary>
+        /// <param name="path">Web sharing path</param>
+        /// <returns>List of CloudFile objects with current web sharing state files</returns>
         Task<List<CloudFile>> GetCurrentDepthWebSharingFiles(string path);
+
+
+        /// <summary>
+        /// Method to get current web sharing state folders
+        /// </summary>
+        /// <param name="path">Web sharing path</param>
+        /// <returns>List of CloudFolder objects with current web sharing state folders</returns>
         Task<List<CloudFolder>> GetCurrentDepthWebSharingDirectories(string path);
-        Task<string?> CreateZipFile(List<string> itemsForDownload, string currentPath, string filePath, bool connectedToApp, bool connectedToWeb);
-        Task<string> ChangePathStructure(string currentPath);
+
+        /// <summary>
+        /// Method to create zip file on server
+        /// </summary>
+        /// <param name="itemsForDownload">List of names to be zipped</param>
+        /// <param name="cloudPath">Path in app for source of zip file</param>
+        /// <param name="filePath">output zip file name and path</param>
+        /// <param name="connectedToApp">Filter for app shared files and folders</param>
+        /// <param name="connectedToWeb">Filter for web shared files and folders</param>
+        /// <returns></returns>
+        Task<string?> CreateZipFile(List<string> itemsForDownload, string cloudPath, string filePath, bool connectedToApp, bool connectedToWeb);
+        /// <summary>
+        /// Method to change from sharing to cloud path and vice versa
+        /// </summary>
+        /// <param name="path">Sharing or cloud path</param>
+        /// <returns>The modified path or the original if path is too short or error occurs</returns>
+        Task<string> ChangePathStructure(string path);
+
+        /// <summary>
+        /// Method to overwrite file content
+        /// </summary>
+        /// <param name="file">Cloud path to file</param>
+        /// <param name="content">content to write into the file</param>
+        /// <returns>Boolean value indicating the success of action</returns>
         Task<bool> ModifyFileContent(string file, string content);
 
         /// <summary>

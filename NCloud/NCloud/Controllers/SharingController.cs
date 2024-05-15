@@ -30,11 +30,11 @@ namespace NCloud.Controllers
                 return View(new SharingDetailsViewModel(await service.GetCurrentDepthAppSharingFiles(sharedPath),
                                                         await service.GetCurrentDepthAppSharingDirectories(sharedPath),
                                                         pathdata.CurrentPathShow,
-                                                        await service.OwnerOfPathIsActualUser(sharedPath, User)));
+                                                        await service.OwnerOfPathIsActualUser(sharedPath, await userManager.GetUserAsync(User))));
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                AddNewNotification(new Error(ex.Message));
+                AddNewNotification(new Error("Error while getting files and directories"));
 
                 return View(new SharingDetailsViewModel(new List<CloudFile>(),
                                                         new List<CloudFolder>(),

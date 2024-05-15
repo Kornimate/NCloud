@@ -16,17 +16,27 @@ namespace NCloud.Controllers
 
         public async Task<ActionResult> Index()
         {
-            CloudUser user = await userManager.GetUserAsync(User);
+            try
+            {
+                CloudUser user = await userManager.GetUserAsync(User);
 
-            double usedPercent = Math.Ceiling(user.UsedSpace / user.MaxSpace);
+                double usedPercent = Math.Ceiling(user.UsedSpace / user.MaxSpace);
 
-            if (usedPercent < 0.0)
-                usedPercent = 0.0;
+                if (usedPercent < 0.0)
+                    usedPercent = 0.0;
 
-            if(usedPercent > 100.0)
-                usedPercent = 100.0;
+                if (usedPercent > 100.0)
+                    usedPercent = 100.0;
 
-            return View(new DashBoardViewModel(await service.GetUserSharedFolderUrls(User), await service.GetUserSharedFileUrls(User), Constants.GetWebControllerAndActionForDetails(), Constants.GetWebControllerAndActionForDownload(), usedPercent));
+                return View(new DashBoardViewModel(await service.GetUserSharedFolderUrls(user), await service.GetUserSharedFileUrls(user), Constants.GetWebControllerAndActionForDetails(), Constants.GetWebControllerAndActionForDownload(), usedPercent));
+
+            }
+            catch (Exception)
+            {
+                AddNewNotification(new Error("Error while loading page"));
+
+                return View(new DashBoardViewModel(new List<string>(), new List<string>(), Constants.GetWebControllerAndActionForDetails(), Constants.GetWebControllerAndActionForDownload(), 0));
+            }
         }
     }
 }

@@ -166,7 +166,7 @@ namespace NCloud.Controllers
         [ValidateAntiForgeryToken]
         public async Task<JsonResult> SaveData([FromBody] FileDataViewModel vm)
         {
-            if (vm.File is null || vm.File == String.Empty)
+            if (String.IsNullOrWhiteSpace(vm.File))
             {
                 return Json(new ConnectionDTO { Success = false, Message = "Invalid file" });
             }
