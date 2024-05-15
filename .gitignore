@@ -80,3 +80,5 @@ _[Ss]cripts
 /NCloud/NCloud/database.db-shm
 /NCloud/NCloud/database.db-wal
 /NCloud/NCloud/.__Logs__
+/NCloud/NCloud/.__CloudData__
+/NCloud/NCloud/.__TempFiles__

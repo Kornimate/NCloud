@@ -11,7 +11,6 @@ using System.IO.Compression;
 using System.Text;
 using Newtonsoft.Json.Linq;
 using System.Text.RegularExpressions;
-using System.Reflection;
 using NCloud.Security;
 
 namespace NCloud.Services
