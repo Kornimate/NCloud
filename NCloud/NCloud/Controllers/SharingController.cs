@@ -21,24 +21,16 @@ namespace NCloud.Controllers
         {
             SharedPathData pathdata = await GetSessionSharedPathData();
 
-            string currentPath = pathdata.SetFolder(folderName);
+            string sharedPath = pathdata.SetFolder(folderName);
 
             await SetSessionSharedPathData(pathdata);
 
-            if (pathdata.CurrentPath == Constants.PublicRootName)
-            {
-                return View(new SharingDetailsViewModel(new List<CloudFile>(),
-                                                        await service.GetSharingUsersSharingDirectories(currentPath),
-                                                        pathdata.CurrentPathShow,
-                                                        false));
-            }
-
             try
             {
-                return View(new SharingDetailsViewModel(await service.GetCurrentDepthAppSharingFiles(currentPath),
-                                                        await service.GetCurrentDepthAppSharingDirectories(currentPath),
+                return View(new SharingDetailsViewModel(await service.GetCurrentDepthAppSharingFiles(sharedPath),
+                                                        await service.GetCurrentDepthAppSharingDirectories(sharedPath),
                                                         pathdata.CurrentPathShow,
-                                                        await service.OwnerOfPathIsActualUser(currentPath, User)));
+                                                        await service.OwnerOfPathIsActualUser(sharedPath, User)));
             }
             catch (Exception ex)
             {
@@ -62,13 +54,13 @@ namespace NCloud.Controllers
             return RedirectToAction("Details", "Sharing");
         }
 
-
         public async Task<IActionResult> Home()
         {
             await SetSessionSharedPathData(new SharedPathData());
 
             return RedirectToAction("Details", "Sharing");
         }
+
         public async Task<IActionResult> DownloadFolder(string? folderName)
         {
             if (folderName is null || folderName == String.Empty)
@@ -143,7 +135,7 @@ namespace NCloud.Controllers
         {
             SharedPathData pathData = await GetSessionSharedPathData();
 
-            if (await service.DisconnectDirectoryFromApp(await service.ChangePathStructure(pathData.CurrentPath), itemName, User))
+            if (await service.DisconnectDirectoryFromApp(await service.ChangePathStructure(pathData.CurrentPath), itemName, await userManager.GetUserAsync(User)))
             {
                 return Json(new ConnectionDTO { Success = true, Message = "Directory and items inside disconnected from application" });
             }
@@ -159,7 +151,7 @@ namespace NCloud.Controllers
         {
             SharedPathData pathData = await GetSessionSharedPathData();
 
-            if (await service.DisconnectFileFromApp(await service.ChangePathStructure(pathData.CurrentPath), itemName, User))
+            if (await service.DisconnectFileFromApp(await service.ChangePathStructure(pathData.CurrentPath), itemName, await userManager.GetUserAsync(User)))
             {
                 return Json(new ConnectionDTO { Success = true, Message = "File disconnected from application" });
             }

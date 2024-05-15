@@ -427,10 +427,10 @@ namespace NCloud.Controllers
         /// <returns>View with the downloadable items</returns>
         public async Task<IActionResult> DownloadItems()
         {
-            CloudPathData pathData = await GetSessionCloudPathData();
-
             try
             {
+                CloudPathData pathData = await GetSessionCloudPathData();
+
                 var files = await service.GetCurrentDepthCloudFiles(pathData.CurrentPath);
                 var folders = await service.GetCurrentDepthCloudDirectories(pathData.CurrentPath);
 
@@ -469,36 +469,30 @@ namespace NCloud.Controllers
         /// <summary>
         /// Action method to handle folder connection request to app via js
         /// </summary>
-        /// <param name="itemName">Name of the directory</param>
+        /// <param name="itemName">Name of the folder</param>
         /// <returns>Json with data indication success or fail with message</returns>
         public async Task<JsonResult> ConnectDirectoryToApp([FromBody] string itemName)
         {
-            CloudPathData session = await GetSessionCloudPathData();
-
             try
             {
+                CloudPathData session = await GetSessionCloudPathData();
+
                 if (await service.ConnectDirectoryToApp(session.CurrentPath, itemName, await userManager.GetUserAsync(User)))
                 {
                     return Json(new ConnectionDTO { Success = true, Message = "Directory and items inside connected to application" });
                 }
                 else
                 {
-                    return Json(new ConnectionDTO { Success = false, Message = "Error while connecting directory to application!" });
+                    return Json(new ConnectionDTO { Success = false, Message = "Error while connecting directory to application" });
                 }
             }
             catch (CloudFunctionStopException ex)
             {
                 return Json(new ConnectionDTO { Success = false, Message = $"Error - {ex.Message}" });
             }
-            catch (CloudLoggerException ex)
-            {
-                logger.LogError($"Error while disconnecting directory: {ex.Message}");
-
-                return Json(new ConnectionDTO { Success = false, Message = "Error while connecting directory to application!" });
-            }
             catch (Exception)
             {
-                return Json(new ConnectionDTO { Success = false, Message = "Error while connecting directory to application!" });
+                return Json(new ConnectionDTO { Success = false, Message = "Error while connecting directory to application" });
             }
         }
 
@@ -506,145 +500,240 @@ namespace NCloud.Controllers
         /// Action method to handle folder connection request to web via js
         /// </summary>
         /// <param name="itemName">Name of folder</param>
-        /// <returns></returns>
+        /// <returns>Json with data indication success or fail with message</returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<JsonResult> ConnectDirectoryToWeb([FromBody] string itemName)
         {
-            CloudPathData session = await GetSessionCloudPathData();
-
             try
             {
+                CloudPathData session = await GetSessionCloudPathData();
+
                 if (await service.ConnectDirectoryToWeb(session.CurrentPath, itemName, await userManager.GetUserAsync(User)))
                 {
                     return Json(new ConnectionDTO { Success = true, Message = "Directory and items inside connected to web" });
                 }
                 else
                 {
-                    return Json(new ConnectionDTO { Success = false, Message = "Error while connecting directory to web!" });
+                    return Json(new ConnectionDTO { Success = false, Message = "Error while connecting directory to web" });
                 }
             }
             catch (CloudFunctionStopException ex)
             {
                 return Json(new ConnectionDTO { Success = false, Message = $"Error - {ex.Message}" });
             }
-            catch (CloudLoggerException ex)
-            {
-                logger.LogError($"Error while disconnecting directory: {ex.Message}");
-
-                return Json(new ConnectionDTO { Success = false, Message = "Error while connecting directory to web!" });
-            }
             catch (Exception)
             {
-                return Json(new ConnectionDTO { Success = false, Message = "Error while connecting directory to web!" });
+                return Json(new ConnectionDTO { Success = false, Message = "Error while connecting directory to web" });
             }
         }
 
+        /// <summary>
+        /// Action method to handle file connection request to app via js
+        /// </summary>
+        /// <param name="itemName">Name of file</param>
+        /// <returns>Json with data indication success or fail with message</returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<JsonResult> ConnectFileToApp([FromBody] string itemName)
         {
-            CloudPathData session = await GetSessionCloudPathData();
+            try
+            {
+                CloudPathData session = await GetSessionCloudPathData();
 
-            if (await service.ConnectFileToApp(session.CurrentPath, itemName, User))
-            {
-                return Json(new ConnectionDTO { Success = true, Message = "File connected to application" });
+                if (await service.ConnectFileToApp(session.CurrentPath, itemName, await userManager.GetUserAsync(User)))
+                {
+                    return Json(new ConnectionDTO { Success = true, Message = "File connected to application" });
+                }
+                else
+                {
+                    return Json(new ConnectionDTO { Success = false, Message = "Error while connecting file to application" });
+                }
             }
-            else
+            catch (CloudFunctionStopException ex)
             {
-                return Json(new ConnectionDTO { Success = false, Message = "Error while connecting file to application!" });
+                return Json(new ConnectionDTO { Success = false, Message = $"Error - {ex.Message}" });
+            }
+            catch (Exception)
+            {
+                return Json(new ConnectionDTO { Success = false, Message = "Error while connecting file to application" });
             }
         }
 
+        /// <summary>
+        /// Action method to handle file connection request to web via js
+        /// </summary>
+        /// <param name="itemName">Name of file</param>
+        /// <returns>Json with data indication success or fail with message</returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<JsonResult> ConnectFileToWeb([FromBody] string itemName)
         {
-            CloudPathData session = await GetSessionCloudPathData();
+            try
+            {
+                CloudPathData session = await GetSessionCloudPathData();
 
-            if (await service.ConnectFileToWeb(session.CurrentPath, itemName, User))
-            {
-                return Json(new ConnectionDTO { Success = true, Message = "File connected to web" });
+                if (await service.ConnectFileToWeb(session.CurrentPath, itemName, await userManager.GetUserAsync(User)))
+                {
+                    return Json(new ConnectionDTO { Success = true, Message = "File connected to web" });
+                }
+                else
+                {
+                    return Json(new ConnectionDTO { Success = false, Message = "Error while connecting file to web" });
+                }
             }
-            else
+            catch (CloudFunctionStopException ex)
             {
-                return Json(new ConnectionDTO { Success = false, Message = "Error while connecting file to web!" });
+                return Json(new ConnectionDTO { Success = false, Message = $"Error - {ex.Message}" });
+            }
+            catch (Exception)
+            {
+                return Json(new ConnectionDTO { Success = false, Message = "Error while connecting file to web" });
             }
         }
 
+        /// <summary>
+        /// Action method to handle folder connection deletion request to app via js
+        /// </summary>
+        /// <param name="itemName">Name of folder</param>
+        /// <returns>Json with data indication success or fail with message</returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DisconnectDirectoryFromApp([FromBody] string itemName)
         {
-            CloudPathData session = await GetSessionCloudPathData();
-
-            if (await service.DisconnectDirectoryFromApp(session.CurrentPath, itemName, User))
+            try
             {
-                return Json(new ConnectionDTO { Success = true, Message = "Directory and items inside disconnected from application" });
+                CloudPathData session = await GetSessionCloudPathData();
+
+                if (await service.DisconnectDirectoryFromApp(session.CurrentPath, itemName, await userManager.GetUserAsync(User)))
+                {
+                    return Json(new ConnectionDTO { Success = true, Message = "Directory and items inside disconnected from application" });
+                }
+                else
+                {
+                    return Json(new ConnectionDTO { Success = false, Message = "Error while disconnecting directory from application" });
+                }
             }
-            else
+            catch (CloudFunctionStopException ex)
+            {
+                return Json(new ConnectionDTO { Success = false, Message = $"Error - {ex.Message}" });
+            }
+            catch (Exception)
             {
                 return Json(new ConnectionDTO { Success = false, Message = "Error while disconnecting directory from application" });
             }
         }
 
+        /// <summary>
+        /// Action method to handle folder connection deletion request to web via js
+        /// </summary>
+        /// <param name="itemName">Name of folder</param>
+        /// <returns>Json with data indication success or fail with message</returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<JsonResult> DisconnectDirectoryFromWeb([FromBody] string itemName)
         {
-            CloudPathData session = await GetSessionCloudPathData();
+            try
+            {
+                CloudPathData session = await GetSessionCloudPathData();
 
-            if (await service.DisconnectDirectoryFromWeb(session.CurrentPath, itemName, User))
-            {
-                return Json(new ConnectionDTO { Success = true, Message = "Directory and items inside disconnected from web" });
+                if (await service.DisconnectDirectoryFromWeb(session.CurrentPath, itemName, await userManager.GetUserAsync(User)))
+                {
+                    return Json(new ConnectionDTO { Success = true, Message = "Directory and items inside disconnected from web" });
+                }
+                else
+                {
+                    return Json(new ConnectionDTO { Success = false, Message = "Error while disconnecting directory from web" });
+                }
             }
-            else
+            catch (CloudFunctionStopException ex)
             {
-                return Json(new ConnectionDTO { Success = false, Message = "Error while disconnecting directory from web!" });
+                return Json(new ConnectionDTO { Success = false, Message = $"Error - {ex.Message}" });
+            }
+            catch (Exception)
+            {
+                return Json(new ConnectionDTO { Success = false, Message = "Error while disconnecting directory from web" });
             }
         }
 
+        /// <summary>
+        /// Action method to handle file connection deletion request to app via js
+        /// </summary>
+        /// <param name="itemName">Name of file</param>
+        /// <returns>Json with data indication success or fail with message</returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<JsonResult> DisconnectFileFromApp([FromBody] string itemName)
         {
-            CloudPathData session = await GetSessionCloudPathData();
+            try
+            {
+                CloudPathData session = await GetSessionCloudPathData();
 
-            if (await service.DisconnectFileFromApp(session.CurrentPath, itemName, User))
-            {
-                return Json(new ConnectionDTO { Success = true, Message = "File disconnected from application" });
+                if (await service.DisconnectFileFromApp(session.CurrentPath, itemName, await userManager.GetUserAsync(User)))
+                {
+                    return Json(new ConnectionDTO { Success = true, Message = "File disconnected from application" });
+                }
+                else
+                {
+                    return Json(new ConnectionDTO { Success = false, Message = "Error while disconnecting file from application" });
+                }
             }
-            else
+            catch (CloudFunctionStopException ex)
             {
-                return Json(new ConnectionDTO { Success = false, Message = "Error while disconnecting file from application!" });
+                return Json(new ConnectionDTO { Success = false, Message = $"Error - {ex.Message}" });
+            }
+            catch (Exception)
+            {
+                return Json(new ConnectionDTO { Success = false, Message = "Error while disconnecting file from application" });
             }
         }
 
+        /// <summary>
+        /// Action method to handle file connection deletion request to web via js
+        /// </summary>
+        /// <param name="itemName">Name of file</param>
+        /// <returns>Json with data indication success or fail with message</returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<JsonResult> DisconnectFileFromWeb([FromBody] string itemName)
         {
-            CloudPathData session = await GetSessionCloudPathData();
+            try
+            {
+                CloudPathData session = await GetSessionCloudPathData();
 
-            if (await service.DisconnectFileFromWeb(session.CurrentPath, itemName, User))
-            {
-                return Json(new ConnectionDTO { Success = true, Message = "File disconnected from web" });
+                if (await service.DisconnectFileFromWeb(session.CurrentPath, itemName, await userManager.GetUserAsync(User)))
+                {
+                    return Json(new ConnectionDTO { Success = true, Message = "File disconnected from web" });
+                }
+                else
+                {
+                    return Json(new ConnectionDTO { Success = false, Message = "Error while disconnecting file from web" });
+                }
             }
-            else
+            catch (CloudFunctionStopException ex)
             {
-                return Json(new ConnectionDTO { Success = false, Message = "Error while disconnecting file from web!" });
+                return Json(new ConnectionDTO { Success = false, Message = $"Error - {ex.Message}" });
+            }
+            catch (Exception)
+            {
+                return Json(new ConnectionDTO { Success = false, Message = "Error while disconnecting file from web" });
             }
         }
 
+        /// <summary>
+        /// Action method to handle folder connection deletion request to web via js form dashboard page
+        /// </summary>
+        /// <param name="folderName">Name of folder</param>
+        /// <returns>Redirection to dashboard index action</returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DisconnectDirectoryFromWebDashboard(string folder)
+        public async Task<IActionResult> DisconnectDirectoryFromWebDashboard(string folderName)
         {
-            string[] pathElements = folder.Split(Constants.PathSeparator, StringSplitOptions.RemoveEmptyEntries);
+            string[] pathElements = folderName.Split(Constants.PathSeparator, StringSplitOptions.RemoveEmptyEntries);
 
             if (pathElements is null || pathElements.Length < 2)
             {
-                AddNewNotification(new Error("Error while disconnecting directory from web! (invalid path)"));
+                AddNewNotification(new Error("Error while disconnecting directory from web (invalid path)"));
 
                 return RedirectToAction("Index", "DashBoard");
             }
@@ -653,23 +742,39 @@ namespace NCloud.Controllers
 
             string path = String.Join(Path.DirectorySeparatorChar, pathElements.SkipLast(1)); //remove directory from path
 
-            if (await service.DisconnectDirectoryFromWeb(path, itemName, User))
+            try
             {
-                AddNewNotification(new Success("Directory and items inside disconnected from web"));
+                if (await service.DisconnectDirectoryFromWeb(path, itemName, await userManager.GetUserAsync(User)))
+                {
+                    AddNewNotification(new Success("Directory and items inside disconnected from web"));
+                }
+                else
+                {
+                    AddNewNotification(new Error("Error while disconnecting directory from web"));
+                }
             }
-            else
+            catch (CloudFunctionStopException ex)
             {
-                AddNewNotification(new Error("Error while disconnecting directory from web!"));
+                AddNewNotification(new Error($"Error - {ex.Message}"));
+            }
+            catch (Exception)
+            {
+                AddNewNotification(new Error("Error while disconnecting directory from web"));
             }
 
             return RedirectToAction("Index", "DashBoard");
         }
 
+        /// <summary>
+        /// Action method to handle file connection deletion request to web via js from dashboard page
+        /// </summary>
+        /// <param name="fileName">Name of file</param>
+        /// <returns>Redirection to dashboard index action</returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DisconnectFileFromWebDashboard(string file)
+        public async Task<IActionResult> DisconnectFileFromWebDashboard(string fileName)
         {
-            string[] pathElements = file.Split(Constants.PathSeparator, StringSplitOptions.RemoveEmptyEntries);
+            string[] pathElements = fileName.Split(Constants.PathSeparator, StringSplitOptions.RemoveEmptyEntries);
 
             if (pathElements is null || pathElements.Length < 2)
             {
@@ -682,43 +787,62 @@ namespace NCloud.Controllers
 
             string path = String.Join(Path.DirectorySeparatorChar, pathElements.SkipLast(1)); //remove file from path
 
-            if (await service.DisconnectFileFromWeb(path, itemName, User))
+            try
             {
-                AddNewNotification(new Success("File disconnected from web"));
+                if (await service.DisconnectFileFromWeb(path, itemName, await userManager.GetUserAsync(User)))
+                {
+                    AddNewNotification(new Success("File disconnected from web"));
+                }
+                else
+                {
+                    AddNewNotification(new Error("Error while disconnecting file from web"));
+                }
             }
-            else
+            catch (CloudFunctionStopException ex)
             {
-                AddNewNotification(new Error("Error while disconnecting file from web!"));
+                AddNewNotification(new Error($"Error - {ex.Message}"));
+            }
+            catch (Exception)
+            {
+                AddNewNotification(new Error("Error while disconnecting file from web"));
             }
 
             return RedirectToAction("Index", "DashBoard");
         }
 
+        /// <summary>
+        /// Action method to get a specified folder settings from current state
+        /// </summary>
+        /// <param name="folderName">Name of folder</param>
+        /// <returns>View with folder settings in it</returns>
         public async Task<IActionResult> FolderSettings(string folderName)
         {
-            CloudPathData pathData = await GetSessionCloudPathData();
-
-            if (!SecurityManager.CheckIfDirectoryExists(Path.Combine(service.ServerPath(pathData.CurrentPath), folderName)))
-            {
-                AddNewNotification(new Error("Directory does not exists"));
-
-                return RedirectToAction("Details", "Drive");
-            }
-
             try
             {
+                CloudPathData pathData = await GetSessionCloudPathData();
+
                 CloudFolder folder = await service.GetFolder(pathData.CurrentPath, folderName);
 
-                return View(new FolderSettingsViewModel(folder.Info.Name, folder.Info.Name, pathData.CurrentPathShow, folder.IsConnectedToApp, folder.IsConnectedToWeb, folder.Info));
+                if (folder.Info.Exists)
+                    return View(new FolderSettingsViewModel(folder.Info.Name, folder.Info.Name, pathData.CurrentPathShow, folder.IsConnectedToApp, folder.IsConnectedToWeb, folder.Info));
+
+                else
+                    throw new Exception("Directory does not exist");
+
             }
             catch (Exception)
             {
-                AddNewNotification(new Error("Directory does not exists"));
+                AddNewNotification(new Error("Error while getting directory data"));
 
                 return RedirectToAction("Details", "Drive");
             }
         }
 
+        /// <summary>
+        /// Action method to handle post request to modify folder data
+        /// </summary>
+        /// <param name="vm">Folder settings encapsulated in a view model</param>
+        /// <returns>Redirection to drive details, in case of error the view itself</returns>
         [HttpPost]
         [ActionName("FolderSettings")]
         [ValidateAntiForgeryToken]
@@ -729,13 +853,6 @@ namespace NCloud.Controllers
                 CloudPathData pathData = await GetSessionCloudPathData();
 
                 bool noError = true;
-
-                if (!SecurityManager.CheckIfDirectoryExists(Path.Combine(service.ServerPath(pathData.CurrentPath), vm.OldName!)))
-                {
-                    AddNewNotification(new Error("Directory does not exist"));
-
-                    return RedirectToAction("Details", "Drive");
-                }
 
                 if (vm.NewName != vm.OldName)
                 {
@@ -760,7 +877,7 @@ namespace NCloud.Controllers
                 }
                 else
                 {
-                    if (!await service.DisconnectDirectoryFromWeb(pathData.CurrentPath, vm.NewName!, User))
+                    if (!await service.DisconnectDirectoryFromWeb(pathData.CurrentPath, vm.NewName!, await userManager.GetUserAsync(User)))
                     {
                         AddNewNotification(new Error("Error while applying settings (web disconnect)"));
 
@@ -795,7 +912,7 @@ namespace NCloud.Controllers
                 return RedirectToAction("Details", "Drive");
             }
 
-            AddNewNotification(new Error("Invalid input data"));
+            AddNewNotification(new Error("Error - invalid input data"));
 
             return View(vm);
         }

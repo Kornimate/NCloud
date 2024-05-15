@@ -28,7 +28,7 @@ namespace NCloud.Services
             this.userManager = userManager;
         }
 
-        #region Public Methods 
+        #region Public Instance Methods 
         public async Task<CloudUser?> GetAdmin()
         {
             return await context.Users.FirstOrDefaultAsync(x => x.UserName == Constants.AdminUserName);
@@ -286,7 +286,7 @@ namespace NCloud.Services
 
                 return items.ToList();
             }
-            catch
+            catch (Exception)
             {
                 throw new CloudFunctionStopException("error occurred while getting files");
             }
@@ -316,7 +316,7 @@ namespace NCloud.Services
 
                 return items.ToList();
             }
-            catch
+            catch (Exception)
             {
                 throw new CloudFunctionStopException("error occurred while getting folders");
             }
@@ -501,13 +501,11 @@ namespace NCloud.Services
             }
         }
 
-        public Task<List<CloudFolder>> GetSharingUsersSharingDirectories()
-        {
-            return context.Users.Where(x => x.SharedFiles.Where(x => x.ConnectedToApp).Count() > 0 || x.SharedFolders.Where(x => x.ConnectedToApp).Count() > 0).Select(x => new CloudFolder(x.UserName, null)).ToListAsync();
-        }
-
         public async Task<List<CloudFile>> GetCurrentDepthAppSharingFiles(string sharedPath)
         {
+            if (sharedPath == Constants.PublicRootName)
+                return await Task.FromResult<List<CloudFile>>(new List<CloudFile>());
+
             CloudUser? user = await context.Users.FirstOrDefaultAsync(x => x.UserName == GetSharedPathOwnerUser(sharedPath));
 
             return (await context.SharedFiles.Where(x => x.ConnectedToApp && x.Owner == user && x.SharedPathFromRoot == sharedPath).ToListAsync()).Select(x => new CloudFile(new FileInfo(Path.Combine(ParseRootName(x.CloudPathFromRoot), x.Name)), x.ConnectedToApp, x.ConnectedToWeb, String.Empty)).Where(x => x.Info.Exists).OrderBy(x => x.Info.Name).ToList() ?? new();
@@ -515,6 +513,9 @@ namespace NCloud.Services
 
         public async Task<List<CloudFolder>> GetCurrentDepthAppSharingDirectories(string sharedPath)
         {
+            if(sharedPath == Constants.PublicRootName)
+                return await context.Users.Where(x => x.SharedFiles.Where(x => x.ConnectedToApp).Count() > 0 || x.SharedFolders.Where(x => x.ConnectedToApp).Count() > 0).Select(x => new CloudFolder(x.UserName, null)).ToListAsync();
+
             CloudUser? user = await context.Users.FirstOrDefaultAsync(x => x.UserName == GetSharedPathOwnerUser(sharedPath));
 
             return (await context.SharedFolders.Where(x => x.ConnectedToApp && x.Owner == user && x.SharedPathFromRoot == sharedPath).ToListAsync()).Select(x => new CloudFolder(new DirectoryInfo(Path.Combine(ParseRootName(x.CloudPathFromRoot), x.Name)), x.ConnectedToApp, x.ConnectedToWeb, String.Empty)).Where(x => x.Info.Exists).OrderBy(x => x.Info.Name).ToList() ?? new();
@@ -782,11 +783,11 @@ namespace NCloud.Services
             }
         }
 
-        public async Task<CloudFolder> GetFolder(string currentPath, string folderName)
+        public async Task<CloudFolder> GetFolder(string cloudPath, string folderName)
         {
-            var folder = await context.SharedFolders.FirstOrDefaultAsync(x => x.CloudPathFromRoot == currentPath && x.Name == folderName);
+            var folder = await context.SharedFolders.FirstOrDefaultAsync(x => x.CloudPathFromRoot == cloudPath && x.Name == folderName);
 
-            return await Task.FromResult<CloudFolder>(new CloudFolder(new DirectoryInfo(Path.Combine(ParseRootName(currentPath), folderName)), folder?.ConnectedToApp ?? false, folder?.ConnectedToWeb ?? false, Path.Combine(currentPath, folderName)));
+            return await Task.FromResult<CloudFolder>(new CloudFolder(new DirectoryInfo(Path.Combine(ParseRootName(cloudPath), folderName)), folder?.ConnectedToApp ?? false, folder?.ConnectedToWeb ?? false, Path.Combine(cloudPath, folderName)));
         }
 
         public async Task<CloudFile> GetFile(string currentPath, string fileName)
@@ -1579,6 +1580,12 @@ namespace NCloud.Services
                 return false;
             }
         }
+
+        #endregion
+
+        #region Private Static Methods
+
+
 
         #endregion
     }

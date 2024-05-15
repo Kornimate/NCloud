@@ -176,9 +176,20 @@ namespace NCloud.Services
         /// <param name="user">Owner of file</param>
         /// <returns>Booelan value indicating the success of action</returns>
         Task<bool> DisconnectFileFromWeb(string cloudPath, string fileName, CloudUser user);
-        Task<List<CloudFolder>> GetSharingUsersSharingDirectories(string currentPath);
-        Task<List<CloudFile>> GetCurrentDepthAppSharingFiles(string currentPath);
-        Task<List<CloudFolder>> GetCurrentDepthAppSharingDirectories(string currentPath);
+
+        /// <summary>
+        /// Method to get current sharing state files
+        /// </summary>
+        /// <param name="sharedPath">Path in app (shared path)</param>
+        /// <returns>List of CloudFiles from current sharing state</returns>
+        Task<List<CloudFile>> GetCurrentDepthAppSharingFiles(string sharedPath);
+
+        /// <summary>
+        /// Method to get current sharing state folders
+        /// </summary>
+        /// <param name="sharedPath">Path in app (shared path)</param>
+        /// <returns>List of CloudFolders from current sharing state</returns>
+        Task<List<CloudFolder>> GetCurrentDepthAppSharingDirectories(string sharedPath);
         Task<bool> OwnerOfPathIsActualUser(string currentPath, ClaimsPrincipal userPrincipal);
         Task<List<string>> GetUserSharedFolderUrls(ClaimsPrincipal userPrincipal);
         Task<List<string>> GetUserSharedFileUrls(ClaimsPrincipal userPrincipal);
@@ -188,9 +199,24 @@ namespace NCloud.Services
         Task<string?> CreateZipFile(List<string> itemsForDownload, string currentPath, string filePath, bool connectedToApp, bool connectedToWeb);
         Task<string> ChangePathStructure(string currentPath);
         Task<bool> ModifyFileContent(string file, string content);
-        Task<CloudFolder> GetFolder(string currentPath, string folderName);
+
+        /// <summary>
+        /// Method to get CloudFolder object from a specified physical folder
+        /// </summary>
+        /// <param name="cloudPath">Path in the app</param>
+        /// <param name="folderName">Name of folder</param>
+        /// <returns>CloudFolder object with specified folder data in it</returns>
+        Task<CloudFolder> GetFolder(string cloudPath, string folderName);
         Task<CloudFile> GetFile(string currentPath, string fileName);
-        Task<string> RenameFolder(string currentPath, string folderName, string newName);
+
+        /// <summary>
+        /// Method to rename a folder
+        /// </summary>
+        /// <param name="cloudPath">Path in app</param>
+        /// <param name="folderName">Original name of folder</param>
+        /// <param name="newName">User defined new name of folder</param>
+        /// <returns>The renamed folder name</returns>
+        Task<string> RenameFolder(string cloudPath, string folderName, string newName);
         Task<string> RenameFile(string currentPath, string fileName, string newName);
         Task<string> CopyFile(string? source, string destination, ClaimsPrincipal userPrincipal);
         Task<string> CopyFolder(string? source, string destination, ClaimsPrincipal userPrincipal);
