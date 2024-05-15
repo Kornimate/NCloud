@@ -162,6 +162,7 @@ namespace NCloud.Controllers
                     {
                         AddNewNotification(new Warning($"A file has been renamed! New name: {newFileName}"));
                     }
+
                 }
                 catch (CloudFunctionStopException ex)
                 {
@@ -188,7 +189,7 @@ namespace NCloud.Controllers
 
             if (!errorPresent)
             {
-                AddNewNotification(new Success($"File{(files.Count > 1 ? "s" : "")} added successfully!"));
+                AddNewNotification(new Success($"File{(files.Count > 1 ? "s" : "")} added successfully"));
             }
 
             return RedirectToAction("Details", "Drive");
@@ -257,6 +258,7 @@ namespace NCloud.Controllers
         public async Task<IActionResult> DeleteItems()
         {
             CloudPathData pathData = await GetSessionCloudPathData();
+
             try
             {
                 var files = await service.GetCurrentDepthCloudFiles(pathData.CurrentPath);
@@ -271,7 +273,7 @@ namespace NCloud.Controllers
             }
             catch (Exception ex)
             {
-                AddNewNotification(new Error(ex.Message));
+                AddNewNotification(new Error($"Error - {ex.Message}"));
 
                 return View(new DriveDeleteViewModel
                 {
@@ -282,6 +284,11 @@ namespace NCloud.Controllers
             }
         }
 
+        /// <summary>
+        /// Action method to handle post request for item deletion
+        /// </summary>
+        /// <param name="vm">The form data in a view model</param>
+        /// <returns>Redirection to delete items</returns>
         [HttpPost]
         [ValidateAntiForgeryToken, ActionName("DeleteItems")]
         public async Task<IActionResult> DeleteItemsFromForm([Bind("ItemsForDelete")] DriveDeleteViewModel vm)
@@ -309,9 +316,15 @@ namespace NCloud.Controllers
                                 noFail = false;
                             }
                         }
-                        catch (Exception ex)
+                        catch (CloudFunctionStopException ex)
                         {
-                            AddNewNotification(new Error($"{ex.Message} ({itemForDelete})"));
+                            AddNewNotification(new Error($"Error - {ex.Message}"));
+
+                            noFail = false;
+                        }
+                        catch (Exception)
+                        {
+                            AddNewNotification(new Error($"Error while removing file: {itemForDelete}"));
 
                             noFail = false;
                         }
@@ -324,16 +337,18 @@ namespace NCloud.Controllers
                         {
                             if (!(await service.RemoveDirectory(itemForDelete, pathData.CurrentPath, await userManager.GetUserAsync(User))))
                             {
-                                AddNewNotification(new Error($"Error removing folder {itemForDelete}"));
+                                AddNewNotification(new Error($"Error removing directory: {itemForDelete}"));
 
                                 noFail = false;
                             }
                         }
-                        catch (Exception ex)
+                        catch (CloudFunctionStopException ex)
                         {
-                            AddNewNotification(new Error($"{ex.Message} ({itemForDelete})"));
-
-                            noFail = false;
+                            AddNewNotification(new Error($"Error - {ex.Message}"));
+                        }
+                        catch (Exception)
+                        {
+                            AddNewNotification(new Error($"Error while removing directory: {itemForDelete}"));
                         }
                     }
                 }
@@ -352,21 +367,28 @@ namespace NCloud.Controllers
 
             if (noFail)
             {
-                AddNewNotification(new Success("All Items removed successfully!"));
+                AddNewNotification(new Success("All Items removed successfully"));
             }
             else
             {
-                AddNewNotification(new Warning("Could not complete all item deletion!"));
+                AddNewNotification(new Warning("Could not complete all item deletion"));
             }
 
             return RedirectToAction("DeleteItems");
         }
 
+        /// <summary>
+        /// Action method to handle download folder in current state
+        /// </summary>
+        /// <param name="folderName">Name of the folder to be downloaded</param>
+        /// <returns>Redirection to details and file result</returns>
         public async Task<IActionResult> DownloadFolder(string? folderName)
         {
-            if (folderName is null || folderName == String.Empty)
+            if (String.IsNullOrWhiteSpace(folderName))
             {
-                return View("Error");
+                AddNewNotification(new Error("No directory name specified"));
+
+                return RedirectToAction("Details", "Drive");
             }
 
             return await Download(new List<string>()
@@ -377,11 +399,18 @@ namespace NCloud.Controllers
             RedirectToAction("Details", "Drive"));
         }
 
+        /// <summary>
+        /// Action method to download file from current state
+        /// </summary>
+        /// <param name="fileName">Name of the file to be downloaded</param>
+        /// <returns>Redirection to details and file result</returns>
         public async Task<IActionResult> DownloadFile(string? fileName)
         {
-            if (fileName is null || fileName == String.Empty)
+            if (String.IsNullOrWhiteSpace(fileName))
             {
-                return View("Error");
+                AddNewNotification(new Error("No directory name specified"));
+
+                return RedirectToAction("Details", "Drive");
             }
 
             return await Download(new List<string>()
@@ -392,6 +421,10 @@ namespace NCloud.Controllers
             RedirectToAction("Details", "Drive"));
         }
 
+        /// <summary>
+        /// Action method to show downloadable items in current state
+        /// </summary>
+        /// <returns>View with the downloadable items</returns>
         public async Task<IActionResult> DownloadItems()
         {
             CloudPathData pathData = await GetSessionCloudPathData();
@@ -410,7 +443,8 @@ namespace NCloud.Controllers
             }
             catch (Exception ex)
             {
-                AddNewNotification(new Error(ex.Message));
+                AddNewNotification(new Error($"Error - {ex.Message}"));
+
                 return View(new DriveDownloadViewModel
                 {
                     Folders = new List<CloudFolder>(),
@@ -420,6 +454,11 @@ namespace NCloud.Controllers
             }
         }
 
+        /// <summary>
+        /// Action method to handle prost request to download items
+        /// </summary>
+        /// <param name="vm">Form data in a view model</param>
+        /// <returns>Redirection to downloaditems</returns>
         [HttpPost]
         [ValidateAntiForgeryToken, ActionName("DownloadItems")]
         public async Task<IActionResult> DownloadItemsFromForm([Bind("ItemsForDownload")] DriveDownloadViewModel vm)
@@ -427,31 +466,75 @@ namespace NCloud.Controllers
             return await Download(vm.ItemsForDownload ?? new(), (await GetSessionCloudPathData()).CurrentPath, RedirectToAction("Details", "Drive"));
         }
 
+        /// <summary>
+        /// Action method to handle folder connection request to app via js
+        /// </summary>
+        /// <param name="itemName">Name of the directory</param>
+        /// <returns>Json with data indication success or fail with message</returns>
         public async Task<JsonResult> ConnectDirectoryToApp([FromBody] string itemName)
         {
             CloudPathData session = await GetSessionCloudPathData();
 
-            if (await service.ConnectDirectoryToApp(session.CurrentPath, itemName, User))
+            try
             {
-                return Json(new ConnectionDTO { Success = true, Message = "Directory and items inside connected to application" });
+                if (await service.ConnectDirectoryToApp(session.CurrentPath, itemName, await userManager.GetUserAsync(User)))
+                {
+                    return Json(new ConnectionDTO { Success = true, Message = "Directory and items inside connected to application" });
+                }
+                else
+                {
+                    return Json(new ConnectionDTO { Success = false, Message = "Error while connecting directory to application!" });
+                }
             }
-            else
+            catch (CloudFunctionStopException ex)
+            {
+                return Json(new ConnectionDTO { Success = false, Message = $"Error - {ex.Message}" });
+            }
+            catch (CloudLoggerException ex)
+            {
+                logger.LogError($"Error while disconnecting directory: {ex.Message}");
+
+                return Json(new ConnectionDTO { Success = false, Message = "Error while connecting directory to application!" });
+            }
+            catch (Exception)
             {
                 return Json(new ConnectionDTO { Success = false, Message = "Error while connecting directory to application!" });
             }
         }
 
+        /// <summary>
+        /// Action method to handle folder connection request to web via js
+        /// </summary>
+        /// <param name="itemName">Name of folder</param>
+        /// <returns></returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<JsonResult> ConnectDirectoryToWeb([FromBody] string itemName)
         {
             CloudPathData session = await GetSessionCloudPathData();
 
-            if (await service.ConnectDirectoryToWeb(session.CurrentPath, itemName, User))
+            try
             {
-                return Json(new ConnectionDTO { Success = true, Message = "Directory and items inside connected to web" });
+                if (await service.ConnectDirectoryToWeb(session.CurrentPath, itemName, await userManager.GetUserAsync(User)))
+                {
+                    return Json(new ConnectionDTO { Success = true, Message = "Directory and items inside connected to web" });
+                }
+                else
+                {
+                    return Json(new ConnectionDTO { Success = false, Message = "Error while connecting directory to web!" });
+                }
             }
-            else
+            catch (CloudFunctionStopException ex)
+            {
+                return Json(new ConnectionDTO { Success = false, Message = $"Error - {ex.Message}" });
+            }
+            catch (CloudLoggerException ex)
+            {
+                logger.LogError($"Error while disconnecting directory: {ex.Message}");
+
+                return Json(new ConnectionDTO { Success = false, Message = "Error while connecting directory to web!" });
+            }
+            catch (Exception)
             {
                 return Json(new ConnectionDTO { Success = false, Message = "Error while connecting directory to web!" });
             }
@@ -668,7 +751,7 @@ namespace NCloud.Controllers
 
                 if (vm.ConnectedToWeb)
                 {
-                    if (!await service.ConnectDirectoryToWeb(pathData.CurrentPath, vm.NewName!, User))
+                    if (!await service.ConnectDirectoryToWeb(pathData.CurrentPath, vm.NewName!, await userManager.GetUserAsync(User)))
                     {
                         AddNewNotification(new Error("Error while applying settings (web connect)"));
 
@@ -687,7 +770,7 @@ namespace NCloud.Controllers
 
                 if (vm.ConnectedToApp)
                 {
-                    if (!await service.ConnectDirectoryToApp(pathData.CurrentPath, vm.NewName!, User))
+                    if (!await service.ConnectDirectoryToApp(pathData.CurrentPath, vm.NewName!, await userManager.GetUserAsync(User)))
                     {
                         AddNewNotification(new Error("Error while applying settings (app connect)"));
 

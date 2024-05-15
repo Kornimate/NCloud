@@ -8,7 +8,7 @@ namespace NCloud.Security
         {
             bool everyFileDeleted = true;
 
-            string tempfolder = Path.Combine(env.WebRootPath, Constants.TempFolderName);
+            string tempfolder = Constants.GetTempFileDirectory();
 
             if (!Directory.Exists(tempfolder))
             {
@@ -17,18 +17,18 @@ namespace NCloud.Security
 
             foreach (string file in Directory.EnumerateFiles(tempfolder))
             {
-                FileInfo fi = new FileInfo(file);
-
-                if (fi.Exists && (DateTime.UtcNow - fi.CreationTimeUtc) > Constants.TempFileDeleteTimeSpan)
+                try
                 {
-                    try
+                    FileInfo fi = new FileInfo(file);
+
+                    if (fi.Exists && (DateTime.UtcNow - fi.CreationTimeUtc) > Constants.TempFileDeleteTimeSpan)
                     {
                         File.Delete(file);
                     }
-                    catch (Exception)
-                    {
-                        everyFileDeleted = everyFileDeleted && false;
-                    }
+                }
+                catch (Exception)
+                {
+                    everyFileDeleted = everyFileDeleted && false;
                 }
             }
 

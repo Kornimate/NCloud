@@ -198,7 +198,11 @@ namespace NCloud.Services
                     await file.CopyToAsync(stream);
                 }
 
-                fi.SetAccessControl(SecurityManager.GetFileRights());
+                user.UsedSpace += fi.Length; //updating user used space
+
+                context.Users.Update(user);
+
+                fi.SetAccessControl(SecurityManager.GetFileRights()); //file does not have execution right
 
                 Pair<string, string> parentPathAndName = GetParentPathAndName(cloudPath);
 
@@ -248,7 +252,7 @@ namespace NCloud.Services
 
                 await SetFileConnectedState(cloudPath, fileName, ChangeOwnerIdentification(ChangeRootName(cloudPath), user.UserName), user, false, false);
             }
-            catch
+            catch (Exception)
             {
                 throw new CloudFunctionStopException("error while removing file");
             }
@@ -460,14 +464,20 @@ namespace NCloud.Services
             }
         }
 
-        public async Task<bool> ConnectDirectoryToWeb(string currentPath, string directoryName, ClaimsPrincipal userPrincipal)
+        public async Task<bool> ConnectDirectoryToWeb(string currentPath, string directoryName, CloudUser user)
         {
 
             try
             {
-                CloudUser user = await userManager.GetUserAsync(userPrincipal);
-
                 return await SetObjectAndUnderlyingObjectsState(currentPath, directoryName, currentPath, user, connectToWeb: true);
+            }
+            catch (CloudFunctionStopException ex)
+            {
+                throw new CloudFunctionStopException(ex.Message);
+            }
+            catch (CloudLoggerException ex)
+            {
+                throw new CloudLoggerException(ex.Message);
             }
             catch (Exception)
             {
@@ -475,25 +485,31 @@ namespace NCloud.Services
             }
         }
 
-        public async Task<bool> ConnectDirectoryToApp(string currentPath, string directoryName, ClaimsPrincipal userPrincipal)
+        public async Task<bool> ConnectDirectoryToApp(string cloudPath, string directoryName, CloudUser user)
         {
             try
             {
-                CloudUser user = await userManager.GetUserAsync(userPrincipal);
-
-                Pair<string, string> parentPathAndName = GetParentPathAndName(currentPath);
+                Pair<string, string> parentPathAndName = GetParentPathAndName(cloudPath);
 
                 Pair<bool, bool> connections = await FolderIsSharedInAppInWeb(parentPathAndName.First, parentPathAndName.Second);
 
-                if (connections.First && currentPath != Constants.GetCloudRootPathInDatabase(user.Id))
+                if (connections.First && cloudPath != Constants.GetCloudRootPathInDatabase(user.Id))
                 {
-                    return await SetObjectAndUnderlyingObjectsState(currentPath, directoryName, ChangeOwnerIdentification(ChangeRootName(currentPath), user.UserName), user, connectToApp: true)
-                        && await SetObjectAndUnderlyingObjectsState(currentPath, directoryName, Constants.GetSharingRootPathInDatabase(user.UserName), user, connectToApp: true);
+                    return await SetObjectAndUnderlyingObjectsState(cloudPath, directoryName, ChangeOwnerIdentification(ChangeRootName(cloudPath), user.UserName), user, connectToApp: true)
+                        && await SetObjectAndUnderlyingObjectsState(cloudPath, directoryName, Constants.GetSharingRootPathInDatabase(user.UserName), user, connectToApp: true);
                 }
                 else
                 {
-                    return await SetObjectAndUnderlyingObjectsState(currentPath, directoryName, Constants.GetSharingRootPathInDatabase(user.UserName), user, connectToApp: true);
+                    return await SetObjectAndUnderlyingObjectsState(cloudPath, directoryName, Constants.GetSharingRootPathInDatabase(user.UserName), user, connectToApp: true);
                 }
+            }
+            catch (CloudFunctionStopException ex)
+            {
+                throw new CloudFunctionStopException(ex.Message);
+            }
+            catch (CloudLoggerException ex)
+            {
+                throw new CloudLoggerException(ex.Message);
             }
             catch (Exception)
             {

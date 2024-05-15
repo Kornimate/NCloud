@@ -31,18 +31,31 @@ namespace NCloud.Controllers
             this.logger = logger;
         }
 
+        /// <summary>
+        /// Non action method to get session data related to cloud navigation and cloud clipboard
+        /// </summary>
+        /// <returns>The CloudPathData class with information in it</returns>
         [NonAction]
         protected async Task<CloudPathData> GetSessionCloudPathData()
         {
             return await service.GetSessionCloudPathData();
         }
 
+        /// <summary>
+        /// Non action method to save items into session
+        /// </summary>
+        /// <param name="pathData">Item to be saved to session</param>
+        /// <returns>Boolean indicating the success of action</returns>
         [NonAction]
         protected async Task<bool> SetSessionCloudPathData(CloudPathData pathData)
         {
             return await service.SetSessionCloudPathData(pathData);
         }
 
+        /// <summary>
+        /// Non action method to get session data related to sharing navigation
+        /// </summary>
+        /// <returns>The SharedPathData class with information in it</returns>
         [NonAction]
         protected async Task<SharedPathData> GetSessionSharedPathData()
         {
@@ -62,8 +75,13 @@ namespace NCloud.Controllers
             });
         }
 
+        /// <summary>
+        /// Non action method to save items into session
+        /// </summary>
+        /// <param name="pathData">Item to be saved to session</param>
+        /// <returns>Boolean indicating the success of action</returns>
         [NonAction]
-        protected Task<bool> SetSessionSharedPathData(SharedPathData pathData) //make it thread-safe
+        protected Task<bool> SetSessionSharedPathData(SharedPathData pathData)
         {
             return Task.Run(() =>
             {
@@ -81,6 +99,12 @@ namespace NCloud.Controllers
             });
         }
 
+
+        /// <summary>
+        /// Non action method to safe redirection inside app
+        /// </summary>
+        /// <param name="returnUrl">url to be returned to</param>
+        /// <returns>Redirection to url or if not local to home</returns>
         [NonAction]
         protected async Task<IActionResult> RedirectToLocal(string? returnUrl)
         {
@@ -94,6 +118,11 @@ namespace NCloud.Controllers
             }
         }
 
+        /// <summary>
+        /// Method to handle notifications presented to user
+        /// </summary>
+        /// <param name="notification">The notification with correct type (strategy design pattern)</param>
+        /// <returns>Boolean indication the success of action</returns>
         [NonAction]
         protected bool AddNewNotification(CloudNotificationAbstarct notification)
         {
@@ -110,6 +139,15 @@ namespace NCloud.Controllers
             }
         }
 
+        /// <summary>
+        /// Action method to download file or zip
+        /// </summary>
+        /// <param name="itemsForDownload">List of item names to be downloaded</param>
+        /// <param name="path">path to items to be downloaded (same path for every item)</param>
+        /// <param name="returnAction">If download fails where to return</param>
+        /// <param name="connectedToApp">Filter app shared items</param>
+        /// <param name="connectedToWeb">Filter web shared items</param>
+        /// <returns>The file (zip or single file)</returns>
         public async Task<IActionResult> Download(List<string> itemsForDownload, string path, IActionResult returnAction, bool connectedToApp = false, bool connectedToWeb = false)
         {
             try
@@ -179,15 +217,19 @@ namespace NCloud.Controllers
             return returnAction;
         }
 
+        /// <summary>
+        /// Non action method to get a temporary file path for download zip
+        /// </summary>
+        /// <returns>The path and name for the temporary file</returns>
         [NonAction]
         protected string GetTempFileNameAndPath()
         {
-            if (!Directory.Exists(Constants.TempFilePath))
+            if (!Directory.Exists(Constants.GetTempFileDirectory()))
             {
-                Directory.CreateDirectory(Constants.TempFilePath);
+                Directory.CreateDirectory(Constants.GetTempFileDirectory());
             }
 
-            return Path.Combine(Constants.TempFilePath, Guid.NewGuid().ToString() + DateTime.Now.ToString(Constants.DateTimeFormat));
+            return Path.Combine(Constants.GetTempFileDirectory(), Guid.NewGuid().ToString() + DateTime.Now.ToString(Constants.DateTimeFormat));
         }
     }
 }

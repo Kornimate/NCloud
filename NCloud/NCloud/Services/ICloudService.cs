@@ -104,8 +104,16 @@ namespace NCloud.Services
         /// <param name="folderName">Name of the folder</param>
         /// <returns>CloudFolder object with physical data in it</returns>
         Task<DirectoryInfo> GetFolderByPath(string physicalPath, string folderName);
-        Task<bool> ConnectDirectoryToWeb(string currentPath, string directoryName, ClaimsPrincipal userPrincipal);
-        Task<bool> ConnectDirectoryToApp(string currentPath, string directoryName, ClaimsPrincipal userPrincipal);
+
+        /// <summary>
+        /// Method to handle directory connection in database
+        /// </summary>
+        /// <param name="cloudPath">Path to folder in app</param>
+        /// <param name="directoryName">Name of folder</param>
+        /// <param name="user">Owner of the folder</param>
+        /// <returns>Boolean indication the success of activity</returns>
+        Task<bool> ConnectDirectoryToWeb(string cloudPath, string directoryName, CloudUser user);
+        Task<bool> ConnectDirectoryToApp(string currentPath, string directoryName, CloudUser user);
         Task<bool> DisconnectDirectoryFromApp(string currentPath, string directoryName, ClaimsPrincipal userPrincipal);
         Task<bool> DisconnectDirectoryFromWeb(string currentPath, string directoryName, ClaimsPrincipal userPrincipal);
         Task<bool> ConnectFileToApp(string currentPath, string fileName, ClaimsPrincipal userPrincipal);
