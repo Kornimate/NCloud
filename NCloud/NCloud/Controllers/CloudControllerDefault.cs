@@ -90,7 +90,7 @@ namespace NCloud.Controllers
             }
             catch (Exception)
             {
-                return await Task.FromResult<bool>(true);
+                return await Task.FromResult<bool>(false);
             }
         }
 
@@ -103,17 +103,27 @@ namespace NCloud.Controllers
         {
             return await Task.Run(() =>
             {
-                SharedPathData data = null!;
-                if (HttpContext.Session.Keys.Contains(Constants.SharedCookieKey))
+                try
                 {
-                    data = JsonSerializer.Deserialize<SharedPathData>(HttpContext.Session.GetString(Constants.SharedCookieKey)!)!;
+                    SharedPathData data = null!;
+
+                    if (HttpContext.Session.Keys.Contains(Constants.SharedCookieKey))
+                    {
+                        data = JsonSerializer.Deserialize<SharedPathData>(HttpContext.Session.GetString(Constants.SharedCookieKey)!)!;
+                    }
+                    else
+                    {
+                        data = new SharedPathData();
+
+                        HttpContext.Session.SetString(Constants.SharedCookieKey, JsonSerializer.Serialize<SharedPathData>(data));
+                    }
+
+                    return data;
                 }
-                else
+                catch (Exception)
                 {
-                    data = new SharedPathData();
-                    HttpContext.Session.SetString(Constants.SharedCookieKey, JsonSerializer.Serialize<SharedPathData>(data));
+                    return new SharedPathData();
                 }
-                return data;
             });
         }
 
@@ -130,6 +140,7 @@ namespace NCloud.Controllers
                 try
                 {
                     pathData ??= new SharedPathData();
+
                     HttpContext.Session.SetString(Constants.SharedCookieKey, JsonSerializer.Serialize<SharedPathData>(pathData));
 
                     return true;

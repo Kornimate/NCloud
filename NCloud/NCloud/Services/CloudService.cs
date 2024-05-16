@@ -212,6 +212,11 @@ namespace NCloud.Services
                     await file.CopyToAsync(stream);
                 }
 
+                user = (await context.Users.FirstOrDefaultAsync(x => x.Id == user.Id))!; //get current user state from database
+
+                if (user is null)
+                    throw new CloudFunctionStopException("invalid user");
+
                 user.UsedSpace += fi.Length; //updating user used space
 
                 context.Users.Update(user);
@@ -865,6 +870,11 @@ namespace NCloud.Services
 
                 File.Copy(src, Path.Combine(dest, RenameObject(dest, ref name, true)));
 
+                user = (await context.Users.FirstOrDefaultAsync(x => x.Id == user.Id))!; //get current user state from database
+
+                if (user is null)
+                    throw new CloudFunctionStopException("invalid user");
+
                 user.UsedSpace += fi.Length;
 
                 context.Users.Update(user);
@@ -939,6 +949,11 @@ namespace NCloud.Services
                             throw new CloudFunctionStopException("during process user ran out of space, some actions may not finished")
 ;
                         File.Copy(fi.FullName, Path.Combine(newDirectoryPath, fi.Name));
+
+                        user = (await context.Users.FirstOrDefaultAsync(x => x.Id == user.Id))!; //get current user state from database
+
+                        if (user is null)
+                            throw new CloudFunctionStopException("invalid user");
 
                         user.UsedSpace += fi.Length;
 

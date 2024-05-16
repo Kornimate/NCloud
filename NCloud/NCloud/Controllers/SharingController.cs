@@ -27,9 +27,10 @@ namespace NCloud.Controllers
         /// <returns>View with current state items (shared files, shared folders)</returns>
         public async Task<IActionResult> Details(string? folderName = null)
         {
+            SharedPathData pathdata = await GetSessionSharedPathData();
+            
             try
             {
-                SharedPathData pathdata = await GetSessionSharedPathData();
 
                 string sharedPath = pathdata.SetFolder(folderName);
 
@@ -53,7 +54,7 @@ namespace NCloud.Controllers
         /// <summary>
         /// Action method to navigate backwards in shared file system
         /// </summary>
-        /// <returns></returns>
+        /// <returns>Redirection to details</returns>
         public async Task<IActionResult> Back()
         {
             try
@@ -74,18 +75,30 @@ namespace NCloud.Controllers
             }
         }
 
+        /// <summary>
+        /// Action method to navigate to home directory in shared file system
+        /// </summary>
+        /// <returns>Redirection to details</returns>
         public async Task<IActionResult> Home()
         {
-            await SetSessionSharedPathData(new SharedPathData());
+            if(!await SetSessionSharedPathData(new SharedPathData()))
+            {
+                AddNewNotification(new Error("Error while handling session for shared directory"));
+            }
 
             return RedirectToAction("Details", "Sharing");
         }
 
+        /// <summary>
+        /// Action method to handle folder download in shared directories (current state)
+        /// </summary>
+        /// <param name="folderName">Name of folder</param>
+        /// <returns>Redirection to details</returns>
         public async Task<IActionResult> DownloadFolder(string? folderName)
         {
-            if (folderName is null || folderName == String.Empty)
+            if (String.IsNullOrWhiteSpace(folderName))
             {
-                return View("Error");
+                return RedirectToAction("Details","Sharing");
             }
 
             return await Download(new List<string>()
@@ -97,9 +110,15 @@ namespace NCloud.Controllers
             connectedToApp: true);
         }
 
+
+        /// <summary>
+        /// Action method to handle file download in shared directories (current state)
+        /// </summary>
+        /// <param name="fileName">Name of file</param>
+        /// <returns>Redirection to details</returns>
         public async Task<IActionResult> DownloadFile(string? fileName)
         {
-            if (fileName is null || fileName == String.Empty)
+            if (String.IsNullOrWhiteSpace(fileName))
             {
                 return View("Error");
             }
