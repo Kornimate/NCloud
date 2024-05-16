@@ -8,35 +8,64 @@ using NCloud.DTOs;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using NCloud.ConstantData;
 using Microsoft.AspNetCore.Authorization;
+using NCloud.Services.Exceptions;
 
 namespace NCloud.Controllers
 {
+    /// <summary>
+    /// Class to handle file modification requests
+    /// </summary>
     [Authorize]
     public class EditorController : CloudControllerDefault
     {
         public EditorController(ICloudService service, UserManager<CloudUser> userManager, SignInManager<CloudUser> signInManager, IWebHostEnvironment env, ICloudNotificationService notifier, ILogger<CloudControllerDefault> logger) : base(service, userManager, signInManager, env, notifier, logger) { }
 
+        /// <summary>
+        /// Action method to show editor selector page
+        /// </summary>
+        /// <returns>View with options for user to choose editor</returns>
         public async Task<IActionResult> Index()
         {
-            return View(new EditorIndexViewModel
+            try
             {
-                CodingExtensions = new SelectList(await ExtensionManager.GetCodingExtensions()),
-                TextDocumentExtensions = new SelectList(await ExtensionManager.GetTextDocumentExtensions())
-            });
+                return View(new EditorIndexViewModel
+                {
+                    CodingExtensions = new SelectList(await ExtensionManager.GetCodingExtensions()),
+                    TextDocumentExtensions = new SelectList(await ExtensionManager.GetTextDocumentExtensions())
+                });
+            }
+            catch (Exception)
+            {
+                return RedirectToAction("Error", "Home");
+            }
         }
 
+        /// <summary>
+        /// Action method to return to page where editor is accessed from
+        /// </summary>
+        /// <param name="redirectionString">Special string to handle redirection</param>
+        /// <returns>Redirection to caller page or error page if error is present</returns>
         public async Task<IActionResult> Back(string? redirectionString = null)
         {
-            if (redirectionString is null || redirectionString == String.Empty)
+            if (String.IsNullOrWhiteSpace(redirectionString))
             {
                 return await Task.FromResult<IActionResult>(RedirectToAction("Index"));
             }
 
             var redirection = RedirectionManager.CreateRedirectionAction(redirectionString);
 
-            return await Task.FromResult<IActionResult>(RedirectToAction(redirection.Action, redirection.Controller));
+            if (redirection is not null)
+                return await Task.FromResult<IActionResult>(RedirectToAction(redirection.Action, redirection.Controller));
+
+            else
+                return RedirectToAction("Error", "Home");
         }
 
+        /// <summary>
+        /// Action method to handle post request to create new file at @CLOUDROOT/Documents
+        /// </summary>
+        /// <param name="vm">CreationDetails wrapped in EditorIndexViewModels</param>
+        /// <returns></returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CreateNewFile([Bind("FileName,Extension")] EditorIndexViewModel vm)
@@ -54,14 +83,24 @@ namespace NCloud.Controllers
                     {
                         AddNewNotification(new Warning($"The file has been renamed!"));
                     }
-                    else if (res == String.Empty)
-                    {
-                        throw new Exception("Error while creating file!");
-                    }
 
                     AddNewNotification(new Success($"File successfully created at {Constants.GetDefaultFileShowingPath()}"));
 
                     return await EditorHub(fileName, path, RedirectionManager.CreateRedirectionString("Editor", "Index"));
+                }
+                catch (CloudFunctionStopException ex)
+                {
+                    AddNewNotification(new Error($"Error - {ex.Message}"));
+
+                    return RedirectToAction("Index");
+                }
+                catch (CloudLoggerException ex)
+                {
+                    logger.LogError(ex.Message);
+
+                    AddNewNotification(new Error($"Error while creating file"));
+
+                    return RedirectToAction("Index");
                 }
                 catch (Exception)
                 {
@@ -79,6 +118,13 @@ namespace NCloud.Controllers
             return RedirectToAction("Index");
         }
 
+        /// <summary>
+        /// Action method to select editor for file extension
+        /// </summary>
+        /// <param name="fileName">Name of file</param>
+        /// <param name="path">Path in app</param>
+        /// <param name="redirectData">Special string for redirection</param>
+        /// <returns>Selected action method redirection or to selection page (more than one editor can edit the extension)</returns>
         public async Task<IActionResult> EditorHub(string fileName, string? path = null, string? redirectData = null)
         {
             bool codingExtension = await ExtensionManager.TryGetFileCodingExtensionData(fileName, out string codingExtensionData);
@@ -99,7 +145,7 @@ namespace NCloud.Controllers
 
             else
             {
-                AddNewNotification(new Error("No Editor available for this extension"));
+                AddNewNotification(new Error("No editor available for this extension"));
 
                 if (redirectData is null)
                 {
@@ -109,11 +155,23 @@ namespace NCloud.Controllers
                 {
                     var redirection = RedirectionManager.CreateRedirectionAction(redirectData);
 
-                    return RedirectToAction(redirection.Action, redirection.Controller);
+                    if (redirection is not null)
+                        return RedirectToAction(redirection.Action, redirection.Controller);
+
+                    else
+                        return RedirectToAction("Index", "Editor");
                 }
             }
         }
 
+        /// <summary>
+        /// Action method to open code editor page
+        /// </summary>
+        /// <param name="fileName">Name of file</param>
+        /// <param name="path">Path to File</param>
+        /// <param name="extensionData">Extension info</param>
+        /// <param name="redirectData">Special string for redirection</param>
+        /// <returns>View to code editor</returns>
         public async Task<IActionResult> CodeEditor(string fileName, string? path, string extensionData, string redirectData)
         {
             string pathAndName = Path.Combine(path ?? (await GetSessionCloudPathData()).CurrentPath, fileName);
@@ -134,10 +192,22 @@ namespace NCloud.Controllers
 
                 var redirection = RedirectionManager.CreateRedirectionAction(redirectData);
 
-                return RedirectToAction(redirection.Action, redirection.Controller);
+                if (redirection is not null)
+                    return RedirectToAction(redirection.Action, redirection.Controller);
+
+                else
+                    return RedirectToAction("Index", "Editor");
             }
         }
 
+        /// <summary>
+        /// Action method to open text editor page
+        /// </summary>
+        /// <param name="fileName">Name of file</param>
+        /// <param name="path">Path to File</param>
+        /// <param name="extensionData">Extension info</param>
+        /// <param name="redirectData">Special string for redirection</param>
+        /// <returns>View to text editor</returns>
         public async Task<IActionResult> TextEditor(string fileName, string? path, string extensionData, string redirectData)
         {
             string pathAndName = Path.Combine(path ?? (await GetSessionCloudPathData()).CurrentPath, fileName);
@@ -158,10 +228,19 @@ namespace NCloud.Controllers
 
                 var redirection = RedirectionManager.CreateRedirectionAction(redirectData);
 
-                return RedirectToAction(redirection.Action, redirection.Controller);
+                if (redirection is not null)
+                    return RedirectToAction(redirection.Action, redirection.Controller);
+
+                else
+                    return RedirectToAction("Index", "Editor");
             }
         }
 
+        /// <summary>
+        /// Action method to handle data saving request from JS (each editor)
+        /// </summary>
+        /// <param name="vm">Data for save wrapped in FileDataViewModel</param>
+        /// <returns>Json with boolean value indication success and message</returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<JsonResult> SaveData([FromBody] FileDataViewModel vm)

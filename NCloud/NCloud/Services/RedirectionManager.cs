@@ -8,14 +8,28 @@ namespace NCloud.Services
     {
         public static RedirectManagerResult CreateRedirectionAction(string redirectData)
         {
-            string[]? redirectControllerAndAction = redirectData.Split(Constants.ControllerDataSeparator, StringSplitOptions.RemoveEmptyEntries);
+            try
+            {
+                string[]? redirectControllerAndAction = redirectData.Split(Constants.ControllerDataSeparator, StringSplitOptions.RemoveEmptyEntries);
 
-            return new RedirectManagerResult(redirectControllerAndAction[0], redirectControllerAndAction[1]);
+                return new RedirectManagerResult(redirectControllerAndAction[0], redirectControllerAndAction[1]);
+            }
+            catch (Exception)
+            {
+                return null!;
+            }
         }
 
         public static string CreateRedirectionString(string controller, string action)
         {
-            return String.Join(Constants.ControllerDataSeparator, controller, action);
+            try
+            {
+                return String.Join(Constants.ControllerDataSeparator, controller, action);
+            }
+            catch (Exception)
+            {
+                return String.Empty;
+            }
         }
     }
 }

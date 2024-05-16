@@ -16,6 +16,9 @@ using CloudPathData = NCloud.Models.CloudPathData;
 
 namespace NCloud.Controllers
 {
+    /// <summary>
+    /// Class to serve as base controller for other contorollers (common methods and attributes), others inherited from this
+    /// </summary>
     public class CloudControllerDefault : Controller
     {
         protected readonly ICloudService service;
