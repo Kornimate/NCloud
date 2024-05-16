@@ -311,13 +311,47 @@ namespace NCloud.Services
         /// <param name="user">Owner of file</param>
         /// <returns>Empty string if copied file name not changed, new name if changed during copy (might be renamed)</returns>
         Task<string> CopyFolder(string source, string destination, CloudUser userPrincipal);
-        Task<CloudPathData> GetSessionCloudPathData();
-        Task<bool> SetSessionCloudPathData(CloudPathData pathData);
-        Task<string> ChangeToDirectory(string path);
+
+        /// <summary>
+        /// Method to change to directory in session (relative or absolute path)
+        /// </summary>
+        /// <param name="path">Relative or absolut epath in app</param>
+        /// <param name="pathData">Current state in session</param>
+        /// <returns>The modified current state data</returns>
+        Task<CloudPathData> ChangeToDirectory(string path, CloudPathData pathData);
+
+        /// <summary>
+        /// Method to list current state items
+        /// </summary>
+        /// <returns>The string representing the items formatted like powershell but with cloud data</returns>
         Task<string> ListCurrentSubDirectories();
+
+        /// <summary>
+        /// Method to get commands and their syntax
+        /// </summary>
+        /// <returns>A string representing the help text (commands and explanations)</returns>
         Task<string> GetTerminalHelpText();
-        Task<string> PrintWorkingDirectory();
-        Task<List<CloudFolder>> SearchDirectoryInCurrentDirectory(string currentPath, string pattern);
-        Task<List<CloudFile>> SearchFileInCurrentDirectory(string currentPath, string pattern);
+
+        /// <summary>
+        /// Method to print the current state in folder system
+        /// </summary>
+        /// <returns>The current state in file system in cloud path format</returns>
+        Task<string> PrintWorkingDirectory(CloudPathData pathData);
+
+        /// <summary>
+        /// Method to filter folders as the pattern specifies
+        /// </summary>
+        /// <param name="cloudPath">Path in app</param>
+        /// <param name="pattern">Pattern for filtering (*,?)</param>
+        /// <returns>The list of filtered folders in list of CloudFolder objects</returns>
+        Task<List<CloudFolder>> SearchDirectoryInCurrentDirectory(string cloudPath, string pattern);
+
+        /// <summary>
+        /// Method to filter files as the pattern specifies
+        /// </summary>
+        /// <param name="cloudPath">Path in app</param>
+        /// <param name="pattern">Pattern for filtering (*,?)</param>
+        /// <returns>The list of filtered files in list of CloudFile objects</returns>
+        Task<List<CloudFile>> SearchFileInCurrentDirectory(string cloudPath, string pattern);
     }
 }

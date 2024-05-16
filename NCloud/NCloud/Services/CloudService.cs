@@ -950,7 +950,7 @@ namespace NCloud.Services
             }
         }
 
-        public async Task<string> ChangeToDirectory(string path, CloudPathData pathData)
+        public async Task<CloudPathData> ChangeToDirectory(string path, CloudPathData pathData)
         {
             if (path.StartsWith(Constants.AbsolutePathMarker))
             {
@@ -960,23 +960,21 @@ namespace NCloud.Services
                     {
                         await pathData.SetPath(path, ParseRootName(Constants.PrivateRootName));
 
-                        await SetSessionCloudPathData(pathData);
-
-                        return await Task.FromResult<string>(pathData.CurrentPathShow);
+                        return pathData;
                     }
                     catch (Exception)
                     {
-                        throw new InvalidDataException("unable to modify path");
+                        throw new CloudFunctionStopException("unable to modify path");
                     }
                 }
 
-                throw new InvalidDataException($"part of path does not exist");
+                throw new CloudFunctionStopException($"part of path does not exist");
             }
             else
             {
                 if (path == String.Empty)
                 {
-                    return await Task.FromResult<string>(pathData.CurrentPathShow);
+                    return pathData;
                 }
 
                 string[] pathElements = path.Split(Path.DirectorySeparatorChar);
@@ -985,7 +983,7 @@ namespace NCloud.Services
                 {
                     if (element == String.Empty)
                     {
-                        throw new InvalidDataException($"part of path does not exist (empty path element)");
+                        throw new CloudFunctionStopException($"part of path does not exist (empty path element)");
                     }
 
                     if (element == Constants.DirectoryBack)
@@ -1010,78 +1008,104 @@ namespace NCloud.Services
                             }
                             else
                             {
-                                throw new InvalidDataException($"part of path does not exist");
+                                throw new CloudFunctionStopException($"part of path does not exist");
                             }
                         }
                         else
                         {
-                            throw new InvalidDataException($"part of path does not exist");
+                            throw new CloudFunctionStopException($"part of path does not exist");
                         }
                     }
                 }
-                await SetSessionCloudPathData(pathData);
 
-                return await Task.FromResult<string>(pathData.CurrentPathShow);
+                return pathData;
             }
         }
 
-        public async Task<string> ListCurrentSubDirectories()
+        public async Task<string> ListCurrentSubDirectories(CloudPathData pathData)
         {
-            CloudPathData pathData = await GetSessionCloudPathData();
-
-            StringBuilder sb = new StringBuilder();
-
-            int counter = 0;
-
-            sb.Append("Directories:\n");
-            sb.Append("Created time      Size        Shared in app  Shared on web  Name\n");
-            sb.Append("----------------  ----------  -------------  -------------  ------\n\n");
-
-            foreach (var dir in await GetCurrentDepthCloudDirectories(pathData.CurrentPath))
+            try
             {
-                sb.Append(dir.ToString());
+                StringBuilder sb = new StringBuilder();
 
-                ++counter;
+                int counter = 0;
+
+                sb.Append("Directories:\n");
+                sb.Append("Created time      Size        Shared in app  Shared on web  Name\n");
+                sb.Append("----------------  ----------  -------------  -------------  ------\n\n");
+
+                foreach (var dir in await GetCurrentDepthCloudDirectories(pathData.CurrentPath))
+                {
+                    sb.Append(dir.ToString());
+
+                    ++counter;
+                }
+
+                sb.Append('\n');
+
+                counter = 0;
+
+                sb.Append("Files:\n");
+                sb.Append("Created time      Size        Shared in app  Shared on web  Name\n");
+                sb.Append("----------------  ----------  -------------  -------------  ------\n\n");
+
+                foreach (var file in await GetCurrentDepthCloudFiles(pathData.CurrentPath))
+                {
+                    sb.Append(file.ToString());
+
+                    ++counter;
+                }
+
+                return sb.ToString();
             }
-
-            sb.Append('\n');
-
-            counter = 0;
-
-            sb.Append("Files:\n");
-            sb.Append("Created time      Size        Shared in app  Shared on web  Name\n");
-            sb.Append("----------------  ----------  -------------  -------------  ------\n\n");
-
-            foreach (var file in await GetCurrentDepthCloudFiles(pathData.CurrentPath))
+            catch (Exception)
             {
-                sb.Append(file.ToString());
-
-                ++counter;
+                return Constants.TerminalRedText("error while printing items");
             }
-
-            return sb.ToString();
         }
 
         public async Task<string> GetTerminalHelpText()
         {
-            JArray commands = JArray.Parse(File.ReadAllText(Constants.TerminalCommandsDataFilePath));
+            try
+            {
+                JArray commands = JArray.Parse(File.ReadAllText(Constants.TerminalCommandsDataFilePath));
 
-            return await Task.FromResult<string>((String.Join('\n', commands?.Select(x => $"{Constants.TerminalYellowText(x[Constants.TerminalHelpName]?.ToString() ?? String.Empty)} : {x[Constants.TerminalHelpDescription]?.ToString() ?? String.Empty}") ?? Array.Empty<string>()) ?? Constants.TerminalRedText("no command data available")) + Environment.NewLine);
+                return await Task.FromResult<string>((String.Join('\n', commands?.Select(x => $"{Constants.TerminalYellowText(x[Constants.TerminalHelpName]?.ToString() ?? String.Empty)} : {x[Constants.TerminalHelpDescription]?.ToString() ?? String.Empty}") ?? Array.Empty<string>()) ?? Constants.TerminalRedText("no command data available")) + Environment.NewLine);
+
+            }
+            catch (Exception)
+            {
+                return Constants.TerminalRedText("error while loading help");
+            }
         }
 
-        public async Task<string> PrintWorkingDirectory()
+        public async Task<string> PrintWorkingDirectory(CloudPathData pathData)
         {
-            return (await GetSessionCloudPathData()).CurrentPathShow;
+            return await Task.FromResult<string>(pathData.CurrentPathShow);
         }
 
         public async Task<List<CloudFolder>> SearchDirectoryInCurrentDirectory(string currentPath, string pattern)
         {
-            return await GetCurrentDepthCloudDirectories(currentPath, pattern: pattern);
+            try
+            {
+                return await GetCurrentDepthCloudDirectories(currentPath, pattern: pattern);
+            }
+            catch (CloudFunctionStopException ex)
+            {
+                throw new CloudFunctionStopException(ex.Message);
+            }
         }
 
         public async Task<List<CloudFile>> SearchFileInCurrentDirectory(string currentPath, string pattern)
         {
-            return await GetCurrentDepthCloudFiles(currentPath, pattern: pattern);
+            try
+            {
+                return await GetCurrentDepthCloudFiles(currentPath, pattern: pattern);
+            }
+            catch (CloudFunctionStopException ex)
+            {
+                throw new CloudFunctionStopException(ex.Message);
+            }
         }
 
         #endregion
