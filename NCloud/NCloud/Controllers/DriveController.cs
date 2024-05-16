@@ -1177,6 +1177,11 @@ namespace NCloud.Controllers
             return View(vm);
         }
 
+        /// <summary>
+        /// Action method to handle JS request to copy folder to cloud clioboard
+        /// </summary>
+        /// <param name="itemName">Name of folder</param>
+        /// <returns>Json with boolean (success/false) and messge indicating the success of task</returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<JsonResult> CopyFolderToCloudClipboard([FromBody] string itemName)
@@ -1203,6 +1208,11 @@ namespace NCloud.Controllers
             }
         }
 
+        /// <summary>
+        /// Action method to handle JS request to copy file to cloud clioboard
+        /// </summary>
+        /// <param name="itemName">Name of file</param>
+        /// <returns>Json with boolean (success/false) and messge indicating the success of task</returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<JsonResult> CopyFileToCloudClipboard([FromBody] string itemName)
@@ -1229,6 +1239,10 @@ namespace NCloud.Controllers
             }
         }
 
+        /// <summary>
+        /// Action method to paste data from cloud clipboard to current state
+        /// </summary>
+        /// <returns>Redirection to details</returns>
         public async Task<IActionResult> PasteDataFromClipBoard()
         {
             CloudPathData pathData = await GetSessionCloudPathData();

@@ -205,6 +205,8 @@ namespace NCloud.Services
 
                 context.Users.Update(user);
 
+                await context.SaveChangesAsync();
+
                 fi.SetAccessControl(SecurityManager.GetFileRights()); //file does not have execution right
 
                 Pair<string, string> parentPathAndName = GetParentPathAndName(cloudPath);
@@ -856,6 +858,8 @@ namespace NCloud.Services
 
                 context.Users.Update(user);
 
+                await context.SaveChangesAsync();
+
                 Pair<string, string> parentPathAndName = GetParentPathAndName(destination);
 
                 Pair<bool, bool> connections = await FolderIsSharedInAppInWeb(parentPathAndName.First, parentPathAndName.Second);
@@ -924,6 +928,12 @@ namespace NCloud.Services
                             throw new CloudFunctionStopException("during process user ran out of space, some actions may not finished")
 ;
                         File.Copy(fi.FullName, Path.Combine(newDirectoryPath, fi.Name));
+
+                        user.UsedSpace += fi.Length;
+
+                        context.Users.Update(user);
+
+                        await context.SaveChangesAsync();
                     }
 
                     foreach (DirectoryInfo dir in directory.GetDirectories())
