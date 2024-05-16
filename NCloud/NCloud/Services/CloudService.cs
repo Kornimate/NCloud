@@ -823,16 +823,16 @@ namespace NCloud.Services
             return newFileName;
         }
 
-        public async Task<string> CopyFile(string? source, string destination, ClaimsPrincipal userPrincipal)
+        public async Task<string> CopyFile(string source, string destination, CloudUser user)
         {
-            if (source is null || source == String.Empty)
+            if (String.IsNullOrWhiteSpace(source))
             {
-                throw new Exception("Invalid source of file");
+                throw new CloudFunctionStopException("invalid source of file");
             }
 
-            if (destination is null || destination == String.Empty)
+            if (String.IsNullOrWhiteSpace(destination))
             {
-                throw new Exception("Invalid destination for copy");
+                throw new CloudFunctionStopException("invalid destination for copy");
             }
 
             try
@@ -842,11 +842,19 @@ namespace NCloud.Services
 
                 FileInfo fi = new FileInfo(src);
 
+                if (!fi.Exists)
+                    throw new CloudFunctionStopException("source file does not exist");
+
+                if (user.UsedSpace + fi.Length > user.MaxSpace)
+                    throw new CloudFunctionStopException("not enough storage");
+
                 string name = new string(fi.Name);
 
                 File.Copy(src, Path.Combine(dest, RenameObject(dest, ref name, true)));
 
-                CloudUser user = await userManager.GetUserAsync(userPrincipal);
+                user.UsedSpace += fi.Length;
+
+                context.Users.Update(user);
 
                 Pair<string, string> parentPathAndName = GetParentPathAndName(destination);
 
@@ -854,30 +862,29 @@ namespace NCloud.Services
 
                 await SetFileConnectedState(destination, name, ChangeOwnerIdentification(ChangeRootName(destination), user.UserName), user, connections.First, connections.Second);
 
-                if (name == fi.Name)
-                {
-                    return await Task.FromResult<string>(String.Empty);
-                }
-
-                return await Task.FromResult<string>(name);
+                return name == fi.Name ? String.Empty : name;
+            }
+            catch (CloudFunctionStopException ex)
+            {
+                throw new CloudFunctionStopException(ex.Message);
             }
             catch (Exception)
             {
-                throw new Exception("Error while pasting file");
+                throw new Exception("error while pasting file");
             }
         }
 
-        public async Task<string> CopyFolder(string? source, string destination, ClaimsPrincipal userPrincipal)
+        public async Task<string> CopyFolder(string source, string destination, CloudUser user)
         {
 
-            if (source is null || source == String.Empty)
+            if (String.IsNullOrWhiteSpace(source))
             {
-                throw new Exception("Invalid source of file");
+                throw new CloudFunctionStopException("invalid source of directory");
             }
 
-            if (destination is null || destination == String.Empty)
+            if (String.IsNullOrWhiteSpace(destination))
             {
-                throw new Exception("Invalid destination for copy");
+                throw new CloudFunctionStopException("invalid destination for copy");
             }
 
             try
@@ -886,6 +893,9 @@ namespace NCloud.Services
                 string dest = ParseRootName(destination);
 
                 DirectoryInfo di = new DirectoryInfo(src);
+
+                if (!di.Exists)
+                    throw new CloudFunctionStopException("source directory does not exist");
 
                 string name = new string(di.Name);
                 string newDirectoryPath = Path.Combine(dest, RenameObject(dest, ref name, false));
@@ -907,6 +917,12 @@ namespace NCloud.Services
 
                     foreach (FileInfo fi in directory.GetFiles())
                     {
+                        if (!fi.Exists)
+                            continue;
+
+                        if (user.UsedSpace + fi.Length > user.MaxSpace)
+                            throw new CloudFunctionStopException("during process user ran out of space, some actions may not finished")
+;
                         File.Copy(fi.FullName, Path.Combine(newDirectoryPath, fi.Name));
                     }
 
@@ -916,20 +932,17 @@ namespace NCloud.Services
                     }
                 }
 
-                CloudUser user = await userManager.GetUserAsync(userPrincipal);
-
                 Pair<string, string> parentPathAndName = GetParentPathAndName(destination);
 
                 Pair<bool, bool> connections = await FolderIsSharedInAppInWeb(parentPathAndName.First, parentPathAndName.Second);
 
                 await SetObjectAndUnderlyingObjectsState(destination, name, ChangeOwnerIdentification(ChangeRootName(destination), user.UserName), user, connections.First, connections.Second);
 
-                if (name == di.Name)
-                {
-                    return await Task.FromResult<string>(String.Empty);
-                }
-
-                return await Task.FromResult<string>(name);
+                return name == di.Name ? String.Empty : name;
+            }
+            catch (CloudFunctionStopException ex)
+            {
+                throw new CloudFunctionStopException(ex.Message);
             }
             catch (Exception)
             {
@@ -937,37 +950,8 @@ namespace NCloud.Services
             }
         }
 
-        public async Task<CloudPathData> GetSessionCloudPathData()
+        public async Task<string> ChangeToDirectory(string path, CloudPathData pathData)
         {
-            CloudPathData data = null!;
-            if (httpContext.HttpContext!.Session.Keys.Contains(Constants.CloudCookieKey))
-            {
-                data = JsonSerializer.Deserialize<CloudPathData>(httpContext.HttpContext!.Session.GetString(Constants.CloudCookieKey)!)!;
-            }
-            else
-            {
-                CloudUser? user = await userManager.GetUserAsync(httpContext.HttpContext!.User);
-                data = new CloudPathData();
-                data.SetDefaultPathData(user?.Id.ToString());
-                await SetSessionCloudPathData(data);
-            }
-            return data;
-        }
-
-        public Task<bool> SetSessionCloudPathData(CloudPathData pathData)
-        {
-            if (pathData == null)
-                return Task.FromResult<bool>(false);
-
-            httpContext.HttpContext!.Session.SetString(Constants.CloudCookieKey, JsonSerializer.Serialize<CloudPathData>(pathData));
-
-            return Task.FromResult<bool>(true);
-        }
-
-        public async Task<string> ChangeToDirectory(string path)
-        {
-            CloudPathData pathData = await GetSessionCloudPathData();
-
             if (path.StartsWith(Constants.AbsolutePathMarker))
             {
                 if (Directory.Exists(ParseRootName(path)))

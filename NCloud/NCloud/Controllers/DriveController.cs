@@ -70,11 +70,19 @@ namespace NCloud.Controllers
         {
             CloudPathData pathdata = await GetSessionCloudPathData();
 
-            if (pathdata.CanGoBack)
+            try
             {
-                pathdata.RemoveFolderFromPrevDirs();
+                if (pathdata.CanGoBack)
+                {
+                    pathdata.RemoveFolderFromPrevDirs();
 
-                await SetSessionCloudPathData(pathdata);
+                    await SetSessionCloudPathData(pathdata);
+                }
+            }
+            catch (Exception)
+            {
+                AddNewNotification(new Error("Error while moving in file system"));
+                throw;
             }
 
             return RedirectToAction("Details", "Drive");
@@ -1236,26 +1244,25 @@ namespace NCloud.Controllers
                     return RedirectToAction("Details", "Drive");
                 }
 
-                if (item.IsFile())
+                if (item.IsFile()) //strategy design pattern
                 {
-                    if (!SecurityManager.CheckIfFileExists(service.ServerPath(item.ItemPath!)))
+                    try
                     {
-                        AddNewNotification(new Error("Source file does not exist"));
+                        string result = await service.CopyFile(item.ItemPath ?? String.Empty, pathData.CurrentPath, await userManager.GetUserAsync(User));
+                        
+                        if (result != String.Empty)
+                            AddNewNotification(new Warning("Copied file has been renamed"));
+
+                    }
+                    catch(CloudFunctionStopException ex)
+                    {
+                        AddNewNotification(new Error($"Error - {ex.Message}"));
 
                         return RedirectToAction("Details", "Drive");
                     }
-
-                    try
+                    catch (Exception)
                     {
-                        string result = await service.CopyFile(item.ItemPath, pathData.CurrentPath, User);
-                        if (result != String.Empty)
-                        {
-                            AddNewNotification(new Warning("File has been renamed"));
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        AddNewNotification(new Error(ex.Message));
+                        AddNewNotification(new Error("Error while pasting file"));
 
                         return RedirectToAction("Details", "Drive");
                     }
@@ -1263,21 +1270,20 @@ namespace NCloud.Controllers
                 }
                 else if (item.IsFolder())
                 {
-                    if (!SecurityManager.CheckIfDirectoryExists(service.ServerPath(item.ItemPath!)))
-                    {
-                        AddNewNotification(new Error("Source directory does not exist"));
-
-                        return RedirectToAction("Details", "Drive");
-                    }
-
                     try
                     {
-                        string result = await service.CopyFolder(item.ItemPath, pathData.CurrentPath, User);
+                        string result = await service.CopyFolder(item.ItemPath ?? string.Empty, pathData.CurrentPath, await userManager.GetUserAsync(User));
 
                         if (result != String.Empty)
                         {
                             AddNewNotification(new Warning("Directory has been renamed"));
                         }
+                    }
+                    catch (CloudFunctionStopException ex)
+                    {
+                        AddNewNotification(new Error($"Error - {ex.Message}"));
+
+                        return RedirectToAction("Details", "Drive");
                     }
                     catch (Exception ex)
                     {

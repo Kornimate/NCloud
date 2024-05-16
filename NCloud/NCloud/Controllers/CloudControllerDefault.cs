@@ -1,4 +1,5 @@
 ﻿using Castle.Core;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using NCloud.ConstantData;
@@ -9,6 +10,7 @@ using NCloud.Users;
 using NuGet.Protocol;
 using System.Drawing.Drawing2D;
 using System.IO.Compression;
+using System.Net.Http;
 using System.Text.Json;
 using CloudPathData = NCloud.Models.CloudPathData;
 
@@ -39,7 +41,31 @@ namespace NCloud.Controllers
         [NonAction]
         protected async Task<CloudPathData> GetSessionCloudPathData()
         {
-            return await service.GetSessionCloudPathData();
+            try
+            {
+                CloudPathData data = null!;
+
+                if (HttpContext.Session.Keys.Contains(Constants.CloudCookieKey))
+                {
+                    data = JsonSerializer.Deserialize<CloudPathData>(HttpContext.Session.GetString(Constants.CloudCookieKey)!)!;
+                }
+                else
+                {
+                    CloudUser? user = await userManager.GetUserAsync(HttpContext.User);
+
+                    data = new CloudPathData();
+
+                    data.SetDefaultPathData(user?.Id.ToString());
+
+                    await SetSessionCloudPathData(data);
+                }
+
+                return data;
+            }
+            catch (Exception)
+            {
+                return new CloudPathData();
+            }
         }
 
         /// <summary>
@@ -50,7 +76,19 @@ namespace NCloud.Controllers
         [NonAction]
         protected async Task<bool> SetSessionCloudPathData(CloudPathData pathData)
         {
-            return await service.SetSessionCloudPathData(pathData);
+            try
+            {
+                if (pathData == null)
+                    return await Task.FromResult<bool>(false);
+
+                HttpContext.Session.SetString(Constants.CloudCookieKey, JsonSerializer.Serialize<CloudPathData>(pathData));
+
+                return await Task.FromResult<bool>(true);
+            }
+            catch (Exception)
+            {
+                return await Task.FromResult<bool>(true);
+            }
         }
 
         /// <summary>

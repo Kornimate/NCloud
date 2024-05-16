@@ -293,8 +293,24 @@ namespace NCloud.Services
         /// <param name="newName">User defined new name of file</param>
         /// <returns>The renamed file name</returns>
         Task<string> RenameFile(string cloudPath, string fileName, string newName);
-        Task<string> CopyFile(string? source, string destination, ClaimsPrincipal userPrincipal);
-        Task<string> CopyFolder(string? source, string destination, ClaimsPrincipal userPrincipal);
+
+        /// <summary>
+        /// Method to copy a file physically
+        /// </summary>
+        /// <param name="source">Path in app (path to file and file name also)</param>
+        /// <param name="destination">Path in app (destination folder)</param>
+        /// <param name="user">Owner of file</param>
+        /// <returns>Empty string if copied file name not changed, new name if changed during copy (might be renamed)</returns>
+        Task<string> CopyFile(string source, string destination, CloudUser user);
+
+        /// <summary>
+        /// Method to copy a file physically
+        /// </summary>
+        /// <param name="source">Path in app (path to file and file name also)</param>
+        /// <param name="destination">Path in app (destination folder)</param>
+        /// <param name="user">Owner of file</param>
+        /// <returns>Empty string if copied file name not changed, new name if changed during copy (might be renamed)</returns>
+        Task<string> CopyFolder(string source, string destination, CloudUser userPrincipal);
         Task<CloudPathData> GetSessionCloudPathData();
         Task<bool> SetSessionCloudPathData(CloudPathData pathData);
         Task<string> ChangeToDirectory(string path);
