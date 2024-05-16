@@ -18,14 +18,10 @@ namespace NCloud.Services
     public class CloudService : ICloudService
     {
         private readonly CloudDbContext context;
-        private readonly IHttpContextAccessor httpContext;
-        private readonly UserManager<CloudUser> userManager;
 
-        public CloudService(CloudDbContext context, IHttpContextAccessor httpContext, UserManager<CloudUser> userManager)
+        public CloudService(CloudDbContext context)
         {
             this.context = context;
-            this.httpContext = httpContext;
-            this.userManager = userManager;
         }
 
         #region Public Instance Methods 

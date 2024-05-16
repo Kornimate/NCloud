@@ -323,8 +323,9 @@ namespace NCloud.Services
         /// <summary>
         /// Method to list current state items
         /// </summary>
+        /// <param name="pathData">Current state in session</param>
         /// <returns>The string representing the items formatted like powershell but with cloud data</returns>
-        Task<string> ListCurrentSubDirectories();
+        Task<string> ListCurrentSubDirectories(CloudPathData pathData);
 
         /// <summary>
         /// Method to get commands and their syntax
