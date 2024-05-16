@@ -9,11 +9,18 @@ using NCloud.ViewModels;
 
 namespace NCloud.Controllers
 {
+    /// <summary>
+    /// Class to handle dashboard requests
+    /// </summary>
     [Authorize]
     public class DashBoardController : CloudControllerDefault
     {
         public DashBoardController(ICloudService service, UserManager<CloudUser> userManager, SignInManager<CloudUser> signInManager, IWebHostEnvironment env, ICloudNotificationService notifier, ILogger<CloudControllerDefault> logger) : base(service, userManager, signInManager, env, notifier, logger) { }
 
+        /// <summary>
+        /// Action method to show user details and web shared files and folders
+        /// </summary>
+        /// <returns></returns>
         public async Task<ActionResult> Index()
         {
             try

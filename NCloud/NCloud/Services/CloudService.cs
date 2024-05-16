@@ -29,6 +29,21 @@ namespace NCloud.Services
         {
             return await context.Users.FirstOrDefaultAsync(x => x.UserName == Constants.AdminUserName);
         }
+        public async Task<bool> RemoveUser(CloudUser user)
+        {
+            try
+            {
+                context.Users.Remove(user);
+
+                await context.SaveChangesAsync();
+
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
 
         public async Task<bool> CreateBaseDirectoryForUser(CloudUser cloudUser)
         {

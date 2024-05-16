@@ -33,6 +33,13 @@ namespace NCloud.Services
         Task<CloudUser?> GetAdmin();
 
         /// <summary>
+        /// Method to remove user from database
+        /// </summary>
+        /// <param name="user">User to be removed</param>
+        /// <returns>Boolean indication the success of action</returns>
+        Task<bool> RemoveUser(CloudUser user);
+
+        /// <summary>
         /// Method to create base folder and system folder for user
         /// </summary>
         /// <param name="cloudUser">The user</param>

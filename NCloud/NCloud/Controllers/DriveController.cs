@@ -13,6 +13,9 @@ using System.IO;
 
 namespace NCloud.Controllers
 {
+    /// <summary>
+    /// Class to handle Private file and folder requests
+    /// </summary>
     [Authorize]
     public class DriveController : CloudControllerDefault
     {
