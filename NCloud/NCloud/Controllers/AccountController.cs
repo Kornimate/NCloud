@@ -187,9 +187,12 @@ namespace NCloud.Controllers
 
             return View(vm);
         }
+
         public async Task<IActionResult> Logout()
         {
             await signInManager.SignOutAsync();
+
+            AddNewNotification(new Information("Logout complete"));
 
             return RedirectToAction("Index", "Home");
         }
