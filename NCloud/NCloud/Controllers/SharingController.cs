@@ -12,21 +12,28 @@ using System.Text.Json;
 
 namespace NCloud.Controllers
 {
+    /// <summary>
+    /// Class to handle sharing page actions
+    /// </summary>
     [Authorize]
     public class SharingController : CloudControllerDefault
     {
         public SharingController(ICloudService service, UserManager<CloudUser> userManager, SignInManager<CloudUser> signInManager, IWebHostEnvironment env, ICloudNotificationService notifier, ILogger<CloudControllerDefault> logger) : base(service, userManager, signInManager, env, notifier, logger) { }
 
+        /// <summary>
+        /// Action method to show current sharing state items
+        /// </summary>
+        /// <param name="folderName">Name of folder in current state</param>
+        /// <returns>View with current state items (shared files, shared folders)</returns>
         public async Task<IActionResult> Details(string? folderName = null)
         {
-            SharedPathData pathdata = await GetSessionSharedPathData();
-
-            string sharedPath = pathdata.SetFolder(folderName);
-
-            await SetSessionSharedPathData(pathdata);
-
             try
             {
+                SharedPathData pathdata = await GetSessionSharedPathData();
+
+                string sharedPath = pathdata.SetFolder(folderName);
+
+                await SetSessionSharedPathData(pathdata);
                 return View(new SharingDetailsViewModel(await service.GetCurrentDepthAppSharingFiles(sharedPath),
                                                         await service.GetCurrentDepthAppSharingDirectories(sharedPath),
                                                         pathdata.CurrentPathShow,
@@ -43,15 +50,28 @@ namespace NCloud.Controllers
             }
         }
 
+        /// <summary>
+        /// Action method to navigate backwards in shared file system
+        /// </summary>
+        /// <returns></returns>
         public async Task<IActionResult> Back()
         {
-            SharedPathData pathdata = await GetSessionSharedPathData();
+            try
+            {
+                SharedPathData pathdata = await GetSessionSharedPathData();
 
-            pathdata.RemoveFolderFromPrevDirs();
+                pathdata.RemoveFolderFromPrevDirs();
 
-            await SetSessionSharedPathData(pathdata);
+                await SetSessionSharedPathData(pathdata);
 
-            return RedirectToAction("Details", "Sharing");
+                return RedirectToAction("Details", "Sharing");
+            }
+            catch (Exception)
+            {
+                AddNewNotification(new Error("Error while naviating in file system"));
+
+                return RedirectToAction("Details", "Sharing");
+            }
         }
 
         public async Task<IActionResult> Home()
