@@ -12,6 +12,9 @@ using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
 namespace NCloud.Controllers
 {
+    /// <summary>
+    /// Class to a handle cloud terminal requests
+    /// </summary>
     [Authorize]
     public class TerminalController : CloudControllerDefault
     {
@@ -21,17 +24,37 @@ namespace NCloud.Controllers
             this.terminalService = terminalService;
         }
 
-        public async Task<IActionResult> Index(string? currentPath = null)
+        /// <summary>
+        /// Action method to show terminal
+        /// </summary>
+        /// <param name="cloudPath">Path to current state</param>
+        /// <returns>View with current showable path in it</returns>
+        public async Task<IActionResult> Index(string? cloudPath = null)
         {
-            currentPath ??= (await GetSessionCloudPathData()).CurrentPathShow;
-            return View(new TerminalViewModel
+            try
             {
-                CurrentDirectory = currentPath,
-                ClientSideCommands = terminalService.GetClientSideCommands(),
-                ServerSideCommands = terminalService.GetServerSideCommands()
-            });
+                cloudPath ??= (await GetSessionCloudPathData()).CurrentPathShow;
+
+                return View(new TerminalViewModel
+                {
+                    CurrentDirectory = cloudPath,
+                    ClientSideCommands = terminalService.GetClientSideCommands(),
+                    ServerSideCommands = terminalService.GetServerSideCommands()
+                });
+            }
+            catch (Exception)
+            {
+                AddNewNotification(new Error("Error while opening cloud terminal"));
+
+                return RedirectToAction("Index", "DashBoard");
+            }
         }
 
+        /// <summary>
+        /// Action method to evalute command posted from terminal via js
+        /// </summary>
+        /// <param name="command">command as a string</param>
+        /// <returns>Json with result of command in it</returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<JsonResult> Evaluate([FromBody] string command)
@@ -69,6 +92,11 @@ namespace NCloud.Controllers
             }
         }
 
+        /// <summary>
+        /// Action method to evalute command posted from drive search bar
+        /// </summary>
+        /// <param name="command">command as a string</param>
+        /// <returns>Json with result of command in it</returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> EvaluateSingleLine(string command)
@@ -118,6 +146,11 @@ namespace NCloud.Controllers
             }
         }
 
+        /// <summary>
+        /// Action method to check client side executed commands
+        /// </summary>
+        /// <param name="command">Command as a string</param>
+        /// <returns>Json containing success of action and url to be executed on client side</returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<JsonResult> CheckClientSideCommand([FromBody] string command)
@@ -134,7 +167,7 @@ namespace NCloud.Controllers
 
                 return await Task.FromResult<JsonResult>(Json(new CommandDTO { IsClientSide = true, ActionHTMLElement = elementHTML, ActionHTMLElementId= Constants.DownloadHTMLElementId, NoErrorWithSyntax = true, ErrorMessage = "" }));
             }
-            catch (InvalidOperationException ex)
+            catch (CloudFunctionStopException ex)
             {
                 return await Task.FromResult<JsonResult>(Json(new CommandDTO { IsClientSide = false, NoErrorWithSyntax = true, ErrorMessage = Constants.TerminalRedText($"invalid command - {ex.Message}") }));
             }
@@ -144,9 +177,14 @@ namespace NCloud.Controllers
             }
         }
 
+        /// <summary>
+        /// Action method to download web shared folder
+        /// </summary>
+        /// <param name="folderName">Name of folder</param>
+        /// <returns>Redirect to download</returns>
         public async Task<IActionResult> DownloadFolder(string? folderName)
         {
-            if (folderName is null || folderName == String.Empty)
+            if (String.IsNullOrWhiteSpace(folderName))
             {
                 AddNewNotification(new Error("No directory name specified"));
 
@@ -161,9 +199,14 @@ namespace NCloud.Controllers
             RedirectToAction("Index", "Terminal"));
         }
 
+        /// <summary>
+        /// Action method to download web shared file
+        /// </summary>
+        /// <param name="fileName">Name of file</param>
+        /// <returns>Redirect to download</returns>
         public async Task<IActionResult> DownloadFile(string? fileName)
         {
-            if (fileName is null || fileName == String.Empty)
+            if (String.IsNullOrWhiteSpace(fileName))
             {
                 AddNewNotification(new Error("No file name specified"));
 

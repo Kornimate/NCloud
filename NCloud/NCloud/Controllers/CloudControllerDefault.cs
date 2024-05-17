@@ -196,12 +196,12 @@ namespace NCloud.Controllers
         /// Action method to download file or zip
         /// </summary>
         /// <param name="itemsForDownload">List of item names to be downloaded</param>
-        /// <param name="path">path to items to be downloaded (same path for every item)</param>
+        /// <param name="cloudPath">Path to items to be downloaded (same path for every item)</param>
         /// <param name="returnAction">If download fails where to return</param>
         /// <param name="connectedToApp">Filter app shared items</param>
         /// <param name="connectedToWeb">Filter web shared items</param>
         /// <returns>The file (zip or single file)</returns>
-        public async Task<IActionResult> Download(List<string> itemsForDownload, string path, IActionResult returnAction, bool connectedToApp = false, bool connectedToWeb = false)
+        public async Task<IActionResult> Download(List<string> itemsForDownload, string cloudPath, IActionResult returnAction, bool connectedToApp = false, bool connectedToWeb = false)
         {
             try
             {
@@ -213,7 +213,7 @@ namespace NCloud.Controllers
 
                         try
                         {
-                            tempFile = await service.CreateZipFile(itemsForDownload, path, GetTempFileNameAndPath(), connectedToApp, connectedToWeb);
+                            tempFile = await service.CreateZipFile(itemsForDownload, cloudPath, GetTempFileNameAndPath(), connectedToApp, connectedToWeb);
                         }
                         catch(Exception)
                         {
@@ -244,7 +244,7 @@ namespace NCloud.Controllers
 
                                 try
                                 {
-                                    FileStream stream = new FileStream(Path.Combine(service.ServerPath(path), name), FileMode.Open, FileAccess.Read, FileShare.Read);
+                                    FileStream stream = new FileStream(Path.Combine(service.ServerPath(cloudPath), name), FileMode.Open, FileAccess.Read, FileShare.Read);
 
                                     return File(stream, MimeTypeManager.GetMimeType(name), name);
                                 }
