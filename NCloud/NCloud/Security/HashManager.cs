@@ -4,11 +4,19 @@ using System.Text;
 
 namespace NCloud.Security
 {
+    /// <summary>
+    /// Class to encrpypt shared folders and files path in url
+    /// </summary>
     public static class HashManager
     {
+        /// <summary>
+        /// Static method to encrypt path for web shared files and folders
+        /// </summary>
+        /// <param name="input">Path of file / folder</param>
+        /// <returns>Encrypted path as string</returns>
         public static string EncryptString(string? input)
         {
-            if (input is null)
+            if (String.IsNullOrWhiteSpace(input))
                 return String.Empty;
 
             try
@@ -37,9 +45,14 @@ namespace NCloud.Security
             }
         }
 
+        /// <summary>
+        /// Static method to decrypt path for web shared files and folders
+        /// </summary>
+        /// <param name="input">Path of file / folder</param>
+        /// <returns>Decrypted path as string</returns>
         public static string DecryptString(string? input)
         {
-            if (input is null)
+            if (String.IsNullOrWhiteSpace(input))
                 return String.Empty;
 
             try

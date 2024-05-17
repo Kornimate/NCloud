@@ -4,6 +4,9 @@ using System.Security.Claims;
 
 namespace NCloud.ConstantData
 {
+    /// <summary>
+    /// Class to store constants used application wide
+    /// </summary>
     public static class Constants
     {
         public static readonly List<string> SystemFolders = new List<string>()

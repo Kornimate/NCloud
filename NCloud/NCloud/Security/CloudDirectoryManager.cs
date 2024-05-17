@@ -2,9 +2,16 @@
 
 namespace NCloud.Security
 {
+    /// <summary>
+    /// Class to clean up created files for download
+    /// </summary>
     public class CloudDirectoryManager
     {
-        public static bool RemoveOutdatedItems(IWebHostEnvironment env)
+        /// <summary>
+        /// Static method periodically called from Program.cs by Timer to clean up remaining files from downloads
+        /// </summary>
+        /// <returns>Boolean value indicating the success of action</returns>
+        public static bool RemoveOutdatedItems()
         {
             bool everyFileDeleted = true;
 

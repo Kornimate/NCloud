@@ -102,7 +102,7 @@ namespace NCloud
             Timer timer = new Timer(_ => new Thread(() =>
             {
                 Thread.CurrentThread.IsBackground = true;
-                CloudDirectoryManager.RemoveOutdatedItems(app.Environment);
+                CloudDirectoryManager.RemoveOutdatedItems();
 
             }).Start(), null, TimeSpan.FromSeconds(0), Constants.TempFileDeleteTimeSpan);
 
