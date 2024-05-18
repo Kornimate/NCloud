@@ -212,10 +212,7 @@ namespace NCloud.Services
                     await file.CopyToAsync(stream);
                 }
 
-                user = (await context.Users.FirstOrDefaultAsync(x => x.Id == user.Id))!; //get current user state from database
-
-                if (user is null)
-                    throw new CloudFunctionStopException("invalid user");
+                user = await context.Users.FirstOrDefaultAsync(x => x.Id == user.Id) ?? throw new CloudFunctionStopException("user is not found"); //get current user state from database or show error
 
                 user.UsedSpace += fi.Length; //updating user used space
 
@@ -863,6 +860,8 @@ namespace NCloud.Services
                 if (!fi.Exists)
                     throw new CloudFunctionStopException("source file does not exist");
 
+                user = await context.Users.FirstOrDefaultAsync(x => x.Id == user.Id) ?? throw new CloudFunctionStopException("user is not found"); //get current user state from database or show error
+
                 if (user.UsedSpace + fi.Length > user.MaxSpace)
                     throw new CloudFunctionStopException("not enough storage");
 
@@ -944,6 +943,8 @@ namespace NCloud.Services
                     {
                         if (!fi.Exists)
                             continue;
+
+                        user = await context.Users.FirstOrDefaultAsync(x => x.Id == user.Id) ?? throw new CloudFunctionStopException("user is not found"); //get current user state from database or show error
 
                         if (user.UsedSpace + fi.Length > user.MaxSpace)
                             throw new CloudFunctionStopException("during process user ran out of space, some actions may not finished")
