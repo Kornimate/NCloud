@@ -3,6 +3,9 @@ using System.ComponentModel.DataAnnotations;
 
 namespace NCloud.ViewModels
 {
+    /// <summary>
+    /// Container class for data in Drive FolderSettings action method
+    /// </summary>
     public class FolderSettingsViewModel
     {
         [Required]

@@ -6,9 +6,14 @@ using NCloud.ViewModels;
 using NCloud.ConstantData;
 using DNTCaptcha.Core;
 using NCloud.Services;
+using NCloud.Models;
+using NCloud.Services.Exceptions;
 
 namespace NCloud.Controllers
 {
+    /// <summary>
+    /// Class to handle Account related requests
+    /// </summary>
     [Authorize]
     public class AccountController : CloudControllerDefault
     {
@@ -18,6 +23,11 @@ namespace NCloud.Controllers
             return Redirect(returnUrl);
         }
 
+        /// <summary>
+        /// Action to user details page
+        /// </summary>
+        /// <param name="returnUrl">Url to be returned to</param>
+        /// <returns>View of the user details</returns>
         public async Task<IActionResult> Index(string returnUrl)
         {
             CloudUser user = await userManager.GetUserAsync(User);
@@ -27,25 +37,39 @@ namespace NCloud.Controllers
             return View(new AccountViewModel(user.UserName, user.FullName, user.Email));
         }
 
+        /// <summary>
+        /// Action method to handle user login
+        /// </summary>
+        /// <param name="returnUrl">Url to be returned to</param>
+        /// <returns>Login view</returns>
         [AllowAnonymous]
         public IActionResult Login(string? returnUrl = null)
         {
             ViewBag.ReturnUrl = returnUrl;
+
             return View();
         }
 
+        /// <summary>
+        /// Action method to handle login post request
+        /// </summary>
+        /// <param name="vm">Login data inside LoginViewModel class</param>
+        /// <param name="returnUrl">Url to be returned to</param>
+        /// <returns>Redirection to dashboard, otherwise view with error message</returns>
         [HttpPost]
         [AllowAnonymous]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Login(LoginViewModel vm, string? returnUrl = null)
+        public async Task<IActionResult> Login([Bind("UserName,Password")]LoginViewModel vm, string? returnUrl = null)
         {
             ViewBag.ReturnUrl = returnUrl;
+
             if (ModelState.IsValid)
             {
                 var user = await userManager.FindByNameAsync(vm.UserName);
-                if (user == null)
+
+                if (user is null)
                 {
-                    ModelState.AddModelError("", "No User with this UserName!");
+                    AddNewNotification(new Error("Invalid username"));
                     return View(vm);
                 }
 
@@ -57,22 +81,35 @@ namespace NCloud.Controllers
                     {
                         return RedirectToAction("Index", "DashBoard");
                     }
+
                     return await RedirectToLocal(returnUrl);
                 }
 
-                ModelState.AddModelError("", "Failed to Login!");
+                AddNewNotification(new Error("Failed to login"));
             }
 
             return View(vm);
         }
 
+        /// <summary>
+        /// Action method to show registration page
+        /// </summary>
+        /// <param name="returnUrl">Url to be returned to</param>
+        /// <returns>Registration view</returns>
         [AllowAnonymous]
         public IActionResult Register(string? returnUrl = null)
         {
             ViewBag.ReturnUrl = returnUrl;
+
             return View();
         }
 
+        /// <summary>
+        /// Action method to handle registration request
+        /// </summary>
+        /// <param name="vm">Registration data wrapped in RegisterViewModel class</param>
+        /// <param name="returnUrl">Url to be returned to</param>
+        /// <returns>Redirection to dashboard, otherwise view with errors</returns>
         [HttpPost]
         [AllowAnonymous]
         [ValidateAntiForgeryToken]
@@ -80,49 +117,83 @@ namespace NCloud.Controllers
         public async Task<IActionResult> Register(RegisterViewModel vm, string? returnUrl = null)
         {
             ViewBag.ReturnUrl = returnUrl;
+
             if (ModelState.IsValid)
             {
                 try
                 {
                     var existingUserName = await userManager.FindByNameAsync(vm.UserName);
-                    if (existingUserName != null)
+
+                    if (existingUserName is not null)
                     {
-                        ModelState.AddModelError("UserName", "This Username is already in use!");
+                        AddNewNotification(new Error("Username is already in use"));
+
                         return View(vm);
                     }
                     var existingEmail = await userManager.FindByNameAsync(vm.Email);
-                    if (existingEmail != null)
+
+                    if (existingEmail is not null)
                     {
-                        ModelState.AddModelError("Email", "This Username is already in use!");
+                        AddNewNotification(new Error("This Username is already in use!"));
+
                         return View(vm);
                    
                     }
+
                     var user = new CloudUser { UserName = vm.UserName, FullName = vm.FullName, Email = vm.Email };
+                    
                     var result = await userManager.CreateAsync(user, vm.Password);
 
                     if (result.Succeeded)
                     {
-                        CloudUser newUser = await userManager.FindByNameAsync(vm.UserName);
-                        
-                        await service.CreateBaseDirectoryForUser(newUser);
-                        
-                        await signInManager.SignInAsync(newUser, false);
-                        
-                        return RedirectToAction(nameof(Index), "DashBoard");
+                        try
+                        {
+                            CloudUser newUser = await userManager.FindByNameAsync(vm.UserName);
+
+                            await service.CreateBaseDirectoryForUser(newUser);
+
+                            await signInManager.SignInAsync(newUser, false);
+
+                            return RedirectToAction(nameof(Index), "DashBoard");
+                        }
+                        catch (CloudFunctionStopException ex)
+                        {
+                            AddNewNotification(new Error($"Error - {ex.Message}"));
+
+                            return View(vm);
+                        }
+                        catch(CloudLoggerException ex)
+                        {
+                            logger.LogError(ex.Message);
+
+                            AddNewNotification(new Error("Error while creating user resources"));
+
+
+                            if (!await service.RemoveUser(user))
+                                logger.LogError($"Error while removing user - {user.UserName}");
+                            
+
+                            return View(vm);
+                        }
                     }
 
-                    ModelState.AddModelError("", "Failed to Register!");
+                    AddNewNotification(new Error("Failed to register"));
                 }
                 catch
                 {
-                    ModelState.AddModelError("", "Failed to Register!");
+                    AddNewNotification(new Error("Unknow error while registering user"));
                 }
             }
+
             return View(vm);
         }
+
         public async Task<IActionResult> Logout()
         {
             await signInManager.SignOutAsync();
+
+            AddNewNotification(new Information("Logout complete"));
+
             return RedirectToAction("Index", "Home");
         }
     }

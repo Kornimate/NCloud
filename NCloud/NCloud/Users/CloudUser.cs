@@ -4,6 +4,9 @@ using NCloud.Models;
 
 namespace NCloud.Users
 {
+    /// <summary>
+    /// Class to create users for database
+    /// </summary>
     public class CloudUser : IdentityUser<Guid>
     {
         public string? FullName { get; set; }

@@ -1,5 +1,8 @@
 ﻿namespace NCloud.ViewModels
 {
+    /// <summary>
+    /// Container class for data in Editor Index action method
+    /// </summary>
     public class EditorSelectViewModel
     {
         public string FileName { get; set; }

@@ -2,6 +2,9 @@
 
 namespace NCloud.ViewModels
 {
+    /// <summary>
+    /// Container class for data in Sharing Details action method
+    /// </summary>
     public class SharingDetailsViewModel
     {
         public List<CloudFile> Files { get; set; }

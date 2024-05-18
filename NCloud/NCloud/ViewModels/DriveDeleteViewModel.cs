@@ -2,6 +2,9 @@
 
 namespace NCloud.ViewModels
 {
+    /// <summary>
+    /// Container class for data in Drive Delete action method
+    /// </summary>
     public class DriveDeleteViewModel
     {
         public List<CloudFolder> Folders { get; set; } = null!;

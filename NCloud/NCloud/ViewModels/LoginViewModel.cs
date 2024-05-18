@@ -2,6 +2,9 @@
 
 namespace NCloud.ViewModels
 {
+    /// <summary>
+    /// Container class for data in Account Login action method
+    /// </summary>
     public class LoginViewModel
     {
         [Required]

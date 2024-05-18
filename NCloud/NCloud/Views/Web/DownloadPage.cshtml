@@ -12,6 +12,10 @@
         <span>@Model.FileName</span>
     </div>
     <div class="w-100 justify-content-center text-center">
-        <a asp-controller="Web" class="btn btn-primary border border-primary border-3" asp-action="DownloadSingleItem" asp-route-path="@Model.Path" asp-route-fileName="@Model.FileName"><img src="~/utilities/cloud-download.svg" width=" 20" height="20" class="rounded align-middle" download id="downloadRef"/></a>
+        <form asp-action="DownloadSingleItem">
+            <input type="hidden" asp-for="FileName" />
+            <input type="hidden" asp-for="Path" />
+            <button type="submit" class="btn btn-primary border border-primary border-3"><img src="~/utilities/cloud-download.svg" width=" 20" height="20" class="rounded align-middle" download id="downloadRef" /></button>
+        </form>
     </div>
 </div>

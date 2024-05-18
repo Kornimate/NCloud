@@ -10,13 +10,25 @@ class Program
 {
     static void Main()
     {
-        //string path = Path.Combine(Directory.GetCurrentDirectory(), "Test", "..", "Test.txt");
+        string file = "./Test2.txt";
+        string file2 = file;
 
-        string path = ".";
+        Console.WriteLine(file);
+        Console.WriteLine(file2);
 
-        Console.WriteLine(path);
-        path = path[..^1];
+        file = "ok";
 
-        Console.WriteLine(path);
+        Console.WriteLine(file);
+        Console.WriteLine(file2);
+
+        //FileInfo f = new FileInfo(file);
+
+        //Console.WriteLine(f.Exists.ToString());
+
+        //using (FileStream fs = File.Create(file)) { }
+
+        //f = new FileInfo(file);
+
+        //Console.WriteLine(f.Exists.ToString());
     }
 }

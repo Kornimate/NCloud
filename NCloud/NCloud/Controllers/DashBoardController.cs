@@ -9,24 +9,41 @@ using NCloud.ViewModels;
 
 namespace NCloud.Controllers
 {
+    /// <summary>
+    /// Class to handle dashboard requests
+    /// </summary>
     [Authorize]
     public class DashBoardController : CloudControllerDefault
     {
-        public DashBoardController(ICloudService service, UserManager<CloudUser> userManager, SignInManager<CloudUser> signInManager, IWebHostEnvironment env, ICloudNotificationService notifier) : base(service, userManager, signInManager, env, notifier) { }
+        public DashBoardController(ICloudService service, UserManager<CloudUser> userManager, SignInManager<CloudUser> signInManager, IWebHostEnvironment env, ICloudNotificationService notifier, ILogger<CloudControllerDefault> logger) : base(service, userManager, signInManager, env, notifier, logger) { }
 
+        /// <summary>
+        /// Action method to show user details and web shared files and folders
+        /// </summary>
+        /// <returns></returns>
         public async Task<ActionResult> Index()
         {
-            CloudUser user = await userManager.GetUserAsync(User);
+            try
+            {
+                CloudUser user = await userManager.GetUserAsync(User);
 
-            double usedPercent = Math.Ceiling(user.UsedSpace / user.MaxSpace);
+                double usedPercent = Math.Ceiling(user.UsedSpace / user.MaxSpace);
 
-            if (usedPercent < 0.0)
-                usedPercent = 0.0;
+                if (usedPercent < 0.0)
+                    usedPercent = 0.0;
 
-            if(usedPercent > 100.0)
-                usedPercent = 100.0;
+                if (usedPercent > 100.0)
+                    usedPercent = 100.0;
 
-            return View(new DashBoardViewModel(await service.GetUserSharedFolderUrls(User), await service.GetUserSharedFileUrls(User), Constants.GetWebControllerAndActionForDetails(), Constants.GetWebControllerAndActionForDownload(), usedPercent));
+                return View(new DashBoardViewModel(await service.GetUserSharedFolderUrls(user), await service.GetUserSharedFileUrls(user), Constants.GetWebControllerAndActionForDetails(), Constants.GetWebControllerAndActionForDownload(), usedPercent));
+
+            }
+            catch (Exception)
+            {
+                AddNewNotification(new Error("Error while loading page"));
+
+                return View(new DashBoardViewModel(new List<string>(), new List<string>(), Constants.GetWebControllerAndActionForDetails(), Constants.GetWebControllerAndActionForDownload(), 0));
+            }
         }
     }
 }

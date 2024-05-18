@@ -5,6 +5,9 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace NCloud.Models
 {
+    /// <summary>
+    /// Abstract class to create database schema for shared items
+    /// </summary>
     public abstract class Sharedregistration
     {
         [Key]
@@ -35,7 +38,16 @@ namespace NCloud.Models
         [NotNull]
         public bool ConnectedToApp { get; set; }
 
+        /// <summary>
+        /// Virtual method to indicate that object is file
+        /// </summary>
+        /// <returns>True if object if file, otherwise false</returns>
         public virtual bool IsFile() { return false; }
+
+        /// <summary>
+        /// Virtual method to indicate that object is folder
+        /// </summary>
+        /// <returns>True if object if folder, otherwise false</returns>
         public virtual bool IsFolder() { return false; }
     }
 }

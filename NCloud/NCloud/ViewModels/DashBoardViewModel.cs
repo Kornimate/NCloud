@@ -3,6 +3,9 @@ using NCloud.Models;
 
 namespace NCloud.ViewModels
 {
+    /// <summary>
+    /// Container class for data in DashBoard Index action method
+    /// </summary>
     public class DashBoardViewModel
     {
         public List<string> SharedFolderUrls { get; set; }

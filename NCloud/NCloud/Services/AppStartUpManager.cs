@@ -3,12 +3,16 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using NCloud.ConstantData;
 using NCloud.Models;
+using NCloud.Services.Exceptions;
 using NCloud.Users;
 using NCloud.Users.Roles;
 using System.Text.Json;
 
 namespace NCloud.Services
 {
+    /// <summary>
+    /// Statcic class to create resources for first startup
+    /// </summary>
     public static class AppStartUpManager
     {
         private static CloudDbContext context = null!;
@@ -16,13 +20,21 @@ namespace NCloud.Services
         private static SignInManager<CloudUser> signInManager = null!;
         private static RoleManager<CloudRole> roleManager = null!;
         private static ICloudService service = null!;
-        public static void Initialize(IServiceProvider serviceProvider, IWebHostEnvironment env)
+        private static ILogger logger = null!;
+
+        /// <summary>
+        /// Static method to initialize database, admin user and its base folder, log file folder, temp file folder
+        /// </summary>
+        /// <param name="serviceProvider"></param>
+        /// <exception cref="Exception"></exception>
+        public static void Initialize(IServiceProvider serviceProvider)
         {
             context = serviceProvider.GetRequiredService<CloudDbContext>();
             userManager = serviceProvider.GetRequiredService<UserManager<CloudUser>>();
             signInManager = serviceProvider.GetRequiredService<SignInManager<CloudUser>>();
             roleManager = serviceProvider.GetRequiredService<RoleManager<CloudRole>>();
             service = serviceProvider.GetRequiredService<ICloudService>();
+            logger = serviceProvider.GetRequiredService<ILogger>();
 
             context.Database.Migrate();
 
@@ -37,23 +49,30 @@ namespace NCloud.Services
 
             string pathHelper = Constants.GetPrivateBaseDirectory();
 
-            if (!Directory.Exists(pathHelper))
+            try
             {
-                Directory.CreateDirectory(pathHelper);
+                if (!Directory.Exists(pathHelper))
+                {
+                    Directory.CreateDirectory(pathHelper);
+                }
+
+                pathHelper = Constants.GetTempFileDirectory();
+
+                if (!Directory.Exists(pathHelper))
+                {
+                    Directory.CreateDirectory(pathHelper);
+                }
+
+                pathHelper = Constants.GetLogFilesDirectory();
+
+                if (!Directory.Exists(pathHelper))
+                {
+                    Directory.CreateDirectory(pathHelper);
+                }
             }
-
-            pathHelper = Constants.GetTempFileDirectory();
-
-            if (!Directory.Exists(pathHelper))
+            catch (Exception ex)
             {
-                Directory.CreateDirectory(pathHelper);
-            }
-
-            pathHelper = Constants.GetLogFilesDirectory();
-
-            if (!Directory.Exists(pathHelper))
-            {
-                Directory.CreateDirectory(pathHelper);
+                logger.LogCritical($"Error while creating base directories: {ex.Message}");
             }
 
             if (!context.Users.Any())
@@ -66,19 +85,34 @@ namespace NCloud.Services
                     userManager.AddToRoleAsync(adminUser, adminRole);
 
                 }
-                catch (Exception) { }
+                catch (Exception)
+                {
+                    logger.LogCritical("Exception while creating admin user");
+
+                    return;
+                }
 
 
                 Task.Run(async () =>
                 {
-                    if (!await service.CreateBaseDirectoryForUser(adminUser))
+                    try
                     {
-                        throw new Exception("App unable to create base resources!");
+                        if (!await service.CreateBaseDirectoryForUser(adminUser))
+                        {
+                            throw new Exception("App unable to create base resources!");
+                        }
+                    }
+                    catch (CloudLoggerException ex)
+                    {
+                        logger.LogCritical(ex.Message);
+                    }
+                    catch (Exception)
+                    {
+                        logger.LogCritical("Erro while creating base directory for admin");
                     }
                 }).Wait();
             }
 
-            //Just sure to be created
             context.SaveChanges();
         }
     }

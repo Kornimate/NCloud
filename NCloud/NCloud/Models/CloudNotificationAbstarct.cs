@@ -2,6 +2,9 @@
 
 namespace NCloud.Models
 {
+    /// <summary>
+    /// Abstract class to handle notifications presented for the user (works as base class for differernt notifications)
+    /// </summary>
     public class CloudNotificationAbstarct
     {
         public string? Color { get; private set; }

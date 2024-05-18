@@ -2,13 +2,20 @@
 
 namespace NCloud.Security
 {
+    /// <summary>
+    /// Class to clean up created files for download
+    /// </summary>
     public class CloudDirectoryManager
     {
-        public static bool RemoveOutdatedItems(IWebHostEnvironment env)
+        /// <summary>
+        /// Static method periodically called from Program.cs by Timer to clean up remaining files from downloads
+        /// </summary>
+        /// <returns>Boolean value indicating the success of action</returns>
+        public static bool RemoveOutdatedItems()
         {
             bool everyFileDeleted = true;
 
-            string tempfolder = Path.Combine(env.WebRootPath, Constants.TempFolderName);
+            string tempfolder = Constants.GetTempFileDirectory();
 
             if (!Directory.Exists(tempfolder))
             {
@@ -17,18 +24,18 @@ namespace NCloud.Security
 
             foreach (string file in Directory.EnumerateFiles(tempfolder))
             {
-                FileInfo fi = new FileInfo(file);
-
-                if (fi.Exists && (DateTime.UtcNow - fi.CreationTimeUtc) > Constants.TempFileDeleteTimeSpan)
+                try
                 {
-                    try
+                    FileInfo fi = new FileInfo(file);
+
+                    if (fi.Exists && (DateTime.UtcNow - fi.CreationTimeUtc) > Constants.TempFileDeleteTimeSpan)
                     {
                         File.Delete(file);
                     }
-                    catch (Exception)
-                    {
-                        everyFileDeleted = everyFileDeleted && false;
-                    }
+                }
+                catch (Exception)
+                {
+                    everyFileDeleted = everyFileDeleted && false;
                 }
             }
 

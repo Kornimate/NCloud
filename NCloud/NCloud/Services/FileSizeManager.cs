@@ -2,6 +2,11 @@
 {
     public static class FileSizeManager
     {
+        /// <summary>
+        /// Method to convert bytes into readable format (if reaches a bigger size then it is showed in that e.g kb -> mb)
+        /// </summary>
+        /// <param name="bytes">bytes in double (or long due to auto conversion)</param>
+        /// <returns>The readable number in string, rounded to two decimals</returns>
         public static string ConvertToReadableSize(double bytes)
         {
             {

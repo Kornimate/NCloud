@@ -3,6 +3,9 @@ using System.Text.Json.Serialization;
 
 namespace NCloud.Models
 {
+    /// <summary>
+    /// Class to store information about shared current state in session
+    /// </summary>
     public class SharedPathData
     {
         public List<string> PreviousDirectories { get; private set; }
@@ -22,18 +25,17 @@ namespace NCloud.Models
             CurrentPath = Constants.PublicRootName;
             CurrentPathShow = Constants.PublicRootName;
         }
-        public string? TrySetFolder(string? folderName)
-        {
-            if (folderName is null) return null;
-            
-            return Path.Combine(CurrentPath, folderName);
-        }
 
+        /// <summary>
+        /// Setter method to set current sharing state
+        /// </summary>
+        /// <param name="folderName">Name of folder</param>
+        /// <returns>The new current state path</returns>
         public string SetFolder(string? folderName)
         {
             string currentPath = String.Empty;
             
-            if (folderName == null || folderName == String.Empty)
+            if (String.IsNullOrWhiteSpace(folderName))
             {
                 currentPath = CurrentPath;
             }
@@ -49,6 +51,10 @@ namespace NCloud.Models
             return currentPath;
         }
 
+        /// <summary>
+        /// Method to create new sharing current state by going backwards
+        /// </summary>
+        /// <returns>The new current state path</returns>
         public string? RemoveFolderFromPrevDirs()
         {
             string? folder = Constants.PublicRootName;
