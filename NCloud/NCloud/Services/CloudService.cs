@@ -998,6 +998,10 @@ namespace NCloud.Services
 
                         return pathData;
                     }
+                    catch (CloudFunctionStopException ex)
+                    {
+                        throw new CloudFunctionStopException(ex.Message);
+                    }
                     catch (Exception)
                     {
                         throw new CloudFunctionStopException("unable to modify path");

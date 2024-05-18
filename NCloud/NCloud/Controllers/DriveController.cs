@@ -1321,6 +1321,12 @@ namespace NCloud.Controllers
 
                 return RedirectToAction("Details", "Drive");
             }
+            catch (MissingMemberException ex)
+            {
+                AddNewNotification(new Error(ex.Message));
+
+                return RedirectToAction("Details", "Drive");
+            }
             catch (Exception)
             {
                 AddNewNotification(new Error("Error while pasting item"));

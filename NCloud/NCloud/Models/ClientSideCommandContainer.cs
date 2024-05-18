@@ -1,5 +1,8 @@
 ﻿namespace NCloud.Models
 {
+    /// <summary>
+    /// Class to store info about client side commands
+    /// </summary>
     public class ClientSideCommandContainer
     {
         public string Command { get; private set; }
