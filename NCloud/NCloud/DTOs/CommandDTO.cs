@@ -1,5 +1,8 @@
 ﻿namespace NCloud.DTOs
 {
+    /// <summary>
+    /// Class to wrap result of command action execution for client side commands and return it to JS calls
+    /// </summary>
     public class CommandDTO
     {
         public bool IsClientSide { get; set; } = false;
