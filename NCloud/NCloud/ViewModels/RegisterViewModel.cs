@@ -2,6 +2,9 @@
 
 namespace NCloud.ViewModels
 {
+    /// <summary>
+    /// Container class for data in Account Register action method
+    /// </summary>
     public class RegisterViewModel
     {
         [Required]

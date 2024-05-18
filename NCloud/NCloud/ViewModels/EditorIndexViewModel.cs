@@ -3,6 +3,9 @@ using System.ComponentModel.DataAnnotations;
 
 namespace NCloud.ViewModels
 {
+    /// <summary>
+    /// Container class for data in Editor Index action method
+    /// </summary>
     public class EditorIndexViewModel
     {
         public SelectList? CodingExtensions { get; set; }

@@ -2,6 +2,9 @@
 
 namespace NCloud.ViewModels
 {
+    /// <summary>
+    /// Container class for data in Editor specific editors action method
+    /// </summary>
     public class EditorViewModel
     {
         public string FilePath { get; set; } = String.Empty;

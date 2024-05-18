@@ -3,6 +3,9 @@ using NCloud.Models;
 
 namespace NCloud.ViewModels
 {
+    /// <summary>
+    /// Container class for data in Web Details action method
+    /// </summary>
     public class WebDetailsViewModel
     {
         public List<CloudFile> Files { get; set; }

@@ -2,6 +2,9 @@
 
 namespace NCloud.ViewModels
 {
+    /// <summary>
+    /// Container class for data in Account Index action method
+    /// </summary>
     public class AccountViewModel
     {
         public string? UserName { get; set; }

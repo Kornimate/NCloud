@@ -75,6 +75,7 @@ namespace NCloud.Controllers
                 try
                 {
                     string fileName = String.Join(Constants.FileExtensionDelimiter, vm.FileName, vm.Extension);
+
                     string path = Constants.GetDefaultFileSavingPath((await userManager.GetUserAsync(User)).Id);
 
                     string res = await service.CreateFile(new FormFile(new MemoryStream(), 0, 0, vm.FileName, fileName), path, await userManager.GetUserAsync(User));
