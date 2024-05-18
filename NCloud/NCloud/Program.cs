@@ -96,7 +96,7 @@ namespace NCloud
             using (var serviceScope = app.Services.CreateScope())
             using (var context = serviceScope.ServiceProvider.GetRequiredService<CloudDbContext>())
             {
-                AppStartUpManager.Initialize(serviceScope.ServiceProvider, app.Environment);
+                AppStartUpManager.Initialize(serviceScope.ServiceProvider);
             }
 
             Timer timer = new Timer(_ => new Thread(() =>

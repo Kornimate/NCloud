@@ -4,6 +4,9 @@ using System.Security.Claims;
 
 namespace NCloud.Services
 {
+    /// <summary>
+    /// Interface to manage database and physical file operations
+    /// </summary>
     public interface ICloudService
     {
         /// <summary>

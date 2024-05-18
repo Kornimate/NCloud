@@ -3,6 +3,9 @@ using NCloud.Models;
 
 namespace NCloud.Services
 {
+    /// <summary>
+    /// Interface to handle cloud terminal requests
+    /// </summary>
     public interface ICloudTerminalService
     {
         Task<(bool, string, object?, bool)> Execute(string first, List<string> second);

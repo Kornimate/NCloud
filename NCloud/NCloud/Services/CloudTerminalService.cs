@@ -9,6 +9,9 @@ using System.Security.Policy;
 
 namespace NCloud.Services
 {
+    /// <summary>
+    /// Class to handle cloud terminal requests
+    /// </summary>
     public class CloudTerminalService : ICloudTerminalService
     {
         private readonly ICloudService service;
