@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc.Routing;
 using NCloud.ConstantData;
 using NCloud.Models;
 using NCloud.Services.Exceptions;
+using NCloud.Users;
 using Newtonsoft.Json.Linq;
 using System.Security.Policy;
 
@@ -15,50 +16,46 @@ namespace NCloud.Services
     public class CloudTerminalService : ICloudTerminalService
     {
         private readonly ICloudService service;
-        private readonly IHttpContextAccessor httpContext;
         private readonly List<ServerSideCommandContainer> serverSideCommands;
         private readonly List<ClientSideCommandContainer> clientSideCommands;
-        private readonly IUrlHelper urlGenerator;
-        public CloudTerminalService(ICloudService service, IHttpContextAccessor httpContext, IUrlHelper urlGenerator)
+        public CloudTerminalService(ICloudService service)
         {
             this.service = service;
-            this.httpContext = httpContext;
-            this.urlGenerator = urlGenerator;
 
             serverSideCommands = new List<ServerSideCommandContainer>() //configure commands for terminal
             {
-                new ServerSideCommandContainer("cd",1,false,true, async (List<string> parameters) => await service.ChangeToDirectory(await PathNormalizationForChangingDirectory(parameters[0]))),
-                new ServerSideCommandContainer("copy-file",2,false,true, async (List<string> parameters) => await service.CopyFile(await RelativeToAbsolutePathAndNormalize(parameters[0]),await RelativeToAbsolutePathAndNormalize(parameters[1]),httpContext.HttpContext!.User)),
-                new ServerSideCommandContainer("copy-dir",2,false,true, async (List<string> parameters) => await service.CopyFolder(await RelativeToAbsolutePathAndNormalize(parameters[0]),await RelativeToAbsolutePathAndNormalize(parameters[1]),httpContext.HttpContext!.User)),
-                new ServerSideCommandContainer("help",0,true,false, async (List<string> parameters) => await service.GetTerminalHelpText()),
-                new ServerSideCommandContainer("ls",0,true,false, async (List<string> parameters) => await service.ListCurrentSubDirectories()),
-                new ServerSideCommandContainer("pwd",0,true,false, async (List<string> parameters) => await service.PrintWorkingDirectory()),
-                new ServerSideCommandContainer("mkdir",1,false,true, async (List<string> parameters) => await service.CreateDirectory(parameters[0],(await service.GetSessionCloudPathData()).CurrentPath, /*httpContext.HttpContext!.User*/ null)),
-                new ServerSideCommandContainer("noshare-file-web",1,false,true, async (List<string> parameters) => (await service.DisconnectFileFromWeb((await service.GetSessionCloudPathData()).CurrentPath, parameters[0], httpContext.HttpContext!.User)).ToString()),
-                new ServerSideCommandContainer("noshare-file-app",1,false,true, async (List<string> parameters) => (await service.DisconnectFileFromApp((await service.GetSessionCloudPathData()).CurrentPath, parameters[0], httpContext.HttpContext!.User)).ToString()),
-                new ServerSideCommandContainer("noshare-dir-web",1,false,true, async (List<string> parameters) => (await service.DisconnectDirectoryFromWeb((await service.GetSessionCloudPathData()).CurrentPath, parameters[0], httpContext.HttpContext!.User)).ToString()),
-                new ServerSideCommandContainer("noshare-dir-app",1,false,true, async (List<string> parameters) => (await service.DisconnectDirectoryFromApp((await service.GetSessionCloudPathData()).CurrentPath, parameters[0], httpContext.HttpContext!.User)).ToString()),
-                new ServerSideCommandContainer("share-file-web",1,false,true, async (List<string> parameters) => (await service.ConnectFileToWeb((await service.GetSessionCloudPathData()).CurrentPath, parameters[0], httpContext.HttpContext!.User)).ToString()),
-                new ServerSideCommandContainer("share-file-app",1,false,true, async (List<string> parameters) => (await service.ConnectFileToApp((await service.GetSessionCloudPathData()).CurrentPath, parameters[0], httpContext.HttpContext!.User)).ToString()),
-                new ServerSideCommandContainer("share-dir-web",1,false,true, async (List<string> parameters) => (await service.ConnectDirectoryToWeb((await service.GetSessionCloudPathData()).CurrentPath, parameters[0], httpContext.HttpContext!.User)).ToString()),
-                new ServerSideCommandContainer("share-dir-app",1,false,true, async (List<string> parameters) => (await service.ConnectDirectoryToApp((await service.GetSessionCloudPathData()).CurrentPath, parameters[0], httpContext.HttpContext!.User)).ToString()),
-                new ServerSideCommandContainer("rm-dir",1,false,true, async (List<string> parameters) => (await service.RemoveDirectory(parameters[0],(await service.GetSessionCloudPathData()).CurrentPath, /*httpContext.HttpContext!.User*/ null)).ToString()),
-                new ServerSideCommandContainer("rm-file",1,false,true, async (List<string> parameters) => (await service.RemoveFile(parameters[0],(await service.GetSessionCloudPathData()).CurrentPath, /*httpContext.HttpContext!.User*/ null)).ToString()),
-                new ServerSideCommandContainer("rename-dir",2,false,true, async (List<string> parameters) => (await service.RenameFolder((await service.GetSessionCloudPathData()).CurrentPath, parameters[0], parameters[1]))),
-                new ServerSideCommandContainer("rename-file",2,false,true, async (List<string> parameters) => (await service.RenameFile((await service.GetSessionCloudPathData()).CurrentPath, parameters[0], parameters[1]))),
-                new ServerSideCommandContainer("search-dir",1,true,true, async (List<string> parameters) => (await service.SearchDirectoryInCurrentDirectory((await service.GetSessionCloudPathData()).CurrentPath, parameters[0]))),
-                new ServerSideCommandContainer("search-file",1,true,true, async (List<string> parameters) => (await service.SearchFileInCurrentDirectory((await service.GetSessionCloudPathData()).CurrentPath, parameters[0]))),
+                new ServerSideCommandContainer("cd",1,false,true, async (parameters, pathData, user) => await service.ChangeToDirectory(await PathNormalizationForChangingDirectory(parameters[0], pathData),pathData)),
+                new ServerSideCommandContainer("copy-file",2,false,true, async (parameters, pathData, user) => await service.CopyFile(await RelativeToAbsolutePathAndNormalize(parameters[0],pathData),await RelativeToAbsolutePathAndNormalize(parameters[1], pathData),user)),
+                new ServerSideCommandContainer("copy-dir",2,false,true, async (parameters, pathData, user) => await service.CopyFolder(await RelativeToAbsolutePathAndNormalize(parameters[0], pathData),await RelativeToAbsolutePathAndNormalize(parameters[1], pathData),user)),
+                new ServerSideCommandContainer("help",0,true,false, async (parameters, pathData, user) => await service.GetTerminalHelpText()),
+                new ServerSideCommandContainer("ls",0,true,false, async (parameters, pathData, user) => await service.ListCurrentSubDirectories(pathData)),
+                new ServerSideCommandContainer("pwd",0,true,false, async (parameters, pathData, user) => await service.PrintWorkingDirectory(pathData)),
+                new ServerSideCommandContainer("mkdir",1,false,true, async (parameters, pathData, user) => await service.CreateDirectory(parameters[0], pathData.CurrentPath, user)),
+                new ServerSideCommandContainer("noshare-file-web",1,false,true, async (parameters, pathData, user) => (await service.DisconnectFileFromWeb(pathData.CurrentPath, parameters[0], user)).ToString()),
+                new ServerSideCommandContainer("noshare-file-app",1,false,true, async (parameters, pathData, user) => (await service.DisconnectFileFromApp(pathData.CurrentPath, parameters[0], user)).ToString()),
+                new ServerSideCommandContainer("noshare-dir-web",1,false,true, async (parameters, pathData, user) => (await service.DisconnectDirectoryFromWeb(pathData.CurrentPath, parameters[0], user)).ToString()),
+                new ServerSideCommandContainer("noshare-dir-app",1,false,true, async (parameters, pathData, user) => (await service.DisconnectDirectoryFromApp(pathData.CurrentPath, parameters[0], user)).ToString()),
+                new ServerSideCommandContainer("share-file-web",1,false,true, async (parameters, pathData, user) => (await service.ConnectFileToWeb(pathData.CurrentPath, parameters[0], user)).ToString()),
+                new ServerSideCommandContainer("share-file-app",1,false,true, async (parameters, pathData, user) => (await service.ConnectFileToApp(pathData.CurrentPath, parameters[0], user)).ToString()),
+                new ServerSideCommandContainer("share-dir-web",1,false,true, async (parameters, pathData, user) => (await service.ConnectDirectoryToWeb(pathData.CurrentPath, parameters[0], user)).ToString()),
+                new ServerSideCommandContainer("share-dir-app",1,false,true, async (parameters, pathData, user) => (await service.ConnectDirectoryToApp(pathData.CurrentPath, parameters[0], user)).ToString()),
+                new ServerSideCommandContainer("rm-dir",1,false,true, async (parameters, pathData, user) => (await service.RemoveDirectory(parameters[0], pathData.CurrentPath, user)).ToString()),
+                new ServerSideCommandContainer("rm-file",1,false,true, async (parameters, pathData, user) => (await service.RemoveFile(parameters[0],pathData.CurrentPath, user)).ToString()),
+                new ServerSideCommandContainer("rename-dir",2,false,true, async (parameters, pathData, user) => (await service.RenameFolder(pathData.CurrentPath, parameters[0], parameters[1]))),
+                new ServerSideCommandContainer("rename-file",2,false,true, async (parameters, pathData, user) => (await service.RenameFile(pathData.CurrentPath, parameters[0], parameters[1]))),
+                new ServerSideCommandContainer("search-dir",1,true,true, async (parameters, pathData, user) => (await service.SearchDirectoryInCurrentDirectory(pathData.CurrentPath, parameters[0]))),
+                new ServerSideCommandContainer("search-file",1,true,true, async (parameters, pathData, user) => (await service.SearchFileInCurrentDirectory(pathData.CurrentPath, parameters[0]))),
             };
 
             clientSideCommands = new List<ClientSideCommandContainer>()
             {
-                new ClientSideCommandContainer("download-file",1,true,async (List<string> parameters) => await Task.FromResult<string>(urlGenerator.Action("DownloadFile","Drive", new { fileName = parameters[0]}) ?? throw new Exception("Invalid url"))),
-                new ClientSideCommandContainer("download-dir",1,true,async (List<string> parameters) => await Task.FromResult<string>(urlGenerator.Action("DownloadFolder","Drive", new { folderName = parameters[0]}) ?? throw new Exception("Invalid url"))),
-                new ClientSideCommandContainer("edit",1,false,async (List<string> parameters) => urlGenerator.Action("EditorHub","Editor", new { fileName = parameters[0], path=(await service.GetSessionCloudPathData()).CurrentPath, redirectData = RedirectionManager.CreateRedirectionString("Terminal","Index") }) ?? throw new Exception("Invalid url")),
+                new ClientSideCommandContainer("download-file",1,true,async (parameters, pathData) => await Task.FromResult<UrlGenerationResult>(new UrlGenerationResult("Drive", "DownloadFile", new { fileName = parameters[0]}, true))),
+                new ClientSideCommandContainer("download-dir",1,true,async (parameters, pathData) => await Task.FromResult<UrlGenerationResult>(new UrlGenerationResult("Drive", "DownloadFolder", new { folderName = parameters[0]}, true))),
+                new ClientSideCommandContainer("edit",1,false,async (parameters, pathData) => await Task.FromResult<UrlGenerationResult>(new UrlGenerationResult("Editor", "EditorHub", new { fileName = parameters[0], path=pathData.CurrentPath, redirectData = RedirectionManager.CreateRedirectionString("Terminal","Index") }, false))),
             };
         }
 
-        public async Task<(bool, string, object?, bool)> Execute(string command, List<string> parameters)
+        public async Task<(bool, string, object?, bool)> Execute(string command, List<string> parameters, CloudPathData pathdata, CloudUser user)
         {
             ServerSideCommandContainer? commandData = serverSideCommands.FirstOrDefault(x => x.Command == command);
 
@@ -70,7 +67,7 @@ namespace NCloud.Services
 
             try
             {
-                object result = await commandData.ExecutionAction(parameters); //here comes the execution of actions from CloudService
+                object result = await commandData.ExecutionAction(parameters, pathdata, user); //here comes the execution of actions from CloudService
 
                 if (bool.TryParse(result?.ToString(), out bool success))
                 {
@@ -111,48 +108,56 @@ namespace NCloud.Services
             return GetServerSideCommands().Union(GetClientSideCommands()).ToList();
         }
 
-        private async Task<string> RelativeToAbsolutePathAndNormalize(string path)
-        {
-            path = CloudTerminalTokenizationManager.NormalizeCommandPath(path);
-
-            CloudPathData pathData = await service.GetSessionCloudPathData();
-
-            if (path.StartsWith(Constants.AbsolutePathMarker) && path.StartsWith(Constants.PrivateRootName))
-                return pathData.AddUserInfoToAbsolutePath(path);
-
-            else if ((path.StartsWith(Constants.AbsolutePathMarker) && !path.StartsWith(Constants.PrivateRootName)))
-                throw new CloudFunctionStopException("wrong root name");
-
-            return Path.Combine(pathData.CurrentPath, path);
-        }
-
-        private async Task<string> PathNormalizationForChangingDirectory(string path)
-        {
-            path = CloudTerminalTokenizationManager.NormalizeCommandPath(path);
-
-            CloudPathData pathData = await service.GetSessionCloudPathData();
-
-            if (path.StartsWith(Constants.AbsolutePathMarker) && path.StartsWith(Constants.PrivateRootName))
-                return pathData.AddUserInfoToAbsolutePath(path);
-
-            else if ((path.StartsWith(Constants.AbsolutePathMarker) && !path.StartsWith(Constants.PrivateRootName)))
-                throw new CloudFunctionStopException("wrong root name");
-
-            return path;
-        }
-
         public List<ClientSideCommandContainer> GetClientSideCommandsObjectList()
         {
             return clientSideCommands;
         }
 
-        public async Task<string> GetClientSideCommandHTMLElement(string command, List<string> parameters)
+        public async Task<UrlGenerationResult> GetClientSideCommandUrlDetails(string command, List<string> parameters, CloudPathData pathData)
         {
             var commandObject = clientSideCommands.FirstOrDefault(x => x.Command == command);
 
-            string url = await (commandObject?.UrlGenerator(parameters) ?? throw new CloudFunctionStopException($"no command with name: {command}"));
+            return await (commandObject?.UrlDetailsGenerator(parameters, pathData) ?? throw new CloudFunctionStopException($"no command with name: {command}"));
+        }
 
-            return $"<div style=\"display:none\"><a href=\"{url}\" {(commandObject.Downloadable ? "download" : "")} id=\"{Constants.DownloadHTMLElementId}\"></a></div>";
+        /// <summary>
+        /// Private method to create path from used written path (command line input)
+        /// </summary>
+        /// <param name="path">Relative path in app</param>
+        /// <param name="pathData">Current state in session</param>
+        /// <returns>The new path parsed by rules</returns>
+        /// <exception cref="CloudFunctionStopException">Throws if invalid data is present in path</exception>
+        private async Task<string> RelativeToAbsolutePathAndNormalize(string path, CloudPathData pathData)
+        {
+            path = CloudTerminalTokenizationManager.NormalizeCommandPath(path);
+
+            if (path.StartsWith(Constants.AbsolutePathMarker) && path.StartsWith(Constants.PrivateRootName))
+                return pathData.AddUserInfoToAbsolutePath(path);
+
+            else if ((path.StartsWith(Constants.AbsolutePathMarker) && !path.StartsWith(Constants.PrivateRootName)))
+                throw new CloudFunctionStopException("wrong root name");
+
+            return await Task.FromResult<string>(Path.Combine(pathData.CurrentPath, path));
+        }
+
+        /// <summary>
+        /// Private method to create path from used written path (command line input) for folder changing
+        /// </summary>
+        /// <param name="path">Relative path in app</param>
+        /// <param name="pathData">Current state in session</param>
+        /// <returns>The new path parsed by rules</returns>
+        /// <exception cref="CloudFunctionStopException">Throws if invalid data is present in path</exception>
+        private async Task<string> PathNormalizationForChangingDirectory(string path, CloudPathData pathData)
+        {
+            path = CloudTerminalTokenizationManager.NormalizeCommandPath(path);
+
+            if (path.StartsWith(Constants.AbsolutePathMarker) && path.StartsWith(Constants.PrivateRootName))
+                return pathData.AddUserInfoToAbsolutePath(path);
+
+            else if ((path.StartsWith(Constants.AbsolutePathMarker) && !path.StartsWith(Constants.PrivateRootName)))
+                throw new CloudFunctionStopException("wrong root name");
+
+            return await Task.FromResult<string>(path);
         }
     }
 }
