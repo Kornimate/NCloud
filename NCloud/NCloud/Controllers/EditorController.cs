@@ -269,11 +269,15 @@ namespace NCloud.Controllers
 
                 return Json(new ConnectionDTO { Success = false, Message = "Error while saving file content" });
             }
-            catch(CloudFunctionStopException ex)
+            catch (FileNotFoundException ex)
             {
                 AddNewNotification(new Error($"Error - {ex.Message}"));
 
                 return Json(new ConnectionDTO { Success = false, Redirection = Url.Action("Index", "DashBoard")! });
+            }
+            catch(CloudFunctionStopException ex)
+            {
+                return Json(new ConnectionDTO { Success = false, Message = $"Error - {ex.Message}" });
             }
             catch (Exception)
             {

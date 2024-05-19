@@ -135,7 +135,7 @@ namespace NCloud.Services
                     throw new CloudFunctionStopException("directory already exists");
                 }
             }
-            catch(CloudFunctionStopException ex)
+            catch (CloudFunctionStopException ex)
             {
                 throw new CloudFunctionStopException(ex.Message);
             }
@@ -759,34 +759,25 @@ namespace NCloud.Services
 
         public async Task<bool> ModifyFileContent(string file, string content, CloudUser user)
         {
-
             try
             {
                 string filePath = ParseRootName(file);
 
-                FileInfo fiBefore = new FileInfo(filePath);
+                FileInfo fi = new FileInfo(filePath);
 
-                if (!fiBefore.Exists)
-                    throw new CloudFunctionStopException("File does not exist");
+                if (!fi.Exists)
+                    throw new FileNotFoundException("File does not exist");
 
-                File.WriteAllText(filePath, content);
+                double contentSize = GetStringLengthInBytes(content);
 
-                FileInfo fiAfter = new FileInfo(filePath);
-
-                if (!fiAfter.Exists)
-                    throw new CloudFunctionStopException("File does not exist");
-
-                double contentSize = fiAfter.Length - fiBefore.Length;
+                contentSize -= fi.Length; //calculate the difference
 
                 if (user.UsedSpace + contentSize > user.MaxSpace)
                 {
-                    using (FileStream fs = new FileStream(filePath, FileMode.Open, FileAccess.ReadWrite, FileShare.None))
-                    {
-                        fs.SetLength(Convert.ToInt64(user.MaxSpace - user.UsedSpace));
-                    }
-
-                    throw new CloudFunctionStopException("storage for user is on full, file truncated to max space size of user");
+                    throw new CloudFunctionStopException("storage for user is on full, changes can not be saved");
                 }
+
+                File.WriteAllText(filePath, content);
 
                 await UpdateUserStorageUsed(user, contentSize);
 
@@ -795,6 +786,10 @@ namespace NCloud.Services
             catch (CloudFunctionStopException ex)
             {
                 throw new CloudFunctionStopException(ex.Message);
+            }
+            catch (FileNotFoundException ex)
+            {
+                throw new FileNotFoundException(ex.Message);
             }
             catch (Exception)
             {
@@ -1745,6 +1740,15 @@ namespace NCloud.Services
             }
         }
 
+        /// <summary>
+        /// Private static method to get a string length in bytes
+        /// </summary>
+        /// <param name="content">The content to measure</param>
+        /// <returns>The size in bytes converted to double</returns>
+        private static double GetStringLengthInBytes(string content)
+        {
+            return Encoding.UTF8.GetBytes(content).Length;
+        }
         #endregion
     }
 }
