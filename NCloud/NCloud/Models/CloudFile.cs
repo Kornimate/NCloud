@@ -68,7 +68,7 @@ namespace NCloud.Models
 
             sb.Append(Info.CreationTime.ToString(Constants.TerminalDateTimeFormat));
             sb.Append("".PadRight(2));
-            sb.Append(FileSizeManager.ConvertToReadableSize(Info.Length).PadRight(10));
+            sb.Append(CloudSizeManager.ConvertToReadableSize(Info.Length).PadRight(10));
             sb.Append("".PadRight(2));
             sb.Append(IsConnectedToApp ? "yes".PadRight(13) : "no".PadRight(13));
             sb.Append("".PadRight(2));

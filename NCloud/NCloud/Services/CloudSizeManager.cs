@@ -1,6 +1,6 @@
 ﻿namespace NCloud.Services
 {
-    public static class FileSizeManager
+    public static class CloudSizeManager
     {
         /// <summary>
         /// Method to convert bytes into readable format (if reaches a bigger size then it is showed in that e.g kb -> mb)
@@ -20,15 +20,15 @@
                 switch (bytes)
                 {
                     case >= gb:
-                        result = bytes / gb;
+                        result = Math.Round(bytes / gb, 2);
                         unit = "GB";
                         break;
                     case >= mb:
-                        result = bytes / mb;
+                        result = Math.Round(bytes / mb, 2);
                         unit = "MB";
                         break;
                     case >= kb:
-                        result = bytes / kb;
+                        result = Math.Round(bytes / kb, 2);
                         unit = "KB";
                         break;
                     default:

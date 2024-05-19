@@ -87,7 +87,7 @@ namespace NCloud.Controllers
 
                     AddNewNotification(new Success($"File successfully created at {Constants.GetDefaultFileShowingPath()}"));
 
-                    return await EditorHub(fileName, path, RedirectionManager.CreateRedirectionString("Editor", "Index"));
+                    return await EditorHub(res, path, RedirectionManager.CreateRedirectionString("Editor", "Index"));
                 }
                 catch (CloudFunctionStopException ex)
                 {
@@ -271,7 +271,9 @@ namespace NCloud.Controllers
             }
             catch(CloudFunctionStopException ex)
             {
-                return Json(new ConnectionDTO { Success = false, Message = $"Error - {ex.Message}" });
+                AddNewNotification(new Error($"Error - {ex.Message}"));
+
+                return Json(new ConnectionDTO { Success = false, Redirection = Url.Action("Index", "DashBoard")! });
             }
             catch (Exception)
             {

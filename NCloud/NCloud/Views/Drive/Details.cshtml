@@ -94,10 +94,20 @@
             document.getElementById("breadcrumbDiv").addEventListener("click", CrumbClicked, false);
             document.getElementById("currentPath").addEventListener("focusout", InputFocusLost, false);
             document.getElementById("addFileField").addEventListener("shown.bs.collapse", FileUploadShown, false);
+            document.getElementById("addFileField").addEventListener("show.bs.collapse", FileUploadShow, false);
             document.getElementById("addFileField").addEventListener("hide.bs.collapse", FileUploadHidden, false);
             document.getElementById("addFolderField").addEventListener("shown.bs.collapse", FolderCreateShown, false);
+            document.getElementById("addFolderField").addEventListener("show.bs.collapse", FolderCreateShow, false);
             document.getElementById("addFolderField").addEventListener("hide.bs.collapse", FolderCreateHidden, false);
             CheckSessionStorage();
+        }
+
+        function FileUploadShow(){
+            document.getElementById("addFileBtn")?.classList?.add("bg-success");
+        }
+
+        function FolderCreateShow(){
+            document.getElementById("addFolderBtn")?.classList?.add("bg-success");
         }
 
         function FileUploadShown(){
@@ -106,6 +116,8 @@
 
         function FileUploadHidden(){
             sessionStorage.removeItem("openedMiniWindow");
+
+            document.getElementById("addFileBtn")?.classList?.remove("bg-success");
         }
 
         function FolderCreateShown(){
@@ -114,6 +126,8 @@
 
         function FolderCreateHidden(){
             sessionStorage.removeItem("openedMiniWindow");
+
+            document.getElementById("addFolderBtn")?.classList?.remove("bg-success");
         }
 
         function AddFolderClicked(e) {
@@ -130,10 +144,14 @@
 
                 if (item == 'file') {
                     document.getElementById("addFileField")?.classList?.add("show");
+
+                    document.getElementById("addFileBtn")?.classList?.add("bg-success");
                 }
 
                 if (item == 'folder') {
                     document.getElementById("addFolderField")?.classList?.add("show");
+
+                    document.getElementById("addFolderBtn")?.classList?.add("bg-success");
                 }
             }
         }

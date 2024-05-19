@@ -135,6 +135,10 @@ namespace NCloud.Services
                     throw new CloudFunctionStopException("directory already exists");
                 }
             }
+            catch(CloudFunctionStopException ex)
+            {
+                throw new CloudFunctionStopException(ex.Message);
+            }
             catch (Exception)
             {
                 try
@@ -176,11 +180,11 @@ namespace NCloud.Services
             {
                 double dirSize = await GetDirectorySize(cloudPath);
 
+                await SetObjectAndUnderlyingObjectsState(cloudPath, folderName, ChangeOwnerIdentification(ChangeRootName(cloudPath), user.UserName), user, false, false); //delete folder from database
+
                 await Task.Run(() => di.Delete(true)); //delete folder
 
                 await UpdateUserStorageUsed(user, (-1) * dirSize);
-
-                await SetObjectAndUnderlyingObjectsState(cloudPath, folderName, ChangeOwnerIdentification(ChangeRootName(cloudPath), user.UserName), user, false, false); //delete folder from database
             }
             catch (Exception)
             {
@@ -266,12 +270,12 @@ namespace NCloud.Services
             {
                 double fileSize = fi.Length;
 
+                if (!await SetFileConnectedState(cloudPath, fileName, ChangeOwnerIdentification(ChangeRootName(cloudPath), user.UserName), user, false, false))
+                    throw new CloudFunctionStopException("failed to adjust file rights");
+
                 await Task.Run(() => fi.Delete());
 
                 await UpdateUserStorageUsed(user, (-1) * fileSize);
-
-                if (!await SetFileConnectedState(cloudPath, fileName, ChangeOwnerIdentification(ChangeRootName(cloudPath), user.UserName), user, false, false))
-                    throw new CloudFunctionStopException("failed to adjust file rights");
 
             }
             catch (Exception)
@@ -756,26 +760,41 @@ namespace NCloud.Services
         public async Task<bool> ModifyFileContent(string file, string content, CloudUser user)
         {
 
-            double contentSize = GetStringLengthInBytes(content);
-
-            if (user.UsedSpace + contentSize > user.MaxSpace)
-                throw new CloudFunctionStopException("not enough storage");
-
             try
             {
-                FileInfo fi = new FileInfo(file);
+                string filePath = ParseRootName(file);
 
-                if (!fi.Exists)
+                FileInfo fiBefore = new FileInfo(filePath);
+
+                if (!fiBefore.Exists)
                     throw new CloudFunctionStopException("File does not exist");
 
-                if (contentSize < fi.Length)
-                    contentSize -= fi.Length;
+                File.WriteAllText(filePath, content);
 
-                File.WriteAllText(ParseRootName(file), content);
+                FileInfo fiAfter = new FileInfo(filePath);
+
+                if (!fiAfter.Exists)
+                    throw new CloudFunctionStopException("File does not exist");
+
+                double contentSize = fiAfter.Length - fiBefore.Length;
+
+                if (user.UsedSpace + contentSize > user.MaxSpace)
+                {
+                    using (FileStream fs = new FileStream(filePath, FileMode.Open, FileAccess.ReadWrite, FileShare.None))
+                    {
+                        fs.SetLength(Convert.ToInt64(user.MaxSpace - user.UsedSpace));
+                    }
+
+                    throw new CloudFunctionStopException("storage for user is on full, file truncated to max space size of user");
+                }
 
                 await UpdateUserStorageUsed(user, contentSize);
 
                 return true;
+            }
+            catch (CloudFunctionStopException ex)
+            {
+                throw new CloudFunctionStopException(ex.Message);
             }
             catch (Exception)
             {
@@ -1283,7 +1302,7 @@ namespace NCloud.Services
             if (pathFolders.Count < 1)
                 return false;
 
-            return Constants.SystemFolders.Contains(pathFolders.Last()) && ((pathFolders.Count - pathFolders.FindIndex(x => x == Constants.WebRootFolderName) - 1) == Constants.DistanceToRootFolder);
+            return Constants.SystemFolders.Select(x => x.ToLower()).Contains(pathFolders.Last().ToLower()) && ((pathFolders.Count - pathFolders.FindIndex(x => x == Constants.WebRootFolderName) - 1) == Constants.DistanceToRootFolder);
         }
 
         /// <summary>
@@ -1482,7 +1501,7 @@ namespace NCloud.Services
 
                 DirectoryInfo? entryInfo = di.GetDirectories().FirstOrDefault(x => x.Name.ToLower() == directoryName.ToLower());
 
-                if (entryInfo is null || !entryInfo.Exists)
+                if ((entryInfo is null || !entryInfo.Exists) && (connectToApp == true || connectToWeb == true))
                     throw new CloudFunctionStopException("part of path does not exist");
 
                 Queue<Tuple<string, string, DirectoryInfo>> underlyingDirectories = new Queue<Tuple<string, string, DirectoryInfo>>(new List<Tuple<string, string, DirectoryInfo>>() { new Tuple<string, string, DirectoryInfo>(cloudPath, sharingPath, new DirectoryInfo(Path.Combine(ParseRootName(cloudPath), entryInfo.Name))) });
@@ -1724,16 +1743,6 @@ namespace NCloud.Services
             {
                 throw;
             }
-        }
-
-        /// <summary>
-        /// Private static method to get a string length in bytes
-        /// </summary>
-        /// <param name="content">The content to measure</param>
-        /// <returns>The size in bytes converted to double</returns>
-        private static double GetStringLengthInBytes(string content)
-        {
-            return content.Length * sizeof(Char);
         }
 
         #endregion

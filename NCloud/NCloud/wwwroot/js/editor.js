@@ -13,6 +13,10 @@ async function PeriodicSave(file, content, address) {
 
     spinner?.classList.add("hidden");
 
+    if (response.redirection !== "") {
+        window.location.href = response.redirection;
+    }
+
     if (response.success) {
         text.innerHTML = `Last saved: ${new Date().toLocaleString()}`;
     }
@@ -38,8 +42,13 @@ async function UserSave(file, content, address) {
     spinner?.classList.add("hidden");
     btnSave.disabled = false;
 
+    if (response.redirection !== "") {
+        window.location.href = response.redirection;
+    }
+
     if (response.success) {
         document.getElementById("statustext").innerHTML = `Last saved: ${new Date().toLocaleString()}`;
+
         ShowSuccessToast("Success", response.message);
     }
     else {

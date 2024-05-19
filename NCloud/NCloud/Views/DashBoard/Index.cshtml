@@ -53,6 +53,14 @@
                 <progress id="remainingSpace" min="0" max="100" value="@Model.RemainingPercent"></progress>
             </div>
         </div>
+        <div class="row w-100 text-center mt-3">
+            <h4 class="col w-50 mb-3">
+                <span>@CloudSizeManager.ConvertToReadableSize(Model.UsedBytes)</span>
+            </h4>
+            <h4 class="col w-50 mb-3">
+                <span>@CloudSizeManager.ConvertToReadableSize(Model.RemainingBytes)</span>
+            </h4>
+        </div>
     </div>
 </div>
 
