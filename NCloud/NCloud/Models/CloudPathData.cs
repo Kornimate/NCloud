@@ -56,10 +56,10 @@ namespace NCloud.Models
         /// </summary>
         /// <param name="folderName">Name of folder</param>
         /// <returns></returns>
-        public string? TrySetFolder(string? folderName)
+        public string TrySetFolder(string? folderName)
         {
             if (String.IsNullOrWhiteSpace(folderName))
-                return null;
+                return String.Empty;
 
             return Path.Combine(CurrentPath, folderName);
         }

@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace NCloud.Migrations
 {
-    public partial class userdbfilesfolders : Migration
+    public partial class initialfilesfoldersusers : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -31,7 +31,7 @@ namespace NCloud.Migrations
                     Id = table.Column<Guid>(type: "TEXT", nullable: false),
                     FullName = table.Column<string>(type: "TEXT", nullable: true),
                     UsedSpace = table.Column<double>(type: "REAL", nullable: false),
-                    MaxSpace = table.Column<double>(type: "REAL", nullable: false, defaultValue: 5_242_880.0),
+                    MaxSpace = table.Column<double>(type: "REAL", nullable: false, defaultValue: 5_368_709_120.0),
                     UserName = table.Column<string>(type: "TEXT", maxLength: 256, nullable: true),
                     NormalizedUserName = table.Column<string>(type: "TEXT", maxLength: 256, nullable: true),
                     Email = table.Column<string>(type: "TEXT", maxLength: 256, nullable: true),
@@ -234,6 +234,12 @@ namespace NCloud.Migrations
                 name: "EmailIndex",
                 table: "AspNetUsers",
                 column: "NormalizedEmail");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AspNetUsers_UserName",
+                table: "AspNetUsers",
+                column: "UserName",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "UserNameIndex",

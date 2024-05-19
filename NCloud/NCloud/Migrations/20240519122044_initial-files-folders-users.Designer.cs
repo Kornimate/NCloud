@@ -11,8 +11,8 @@ using NCloud.Models;
 namespace NCloud.Migrations
 {
     [DbContext(typeof(CloudDbContext))]
-    [Migration("20240512222352_user-db-files-folders")]
-    partial class userdbfilesfolders
+    [Migration("20240519122044_initial-files-folders-users")]
+    partial class initialfilesfoldersusers
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -256,6 +256,9 @@ namespace NCloud.Migrations
                     b.HasIndex("NormalizedUserName")
                         .IsUnique()
                         .HasDatabaseName("UserNameIndex");
+
+                    b.HasIndex("UserName")
+                        .IsUnique();
 
                     b.ToTable("AspNetUsers", (string)null);
                 });

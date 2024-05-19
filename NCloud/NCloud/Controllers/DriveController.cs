@@ -35,7 +35,7 @@ namespace NCloud.Controllers
 
             string currentPath;
 
-            if (SecurityManager.CheckIfDirectoryExists(pathdata.TrySetFolder(folderName)))
+            if (SecurityManager.CheckIfDirectoryExists(service.ServerPath(pathdata.TrySetFolder(folderName))))
                 currentPath = pathdata.SetFolder(folderName);
 
             else
