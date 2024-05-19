@@ -24,6 +24,7 @@ namespace NCloud.ConstantData
         public static string UserRegex { get => @"^[0-9a-zA-Z_!%+=.()/$\s""]+$"; }
         public static string ZipMimeType { get => "application/zip"; }
         public static string DefaultMimeType { get => "application/octet-stream"; }
+        public static string DefaultFileName { get => "<invalid-name>"; }
         public static string DateTimeFormat { get => "yyyy'-'MM'-'dd'T'HH'-'mm'-'ss"; }
         public static string TerminalDateTimeFormat { get => "yyyy'-'MM'-'dd' 'HH':'mm"; }
         public static string UnkownFileType { get => "unknown"; }

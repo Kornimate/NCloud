@@ -365,5 +365,12 @@ namespace NCloud.Services
         /// <param name="pattern">Pattern for filtering (*,?)</param>
         /// <returns>The list of filtered files in list of CloudFile objects</returns>
         Task<List<CloudFile>> SearchFileInCurrentDirectory(string cloudPath, string pattern);
+
+        /// <summary>
+        /// Method to adjust storage used by user by measuring the file system of user
+        /// </summary>
+        /// <param name="user">The currently logged in user</param>
+        /// <returns>Task for async usage</returns>
+        Task CheckUserStorageUsed(CloudUser user);
     }
 }

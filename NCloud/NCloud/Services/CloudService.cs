@@ -12,6 +12,8 @@ using System.Text;
 using Newtonsoft.Json.Linq;
 using System.Text.RegularExpressions;
 using NCloud.Security;
+using System.IO;
+using NCloud.Models.Extensions;
 
 namespace NCloud.Services
 {
@@ -180,11 +182,17 @@ namespace NCloud.Services
             {
                 double dirSize = await GetDirectorySize(cloudPath);
 
-                await SetObjectAndUnderlyingObjectsState(cloudPath, folderName, ChangeOwnerIdentification(ChangeRootName(cloudPath), user.UserName), user, false, false); //delete folder from database
+                if (!await SetObjectAndUnderlyingObjectsState(cloudPath, folderName, ChangeOwnerIdentification(ChangeRootName(cloudPath), user.UserName), user, false, false, true) //delete folder from database
+                    && await SetObjectAndUnderlyingObjectsState(cloudPath, folderName, Constants.GetSharingRootPathInDatabase(user.UserName), user, false, false, true))
+                    throw new CloudFunctionStopException("failed to remove folder connectivity");
 
                 await Task.Run(() => di.Delete(true)); //delete folder
 
                 await UpdateUserStorageUsed(user, (-1) * dirSize);
+            }
+            catch (CloudFunctionStopException ex)
+            {
+                throw new CloudFunctionStopException(ex.Message);
             }
             catch (Exception)
             {
@@ -270,13 +278,18 @@ namespace NCloud.Services
             {
                 double fileSize = fi.Length;
 
-                if (!await SetFileConnectedState(cloudPath, fileName, ChangeOwnerIdentification(ChangeRootName(cloudPath), user.UserName), user, false, false))
-                    throw new CloudFunctionStopException("failed to adjust file rights");
+                if (!await SetFileConnectedState(cloudPath, fileName, ChangeOwnerIdentification(ChangeRootName(cloudPath), user.UserName), user, false, false, true)
+                    && !await SetFileConnectedState(cloudPath, fileName, Constants.GetSharingRootPathInDatabase(user.UserName), user, false, false, true))
+                    throw new CloudFunctionStopException("failed to adjust file connectivity");
 
                 await Task.Run(() => fi.Delete());
 
                 await UpdateUserStorageUsed(user, (-1) * fileSize);
 
+            }
+            catch (CloudFunctionStopException ex)
+            {
+                throw new CloudFunctionStopException(ex.Message);
             }
             catch (Exception)
             {
@@ -375,7 +388,7 @@ namespace NCloud.Services
 
             try
             {
-                return await SetObjectAndUnderlyingObjectsState(cloudPath, directoryName, cloudPath, user, connectToWeb: true);
+                return await SetObjectAndUnderlyingObjectsState(cloudPath, directoryName, Constants.GetSharingRootPathInDatabase(user.UserName), user, connectToWeb: true);
             }
             catch (CloudFunctionStopException ex)
             {
@@ -397,12 +410,12 @@ namespace NCloud.Services
 
                 if (connections.First && cloudPath != Constants.GetCloudRootPathInDatabase(user.Id))
                 {
-                    return await SetObjectAndUnderlyingObjectsState(cloudPath, directoryName, ChangeOwnerIdentification(ChangeRootName(cloudPath), user.UserName), user, connectToApp: true)
-                        && await SetObjectAndUnderlyingObjectsState(cloudPath, directoryName, Constants.GetSharingRootPathInDatabase(user.UserName), user, connectToApp: true);
+                    return await SetObjectAndUnderlyingObjectsState(cloudPath, directoryName, ChangeOwnerIdentification(ChangeRootName(cloudPath), user.UserName), user, connectToApp: true, useSharingPath: true)
+                        && await SetObjectAndUnderlyingObjectsState(cloudPath, directoryName, Constants.GetSharingRootPathInDatabase(user.UserName), user, connectToApp: true, useSharingPath: true);
                 }
                 else
                 {
-                    return await SetObjectAndUnderlyingObjectsState(cloudPath, directoryName, Constants.GetSharingRootPathInDatabase(user.UserName), user, connectToApp: true);
+                    return await SetObjectAndUnderlyingObjectsState(cloudPath, directoryName, Constants.GetSharingRootPathInDatabase(user.UserName), user, connectToApp: true, useSharingPath: true);
                 }
             }
             catch (CloudFunctionStopException ex)
@@ -419,8 +432,8 @@ namespace NCloud.Services
         {
             try
             {
-                return await SetObjectAndUnderlyingObjectsState(cloudPath, directoryName, ChangeOwnerIdentification(ChangeRootName(cloudPath), user.UserName), user, connectToApp: false)
-                    && await SetObjectAndUnderlyingObjectsState(cloudPath, directoryName, Constants.GetSharingRootPathInDatabase(user.UserName), user, connectToApp: false);
+                return await SetObjectAndUnderlyingObjectsState(cloudPath, directoryName, ChangeOwnerIdentification(ChangeRootName(cloudPath), user.UserName), user, connectToApp: false, useSharingPath: true)
+                    && await SetObjectAndUnderlyingObjectsState(cloudPath, directoryName, Constants.GetSharingRootPathInDatabase(user.UserName), user, connectToApp: false, useSharingPath: true);
             }
             catch (CloudFunctionStopException ex)
             {
@@ -436,7 +449,7 @@ namespace NCloud.Services
         {
             try
             {
-                return await SetObjectAndUnderlyingObjectsState(cloudPath, directoryName, cloudPath, user, connectToWeb: false);
+                return await SetObjectAndUnderlyingObjectsState(cloudPath, directoryName, Constants.GetSharingRootPathInDatabase(user.UserName), user, connectToWeb: false);
             }
             catch (CloudFunctionStopException ex)
             {
@@ -458,8 +471,8 @@ namespace NCloud.Services
 
                 if (connections.First && cloudPath != Constants.GetCloudRootPathInDatabase(user.Id))
                 {
-                    return await SetFileConnectedState(cloudPath, fileName, ChangeOwnerIdentification(ChangeRootName(cloudPath), user.UserName), user, connectToApp: true)
-                        && await SetFileConnectedState(cloudPath, fileName, Constants.GetSharingRootPathInDatabase(user.UserName), user, connectToApp: true);
+                    return await SetFileConnectedState(cloudPath, fileName, ChangeOwnerIdentification(ChangeRootName(cloudPath), user.UserName), user, connectToApp: true, useSharingPath: true)
+                        && await SetFileConnectedState(cloudPath, fileName, Constants.GetSharingRootPathInDatabase(user.UserName), user, connectToApp: true, useSharingPath: true);
                 }
                 else
                 {
@@ -480,7 +493,7 @@ namespace NCloud.Services
         {
             try
             {
-                return await SetFileConnectedState(cloudPath, fileName, cloudPath, user, connectToWeb: true);
+                return await SetFileConnectedState(cloudPath, fileName, Constants.GetSharingRootPathInDatabase(user.UserName), user, connectToWeb: true);
             }
             catch (CloudFunctionStopException ex)
             {
@@ -496,8 +509,8 @@ namespace NCloud.Services
         {
             try
             {
-                return await SetFileConnectedState(cloudPath, fileName, ChangeOwnerIdentification(ChangeRootName(cloudPath), user.UserName), user, connectToApp: false)
-                    && await SetFileConnectedState(cloudPath, fileName, Constants.GetSharingRootPathInDatabase(user.UserName), user, connectToApp: false);
+                return await SetFileConnectedState(cloudPath, fileName, ChangeOwnerIdentification(ChangeRootName(cloudPath), user.UserName), user, connectToApp: false, useSharingPath: true)
+                    && await SetFileConnectedState(cloudPath, fileName, Constants.GetSharingRootPathInDatabase(user.UserName), user, connectToApp: false, useSharingPath: true);
             }
             catch (CloudFunctionStopException ex)
             {
@@ -532,7 +545,7 @@ namespace NCloud.Services
 
             CloudUser? user = await context.Users.FirstOrDefaultAsync(x => x.UserName == GetSharedPathOwnerUser(sharedPath));
 
-            return (await context.SharedFiles.Where(x => x.ConnectedToApp && x.Owner == user && x.SharedPathFromRoot == sharedPath).ToListAsync()).Select(x => new CloudFile(new FileInfo(Path.Combine(ParseRootName(x.CloudPathFromRoot), x.Name)), x.ConnectedToApp, x.ConnectedToWeb, String.Empty)).Where(x => x.Info.Exists).OrderBy(x => x.Info.Name).ToList() ?? new();
+            return (await context.SharedFiles.Where(x => x.ConnectedToApp && x.Owner == user && x.SharedPathFromRoot == sharedPath).ToListAsync()).Select(x => new CloudFile(new FileInfo(Path.Combine(ParseRootName(x.CloudPathFromRoot), x.Name)), x.ConnectedToApp, x.ConnectedToWeb, String.Empty, x.CloudPathFromRoot.Slice(Constants.PrivateRootName.Length, Constants.PrivateRootName.Length + Constants.GuidLength + 1).Replace(System.IO.Path.DirectorySeparatorChar, Constants.PathSeparator))).Where(x => x.Info.Exists).OrderBy(x => x.Info.Name).ToList() ?? new();
         }
 
         public async Task<List<CloudFolder>> GetCurrentDepthAppSharingDirectories(string sharedPath)
@@ -542,7 +555,7 @@ namespace NCloud.Services
 
             CloudUser? user = await context.Users.FirstOrDefaultAsync(x => x.UserName == GetSharedPathOwnerUser(sharedPath));
 
-            return (await context.SharedFolders.Where(x => x.ConnectedToApp && x.Owner == user && x.SharedPathFromRoot == sharedPath).ToListAsync()).Select(x => new CloudFolder(new DirectoryInfo(Path.Combine(ParseRootName(x.CloudPathFromRoot), x.Name)), x.ConnectedToApp, x.ConnectedToWeb, String.Empty)).Where(x => x.Info.Exists).OrderBy(x => x.Info.Name).ToList() ?? new();
+            return (await context.SharedFolders.Where(x => x.ConnectedToApp && x.Owner == user && x.SharedPathFromRoot == sharedPath).ToListAsync()).Select(x => new CloudFolder(new DirectoryInfo(Path.Combine(ParseRootName(x.CloudPathFromRoot), x.Name)), x.ConnectedToApp, x.ConnectedToWeb, String.Empty, x.CloudPathFromRoot.Slice(Constants.PrivateRootName.Length, Constants.PrivateRootName.Length + Constants.GuidLength + 1).Replace(System.IO.Path.DirectorySeparatorChar, Constants.PathSeparator))).Where(x => x.Info.Exists).OrderBy(x => x.Info.Name).ToList() ?? new();
         }
 
         public async Task<bool> OwnerOfPathIsActualUser(string sharedPath, CloudUser user)
@@ -1161,6 +1174,17 @@ namespace NCloud.Services
             }
         }
 
+        public async Task CheckUserStorageUsed(CloudUser user)
+        {
+            user = await context.Users.FirstOrDefaultAsync(x => x.Id == user.Id) ?? throw new CloudFunctionStopException("user is not found"); //get current user state from database or show error
+
+            user.UsedSpace = await GetDirectorySize(Constants.PrivateRootName);
+
+            context.Users.Update(user);
+
+            await context.SaveChangesAsync();
+        }
+
         #endregion
 
         #region Private Methods
@@ -1311,7 +1335,7 @@ namespace NCloud.Services
         /// <param name="connectToWeb">Boolean to connect folder to web</param>
         /// <returns>Boolean value if action is successful</returns>
         /// <exception cref="CloudFunctionStopException">throw exception if given data invalid</exception>
-        private async Task<bool> SetDirectoryConnectedState(string cloudPath, string directoryName, string sharingPath, CloudUser user, bool? connectToApp = null, bool? connectToWeb = null)
+        private async Task<bool> SetDirectoryConnectedState(string cloudPath, string directoryName, string sharingPath, CloudUser user, bool? connectToApp = null, bool? connectToWeb = null, bool useSharingPath = false)
         {
             try
             {
@@ -1324,7 +1348,7 @@ namespace NCloud.Services
                     throw new CloudFunctionStopException("directory does not exist");
                 }
 
-                SharedFolder? sharedFolder = await context.SharedFolders.FirstOrDefaultAsync(x => x.CloudPathFromRoot.ToLower() == cloudPath.ToLower() && x.Name.ToLower() == directoryName.ToLower() && x.Owner == user);
+                SharedFolder? sharedFolder = useSharingPath ? await context.SharedFolders.FirstOrDefaultAsync(x => x.SharedPathFromRoot.ToLower() == sharingPath.ToLower() && x.Name.ToLower() == directoryName.ToLower() && x.Owner == user) : await context.SharedFolders.FirstOrDefaultAsync(x => x.CloudPathFromRoot.ToLower() == cloudPath.ToLower() && x.Name.ToLower() == directoryName.ToLower() && x.Owner == user);
 
                 if (sharedFolder is null)
                 {
@@ -1399,7 +1423,7 @@ namespace NCloud.Services
         /// <param name="connectToWeb">Boolean to connect file to web</param>
         /// <returns>Boolean value if action is successful</returns>
         /// <exception cref="CloudFunctionStopException">throw exception if given data invalid</exception>
-        private async Task<bool> SetFileConnectedState(string cloudPath, string fileName, string sharingPath, CloudUser user, bool? connectToApp = null, bool? connectToWeb = null)
+        private async Task<bool> SetFileConnectedState(string cloudPath, string fileName, string sharingPath, CloudUser user, bool? connectToApp = null, bool? connectToWeb = null, bool useSharingPath = false)
         {
             try
             {
@@ -1412,7 +1436,7 @@ namespace NCloud.Services
                     throw new CloudFunctionStopException("file does not exist");
                 }
 
-                SharedFile? sharedFile = await context.SharedFiles.FirstOrDefaultAsync(x => x.CloudPathFromRoot.ToLower() == cloudPath.ToLower() && x.Name.ToLower() == fileName.ToLower() && x.Owner == user);
+                SharedFile? sharedFile = useSharingPath ? await context.SharedFiles.FirstOrDefaultAsync(x => x.SharedPathFromRoot.ToLower() == sharingPath.ToLower() && x.Name.ToLower() == fileName.ToLower() && x.Owner == user) : await context.SharedFiles.FirstOrDefaultAsync(x => x.CloudPathFromRoot.ToLower() == cloudPath.ToLower() && x.Name.ToLower() == fileName.ToLower() && x.Owner == user);
 
                 if (sharedFile is null)
                 {
@@ -1486,7 +1510,7 @@ namespace NCloud.Services
         /// <param name="connectToWeb">Boolean if folder connects to web</param>
         /// <returns>Booelan value if action was successful</returns>
         /// <exception cref="CloudFunctionStopException">Throw is execution should be stopped</exception>
-        private async Task<bool> SetObjectAndUnderlyingObjectsState(string cloudPath, string directoryName, string sharingPath, CloudUser user, bool? connectToApp = null, bool? connectToWeb = null)
+        private async Task<bool> SetObjectAndUnderlyingObjectsState(string cloudPath, string directoryName, string sharingPath, CloudUser user, bool? connectToApp = null, bool? connectToWeb = null, bool useSharingPath = false)
         {
             try
             {
@@ -1496,7 +1520,7 @@ namespace NCloud.Services
 
                 DirectoryInfo? entryInfo = di.GetDirectories().FirstOrDefault(x => x.Name.ToLower() == directoryName.ToLower());
 
-                if ((entryInfo is null || !entryInfo.Exists) && (connectToApp == true || connectToWeb == true))
+                if (entryInfo is null || !entryInfo.Exists)
                     throw new CloudFunctionStopException("part of path does not exist");
 
                 Queue<Tuple<string, string, DirectoryInfo>> underlyingDirectories = new Queue<Tuple<string, string, DirectoryInfo>>(new List<Tuple<string, string, DirectoryInfo>>() { new Tuple<string, string, DirectoryInfo>(cloudPath, sharingPath, new DirectoryInfo(Path.Combine(ParseRootName(cloudPath), entryInfo.Name))) });
@@ -1507,7 +1531,7 @@ namespace NCloud.Services
 
                     try
                     {
-                        noError = noError && await SetDirectoryConnectedState(dir.Item1, dir.Item3.Name, dir.Item2, user, connectToApp, connectToWeb);
+                        noError = noError && await SetDirectoryConnectedState(dir.Item1, dir.Item3.Name, dir.Item2, user, connectToApp, connectToWeb, useSharingPath);
                     }
                     catch (Exception)
                     {
@@ -1525,7 +1549,7 @@ namespace NCloud.Services
 
                         try
                         {
-                            noError = noError && await SetDirectoryConnectedState(cloudPathForItem, info.Name, sharingPathForItem, user, connectToApp, connectToWeb);
+                            noError = noError && await SetDirectoryConnectedState(cloudPathForItem, info.Name, sharingPathForItem, user, connectToApp, connectToWeb, useSharingPath);
                         }
                         catch (Exception)
                         {
@@ -1537,7 +1561,7 @@ namespace NCloud.Services
                     {
                         try
                         {
-                            noError = noError && await SetFileConnectedState(cloudPathForItem, Path.GetFileName(subFile), sharingPathForItem, user, connectToApp, connectToWeb);
+                            noError = noError && await SetFileConnectedState(cloudPathForItem, Path.GetFileName(subFile), sharingPathForItem, user, connectToApp, connectToWeb, useSharingPath);
                         }
                         catch (Exception)
                         {
@@ -1585,26 +1609,11 @@ namespace NCloud.Services
                 if (!di.Exists)
                     throw new CloudFunctionStopException("source directory does not exist");
 
-                Queue<DirectoryInfo> dirData = new Queue<DirectoryInfo>(new DirectoryInfo[] { di });
-
                 double size = 0.0;
 
-                while (dirData.Any())
+                foreach (FileInfo file in di.GetFiles("*.*", SearchOption.AllDirectories))
                 {
-                    DirectoryInfo directory = dirData.Dequeue();
-
-                    foreach (FileInfo fi in directory.GetFiles())
-                    {
-                        if (!fi.Exists)
-                            continue;
-
-                        size += fi.Length;
-                    }
-
-                    foreach (DirectoryInfo dir in directory.GetDirectories())
-                    {
-                        dirData.Enqueue(dir);
-                    }
+                    size += file.Length;
                 }
 
                 return await Task.FromResult<double>(size);

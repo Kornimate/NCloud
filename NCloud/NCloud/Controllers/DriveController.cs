@@ -734,13 +734,13 @@ namespace NCloud.Controllers
         /// <summary>
         /// Action method to handle folder connection deletion request to web via js form dashboard page
         /// </summary>
-        /// <param name="folderName">Name of folder</param>
+        /// <param name="folder">Name of folder</param>
         /// <returns>Redirection to dashboard index action</returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DisconnectDirectoryFromWebDashboard(string folderName)
+        public async Task<IActionResult> DisconnectDirectoryFromWebDashboard(string folder)
         {
-            string[] pathElements = folderName.Split(Constants.PathSeparator, StringSplitOptions.RemoveEmptyEntries);
+            string[] pathElements = folder.Split(Constants.PathSeparator, StringSplitOptions.RemoveEmptyEntries);
 
             if (pathElements is null || pathElements.Length < 2)
             {
@@ -779,13 +779,13 @@ namespace NCloud.Controllers
         /// <summary>
         /// Action method to handle file connection deletion request to web via js from dashboard page
         /// </summary>
-        /// <param name="fileName">Name of file</param>
+        /// <param name="file">Name of file</param>
         /// <returns>Redirection to dashboard index action</returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DisconnectFileFromWebDashboard(string fileName)
+        public async Task<IActionResult> DisconnectFileFromWebDashboard(string file)
         {
-            string[] pathElements = fileName.Split(Constants.PathSeparator, StringSplitOptions.RemoveEmptyEntries);
+            string[] pathElements = file.Split(Constants.PathSeparator, StringSplitOptions.RemoveEmptyEntries);
 
             if (pathElements is null || pathElements.Length < 2)
             {

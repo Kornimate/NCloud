@@ -20,15 +20,15 @@
                 switch (bytes)
                 {
                     case >= gb:
-                        result = Math.Round(bytes / gb, 2);
+                        result = Math.Round(bytes / gb, 2, MidpointRounding.ToZero);
                         unit = "GB";
                         break;
                     case >= mb:
-                        result = Math.Round(bytes / mb, 2);
+                        result = Math.Round(bytes / mb, 2, MidpointRounding.ToZero);
                         unit = "MB";
                         break;
                     case >= kb:
-                        result = Math.Round(bytes / kb, 2);
+                        result = Math.Round(bytes / kb, 2, MidpointRounding.ToZero);
                         unit = "KB";
                         break;
                     default:

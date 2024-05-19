@@ -78,7 +78,7 @@ namespace NCloud.Services
 
             if (!context.Users.Any())
             {
-                var adminUser = new CloudUser { FullName = "Admin", UserName = "Admin", Email = "admin@nclouddrive.hu" };
+                var adminUser = new CloudUser { FullName = Constants.AdminUserName, UserName = Constants.AdminUserName, Email = "admin@nclouddrive.hu" };
 
                 try
                 {

@@ -25,6 +25,7 @@
                                         <img src="@item.IconPath" width="20" height="20" class="item align-bottom">
                                     </span>
                                     <a asp-action="Details" asp-route-folderName="@item.Info!.Name" class="itemlink">@item.Info.Name</a>
+                                    <small class="text-muted text-truncate me-2">(@item.ItemPath)</small>
                                 </summary>
                                 <fieldset class="border border-dark p-2 m-2 rounded">
                                     <legend class="btn btn-outline-primary rounded-pill w-auto">Details</legend>
@@ -115,6 +116,7 @@
                                         <img src="@item.IconPath" width="20" height="20" class="item align-bottom">
                                     </span>
                                     <a asp-action="Details" asp-route-folderName="@item.Info!.Name" class="itemlink">@item.Info.Name</a>
+                                    <small class="text-muted text-truncate me-2">(@item.ItemPath)</small>
                                 </summary>
                                 <fieldset class="border border-dark p-2 m-2 rounded">
                                 <legend class="btn btn-outline-primary rounded-pill w-auto">Details</legend>
@@ -201,6 +203,8 @@
         }
     </tbody>
 </table>
+
+@Html.AntiForgeryToken()
 
 @if(Model.Files?.Count == 0 && Model.Folders?.Count == 0)
 {
