@@ -220,7 +220,7 @@ namespace NCloud.Services
 
                 await context.SaveChangesAsync();
 
-                fi.SetAccessControl(SecurityManager.GetFileRights()); //file does not have execution right
+                fi.SetAccessControl(SecurityManager.GetFileRights(fi)); //file does not have execution right
 
                 Pair<string, string> parentPathAndName = GetParentPathAndName(cloudPath);
 
@@ -235,7 +235,7 @@ namespace NCloud.Services
             {
                 try
                 {
-                    if (!(await RemoveFile(path, newName, user)))
+                    if (!(await RemoveFile(newName, cloudPath, user)))
                     {
                         throw new CloudLoggerException($"File not removeable : {Path.Combine(ParseRootName(cloudPath), newName)}");
                     }

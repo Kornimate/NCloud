@@ -53,6 +53,7 @@ namespace NCloud.ConstantData
         public static string TerminalHelpName { get => "name"; }
         public static string TerminalHelpDescription { get => "description"; }
         public static string DirectoryBack { get => ".."; }
+        public static string UserDataSeparator { get => "\\"; }
         public static char SelectedFileStarterSymbol { get => '@'; }
         public static char SelectedFolderStarterSymbol { get => '&'; }
         public static char SingleLineCommandMarker { get => '@'; }

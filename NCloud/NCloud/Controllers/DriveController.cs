@@ -122,7 +122,7 @@ namespace NCloud.Controllers
                 if (newFolder != folderName)
                     throw new CloudFunctionStopException("error while naming directory");
 
-                AddNewNotification(new Success("directory is created"));
+                AddNewNotification(new Success("Directory is created"));
             }
             catch (CloudFunctionStopException ex)
             {
