@@ -1697,6 +1697,12 @@ namespace NCloud.Services
 
             user.UsedSpace += amountToBeAdded; //updating user used space
 
+            if (user.UsedSpace < 0)
+                user.UsedSpace = 0;
+
+            if (user.UsedSpace > Constants.UserSpaceSize)
+                user.UsedSpace = Constants.UserSpaceSize;
+
             context.Users.Update(user);
 
             await context.SaveChangesAsync();
