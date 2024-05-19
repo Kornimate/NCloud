@@ -26,15 +26,16 @@ namespace NCloud.Services
         /// Static method to initialize database, admin user and its base folder, log file folder, temp file folder
         /// </summary>
         /// <param name="serviceProvider"></param>
+        /// <param name="loggerService">Registered logger for logging</param>
         /// <exception cref="Exception"></exception>
-        public static void Initialize(IServiceProvider serviceProvider)
+        public static void Initialize(IServiceProvider serviceProvider, ILogger loggerService)
         {
             context = serviceProvider.GetRequiredService<CloudDbContext>();
             userManager = serviceProvider.GetRequiredService<UserManager<CloudUser>>();
             signInManager = serviceProvider.GetRequiredService<SignInManager<CloudUser>>();
             roleManager = serviceProvider.GetRequiredService<RoleManager<CloudRole>>();
             service = serviceProvider.GetRequiredService<ICloudService>();
-            logger = serviceProvider.GetRequiredService<ILogger>();
+            logger = loggerService;
 
             context.Database.Migrate();
 

@@ -93,18 +93,35 @@
             document.getElementById("addFileBtn").addEventListener("click", AddFileClicked, false);
             document.getElementById("breadcrumbDiv").addEventListener("click", CrumbClicked, false);
             document.getElementById("currentPath").addEventListener("focusout", InputFocusLost, false);
+            document.getElementById("addFileField").addEventListener("shown.bs.collapse", FileUploadShown, false);
+            document.getElementById("addFileField").addEventListener("hide.bs.collapse", FileUploadHidden, false);
+            document.getElementById("addFolderField").addEventListener("shown.bs.collapse", FolderCreateShown, false);
+            document.getElementById("addFolderField").addEventListener("hide.bs.collapse", FolderCreateHidden, false);
             CheckSessionStorage();
+        }
+
+        function FileUploadShown(){
+            sessionStorage.setItem("openedMiniWindow", "file");
+        }
+
+        function FileUploadHidden(){
+            sessionStorage.removeItem("openedMiniWindow");
+        }
+
+        function FolderCreateShown(){
+            sessionStorage.setItem("openedMiniWindow", "folder");
+        }
+
+        function FolderCreateHidden(){
+            sessionStorage.removeItem("openedMiniWindow");
         }
 
         function AddFolderClicked(e) {
             addFileField.hide();
-            sessionStorage.setItem("openedMiniWindow", "folder");
         }
 
         function AddFileClicked(e) {
             addFolderField.hide();
-            sessionStorage.setItem("openedMiniWindow", "file");
-
         }
 
         function CheckSessionStorage() {
@@ -112,11 +129,11 @@
             if (item !== null) {
 
                 if (item == 'file') {
-                    addFileField.show();
+                    document.getElementById("addFileField")?.classList?.add("show");
                 }
 
                 if (item == 'folder') {
-                    AddFolderClicked.show();
+                    document.getElementById("addFolderField")?.classList?.add("show");
                 }
             }
             sessionStorage.removeItem("openedMiniWindow");
