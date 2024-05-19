@@ -246,26 +246,37 @@ namespace NCloud.Controllers
         [ValidateAntiForgeryToken]
         public async Task<JsonResult> SaveData([FromBody] FileDataViewModel vm)
         {
-            if (String.IsNullOrWhiteSpace(vm.File))
+            try
             {
-                return Json(new ConnectionDTO { Success = false, Message = "Invalid file" });
-            }
+                if (String.IsNullOrWhiteSpace(vm.File))
+                {
+                    return Json(new ConnectionDTO { Success = false, Message = "Invalid file" });
+                }
 
-            if (vm.Content is null)
+                if (vm.Content is null)
+                {
+                    return Json(new ConnectionDTO { Success = false, Message = "Invalid path" });
+                }
+
+                vm.File = vm.File.Replace(Constants.PathSeparator, Path.DirectorySeparatorChar);
+
+                bool success = await service.ModifyFileContent(vm.File, vm.Content.ReplaceLineEndings(), await userManager.GetUserAsync(User));
+
+                if (success)
+                {
+                    return Json(new ConnectionDTO { Success = true, Message = "File content successfully saved" });
+                }
+
+                return Json(new ConnectionDTO { Success = false, Message = "Error while saving file content" });
+            }
+            catch(CloudFunctionStopException ex)
             {
-                return Json(new ConnectionDTO { Success = false, Message = "Invalid path" });
+                return Json(new ConnectionDTO { Success = false, Message = $"Error - {ex.Message}" });
             }
-
-            vm.File = vm.File.Replace(Constants.PathSeparator, Path.DirectorySeparatorChar);
-
-            bool success = await service.ModifyFileContent(vm.File, vm.Content.ReplaceLineEndings());
-
-            if (success)
+            catch (Exception)
             {
-                return Json(new ConnectionDTO { Success = true, Message = "File content successfully saved" });
+                return Json(new ConnectionDTO { Success = false, Message = "Error while saving file content" });
             }
-
-            return Json(new ConnectionDTO { Success = false, Message = "Error while saving file content" });
         }
     }
 }
