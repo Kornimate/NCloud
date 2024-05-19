@@ -174,7 +174,11 @@ namespace NCloud.Services
 
             try
             {
+                double dirSize = await GetDirectorySize(cloudPath);
+
                 await Task.Run(() => di.Delete(true)); //delete folder
+
+                await UpdateUserStorageUsed(user, (-1) * dirSize);
 
                 await SetObjectAndUnderlyingObjectsState(cloudPath, folderName, ChangeOwnerIdentification(ChangeRootName(cloudPath), user.UserName), user, false, false); //delete folder from database
             }
@@ -212,13 +216,7 @@ namespace NCloud.Services
                     await file.CopyToAsync(stream);
                 }
 
-                user = await context.Users.FirstOrDefaultAsync(x => x.Id == user.Id) ?? throw new CloudFunctionStopException("user is not found"); //get current user state from database or show error
-
-                user.UsedSpace += fi.Length; //updating user used space
-
-                context.Users.Update(user);
-
-                await context.SaveChangesAsync();
+                await UpdateUserStorageUsed(user, fi.Length);
 
                 fi.SetAccessControl(SecurityManager.GetFileRights(fi)); //file does not have execution right
 
@@ -266,7 +264,11 @@ namespace NCloud.Services
 
             try
             {
+                double fileSize = fi.Length;
+
                 await Task.Run(() => fi.Delete());
+
+                await UpdateUserStorageUsed(user, (-1)*fileSize);
 
                 if (!await SetFileConnectedState(cloudPath, fileName, ChangeOwnerIdentification(ChangeRootName(cloudPath), user.UserName), user, false, false))
                     throw new CloudFunctionStopException("failed to adjust file rights");
@@ -869,16 +871,7 @@ namespace NCloud.Services
 
                 File.Copy(src, Path.Combine(dest, RenameObject(dest, ref name, true)));
 
-                user = (await context.Users.FirstOrDefaultAsync(x => x.Id == user.Id))!; //get current user state from database
-
-                if (user is null)
-                    throw new CloudFunctionStopException("invalid user");
-
-                user.UsedSpace += fi.Length;
-
-                context.Users.Update(user);
-
-                await context.SaveChangesAsync();
+                await UpdateUserStorageUsed(user, fi.Length);
 
                 Pair<string, string> parentPathAndName = GetParentPathAndName(destination);
 
@@ -944,23 +937,12 @@ namespace NCloud.Services
                         if (!fi.Exists)
                             continue;
 
-                        user = await context.Users.FirstOrDefaultAsync(x => x.Id == user.Id) ?? throw new CloudFunctionStopException("user is not found"); //get current user state from database or show error
-
                         if (user.UsedSpace + fi.Length > user.MaxSpace)
-                            throw new CloudFunctionStopException("during process user ran out of space, some actions may not finished")
+                            throw new CloudFunctionStopException("user ran out of space, some actions may not finished")
 ;
                         File.Copy(fi.FullName, Path.Combine(newDirectoryPath, fi.Name));
 
-                        user = (await context.Users.FirstOrDefaultAsync(x => x.Id == user.Id))!; //get current user state from database
-
-                        if (user is null)
-                            throw new CloudFunctionStopException("invalid user");
-
-                        user.UsedSpace += fi.Length;
-
-                        context.Users.Update(user);
-
-                        await context.SaveChangesAsync();
+                        user = await UpdateUserStorageUsed(user, fi.Length);
                     }
 
                     foreach (DirectoryInfo dir in directory.GetDirectories())
@@ -1649,6 +1631,77 @@ namespace NCloud.Services
             {
                 throw;
             }
+        }
+
+        /// <summary>
+        /// Private method to get a folder size in bytes
+        /// </summary>
+        /// <param name="cloudPath">Path to folder in app</param>
+        /// <returns></returns>
+        /// <exception cref="CloudFunctionStopException">Throws if source folder does not exist</exception>
+        /// <exception cref="Exception">Throws in unexpected error happened</exception>
+        private async Task<double> GetDirectorySize(string cloudPath)
+        {
+            try
+            {
+                DirectoryInfo di = new DirectoryInfo(ParseRootName(cloudPath));
+
+                if (!di.Exists)
+                    throw new CloudFunctionStopException("source directory does not exist");
+
+                Queue<DirectoryInfo> dirData = new Queue<DirectoryInfo>(new DirectoryInfo[] { di });
+
+                double size = 0.0;
+
+                while (dirData.Any())
+                {
+                    DirectoryInfo directory = dirData.Dequeue();
+
+                    foreach (FileInfo fi in directory.GetFiles())
+                    {
+                        if (!fi.Exists)
+                            continue;
+
+                        size += fi.Length;
+                    }
+
+                    foreach (DirectoryInfo dir in directory.GetDirectories())
+                    {
+                        dirData.Enqueue(dir);
+                    }
+                }
+
+                return await Task.FromResult<double>(size);
+            }
+            catch (CloudFunctionStopException ex)
+            {
+                throw new CloudFunctionStopException(ex.Message);
+            }
+            catch (Exception)
+            {
+                throw new Exception("Error while getting directory size");
+            }
+        }
+
+        /// <summary>
+        /// Private method to update storage occupied by user
+        /// </summary>
+        /// <param name="user">Currently logged in user</param>
+        /// <param name="amountToBeAdded">The storage to be added/deducted</param>
+        /// <returns>The modified user</returns>
+        /// <exception cref="CloudFunctionStopException">Throws if user is not found</exception>
+        private async Task<CloudUser> UpdateUserStorageUsed(CloudUser user, double amountToBeAdded)
+        {
+
+            user = await context.Users.FirstOrDefaultAsync(x => x.Id == user.Id) ?? throw new CloudFunctionStopException("user is not found"); //get current user state from database or show error
+
+            user.UsedSpace += amountToBeAdded; //updating user used space
+
+            context.Users.Update(user);
+
+            await context.SaveChangesAsync();
+
+            return user;
         }
 
         #endregion
