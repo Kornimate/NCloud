@@ -387,7 +387,7 @@ namespace NCloud.Services
 
             DirectoryInfo? searchedDir = di.GetDirectories().FirstOrDefault(x => x.Name.ToLower() == folderName.ToLower());
 
-            if(searchedDir is null || !searchedDir.Exists)
+            if (searchedDir is null || !searchedDir.Exists)
                 throw new CloudFunctionStopException("Directory does not exist");
 
             return await Task.FromResult<DirectoryInfo>(searchedDir);
@@ -524,7 +524,7 @@ namespace NCloud.Services
             {
                 if (disconnectOnlyCurrent)
                     return await SetFileConnectedState(cloudPath, fileName, ChangeOwnerIdentification(ChangeRootName(cloudPath), user.UserName), user, connectToApp: false, useSharingPath: true);
-                
+
                 return await SetFileConnectedState(cloudPath, fileName, ChangeOwnerIdentification(ChangeRootName(cloudPath), user.UserName), user, connectToApp: false, useSharingPath: true)
                     && await SetFileConnectedState(cloudPath, fileName, Constants.GetSharingRootPathInDatabase(user.UserName), user, connectToApp: false, useSharingPath: true);
             }
@@ -1532,6 +1532,14 @@ namespace NCloud.Services
             {
                 bool noError = true;
 
+                if (useSharingPath == true && connectToApp == false)
+                {
+                    SharedFolder? sharedFolder = await context.SharedFolders.FirstOrDefaultAsync(x => x.SharedPathFromRoot.ToLower() == sharingPath.ToLower() && x.Name.ToLower() == directoryName.ToLower() && x.ConnectedToApp == true);
+
+                    if (sharedFolder is not null)
+                        cloudPath = sharedFolder.CloudPathFromRoot;
+                }
+
                 DirectoryInfo di = new DirectoryInfo(ParseRootName(cloudPath));
 
                 DirectoryInfo? entryInfo = di.GetDirectories().FirstOrDefault(x => x.Name.ToLower() == directoryName.ToLower());
@@ -1539,7 +1547,7 @@ namespace NCloud.Services
                 if (entryInfo is null || !entryInfo.Exists)
                     throw new CloudFunctionStopException("part of path does not exist");
 
-                Queue<Tuple<string, string, DirectoryInfo>> underlyingDirectories = new Queue<Tuple<string, string, DirectoryInfo>>(new List<Tuple<string, string, DirectoryInfo>>() { new Tuple<string, string, DirectoryInfo>(cloudPath, sharingPath, new DirectoryInfo(Path.Combine(ParseRootName(cloudPath), entryInfo.Name))) });
+                Queue<Tuple<string, string, DirectoryInfo>> underlyingDirectories = new Queue<Tuple<string, string, DirectoryInfo>>(new List<Tuple<string, string, DirectoryInfo>>() { new Tuple<string, string, DirectoryInfo>(cloudPath, sharingPath, new DirectoryInfo(Path.Combine(ParseRootName(cloudPath), entryInfo?.Name ?? directoryName))) });
 
                 while (underlyingDirectories.Any())
                 {
@@ -1557,15 +1565,13 @@ namespace NCloud.Services
                     string cloudPathForItem = Path.Combine(dir.Item1, dir.Item3.Name);
                     string sharingPathForItem = Path.Combine(dir.Item2, dir.Item3.Name);
 
-                    foreach (string subDirectory in Directory.GetDirectories(dir.Item3.FullName))
+                    foreach (var subDirectory in dir.Item3.GetDirectories())
                     {
-                        DirectoryInfo info = new DirectoryInfo(subDirectory);
-
-                        underlyingDirectories.Enqueue(new Tuple<string, string, DirectoryInfo>(cloudPathForItem, sharingPathForItem, info));
+                        underlyingDirectories.Enqueue(new Tuple<string, string, DirectoryInfo>(cloudPathForItem, sharingPathForItem, subDirectory));
 
                         try
                         {
-                            noError = noError && await SetDirectoryConnectedState(cloudPathForItem, info.Name, sharingPathForItem, user, connectToApp, connectToWeb, useSharingPath);
+                            noError = noError && await SetDirectoryConnectedState(cloudPathForItem, subDirectory.Name, sharingPathForItem, user, connectToApp, connectToWeb, useSharingPath);
                         }
                         catch (Exception)
                         {
@@ -1573,11 +1579,11 @@ namespace NCloud.Services
                         }
                     }
 
-                    foreach (string subFile in Directory.GetFiles(dir.Item3.FullName))
+                    foreach (var subFile in dir.Item3.GetFiles())
                     {
                         try
                         {
-                            noError = noError && await SetFileConnectedState(cloudPathForItem, Path.GetFileName(subFile), sharingPathForItem, user, connectToApp, connectToWeb, useSharingPath);
+                            noError = noError && await SetFileConnectedState(cloudPathForItem, subFile.Name, sharingPathForItem, user, connectToApp, connectToWeb, useSharingPath);
                         }
                         catch (Exception)
                         {
