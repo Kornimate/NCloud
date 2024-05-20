@@ -82,6 +82,10 @@ namespace NCloud.ConstantData
         {
             return new Pair<string, string>("Web", "DownloadPage");
         }
+        public static Pair<string, string> GetWebControllerAndActionQRCodeGeneration()
+        {
+            return new Pair<string, string>("Drive", "GetQRCodeForItem");
+        }
 
         public static string GetPrivateBaseDirectoryForUser(string userId)
         {

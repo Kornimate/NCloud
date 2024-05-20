@@ -379,13 +379,29 @@ namespace NCloud.Services
         /// </summary>
         /// <param name="id">Id of folder</param>
         /// <returns>The path of the folder</returns>
-        Task<SharedFolder> GetWebSharedFolderPathById(Guid id);
+        Task<SharedFolder> GetWebSharedFolderById(Guid id);
 
         /// <summary>
         /// Method to get shared file by id
         /// </summary>
         /// <param name="id">Id of file</param>
         /// <returns>The path of the folder</returns>
-        Task<SharedFile> GetWebSharedFilePathById(Guid id);
+        Task<SharedFile> GetWebSharedFileById(Guid id);
+
+        /// <summary>
+        /// Method to get a shared folder by path in app and name
+        /// </summary>
+        /// <param name="cloudPath">Path in app</param>
+        /// <param name="folderName">Name of folder</param>
+        /// <returns>The data from database wrapped in SharedFolder object</returns>
+        Task<SharedFolder> GetSharedFolderByPathAndName(string cloudPath, string folderName);
+
+        /// <summary>
+        /// Method to get a shared file by path in app and name
+        /// </summary>
+        /// <param name="cloudPath">Path in app</param>
+        /// <param name="fileName">Name of file</param>
+        /// <returns>The data from database wrapped in SharedFile object</returns>
+        Task<SharedFile> GetSharedFileByPathAndName(string cloudPath, string fileName);
     }
 }

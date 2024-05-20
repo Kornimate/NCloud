@@ -30,9 +30,11 @@ namespace NCloud.Controllers
         {
             try
             {
-                Guid folderId = Guid.Parse(HashManager.DecryptString(id));
+                var data = HashManager.DecryptString(id);
 
-                SharedFolder sharedFolder = await service.GetWebSharedFolderPathById(folderId);
+                Guid folderId = Guid.Parse(data);
+
+                SharedFolder sharedFolder = await service.GetWebSharedFolderById(folderId);
 
                 string path = Path.Combine(sharedFolder.CloudPathFromRoot, sharedFolder.Name);
 
@@ -186,7 +188,7 @@ namespace NCloud.Controllers
             {
                 Guid fileId = Guid.Parse(HashManager.DecryptString(id));
 
-                SharedFile sharedFile = await service.GetWebSharedFilePathById(fileId);
+                SharedFile sharedFile = await service.GetWebSharedFileById(fileId);
 
                 return await Task.FromResult<IActionResult>(View("DownloadPage", new WebSingleDownloadViewModel()
                 {

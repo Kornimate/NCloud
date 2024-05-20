@@ -40,6 +40,7 @@ async function connectDirectoryToWeb(url, folder, id) {
 
     document.getElementById(`${id}_logo_2`).classList.add("hidden");
     document.getElementById(`${id}_spinner_2`).classList.remove("hidden");
+    document.getElementById(`${id}_btnConnectDirWeb`).disabled = true;
 
     let result = await AjaxCall(url, folder);
 
@@ -47,6 +48,7 @@ async function connectDirectoryToWeb(url, folder, id) {
 
     document.getElementById(`${id}_spinner_2`).classList.add("hidden");
     document.getElementById(`${id}_logo_2`).classList.remove("hidden");
+    document.getElementById(`${id}_btnConnectDirWeb`).disabled = false;
 
     if (result.success) {
 
@@ -57,6 +59,8 @@ async function connectDirectoryToWeb(url, folder, id) {
         document.getElementById(`${id}_tr1`).classList.remove("hidden");
         document.getElementById(`${id}_tr2`).classList.remove("hidden");
         document.getElementById(`${id}_btnDisConnectDirWeb`).classList.remove("hidden");
+        document.getElementById(`${id}_link`).href = result.result;
+        document.getElementById(`${id}_link`).innerHTML = result.result;
 
         ShowSuccessToast("Success", result.message);
     }
@@ -68,6 +72,8 @@ async function connectDirectoryToApp(url, folder, id) {
 
     document.getElementById(`${id}_logo_4`).classList.add("hidden");
     document.getElementById(`${id}_spinner_4`).classList.remove("hidden");
+    document.getElementById(`${id}_btnConnectDirApp`).disabled = true;
+
 
     let result = await AjaxCall(url, folder);
 
@@ -75,6 +81,7 @@ async function connectDirectoryToApp(url, folder, id) {
 
     document.getElementById(`${id}_spinner_4`).classList.add("hidden");
     document.getElementById(`${id}_logo_4`).classList.remove("hidden");
+    document.getElementById(`${id}_btnConnectDirApp`).disabled = false;
 
     if (result.success) {
 
@@ -95,6 +102,8 @@ async function connectFileToWeb(url, file, id) {
 
     document.getElementById(`${id}_logo_2`).classList.add("hidden");
     document.getElementById(`${id}_spinner_2`).classList.remove("hidden");
+    document.getElementById(`${id}_btnConnectFileWeb`).disabled = true;
+
 
     let result = await AjaxCall(url, file);
 
@@ -102,6 +111,7 @@ async function connectFileToWeb(url, file, id) {
 
     document.getElementById(`${id}_spinner_2`).classList.add("hidden");
     document.getElementById(`${id}_logo_2`).classList.remove("hidden");
+    document.getElementById(`${id}_btnConnectFileWeb`).disabled = false;
 
     if (result.success) {
 
@@ -112,6 +122,8 @@ async function connectFileToWeb(url, file, id) {
         document.getElementById(`${id}_tr1`).classList.remove("hidden");
         document.getElementById(`${id}_tr2`).classList.remove("hidden");
         document.getElementById(`${id}_btnDisConnectFileWeb`).classList.remove("hidden");
+        document.getElementById(`${id}_link`).href = result.result;
+        document.getElementById(`${id}_link`).innerHTML = result.result;
 
         ShowSuccessToast("Success", result.message);
     }
@@ -124,6 +136,8 @@ async function connectFileToApp(url, file, id) {
 
     document.getElementById(`${id}_logo_4`).classList.add("hidden");
     document.getElementById(`${id}_spinner_4`).classList.remove("hidden");
+    document.getElementById(`${id}_btnConnectFileApp`).disabled = true;
+
 
     let result = await AjaxCall(url, file);
 
@@ -131,6 +145,8 @@ async function connectFileToApp(url, file, id) {
 
     document.getElementById(`${id}_spinner_4`).classList.add("hidden");
     document.getElementById(`${id}_logo_4`).classList.remove("hidden");
+    document.getElementById(`${id}_btnConnectFileApp`).disabled = false;
+
 
     if (result.success) {
 
@@ -151,6 +167,8 @@ async function disConnectDirectoryFromWeb(url, folder, id) {
 
     document.getElementById(`${id}_logo_1`)?.classList.add("hidden");
     document.getElementById(`${id}_spinner_1`)?.classList.remove("hidden");
+    document.getElementById(`${id}_btnDisConnectDirWeb`).disabled = true;
+
 
     let result = await AjaxCall(url, folder);
 
@@ -158,6 +176,8 @@ async function disConnectDirectoryFromWeb(url, folder, id) {
 
     document.getElementById(`${id}_spinner_1`)?.classList.add("hidden");
     document.getElementById(`${id}_logo_1`)?.classList.remove("hidden");
+    document.getElementById(`${id}_btnDisConnectDirWeb`).disabled = false;
+
 
     if (result.success) {
 
@@ -168,6 +188,7 @@ async function disConnectDirectoryFromWeb(url, folder, id) {
         document.getElementById(`${id}_tr1`).classList.add("hidden");
         document.getElementById(`${id}_tr2`).classList.add("hidden");
         document.getElementById(`${id}_btnConnectDirWeb`).classList.remove("hidden");
+        removeQRCodeFromItem(id);
 
         ShowSuccessToast("Success", result.message);
     }
@@ -179,6 +200,7 @@ async function disConnectDirectoryFromApp(url, folder, id) {
 
     document.getElementById(`${id}_logo_3`).classList.add("hidden");
     document.getElementById(`${id}_spinner_3`).classList.remove("hidden");
+    document.getElementById(`${id}_btnDisConnectDirApp`).disabled = true;
 
     let result = await AjaxCall(url, folder);
 
@@ -186,6 +208,8 @@ async function disConnectDirectoryFromApp(url, folder, id) {
 
     document.getElementById(`${id}_spinner_3`).classList.add("hidden");
     document.getElementById(`${id}_logo_3`).classList.remove("hidden");
+    document.getElementById(`${id}_btnDisConnectDirApp`).disabled = false;
+
 
     if (result.success) {
 
@@ -206,6 +230,7 @@ async function disConnectFileFromWeb(url, file, id) {
 
     document.getElementById(`${id}_logo_1`)?.classList.add("hidden");
     document.getElementById(`${id}_spinner_1`)?.classList.remove("hidden");
+    document.getElementById(`${id}_btnDisConnectFileWeb`).disabled = true;
 
     let result = await AjaxCall(url, file);
 
@@ -213,6 +238,7 @@ async function disConnectFileFromWeb(url, file, id) {
 
     document.getElementById(`${id}_spinner_1`)?.classList.add("hidden");
     document.getElementById(`${id}_logo_1`)?.classList.remove("hidden");
+    document.getElementById(`${id}_btnDisConnectFileWeb`).disabled = false;
 
     if (result.success) {
 
@@ -223,6 +249,7 @@ async function disConnectFileFromWeb(url, file, id) {
         document.getElementById(`${id}_tr1`).classList.add("hidden");
         document.getElementById(`${id}_tr2`).classList.add("hidden");
         document.getElementById(`${id}_btnConnectFileWeb`).classList.remove("hidden");
+        removeQRCodeFromItem(id);
 
         ShowSuccessToast("Success", result.message);
     }
@@ -235,6 +262,7 @@ async function disConnectFileFromApp(url, file, id) {
 
     document.getElementById(`${id}_logo_3`).classList.add("hidden");
     document.getElementById(`${id}_spinner_3`).classList.remove("hidden");
+    document.getElementById(`${id}_btnDisConnectFileApp`).disabled = true;
 
     let result = await AjaxCall(url, file);
 
@@ -242,6 +270,7 @@ async function disConnectFileFromApp(url, file, id) {
 
     document.getElementById(`${id}_spinner_3`).classList.add("hidden");
     document.getElementById(`${id}_logo_3`).classList.remove("hidden");
+    document.getElementById(`${id}_btnDisConnectFileApp`).disabled = false;
 
     if (result.success) {
 
@@ -273,6 +302,40 @@ async function disConnectItemFromAppSharing(url, itemName, id, containerName) {
     else {
         ShowErrorToast("Error", result.message);
     }
+}
+
+async function getQRCodeForItem(address, id) {
+
+    document.getElementById(`${id}_qrCreateText`).classList.add("hidden");
+    document.getElementById(`${id}_qrSpinner`).classList.remove("hidden");
+    document.getElementById(`${id}_qrBtn`).disabled = true;
+
+    let result = await AjaxCall(address, document.getElementById(`${id}_link`).href);
+
+    result = await result.json();
+
+    document.getElementById(`${id}_qrSpinner`).classList.add("hidden");
+    document.getElementById(`${id}_qrCreateText`).classList.remove("hidden");
+    document.getElementById(`${id}_qrBtn`).disabled = false;
+
+    if (result.success) {
+
+        document.getElementById(`${id}_img`).src = result.result
+        document.getElementById(`${id}_qrBtn`).classList.add("hidden");
+        document.getElementById(`${id}_qrDiv`).classList.remove("hidden");
+
+
+        ShowSuccessToast("Success", result.message);
+    }
+    else {
+        ShowErrorToast("Error", result.message);
+    }
+}
+
+function removeQRCodeFromItem(id) {
+
+    document.getElementById(`${id}_qrDiv`).classList.add("hidden");
+    document.getElementById(`${id}_qrBtn`).classList.remove("hidden");
 }
 
 async function AjaxCall(address, itemName) {

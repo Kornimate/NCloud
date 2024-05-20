@@ -522,7 +522,11 @@ namespace NCloud.Controllers
 
                 if (await service.ConnectDirectoryToWeb(session.CurrentPath, itemName, await userManager.GetUserAsync(User)))
                 {
-                    return Json(new ConnectionDTO { Success = true, Message = "Directory and items inside connected to web" });
+                    SharedFolder sf = await service.GetSharedFolderByPathAndName(session.CurrentPath, itemName);
+
+                    var urlData = Constants.GetWebControllerAndActionForDetails();
+
+                    return Json(new ConnectionDTO { Success = true, Message = "Directory and items inside connected to web", Result = Url.Action(urlData.Second, urlData.First, new { id = HashManager.EncryptString(sf.Id.ToString()) }, HttpContext.Request.Scheme) ?? String.Empty });
                 }
                 else
                 {
@@ -586,7 +590,11 @@ namespace NCloud.Controllers
 
                 if (await service.ConnectFileToWeb(session.CurrentPath, itemName, await userManager.GetUserAsync(User)))
                 {
-                    return Json(new ConnectionDTO { Success = true, Message = "File connected to web" });
+                    SharedFile sf = await service.GetSharedFileByPathAndName(session.CurrentPath, itemName);
+
+                    var urlData = Constants.GetWebControllerAndActionForDetails();
+
+                    return Json(new ConnectionDTO { Success = true, Message = "File is connected to web", Result = Url.Action(urlData.Second, urlData.First, new { id = HashManager.EncryptString(sf.Id.ToString()) }, HttpContext.Request.Scheme) ?? String.Empty });
                 }
                 else
                 {
@@ -1272,12 +1280,12 @@ namespace NCloud.Controllers
                     try
                     {
                         string result = await service.CopyFile(item.ItemPath ?? String.Empty, pathData.CurrentPath, await userManager.GetUserAsync(User));
-                        
+
                         if (result != String.Empty)
                             AddNewNotification(new Warning("Copied file has been renamed"));
 
                     }
-                    catch(CloudFunctionStopException ex)
+                    catch (CloudFunctionStopException ex)
                     {
                         AddNewNotification(new Error($"Error - {ex.Message}"));
 
@@ -1338,6 +1346,26 @@ namespace NCloud.Controllers
                 AddNewNotification(new Error("Error while pasting item"));
 
                 return RedirectToAction("Details", "Drive");
+            }
+        }
+
+        /// <summary>
+        /// Method to generate QRCode for given url
+        /// </summary>
+        /// <param name="url">Url for QR code generation</param>
+        /// <returns>The image tag src string with base64 string formatted image (the QR code)</returns>
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<JsonResult> GetQRCodeForItem([FromBody] string url)
+        {
+            try
+            {
+                return await Task.FromResult<JsonResult>(new JsonResult(new ConnectionDTO { Success = true, Message = "The QR code is generated for item", Result = CloudQRManager.GenerateQRCodeString(url) }));
+            }
+            catch (Exception)
+            {
+                return await Task.FromResult<JsonResult>(new JsonResult(new ConnectionDTO { Success = false, Message = "Error while generating QR code" }));
             }
         }
     }

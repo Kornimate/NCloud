@@ -1221,14 +1221,24 @@ namespace NCloud.Services
             await context.SaveChangesAsync();
         }
 
-        public async Task<SharedFolder> GetWebSharedFolderPathById(Guid id)
+        public async Task<SharedFolder> GetWebSharedFolderById(Guid id)
         {
             return await context.SharedFolders.FirstOrDefaultAsync(x => x.Id == id) ?? throw new CloudFunctionStopException("folder not found");
         }
 
-        public async Task<SharedFile> GetWebSharedFilePathById(Guid id)
+        public async Task<SharedFile> GetWebSharedFileById(Guid id)
         {
             return await context.SharedFiles.FirstOrDefaultAsync(x => x.Id == id) ?? throw new CloudFunctionStopException("folder not found");
+        }
+
+        public async Task<SharedFolder> GetSharedFolderByPathAndName(string cloudPath, string folderName)
+        {
+            return await context.SharedFolders.FirstOrDefaultAsync(x => x.CloudPathFromRoot.ToLower() == cloudPath.ToLower() && x.Name.ToLower() == folderName.ToLower()) ?? throw new CloudFunctionStopException("folder not found");
+        }
+
+        public async Task<SharedFile> GetSharedFileByPathAndName(string cloudPath, string fileName)
+        {
+            return await context.SharedFiles.FirstOrDefaultAsync(x => x.CloudPathFromRoot.ToLower() == cloudPath.ToLower() && x.Name.ToLower() == fileName.ToLower()) ?? throw new CloudFunctionStopException("folder not found");
         }
 
         #endregion
