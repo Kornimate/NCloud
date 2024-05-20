@@ -16,12 +16,12 @@ namespace NCloud.Models
         public bool IsConnectedToApp { get; set; }
         public bool IsConnectedToWeb { get; set; }
         
-        public CloudRegistration(bool isSharedInApp, bool isPublic, string? currentPath = null)
+        public CloudRegistration(bool isSharedInApp, bool isPublic, string? id = null)
         {
             IconPath = null!;
             IsConnectedToApp = isSharedInApp;
             IsConnectedToWeb = isPublic;
-            HashedPath = HashManager.EncryptString(currentPath);
+            HashedPath = HashManager.EncryptString(id);
         }
 
 

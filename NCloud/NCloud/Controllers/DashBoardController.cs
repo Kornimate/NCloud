@@ -38,20 +38,20 @@ namespace NCloud.Controllers
                 if (usedPercent > 100.0)
                     usedPercent = 100.0;
 
-                return View(new DashBoardViewModel(await service.GetUserSharedFolderUrls(user), await service.GetUserSharedFileUrls(user), Constants.GetWebControllerAndActionForDetails(), Constants.GetWebControllerAndActionForDownload(), usedPercent, user.UsedSpace));
+                return View(new DashBoardViewModel(await service.GetUserWebSharedFolders(user), await service.GetUserWebSharedFiles(user), Constants.GetWebControllerAndActionForDetails(), Constants.GetWebControllerAndActionForDownload(), usedPercent, user.UsedSpace));
 
             }
             catch (CloudFunctionStopException ex)
             {
                 AddNewNotification(new Error($"Error - {ex.Message}"));
 
-                return View(new DashBoardViewModel(new List<string>(), new List<string>(), Constants.GetWebControllerAndActionForDetails(), Constants.GetWebControllerAndActionForDownload(), 0, 0.0));
+                return View(new DashBoardViewModel(new List<SharedFolder>(), new List<SharedFile>(), Constants.GetWebControllerAndActionForDetails(), Constants.GetWebControllerAndActionForDownload(), 0, 0.0));
             }
             catch (Exception)
             {
                 AddNewNotification(new Error("Error while loading page"));
 
-                return View(new DashBoardViewModel(new List<string>(), new List<string>(), Constants.GetWebControllerAndActionForDetails(), Constants.GetWebControllerAndActionForDownload(), 0, 0.0));
+                return View(new DashBoardViewModel(new List<SharedFolder>(), new List<SharedFile>(), Constants.GetWebControllerAndActionForDetails(), Constants.GetWebControllerAndActionForDownload(), 0, 0.0));
             }
         }
     }

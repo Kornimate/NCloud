@@ -10,7 +10,7 @@ namespace NCloud.Models
     public class CloudFile : CloudRegistration
     {
         public FileInfo Info { get; set; }
-        public CloudFile(FileInfo Info, bool IsSharedInApp, bool isPublic, string currentPath, string? itemPath = null) : base(IsSharedInApp, isPublic, currentPath)
+        public CloudFile(FileInfo Info, bool IsSharedInApp, bool isPublic, string id, string? itemPath = null) : base(IsSharedInApp, isPublic, id)
         {
             this.Info = Info;
             this.IconPath = IconManager.Load(IsFolder(), Info.Name);

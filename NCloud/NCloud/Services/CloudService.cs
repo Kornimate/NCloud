@@ -303,14 +303,22 @@ namespace NCloud.Services
         {
             try
             {
-                string path = ParseRootName(cloudPath);
+                DirectoryInfo parentDir = new DirectoryInfo(ParseRootName(cloudPath));
 
-                var appsharedfiles = context.SharedFiles.Where(x => x.ConnectedToApp && x.CloudPathFromRoot == cloudPath).Select(x => x.Name.ToLower()).ToList() ?? new();
-                var websharedfiles = context.SharedFiles.Where(x => x.ConnectedToWeb && x.CloudPathFromRoot == cloudPath).Select(x => x.Name.ToLower()).ToList() ?? new();
+                if (!parentDir.Exists)
+                    throw new CloudFunctionStopException("parent directory does not exist");
 
-                var files = pattern is null ? Directory.GetFiles(path) : Directory.GetFiles(path, pattern);
+                var sharedFiles = context.SharedFiles.Where(x => x.CloudPathFromRoot == cloudPath).ToList() ?? new();
 
-                var items = await Task.FromResult<IEnumerable<CloudFile>>(files.Select(x => new CloudFile(new FileInfo(x), appsharedfiles.Contains(Path.GetFileName(x)?.ToLower()!), websharedfiles.Contains(Path.GetFileName(x)?.ToLower()!), Path.Combine(cloudPath, Path.GetFileName(x)))).OrderBy(x => x.Info.Name));
+                var files = pattern is null ? parentDir.GetFiles() : parentDir.GetFiles(pattern);
+
+                var items = await Task.FromResult<IEnumerable<CloudFile>>(files.Select(x =>
+                {
+                    SharedFile? sharedFile = sharedFiles.FirstOrDefault(y => y.Name == x.Name);
+
+                    return new CloudFile(x, sharedFile?.ConnectedToApp ?? false, sharedFile?.ConnectedToWeb ?? false, sharedFile?.Id.ToString() ?? String.Empty);
+
+                }).OrderBy(x => x.Info.Name));
 
                 if (connectedToApp)
                 {
@@ -329,18 +337,26 @@ namespace NCloud.Services
             }
         }
 
-        public async Task<List<CloudFolder>> GetCurrentDepthCloudDirectories(string currentPath, bool connectedToApp = false, bool connectedToWeb = false, string? pattern = null)
+        public async Task<List<CloudFolder>> GetCurrentDepthCloudDirectories(string cloudPath, bool connectedToApp = false, bool connectedToWeb = false, string? pattern = null)
         {
             try
             {
-                string path = ParseRootName(currentPath);
+                DirectoryInfo parentDir = new DirectoryInfo(ParseRootName(cloudPath));
 
-                var appsharedfolders = await context.SharedFolders.Where(x => x.ConnectedToApp && x.CloudPathFromRoot == currentPath).Select(x => x.Name.ToLower()).ToListAsync() ?? new();
-                var websharedfolders = await context.SharedFolders.Where(x => x.ConnectedToWeb && x.CloudPathFromRoot == currentPath).Select(x => x.Name.ToLower()).ToListAsync() ?? new();
+                if (!parentDir.Exists)
+                    throw new CloudFunctionStopException("parent directory does not exist");
 
-                var folders = pattern is null ? Directory.GetDirectories(path) : Directory.GetDirectories(path, pattern);
+                var sharedFolders = context.SharedFolders.Where(x => x.CloudPathFromRoot == cloudPath).ToList() ?? new();
 
-                var items = await Task.FromResult<IEnumerable<CloudFolder>>(folders.Select(x => new CloudFolder(new DirectoryInfo(x), appsharedfolders.Contains(Path.GetFileName(x)?.ToLower()!), websharedfolders.Contains(Path.GetFileName(x)?.ToLower()!), Path.Combine(currentPath, Path.GetFileName(x)))).OrderBy(x => x.Info.Name));
+                var folders = pattern is null ? parentDir.GetDirectories() : parentDir.GetDirectories(pattern);
+
+                var items = await Task.FromResult<IEnumerable<CloudFolder>>(folders.Select(x =>
+                {
+                    SharedFolder? sharedFolder = sharedFolders.FirstOrDefault(y => y.Name == x.Name);
+
+                    return new CloudFolder(x, sharedFolder?.ConnectedToApp ?? false, sharedFolder?.ConnectedToWeb ?? false, sharedFolder?.Id.ToString() ?? String.Empty);
+
+                }).OrderBy(x => x.Info.Name));
 
                 if (connectedToApp)
                 {
@@ -554,14 +570,14 @@ namespace NCloud.Services
             }
         }
 
-        public async Task<List<string>> GetUserSharedFolderUrls(CloudUser user)
+        public async Task<List<SharedFolder>> GetUserWebSharedFolders(CloudUser user)
         {
-            return await context.SharedFolders.Where(x => x.Owner == user && x.ConnectedToWeb).OrderBy(x => x.CloudPathFromRoot).ThenBy(x => x.Name).Select(x => Path.Combine(x.CloudPathFromRoot, x.Name)).ToListAsync();
+            return await context.SharedFolders.Where(x => x.Owner == user && x.ConnectedToWeb).OrderBy(x => x.CloudPathFromRoot).ThenBy(x => x.Name).ToListAsync();
         }
 
-        public async Task<List<string>> GetUserSharedFileUrls(CloudUser user)
+        public async Task<List<SharedFile>> GetUserWebSharedFiles(CloudUser user)
         {
-            return await context.SharedFiles.Where(x => x.Owner == user && x.ConnectedToWeb).OrderBy(x => x.CloudPathFromRoot).ThenBy(x => x.Name).Select(x => Path.Combine(x.CloudPathFromRoot, x.Name)).ToListAsync();
+            return await context.SharedFiles.Where(x => x.Owner == user && x.ConnectedToWeb).OrderBy(x => x.CloudPathFromRoot).ThenBy(x => x.Name).ToListAsync();
         }
 
         public async Task<string> WebBackCheck(string path)
@@ -1203,6 +1219,16 @@ namespace NCloud.Services
             context.Users.Update(user);
 
             await context.SaveChangesAsync();
+        }
+
+        public async Task<SharedFolder> GetWebSharedFolderPathById(Guid id)
+        {
+            return await context.SharedFolders.FirstOrDefaultAsync(x => x.Id == id) ?? throw new CloudFunctionStopException("folder not found");
+        }
+
+        public async Task<SharedFile> GetWebSharedFilePathById(Guid id)
+        {
+            return await context.SharedFiles.FirstOrDefaultAsync(x => x.Id == id) ?? throw new CloudFunctionStopException("folder not found");
         }
 
         #endregion

@@ -24,13 +24,17 @@ namespace NCloud.Controllers
         /// <summary>
         /// Action method to decrypt path to folder (web shared) and show items in it
         /// </summary>
-        /// <param name="path">Encrypted path</param>
+        /// <param name="id">Encrypted id of folder</param>
         /// <returns>View with files and folders at the current state (web shared)</returns>
-        public async Task<IActionResult> SharingPage(string path)
+        public async Task<IActionResult> SharingPage(string id)
         {
             try
             {
-                path = HashManager.DecryptString(path);
+                Guid folderId = Guid.Parse(HashManager.DecryptString(id));
+
+                SharedFolder sharedFolder = await service.GetWebSharedFolderPathById(folderId);
+
+                string path = Path.Combine(sharedFolder.CloudPathFromRoot, sharedFolder.Name);
 
                 return await Task.FromResult<IActionResult>(View("Details", new WebDetailsViewModel(await service.GetCurrentDepthWebSharingFiles(path),
                                                                                                     await service.GetCurrentDepthWebSharingDirectories(path),
@@ -176,20 +180,18 @@ namespace NCloud.Controllers
         /// </summary>
         /// <param name="path">Path to current state</param>
         /// <returns>View with downloadable file in it</returns>
-        public async Task<IActionResult> DownloadPage(string path)
+        public async Task<IActionResult> DownloadPage(string id)
         {
             try
             {
-                string decryptedPath = HashManager.DecryptString(path);
+                Guid fileId = Guid.Parse(HashManager.DecryptString(id));
 
-                string fileName = Path.GetFileName(decryptedPath);
-
-                decryptedPath = decryptedPath.Substring(0, decryptedPath.LastIndexOf(Path.DirectorySeparatorChar));
+                SharedFile sharedFile = await service.GetWebSharedFilePathById(fileId);
 
                 return await Task.FromResult<IActionResult>(View("DownloadPage", new WebSingleDownloadViewModel()
                 {
-                    FilePath = decryptedPath,
-                    FileName = fileName
+                    FilePath = sharedFile.CloudPathFromRoot,
+                    FileName = sharedFile.Name
                 }));
             }
             catch (Exception)

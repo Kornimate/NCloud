@@ -1,5 +1,8 @@
 ﻿namespace NCloud.Models
 {
+    /// <summary>
+    /// Class to handle url generation for client side commands
+    /// </summary>
     public class UrlGenerationResult
     {
         public string Controller {  get; set; }

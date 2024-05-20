@@ -213,15 +213,15 @@ namespace NCloud.Services
         /// Method to get every shared folder for user
         /// </summary>
         /// <param name="user">The logged in user</param>
-        /// <returns>List of urls in string format</returns>
-        Task<List<string>> GetUserSharedFolderUrls(CloudUser user);
+        /// <returns>List of web shared folders wrapped in SharedFolder object</returns>
+        Task<List<SharedFolder>> GetUserWebSharedFolders(CloudUser user);
 
         /// <summary>
         /// Method to get every shared file for user
         /// </summary>
         /// <param name="user">The logged in user</param>
-        /// <returns>List of urls in string format</returns>
-        Task<List<string>> GetUserSharedFileUrls(CloudUser user);
+        /// <returns>List of web shared files wrapped in SharedFile object</returns>
+        Task<List<SharedFile>> GetUserWebSharedFiles(CloudUser user);
 
         /// <summary>
         /// Method to check if Back action is possible on web sharing path
@@ -373,5 +373,19 @@ namespace NCloud.Services
         /// <param name="user">The currently logged in user</param>
         /// <returns>Task for async usage</returns>
         Task CheckUserStorageUsed(CloudUser user);
+
+        /// <summary>
+        /// Method to get shared folder by id
+        /// </summary>
+        /// <param name="id">Id of folder</param>
+        /// <returns>The path of the folder</returns>
+        Task<SharedFolder> GetWebSharedFolderPathById(Guid id);
+
+        /// <summary>
+        /// Method to get shared file by id
+        /// </summary>
+        /// <param name="id">Id of file</param>
+        /// <returns>The path of the folder</returns>
+        Task<SharedFile> GetWebSharedFilePathById(Guid id);
     }
 }
