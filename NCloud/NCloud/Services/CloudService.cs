@@ -378,9 +378,19 @@ namespace NCloud.Services
             return ParseRootName(cloudPath);
         }
 
-        public async Task<DirectoryInfo> GetFolderByPath(string cloudPath, string folderName)
+        public async Task<DirectoryInfo> GetFolderByPath(string physicalPath, string folderName)
         {
-            return await Task.FromResult<DirectoryInfo>(new DirectoryInfo(Directory.GetDirectories(ParseRootName(cloudPath), folderName).First()));
+            DirectoryInfo di = new DirectoryInfo(physicalPath);
+
+            if (!di.Exists)
+                throw new CloudFunctionStopException("Parent does not exist");
+
+            DirectoryInfo? searchedDir = di.GetDirectories().FirstOrDefault(x => x.Name.ToLower() == folderName.ToLower());
+
+            if(searchedDir is null || !searchedDir.Exists)
+                throw new CloudFunctionStopException("Directory does not exist");
+
+            return await Task.FromResult<DirectoryInfo>(searchedDir);
         }
 
         public async Task<bool> ConnectDirectoryToWeb(string cloudPath, string directoryName, CloudUser user)
@@ -428,10 +438,13 @@ namespace NCloud.Services
             }
         }
 
-        public async Task<bool> DisconnectDirectoryFromApp(string cloudPath, string directoryName, CloudUser user)
+        public async Task<bool> DisconnectDirectoryFromApp(string cloudPath, string directoryName, CloudUser user, bool disconnectOnlyCurrent = false)
         {
             try
             {
+                if (disconnectOnlyCurrent)
+                    return await SetObjectAndUnderlyingObjectsState(cloudPath, directoryName, ChangeOwnerIdentification(ChangeRootName(cloudPath), user.UserName), user, connectToApp: false, useSharingPath: true);
+
                 return await SetObjectAndUnderlyingObjectsState(cloudPath, directoryName, ChangeOwnerIdentification(ChangeRootName(cloudPath), user.UserName), user, connectToApp: false, useSharingPath: true)
                     && await SetObjectAndUnderlyingObjectsState(cloudPath, directoryName, Constants.GetSharingRootPathInDatabase(user.UserName), user, connectToApp: false, useSharingPath: true);
             }
@@ -505,10 +518,13 @@ namespace NCloud.Services
             }
         }
 
-        public async Task<bool> DisconnectFileFromApp(string cloudPath, string fileName, CloudUser user)
+        public async Task<bool> DisconnectFileFromApp(string cloudPath, string fileName, CloudUser user, bool disconnectOnlyCurrent = false)
         {
             try
             {
+                if (disconnectOnlyCurrent)
+                    return await SetFileConnectedState(cloudPath, fileName, ChangeOwnerIdentification(ChangeRootName(cloudPath), user.UserName), user, connectToApp: false, useSharingPath: true);
+                
                 return await SetFileConnectedState(cloudPath, fileName, ChangeOwnerIdentification(ChangeRootName(cloudPath), user.UserName), user, connectToApp: false, useSharingPath: true)
                     && await SetFileConnectedState(cloudPath, fileName, Constants.GetSharingRootPathInDatabase(user.UserName), user, connectToApp: false, useSharingPath: true);
             }

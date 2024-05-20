@@ -110,10 +110,10 @@ namespace NCloud.Services
         /// <summary>
         /// Method to get CloudFolder object by full path
         /// </summary>
-        /// <param name="cloudPath">Path in app to the folder</param>
+        /// <param name="physicalPath">Physical path to folder on disk</param>
         /// <param name="folderName">Name of the folder</param>
         /// <returns>CloudFolder object with physical data in it</returns>
-        Task<DirectoryInfo> GetFolderByPath(string cloudPath, string folderName);
+        Task<DirectoryInfo> GetFolderByPath(string physicalPath, string folderName);
 
         /// <summary>
         /// Method to handle directory connection in database
@@ -139,8 +139,9 @@ namespace NCloud.Services
         /// <param name="cloudPath">Path to folder in app</param>
         /// <param name="directoryName">Name of folder</param>
         /// <param name="user">Owner of the folder</param>
+        /// <param name="disconnectOnlyCurrent">Only cuurent path to be disconnected</param>
         /// <returns>Boolean indication the success of activity</returns>
-        Task<bool> DisconnectDirectoryFromApp(string cloudPath, string directoryName, CloudUser user);
+        Task<bool> DisconnectDirectoryFromApp(string cloudPath, string directoryName, CloudUser user, bool disconnectOnlyCurrent = false);
 
         /// <summary>
         /// Method to handle directory connection in database
@@ -175,8 +176,9 @@ namespace NCloud.Services
         /// <param name="cloudPath">Path to file in app</param>
         /// <param name="fileName">Name of file</param>
         /// <param name="user">Owner of file</param>
+        /// <param name="disconnectOnlyCurrent">Only cuurent path to be disconnected</param>
         /// <returns>Booelan value indicating the success of action</returns>
-        Task<bool> DisconnectFileFromApp(string cloudPath, string fileName, CloudUser user);
+        Task<bool> DisconnectFileFromApp(string cloudPath, string fileName, CloudUser user, bool disconnectOnlyCurrent = false);
 
         /// <summary>
         /// Method to stop sharing file on web

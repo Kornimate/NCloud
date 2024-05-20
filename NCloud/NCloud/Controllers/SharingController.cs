@@ -195,7 +195,7 @@ namespace NCloud.Controllers
             {
                 SharedPathData pathData = await GetSessionSharedPathData();
 
-                if (await service.DisconnectDirectoryFromApp(await service.ChangePathStructure(pathData.CurrentPath), itemName, await userManager.GetUserAsync(User)))
+                if (await service.DisconnectDirectoryFromApp(await service.ChangePathStructure(pathData.CurrentPath), itemName, await userManager.GetUserAsync(User), true))
                 {
                     return Json(new ConnectionDTO { Success = true, Message = "Directory and items inside disconnected from application" });
                 }
@@ -227,7 +227,7 @@ namespace NCloud.Controllers
             {
                 SharedPathData pathData = await GetSessionSharedPathData();
 
-                if (await service.DisconnectFileFromApp(await service.ChangePathStructure(pathData.CurrentPath), itemName, await userManager.GetUserAsync(User)))
+                if (await service.DisconnectFileFromApp(await service.ChangePathStructure(pathData.CurrentPath), itemName, await userManager.GetUserAsync(User), true))
                 {
                     return Json(new ConnectionDTO { Success = true, Message = "File disconnected from application" });
                 }
