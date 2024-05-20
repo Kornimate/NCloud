@@ -80,7 +80,7 @@ namespace NCloud.Models
             if (!CurrentPath.StartsWith(oldPath))
                 return;
 
-            CurrentPath.Replace(oldPath, newPath);
+            CurrentPath = CurrentPath.Replace(oldPath, newPath);
             var tempFolderList = CurrentPath.Split(Path.DirectorySeparatorChar, StringSplitOptions.RemoveEmptyEntries).ToList();
             PreviousDirectories = tempFolderList;
             CurrentPathShow = String.Join(Constants.PathSeparator, Constants.PublicRootName, String.Join(Constants.PathSeparator, tempFolderList.Skip(2)));

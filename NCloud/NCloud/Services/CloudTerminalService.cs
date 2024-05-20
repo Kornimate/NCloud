@@ -24,27 +24,27 @@ namespace NCloud.Services
 
             serverSideCommands = new List<ServerSideCommandContainer>() //configure commands for terminal
             {
-                new ServerSideCommandContainer("cd",1,false,true, async (parameters, pathData, user) => await service.ChangeToDirectory(await PathNormalizationForChangingDirectory(parameters[0], pathData),pathData)),
-                new ServerSideCommandContainer("copy-file",2,false,true, async (parameters, pathData, user) => await service.CopyFile(await RelativeToAbsolutePathAndNormalize(parameters[0],pathData),await RelativeToAbsolutePathAndNormalize(parameters[1], pathData),user)),
-                new ServerSideCommandContainer("copy-dir",2,false,true, async (parameters, pathData, user) => await service.CopyFolder(await RelativeToAbsolutePathAndNormalize(parameters[0], pathData),await RelativeToAbsolutePathAndNormalize(parameters[1], pathData),user)),
-                new ServerSideCommandContainer("help",0,true,false, async (parameters, pathData, user) => await service.GetTerminalHelpText()),
-                new ServerSideCommandContainer("ls",0,true,false, async (parameters, pathData, user) => await service.ListCurrentSubDirectories(pathData)),
-                new ServerSideCommandContainer("pwd",0,true,false, async (parameters, pathData, user) => await service.PrintWorkingDirectory(pathData)),
-                new ServerSideCommandContainer("mkdir",1,false,true, async (parameters, pathData, user) => await service.CreateDirectory(parameters[0], pathData.CurrentPath, user)),
-                new ServerSideCommandContainer("noshare-file-web",1,false,true, async (parameters, pathData, user) => (await service.DisconnectFileFromWeb(pathData.CurrentPath, parameters[0], user)).ToString()),
-                new ServerSideCommandContainer("noshare-file-app",1,false,true, async (parameters, pathData, user) => (await service.DisconnectFileFromApp(pathData.CurrentPath, parameters[0], user)).ToString()),
-                new ServerSideCommandContainer("noshare-dir-web",1,false,true, async (parameters, pathData, user) => (await service.DisconnectDirectoryFromWeb(pathData.CurrentPath, parameters[0], user)).ToString()),
-                new ServerSideCommandContainer("noshare-dir-app",1,false,true, async (parameters, pathData, user) => (await service.DisconnectDirectoryFromApp(pathData.CurrentPath, parameters[0], user)).ToString()),
-                new ServerSideCommandContainer("share-file-web",1,false,true, async (parameters, pathData, user) => (await service.ConnectFileToWeb(pathData.CurrentPath, parameters[0], user)).ToString()),
-                new ServerSideCommandContainer("share-file-app",1,false,true, async (parameters, pathData, user) => (await service.ConnectFileToApp(pathData.CurrentPath, parameters[0], user)).ToString()),
-                new ServerSideCommandContainer("share-dir-web",1,false,true, async (parameters, pathData, user) => (await service.ConnectDirectoryToWeb(pathData.CurrentPath, parameters[0], user)).ToString()),
-                new ServerSideCommandContainer("share-dir-app",1,false,true, async (parameters, pathData, user) => (await service.ConnectDirectoryToApp(pathData.CurrentPath, parameters[0], user)).ToString()),
-                new ServerSideCommandContainer("rm-dir",1,false,true, async (parameters, pathData, user) => (await service.RemoveDirectory(parameters[0], pathData.CurrentPath, user)).ToString()),
-                new ServerSideCommandContainer("rm-file",1,false,true, async (parameters, pathData, user) => (await service.RemoveFile(parameters[0],pathData.CurrentPath, user)).ToString()),
-                new ServerSideCommandContainer("rename-dir",2,false,true, async (parameters, pathData, user) => (await service.RenameFolder(pathData.CurrentPath, parameters[0], parameters[1]))),
-                new ServerSideCommandContainer("rename-file",2,false,true, async (parameters, pathData, user) => (await service.RenameFile(pathData.CurrentPath, parameters[0], parameters[1]))),
-                new ServerSideCommandContainer("search-dir",1,true,true, async (parameters, pathData, user) => (await service.SearchDirectoryInCurrentDirectory(pathData.CurrentPath, parameters[0]))),
-                new ServerSideCommandContainer("search-file",1,true,true, async (parameters, pathData, user) => (await service.SearchFileInCurrentDirectory(pathData.CurrentPath, parameters[0]))),
+                new ServerSideCommandContainer("cd",1,false,true, async (parameters, pathData, sharedData, user) => await service.ChangeToDirectory(await PathNormalizationForChangingDirectory(parameters[0], pathData),pathData)),
+                new ServerSideCommandContainer("copy-file",2,false,true, async (parameters, pathData, sharedData, user) => await service.CopyFile(await RelativeToAbsolutePathAndNormalize(parameters[0],pathData),await RelativeToAbsolutePathAndNormalize(parameters[1], pathData),user)),
+                new ServerSideCommandContainer("copy-dir",2,false,true, async (parameters, pathData, sharedData, user) => await service.CopyFolder(await RelativeToAbsolutePathAndNormalize(parameters[0], pathData),await RelativeToAbsolutePathAndNormalize(parameters[1], pathData),user)),
+                new ServerSideCommandContainer("help",0,true,false, async (parameters, pathData, sharedData, user) => await service.GetTerminalHelpText()),
+                new ServerSideCommandContainer("ls",0,true,false, async (parameters, pathData, sharedData, user) => await service.ListCurrentSubDirectories(pathData)),
+                new ServerSideCommandContainer("pwd",0,true,false, async (parameters, pathData, sharedData, user) => await service.PrintWorkingDirectory(pathData)),
+                new ServerSideCommandContainer("mkdir",1,false,true, async (parameters, pathData, sharedData, user) => await service.CreateDirectory(parameters[0], pathData.CurrentPath, user)),
+                new ServerSideCommandContainer("noshare-file-web",1,false,true, async (parameters, pathData, sharedData, user) => (await service.DisconnectFileFromWeb(pathData.CurrentPath, parameters[0], user)).ToString()),
+                new ServerSideCommandContainer("noshare-file-app",1,false,true, async (parameters, pathData, sharedData, user) => (await service.DisconnectFileFromApp(pathData.CurrentPath, parameters[0], user)).ToString()),
+                new ServerSideCommandContainer("noshare-dir-web",1,false,true, async (parameters, pathData, sharedData, user) => (await service.DisconnectDirectoryFromWeb(pathData.CurrentPath, parameters[0], user)).ToString()),
+                new ServerSideCommandContainer("noshare-dir-app",1,false,true, async (parameters, pathData, sharedData, user) => (await service.DisconnectDirectoryFromApp(pathData.CurrentPath, parameters[0], user)).ToString()),
+                new ServerSideCommandContainer("share-file-web",1,false,true, async (parameters, pathData, sharedData, user) => (await service.ConnectFileToWeb(pathData.CurrentPath, parameters[0], user)).ToString()),
+                new ServerSideCommandContainer("share-file-app",1,false,true, async (parameters, pathData, sharedData, user) => (await service.ConnectFileToApp(pathData.CurrentPath, parameters[0], user)).ToString()),
+                new ServerSideCommandContainer("share-dir-web",1,false,true, async (parameters, pathData, sharedData, user) => (await service.ConnectDirectoryToWeb(pathData.CurrentPath, parameters[0], user)).ToString()),
+                new ServerSideCommandContainer("share-dir-app",1,false,true, async (parameters, pathData, sharedData, user) => (await service.ConnectDirectoryToApp(pathData.CurrentPath, parameters[0], user)).ToString()),
+                new ServerSideCommandContainer("rm-dir",1,false,true, async (parameters, pathData, sharedData, user) => (await service.RemoveDirectory(parameters[0], pathData.CurrentPath, user)).ToString()),
+                new ServerSideCommandContainer("rm-file",1,false,true, async (parameters, pathData, sharedData, user) => (await service.RemoveFile(parameters[0],pathData.CurrentPath, user)).ToString()),
+                new ServerSideCommandContainer("rename-dir",2,false,true, async (parameters, pathData, sharedData, user) => (await service.RenameFolder(pathData.CurrentPath, parameters[0], parameters[1], sharedData))),
+                new ServerSideCommandContainer("rename-file",2,false,true, async (parameters, pathData, sharedData, user) => (await service.RenameFile(pathData.CurrentPath, parameters[0], parameters[1]))),
+                new ServerSideCommandContainer("search-dir",1,true,true, async (parameters, pathData, sharedData, user) => (await service.SearchDirectoryInCurrentDirectory(pathData.CurrentPath, parameters[0]))),
+                new ServerSideCommandContainer("search-file",1,true,true, async (parameters, pathData, sharedData, user) => (await service.SearchFileInCurrentDirectory(pathData.CurrentPath, parameters[0]))),
             };
 
             clientSideCommands = new List<ClientSideCommandContainer>()
@@ -55,7 +55,7 @@ namespace NCloud.Services
             };
         }
 
-        public async Task<(bool, string, object?, bool)> Execute(string command, List<string> parameters, CloudPathData pathdata, CloudUser user)
+        public async Task<(bool, string, object?, bool)> Execute(string command, List<string> parameters, CloudPathData pathdata, SharedPathData sharedData, CloudUser user)
         {
             ServerSideCommandContainer? commandData = serverSideCommands.FirstOrDefault(x => x.Command == command);
 
@@ -67,7 +67,7 @@ namespace NCloud.Services
 
             try
             {
-                object result = await commandData.ExecutionAction(parameters, pathdata, user); //here comes the execution of actions from CloudService
+                object result = await commandData.ExecutionAction(parameters, pathdata, sharedData, user); //here comes the execution of actions from CloudService
 
                 if (bool.TryParse(result?.ToString(), out bool success))
                 {

@@ -871,9 +871,11 @@ namespace NCloud.Controllers
                 {
                     try
                     {
-                        actualName = await service.RenameFolder(pathData.CurrentPath, vm.OldName!, vm.NewName!);
+                        SharedPathData sharedData = await GetSessionSharedPathData();
 
+                        actualName = await service.RenameFolder(pathData.CurrentPath, vm.OldName!, vm.NewName!, sharedData);
 
+                        await SetSessionSharedPathData(sharedData);
                     }
                     catch (CloudFunctionStopException ex)
                     {

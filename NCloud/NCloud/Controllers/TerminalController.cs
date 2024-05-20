@@ -71,10 +71,12 @@ namespace NCloud.Controllers
                 var commandAndParamertes = CloudTerminalTokenizationManager.Tokenize(command, (await userManager.GetUserAsync(User)).Id.ToString());
 
                 CloudPathData pathData = await GetSessionCloudPathData();
+                SharedPathData sharedData = await GetSessionSharedPathData();
 
-                var successAndMsgAndPayLoadAndPrint = await terminalService.Execute(commandAndParamertes.First, commandAndParamertes.Second, pathData, await userManager.GetUserAsync(User));
+                var successAndMsgAndPayLoadAndPrint = await terminalService.Execute(commandAndParamertes.First, commandAndParamertes.Second, pathData, sharedData, await userManager.GetUserAsync(User));
 
                 await SetSessionCloudPathData(pathData);
+                await SetSessionSharedPathData(sharedData);
 
                 if (successAndMsgAndPayLoadAndPrint.Item3 is List<CloudFile> files)
                     return Json(new ConnectionDTO { Success = successAndMsgAndPayLoadAndPrint.Item1, Message = successAndMsgAndPayLoadAndPrint.Item1 ? Constants.TerminalGreenText(successAndMsgAndPayLoadAndPrint.Item2) : Constants.TerminalRedText(successAndMsgAndPayLoadAndPrint.Item2), Payload = String.Empty, Result = $"\n{String.Join('\n', files.Select(x => x.Info.Name))}\n\n" });
@@ -122,17 +124,19 @@ namespace NCloud.Controllers
                 var commandAndParamertes = CloudTerminalTokenizationManager.Tokenize(command, (await userManager.GetUserAsync(User)).Id.ToString());
 
                 CloudPathData pathData = await GetSessionCloudPathData();
+                SharedPathData sharedData = await GetSessionSharedPathData();
 
-                var successAndMsgAndPayLoadAndPrint = await terminalService.Execute(commandAndParamertes.First, commandAndParamertes.Second, pathData, await userManager.GetUserAsync(User));
+                var successAndMsgAndPayLoadAndPrint = await terminalService.Execute(commandAndParamertes.First, commandAndParamertes.Second, pathData, sharedData, await userManager.GetUserAsync(User));
 
                 await SetSessionCloudPathData(pathData);
+                await SetSessionSharedPathData(sharedData);
 
                 CloudNotificationAbstarct notification = successAndMsgAndPayLoadAndPrint.Item1 ? new Success(successAndMsgAndPayLoadAndPrint.Item2) : new Error(successAndMsgAndPayLoadAndPrint.Item2);
-                
+
                 AddNewNotification(notification);
 
                 if (successAndMsgAndPayLoadAndPrint.Item3 is List<CloudFile> files)
-                    return RedirectToAction("Details", "Drive", new { files = files , folders = new List<CloudFolder>(), passedItems = true});
+                    return RedirectToAction("Details", "Drive", new { files = files, folders = new List<CloudFolder>(), passedItems = true });
 
                 if (successAndMsgAndPayLoadAndPrint.Item3 is List<CloudFolder> folders)
                     return RedirectToAction("Details", "Drive", new { files = new List<CloudFile>(), folders = folders, passedItems = true });
@@ -175,7 +179,7 @@ namespace NCloud.Controllers
 
                 string elementHTML = GenerateHTMLElementWithUrl(urlDetails);
 
-                return await Task.FromResult<JsonResult>(Json(new CommandDTO { IsClientSide = true, ActionHTMLElement = elementHTML, ActionHTMLElementId= Constants.DownloadHTMLElementId, NoErrorWithSyntax = true, ErrorMessage = "" }));
+                return await Task.FromResult<JsonResult>(Json(new CommandDTO { IsClientSide = true, ActionHTMLElement = elementHTML, ActionHTMLElementId = Constants.DownloadHTMLElementId, NoErrorWithSyntax = true, ErrorMessage = "" }));
             }
             catch (CloudFunctionStopException ex)
             {
