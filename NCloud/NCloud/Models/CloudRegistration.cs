@@ -11,7 +11,7 @@ namespace NCloud.Models
     {
         public string? IconPath { get; set; }
         public string? SharedName { get; set; }
-        public string? HashedPath { get; set; }
+        public string? Id { get; set; }
         public string? ItemPath { get; set; }
         public bool IsConnectedToApp { get; set; }
         public bool IsConnectedToWeb { get; set; }
@@ -21,7 +21,7 @@ namespace NCloud.Models
             IconPath = null!;
             IsConnectedToApp = isSharedInApp;
             IsConnectedToWeb = isPublic;
-            HashedPath = HashManager.EncryptString(id);
+            Id = id;
         }
 
 

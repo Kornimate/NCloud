@@ -75,7 +75,7 @@
         </thead>
         @foreach (var folder in Model.WebSharedFolderData)
         {
-            string? url = Url.Action(Model.WebControllerAndActionForDetails.Second, Model.WebControllerAndActionForDetails.First, new { id = HashManager.EncryptString(folder.Id.ToString()) }, Context.Request.Scheme);
+            string? url = Url.Action(Model.WebControllerAndActionForDetails.Second, Model.WebControllerAndActionForDetails.First, new { id = folder.Id.ToString() }, Context.Request.Scheme);
             string path = System.IO.Path.Combine(folder.CloudPathFromRoot, folder.Name).Replace(System.IO.Path.DirectorySeparatorChar, Constants.PathSeparator);
 
             <tr class="text-center">
@@ -116,7 +116,7 @@
         </thead>
         @foreach (var file in Model.WebSharedFileData)
         {
-            string? url = Url.Action(Model.WebControllerAndActionForDownload.Second, Model.WebControllerAndActionForDownload.First, new { id = HashManager.EncryptString(file.Id.ToString()) }, Context.Request.Scheme);
+            string? url = Url.Action(Model.WebControllerAndActionForDownload.Second, Model.WebControllerAndActionForDownload.First, new { id = file.Id.ToString() }, Context.Request.Scheme);
             string path = System.IO.Path.Combine(file.CloudPathFromRoot, file.Name).Replace(System.IO.Path.DirectorySeparatorChar, Constants.PathSeparator);
 
             <tr class="text-center">

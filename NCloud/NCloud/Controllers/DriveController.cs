@@ -526,7 +526,7 @@ namespace NCloud.Controllers
 
                     var urlData = Constants.GetWebControllerAndActionForDetails();
 
-                    return Json(new ConnectionDTO { Success = true, Message = "Directory and items inside connected to web", Result = Url.Action(urlData.Second, urlData.First, new { id = HashManager.EncryptString(sf.Id.ToString()) }, HttpContext.Request.Scheme) ?? String.Empty });
+                    return Json(new ConnectionDTO { Success = true, Message = "Directory and items inside connected to web", Result = Url.Action(urlData.Second, urlData.First, new { id = sf.Id.ToString() }, HttpContext.Request.Scheme) ?? String.Empty });
                 }
                 else
                 {
@@ -594,7 +594,7 @@ namespace NCloud.Controllers
 
                     var urlData = Constants.GetWebControllerAndActionForDetails();
 
-                    return Json(new ConnectionDTO { Success = true, Message = "File is connected to web", Result = Url.Action(urlData.Second, urlData.First, new { id = HashManager.EncryptString(sf.Id.ToString()) }, HttpContext.Request.Scheme) ?? String.Empty });
+                    return Json(new ConnectionDTO { Success = true, Message = "File is connected to web", Result = Url.Action(urlData.Second, urlData.First, new { id = sf.Id.ToString() }, HttpContext.Request.Scheme) ?? String.Empty });
                 }
                 else
                 {

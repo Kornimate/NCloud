@@ -84,7 +84,7 @@
                                     </tr>
 
                                     @{
-                                        string? url = Url.Action(Model.WebControllerAndActionForDetails.Second, Model.WebControllerAndActionForDetails.First, new { id = item.HashedPath }, Context.Request.Scheme);
+                                        string? url = Url.Action(Model.WebControllerAndActionForDetails.Second, Model.WebControllerAndActionForDetails.First, new { id = item.Id }, Context.Request.Scheme);
                                     }
 
                                     <tr class="align-middle @(item.IsConnectedToWeb ? "" : "hidden")" id="@(counter)_tr1">
@@ -241,7 +241,7 @@
                                         </td>
                                     </tr>
                                     @{
-                                        string? url = Url.Action(Model.WebControllerAndActionForDownload.Second, Model.WebControllerAndActionForDownload.First, new { id = item.HashedPath }, Context.Request.Scheme);
+                                        string? url = Url.Action(Model.WebControllerAndActionForDownload.Second, Model.WebControllerAndActionForDownload.First, new { id = item.Id }, Context.Request.Scheme);
                                     }
 
                                     <tr class="align-middle @(item.IsConnectedToWeb ? "" : "hidden")" id="@(counter)_tr1">
