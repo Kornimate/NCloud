@@ -293,8 +293,9 @@ namespace NCloud.Services
         /// <param name="cloudPath">Path in app</param>
         /// <param name="folderName">Original name of folder</param>
         /// <param name="newName">User defined new name of folder</param>
+        /// <param name="sharedData">Actual path in app sharing state</param>
         /// <returns>The renamed folder name</returns>
-        Task<string> RenameFolder(string cloudPath, string folderName, string newName);
+        Task<string> RenameFolder(string cloudPath, string folderName, string newName, SharedPathData sharedData);
 
         /// <summary>
         /// Method to rename a file

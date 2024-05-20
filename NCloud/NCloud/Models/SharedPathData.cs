@@ -74,6 +74,9 @@ namespace NCloud.Models
 
         public void UpdateCurrentPath(string oldPath, string newPath)
         {
+            if (String.IsNullOrWhiteSpace(oldPath) || String.IsNullOrWhiteSpace(newPath))
+                return;
+
             if (!CurrentPath.StartsWith(oldPath))
                 return;
 

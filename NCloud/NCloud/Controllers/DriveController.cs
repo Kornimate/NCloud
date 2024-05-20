@@ -872,6 +872,8 @@ namespace NCloud.Controllers
                     try
                     {
                         actualName = await service.RenameFolder(pathData.CurrentPath, vm.OldName!, vm.NewName!);
+
+
                     }
                     catch (CloudFunctionStopException ex)
                     {

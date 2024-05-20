@@ -808,7 +808,7 @@ namespace NCloud.Services
             return await Task.FromResult<CloudFile>(new CloudFile(new FileInfo(Path.Combine(ParseRootName(currentPath), fileName)), file?.ConnectedToApp ?? false, file?.ConnectedToWeb ?? false, Path.Combine(currentPath, fileName)));
         }
 
-        public async Task<string> RenameFolder(string cloudPath, string folderName, string newName)
+        public async Task<string> RenameFolder(string cloudPath, string folderName, string newName, SharedPathData sharedData)
         {
             string folderPath = ParseRootName(cloudPath);
             string folderPathAndName = Path.Combine(folderPath, folderName);
@@ -824,6 +824,9 @@ namespace NCloud.Services
             if (Directory.Exists(newFolderPathAndName) && folderName.ToLower() != newName.ToLower())
                 throw new CloudFunctionStopException("directory with this name already exists");
 
+            string? oldSharingPathAndName = null!;
+            string? newSharingPathAndName = null!;
+
             Directory.Move(folderPathAndName, newFolderPathAndName);
 
             try
@@ -837,8 +840,8 @@ namespace NCloud.Services
 
                 string oldPathAndName = Path.Combine(cloudPath, folderName);
                 string newPathAndName = Path.Combine(cloudPath, newName);
-                string oldSharingPathAndName = Path.Combine(await ChangePathStructure(cloudPath), folderName);
-                string newSharingPathAndName = Path.Combine(await ChangePathStructure(cloudPath), newName);
+                oldSharingPathAndName = Path.Combine(await ChangePathStructure(cloudPath), folderName);
+                newSharingPathAndName = Path.Combine(await ChangePathStructure(cloudPath), newName);
 
                 foreach (var entry in context.SharedFolders.Where(x => x.CloudPathFromRoot.ToLower().Contains(oldPathAndName.ToLower()))) //only at the beginning because of the "@" sign
                 {
@@ -857,6 +860,8 @@ namespace NCloud.Services
 
                 throw new CloudFunctionStopException("error while renaming directory");
             }
+
+            sharedData.UpdateCurrentPath(oldSharingPathAndName, newSharingPathAndName);
 
             return newName;
         }
