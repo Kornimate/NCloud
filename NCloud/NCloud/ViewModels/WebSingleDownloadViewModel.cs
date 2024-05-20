@@ -1,4 +1,5 @@
 ﻿using NCloud.Models;
+using System.ComponentModel.DataAnnotations;
 
 namespace NCloud.ViewModels
 {
@@ -7,7 +8,10 @@ namespace NCloud.ViewModels
     /// </summary>
     public class WebSingleDownloadViewModel
     {
-        public string Path { get; set; } = null!;
+        [Required]
+        public string FilePath { get; set; } = null!;
+
+        [Required]
         public string FileName { get; set; } = null!;
     }
 }

@@ -66,7 +66,7 @@ namespace NCloud.Controllers
             catch (Exception)
             {
                 AddNewNotification(new Error("Error while getting files and directories"));
-                
+
                 return RedirectToAction("Error", "Home");
             }
         }
@@ -112,7 +112,7 @@ namespace NCloud.Controllers
         /// Action methdo to handle download of web shared file
         /// </summary>
         /// <param name="path">Path to file</param>
-        /// <param name="folderName">Name of file</param>
+        /// <param name="fileName">Name of file</param>
         /// <returns>Redirect to download</returns>
         public async Task<IActionResult> DownloadFile(string? path, string? fileName)
         {
@@ -180,15 +180,15 @@ namespace NCloud.Controllers
         {
             try
             {
-                path = HashManager.DecryptString(path);
+                string decryptedPath = HashManager.DecryptString(path);
 
-                string fileName = Path.GetFileName(path);
+                string fileName = Path.GetFileName(decryptedPath);
 
-                path = path.Substring(0, path.LastIndexOf(Path.DirectorySeparatorChar));
+                decryptedPath = decryptedPath.Substring(0, decryptedPath.LastIndexOf(Path.DirectorySeparatorChar));
 
                 return await Task.FromResult<IActionResult>(View("DownloadPage", new WebSingleDownloadViewModel()
                 {
-                    Path = path,
+                    FilePath = decryptedPath,
                     FileName = fileName
                 }));
             }
@@ -200,9 +200,16 @@ namespace NCloud.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DownloadSingleItem(string path, string fileName)
+        public async Task<IActionResult> DownloadSingleItem([Bind("FileName,FilePath")] WebSingleDownloadViewModel vm)
         {
-            return await Download(new List<string>() { Constants.SelectedFileStarterSymbol + fileName }, path, RedirectToAction("DownloadPage", new { path = HashManager.EncryptString(Path.Combine(path, fileName)) }), connectedToWeb: true);
+            if (ModelState.IsValid)
+            {
+                return await Download(new List<string>() { Constants.SelectedFileStarterSymbol + vm.FileName }, vm.FilePath, RedirectToAction("DownloadPage", new { path = HashManager.EncryptString(Path.Combine(vm.FilePath, vm.FileName)) }), connectedToWeb: true);
+            }
+
+            AddNewNotification(new Error("Invalid download data"));
+
+            return View(vm);
         }
     }
 }
