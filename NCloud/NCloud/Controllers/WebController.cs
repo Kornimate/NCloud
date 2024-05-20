@@ -212,7 +212,7 @@ namespace NCloud.Controllers
         {
             if (ModelState.IsValid)
             {
-                return await Download(new List<string>() { Constants.SelectedFileStarterSymbol + vm.FileName }, vm.FilePath, RedirectToAction("DownloadPage", new { path = HashManager.EncryptString(Path.Combine(vm.FilePath, vm.FileName)) }), connectedToWeb: true);
+                return await Download(new List<string>() { Constants.SelectedFileStarterSymbol + vm.FileName }, vm.FilePath, RedirectToAction("Error","Home"), connectedToWeb: true);
             }
 
             AddNewNotification(new Error("Invalid download data"));
