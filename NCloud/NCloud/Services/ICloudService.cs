@@ -139,9 +139,8 @@ namespace NCloud.Services
         /// <param name="cloudPath">Path to folder in app</param>
         /// <param name="directoryName">Name of folder</param>
         /// <param name="user">Owner of the folder</param>
-        /// <param name="disconnectOnlyCurrent">Only cuurent path to be disconnected</param>
         /// <returns>Boolean indication the success of activity</returns>
-        Task<bool> DisconnectDirectoryFromApp(string cloudPath, string directoryName, CloudUser user, bool disconnectOnlyCurrent = false);
+        Task<bool> DisconnectDirectoryFromApp(string cloudPath, string directoryName, CloudUser user);
 
         /// <summary>
         /// Method to handle directory connection in database
@@ -176,9 +175,8 @@ namespace NCloud.Services
         /// <param name="cloudPath">Path to file in app</param>
         /// <param name="fileName">Name of file</param>
         /// <param name="user">Owner of file</param>
-        /// <param name="disconnectOnlyCurrent">Only cuurent path to be disconnected</param>
         /// <returns>Booelan value indicating the success of action</returns>
-        Task<bool> DisconnectFileFromApp(string cloudPath, string fileName, CloudUser user, bool disconnectOnlyCurrent = false);
+        Task<bool> DisconnectFileFromApp(string cloudPath, string fileName, CloudUser user);
 
         /// <summary>
         /// Method to stop sharing file on web

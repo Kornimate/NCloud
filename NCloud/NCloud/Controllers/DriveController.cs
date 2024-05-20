@@ -865,11 +865,13 @@ namespace NCloud.Controllers
 
                 bool noError = true;
 
+                string actualName = vm.OldName!;
+
                 if (vm.NewName != vm.OldName)
                 {
                     try
                     {
-                        string msg = await service.RenameFolder(pathData.CurrentPath, vm.OldName!, vm.NewName!);
+                        actualName = await service.RenameFolder(pathData.CurrentPath, vm.OldName!, vm.NewName!);
                     }
                     catch (CloudFunctionStopException ex)
                     {
@@ -889,7 +891,7 @@ namespace NCloud.Controllers
                 {
                     try
                     {
-                        if (!await service.ConnectDirectoryToWeb(pathData.CurrentPath, vm.NewName!, await userManager.GetUserAsync(User)))
+                        if (!await service.ConnectDirectoryToWeb(pathData.CurrentPath, actualName, await userManager.GetUserAsync(User)))
                         {
                             AddNewNotification(new Error("Error while applying settings (web connect)"));
 
@@ -913,7 +915,7 @@ namespace NCloud.Controllers
                 {
                     try
                     {
-                        if (!await service.DisconnectDirectoryFromWeb(pathData.CurrentPath, vm.NewName!, await userManager.GetUserAsync(User)))
+                        if (!await service.DisconnectDirectoryFromWeb(pathData.CurrentPath, actualName, await userManager.GetUserAsync(User)))
                         {
                             AddNewNotification(new Error("Error while applying settings (web disconnect)"));
 
@@ -938,7 +940,7 @@ namespace NCloud.Controllers
                 {
                     try
                     {
-                        if (!await service.ConnectDirectoryToApp(pathData.CurrentPath, vm.NewName!, await userManager.GetUserAsync(User)))
+                        if (!await service.ConnectDirectoryToApp(pathData.CurrentPath, actualName, await userManager.GetUserAsync(User)))
                         {
                             AddNewNotification(new Error("Error while applying settings (app connect)"));
 
@@ -962,7 +964,7 @@ namespace NCloud.Controllers
                 {
                     try
                     {
-                        if (!await service.DisconnectDirectoryFromApp(pathData.CurrentPath, vm.NewName!, await userManager.GetUserAsync(User)))
+                        if (!await service.DisconnectDirectoryFromApp(pathData.CurrentPath, actualName, await userManager.GetUserAsync(User)))
                         {
                             AddNewNotification(new Error("Error while applying settings (app disconnect)"));
 
