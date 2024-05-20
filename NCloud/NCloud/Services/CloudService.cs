@@ -858,23 +858,46 @@ namespace NCloud.Services
 
             Directory.Move(folderPathAndName, newFolderPathAndName);
 
-            SharedFolder? folder = await context.SharedFolders.FirstOrDefaultAsync(x => x.CloudPathFromRoot == cloudPath && x.Name == folderName);
-
-            if (folder is not null)
+            foreach (var entry in context.SharedFolders.Where(x => x.CloudPathFromRoot.ToLower() == cloudPath.ToLower()))
             {
-                folder.Name = newName;
+                entry.Name = newName;
 
-                context.SharedFolders.Update(folder);
-                await context.SaveChangesAsync();
+                context.SharedFolders.Update(entry);
             }
+
+            await context.SaveChangesAsync();
+
+            string oldPathAndName = Path.Combine(cloudPath, folderName);
+            string newPathAndName = Path.Combine(cloudPath, newName);
+
+            foreach (var entry in context.SharedFolders.Where(x => x.CloudPathFromRoot.ToLower().Contains(oldPathAndName.ToLower()))) //only at the beginning because of the "@" sign
+            {
+                entry.CloudPathFromRoot = entry.CloudPathFromRoot.Replace(oldPathAndName, newPathAndName);
+
+                context.SharedFolders.Update(entry);
+            }
+
+            await context.SaveChangesAsync();
+
+            oldPathAndName = Path.Combine(await ChangePathStructure(cloudPath), folderName);
+            newPathAndName = Path.Combine(await ChangePathStructure(cloudPath), newName);
+
+            foreach (var entry in context.SharedFolders.Where(x => x.SharedPathFromRoot.ToLower().Contains(oldPathAndName.ToLower()))) //only at the beginning because of the "@" sign
+            {
+                entry.SharedPathFromRoot = entry.SharedPathFromRoot.Replace(oldPathAndName, newPathAndName);
+
+                context.SharedFolders.Update(entry);
+            }
+
+            await context.SaveChangesAsync();
 
             return String.Empty;
         }
 
-        public async Task<string> RenameFile(string currentPath, string fileName, string newName)
+        public async Task<string> RenameFile(string cloudPath, string fileName, string newName)
         {
             string newFileName = new string(newName);
-            string filePath = ParseRootName(currentPath);
+            string filePath = ParseRootName(cloudPath);
             string filePathAndName = Path.Combine(filePath, fileName);
             string newFilePathAndName = Path.Combine(filePath, newFileName);
 
@@ -886,13 +909,12 @@ namespace NCloud.Services
 
             File.Move(filePathAndName, newFilePathAndName);
 
-            SharedFile? file = await context.SharedFiles.FirstOrDefaultAsync(x => x.CloudPathFromRoot == currentPath && x.Name == fileName);
-
-            if (file is not null)
+            foreach (var entry in context.SharedFiles.Where(x => x.CloudPathFromRoot.ToLower() == cloudPath.ToLower()))
             {
-                file.Name = newFileName;
+                entry.Name = newFileName;
 
-                context.SharedFiles.Update(file);
+                context.SharedFiles.Update(entry);
+
                 await context.SaveChangesAsync();
             }
 
