@@ -83,7 +83,12 @@
                                         <a asp-controller="Sharing" class="btn btn-primary" asp-action="DownloadFolder" asp-route-folderName="@item.Info.Name"><img src="~/utilities/cloud-download.svg" width=" 20" height="20" class="rounded align-middle" download /></a>
                                         @if (Model.Owner)
                                         {
-                                            <button type="button" class="btn btn-primary"  onclick="disConnectItemFromAppSharing('@Url.Action("DisconnectDirectoryFromApp", "Sharing")','@item.Info.Name', '@counter', 'shareditems')"><img src="~/utilities/noshare.svg" width=" 20" height="20" class="rounded-circle align-middle" /></button>
+                                            <button type="button" class="btn btn-primary"  onclick="disConnectItemFromAppSharing('@Url.Action("DisconnectDirectoryFromApp", "Sharing")','@item.Info.Name', '@counter', 'shareditems')">
+                                                <img src="~/utilities/noshare.svg" width=" 20" height="20" class="rounded-circle align-middle" id="@(counter)_btnImage" />
+                                                <div class="spinner-border spinner-border-sm text-dark hidden mx-1" role="status" id="@(counter)_btnSpinner">
+                                                    <span class="visually-hidden">Loading...</span>
+                                                </div>
+                                            </button>
                                         }
                                     </div>
                                 </div>
@@ -182,7 +187,12 @@
                                         <a asp-controller="Sharing" class="btn btn-primary" asp-action="DownloadFile" asp-route-fileName="@item.Info.Name"><img src="~/utilities/cloud-download.svg" width=" 20" height="20" class="rounded align-middle" download /></a>
                                         @if (Model.Owner)
                                         {
-                                            <button type="button" class="btn btn-primary"  onclick="disConnectItemFromAppSharing('@Url.Action("DisconnectFileFromApp", "Sharing")','@item.Info.Name', '@counter', 'shareditems')"><img src="~/utilities/noshare.svg" width=" 20" height="20" class="rounded-circle align-middle" /></button>
+                                            <button type="button" class="btn btn-primary"  onclick="disConnectItemFromAppSharing('@Url.Action("DisconnectFileFromApp", "Sharing")','@item.Info.Name', '@counter', 'shareditems')">
+                                                <img src="~/utilities/noshare.svg" width=" 20" height="20" class="rounded-circle align-middle" id="@(counter)_btnImage" />
+                                                <div class="spinner-border spinner-border-sm text-dark hidden mx-1" role="status" id="@(counter)_btnSpinner">
+                                                    <span class="visually-hidden">Loading...</span>
+                                                </div>
+                                            </button>
                                         }
                                     </div>
                                 </div>

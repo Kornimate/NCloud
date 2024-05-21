@@ -289,13 +289,25 @@ async function disConnectFileFromApp(url, file, id) {
 
 async function disConnectItemFromAppSharing(url, itemName, id, containerName) {
 
+    document.getElementById(`${id}_btnImage`).classList.add("hidden");
+    document.getElementById(`${id}_btnSpinner`).classList.remove("hidden");
+
     let result = await AjaxCall(url, itemName);
 
     result = await result.json();
 
+    document.getElementById(`${id}_btnSpinner`).classList.add("hidden");
+    document.getElementById(`${id}_btnImage`).classList.remove("hidden");
+
     if (result.success) {
 
-        document.getElementById(containerName).removeChild(document.getElementById(id));
+        const itemsContainer = document.getElementById(containerName);
+
+        itemsContainer.removeChild(document.getElementById(id));
+
+        if (itemsContainer.childElementCount == 0) {
+            itemsContainer.innerHTML = '<tr><td><span class="w-100 d-flex justify-content-center text-muted align-middle fst-italic">No shared items</span></td></tr>';
+        }
 
         ShowSuccessToast("Success", result.message);
     }
