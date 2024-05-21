@@ -32,7 +32,12 @@ namespace NCloud.Services
 
                 if (dirInfo.Exists)
                 {
-                    realNames[i - 1] = new string(dirInfo.GetDirectories().First(x => x.Name.ToLower() == paths[i].ToLower()).Name);
+                    string? dirName = dirInfo.GetDirectories().FirstOrDefault(x => x.Name.ToLower() == paths[i].ToLower())?.Name;
+
+                    if (dirName is null)
+                        throw new CloudFunctionStopException("part of path does not exist");
+
+                    realNames[i - 1] = dirName;
                 }
             }
 
