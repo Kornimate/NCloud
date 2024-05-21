@@ -85,5 +85,19 @@ namespace NCloud.Models
             PreviousDirectories = tempFolderList;
             CurrentPathShow = String.Join(Constants.PathSeparator, Constants.PublicRootName, String.Join(Constants.PathSeparator, tempFolderList.Skip(2)));
         }
+
+        /// <summary>
+        /// Method to try settnig the path in current sharing state
+        /// </summary>
+        /// <param name="folderName">The name of folder</param>
+        /// <returns>The possible path in current sharing state</returns>
+        /// <exception cref="NotImplementedException"></exception>
+        public string TrySetpath(string? folderName)
+        {
+            if (String.IsNullOrWhiteSpace(folderName))
+                return CurrentPath;
+
+            return Path.Combine(CurrentPath, folderName);
+        }
     }
 }

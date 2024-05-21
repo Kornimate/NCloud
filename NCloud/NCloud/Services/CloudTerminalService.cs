@@ -7,6 +7,7 @@ using NCloud.Services.Exceptions;
 using NCloud.Users;
 using Newtonsoft.Json.Linq;
 using System.Security.Policy;
+using System.Text.RegularExpressions;
 
 namespace NCloud.Services
 {
@@ -24,7 +25,7 @@ namespace NCloud.Services
 
             serverSideCommands = new List<ServerSideCommandContainer>() //configure commands for terminal
             {
-                new ServerSideCommandContainer("cd",1,false,true, async (parameters, pathData, sharedData, user) => await service.ChangeToDirectory(await PathNormalizationForChangingDirectory(parameters[0], pathData),pathData)),
+                new ServerSideCommandContainer("cd",1,false,true, async (parameters, pathData, sharedData, user) => (await service.ChangeToDirectory(await PathNormalizationForChangingDirectory(parameters[0], pathData),pathData)).CurrentPathShow),
                 new ServerSideCommandContainer("copy-file",2,false,true, async (parameters, pathData, sharedData, user) => await service.CopyFile(await RelativeToAbsolutePathAndNormalize(parameters[0],pathData),await RelativeToAbsolutePathAndNormalize(parameters[1], pathData),user)),
                 new ServerSideCommandContainer("copy-dir",2,false,true, async (parameters, pathData, sharedData, user) => await service.CopyFolder(await RelativeToAbsolutePathAndNormalize(parameters[0], pathData),await RelativeToAbsolutePathAndNormalize(parameters[1], pathData),user)),
                 new ServerSideCommandContainer("help",0,true,false, async (parameters, pathData, sharedData, user) => await service.GetTerminalHelpText()),
@@ -129,10 +130,16 @@ namespace NCloud.Services
         /// <exception cref="CloudFunctionStopException">Throws if invalid data is present in path</exception>
         private async Task<string> RelativeToAbsolutePathAndNormalize(string path, CloudPathData pathData)
         {
+            if (path.StartsWith(Constants.AbsolutePathMarker) && !Regex.IsMatch(path, Constants.AbsolutePathRegex))
+                throw new CloudFunctionStopException("absolute path contains invalid character(s)");
+
+            else if (!Regex.IsMatch(path, Constants.RelativePathRegex))
+                throw new CloudFunctionStopException("relative path contains invalid character(s)");
+
             path = CloudTerminalTokenizationManager.NormalizeCommandPath(path);
 
             if (path.StartsWith(Constants.AbsolutePathMarker) && path.StartsWith(Constants.PrivateRootName))
-                return pathData.AddUserInfoToAbsolutePath(path);
+                return await CloudPathManager.GetOriginalPath(pathData.AddUserInfoToAbsolutePath(path),service.ServerPath(Constants.PrivateRootName));
 
             else if ((path.StartsWith(Constants.AbsolutePathMarker) && !path.StartsWith(Constants.PrivateRootName)))
                 throw new CloudFunctionStopException("wrong root name");
@@ -149,10 +156,16 @@ namespace NCloud.Services
         /// <exception cref="CloudFunctionStopException">Throws if invalid data is present in path</exception>
         private async Task<string> PathNormalizationForChangingDirectory(string path, CloudPathData pathData)
         {
+            if (path.StartsWith(Constants.AbsolutePathMarker) && !Regex.IsMatch(path, Constants.AbsolutePathRegex))
+                throw new CloudFunctionStopException("absolute path contains invalid character(s)");
+
+            else if(!Regex.IsMatch(path, Constants.RelativePathRegex))
+                throw new CloudFunctionStopException("relative path contains invalid character(s)");
+
             path = CloudTerminalTokenizationManager.NormalizeCommandPath(path);
 
             if (path.StartsWith(Constants.AbsolutePathMarker) && path.StartsWith(Constants.PrivateRootName))
-                return pathData.AddUserInfoToAbsolutePath(path);
+                return await CloudPathManager.GetOriginalPath(pathData.AddUserInfoToAbsolutePath(path),service.ServerPath(Constants.PrivateRootName));
 
             else if ((path.StartsWith(Constants.AbsolutePathMarker) && !path.StartsWith(Constants.PrivateRootName)))
                 throw new CloudFunctionStopException("wrong root name");

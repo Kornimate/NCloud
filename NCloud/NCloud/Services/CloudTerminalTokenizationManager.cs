@@ -74,8 +74,7 @@ namespace NCloud.Services
                     {
                         sb.Append(c);
                     }
-
-                    if (c == Constants.TerminalStringMarker)
+                    else if (c == Constants.TerminalStringMarker)
                     {
                         nextSplitter = c;
                     }

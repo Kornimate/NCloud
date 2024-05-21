@@ -19,7 +19,9 @@ namespace NCloud.ConstantData
         public static string AesKey { get => "bT7TAqTu32JxED0qTPac8w=="; }
         public static string IV { get => "IJ/UpiC2sYsmrq7fbFyemw=="; }
         public static string NoFileType { get => "notype"; }
-        public static string FolderAndFileRegex { get => @"^[0-9a-zA-Z_!%+=.()$\s]+$"; }
+        public static string FolderAndFileRegex { get => @"^[0-9a-zA-Z_!%+=()$\s]+$"; }
+        public static string AbsolutePathRegex { get => @"^[0-9a-zA-Z_!%+=()\\$\s@]+$"; }
+        public static string RelativePathRegex { get => @"^[0-9a-zA-Z_!%+=.()\\$\s@]+$"; }
         public static string CommandRegex { get => @"^[0-9a-zA-Z_!%+=.()-/$\s""@]+$"; }
         public static string UserRegex { get => @"^[0-9a-zA-Z_!%+=.()/$\s""]+$"; }
         public static string ZipMimeType { get => "application/zip"; }

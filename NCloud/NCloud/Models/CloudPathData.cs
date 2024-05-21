@@ -1,8 +1,6 @@
 ﻿using NCloud.ConstantData;
 using NCloud.Models.Extensions;
-using NCloud.Services.Exceptions;
-using System.Security.Claims;
-using System.Text;
+using NCloud.Services;
 using System.Text.Json.Serialization;
 
 namespace NCloud.Models
@@ -149,44 +147,11 @@ namespace NCloud.Models
         /// Setter method to set current state to given path
         /// </summary>
         /// <param name="path">Path in app</param>
-        /// <param name="pathStart">physical path to beginning of path</param>
-        /// <returns>Task for async operation</returns>
-        public async Task SetPath(string path, string pathStart)
+        public void SetPath(string path)
         {
-            CurrentPath = await GetFoldersRealName(new string(path), pathStart);
+            CurrentPath = path;
             PreviousDirectories = CurrentPath.Split(Path.DirectorySeparatorChar, StringSplitOptions.RemoveEmptyEntries).ToList();
             CurrentPathShow = CurrentPath.Slice(Constants.PrivateRootName.Length, Constants.PrivateRootName.Length + Constants.GuidLength + 1).Replace(Path.DirectorySeparatorChar, Constants.PathSeparator);
-        }
-
-        /// <summary>
-        /// Private method to get folders real name from physical file system (case sensitive way)
-        /// </summary>
-        /// <param name="path">Path in app</param>
-        /// <param name="pathStart">Physical path to beginning of app path</param>
-        /// <returns>The path with original folder names in it</returns>
-        /// <exception cref="CloudFunctionStopException">Throws if path is too short</exception>
-        private Task<string> GetFoldersRealName(string path, string pathStart)
-        {
-            string[] paths = path.Split(Path.DirectorySeparatorChar, StringSplitOptions.RemoveEmptyEntries);
-
-            if (paths.Length < 2)
-                throw new CloudFunctionStopException("error while adjusting path");
-
-            string[] realNames = new string[paths.Length - 1];
-
-            realNames[0] = paths[1];
-
-            for (int i = 2; i < paths.Length; i++)
-            {
-                DirectoryInfo dirInfo = new DirectoryInfo(Path.Combine(pathStart, Path.Combine(realNames[..(i - 1)])));
-
-                if (dirInfo.Exists)
-                {
-                    realNames[i - 1] = new string(dirInfo.GetDirectories().First(x => x.Name.ToLower() == paths[i].ToLower()).Name);
-                }
-            }
-
-            return Task.FromResult<string>(Path.Combine(Constants.PrivateRootName, Path.Combine(realNames)));
         }
 
         /// <summary>

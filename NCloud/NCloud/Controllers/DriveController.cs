@@ -10,6 +10,7 @@ using NCloud.Security;
 using Microsoft.AspNetCore.Authorization;
 using NCloud.Services.Exceptions;
 using System.IO;
+using System.Drawing.Drawing2D;
 
 namespace NCloud.Controllers
 {
@@ -31,24 +32,36 @@ namespace NCloud.Controllers
         /// <returns>The View with the specified elements or current path elements</returns>
         public async Task<IActionResult> Details(string? folderName = null, List<CloudFile>? files = null, List<CloudFolder>? folders = null, bool passedItems = false)
         {
-            CloudPathData pathdata = await GetSessionCloudPathData();
+            CloudPathData pathData = await GetSessionCloudPathData();
 
             string currentPath;
 
-            if (SecurityManager.CheckIfDirectoryExists(service.ServerPath(pathdata.TrySetFolder(folderName))))
-                currentPath = pathdata.SetFolder(folderName);
-
+            if (SecurityManager.CheckIfDirectoryExists(service.ServerPath(pathData.TrySetFolder(folderName))))
+            {
+                currentPath = pathData.SetFolder(folderName);
+            }
             else
-                currentPath = pathdata.CurrentPath;
+            {
+                currentPath = pathData.CurrentPath;
 
-            await SetSessionCloudPathData(pathdata);
+                if (!SecurityManager.CheckIfDirectoryExists(service.ServerPath(currentPath)))
+                {
+                    pathData.SetDefaultPathData((await userManager.GetUserAsync(User)).Id.ToString());
+
+                    currentPath = pathData.CurrentPath;
+
+                    AddNewNotification(new Warning("The previous cloud path does not exist, user navigated back to home"));
+                }
+            }
+
+            await SetSessionCloudPathData(pathData);
 
             try
             {
                 return View(new DriveDetailsViewModel(passedItems && files is not null ? files : await service.GetCurrentDepthCloudFiles(currentPath),
                                                       passedItems && folders is not null ? folders : await service.GetCurrentDepthCloudDirectories(currentPath),
-                                                      pathdata.CurrentPathShow,
-                                                      pathdata.CurrentPath,
+                                                      pathData.CurrentPathShow,
+                                                      pathData.CurrentPath,
                                                       Constants.GetWebControllerAndActionForDetails(),
                                                       Constants.GetWebControllerAndActionForDownload()));
             }
@@ -58,8 +71,8 @@ namespace NCloud.Controllers
 
                 return View(new DriveDetailsViewModel(new List<CloudFile>(),
                                                       new List<CloudFolder>(),
-                                                      pathdata.CurrentPathShow,
-                                                      pathdata.CurrentPath,
+                                                      pathData.CurrentPathShow,
+                                                      pathData.CurrentPath,
                                                       null!,
                                                       null!));
             }

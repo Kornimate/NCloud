@@ -403,5 +403,12 @@ namespace NCloud.Services
         /// <param name="fileName">Name of file</param>
         /// <returns>The data from database wrapped in SharedFile object</returns>
         Task<SharedFile> GetSharedFileByPathAndName(string cloudPath, string fileName);
+
+        /// <summary>
+        /// Method to see if sharing path exists in database
+        /// </summary>
+        /// <param name="path">Path in current sharing state</param>
+        /// <returns>Bollean indication the presenc of the path in database</returns>
+        Task<bool> SharedPathExists(string sharingPath);
     }
 }

@@ -30,12 +30,35 @@ namespace NCloud.Controllers
         {
             SharedPathData pathdata = await GetSessionSharedPathData();
 
+            string sharedPath = pathdata.CurrentPath;
+
             try
             {
 
-                string sharedPath = pathdata.SetFolder(folderName);
+                if (sharedPath != Constants.PublicRootName)
+                {
+                    if (await service.SharedPathExists(pathdata.TrySetpath(folderName)))
+                    {
+                        sharedPath = pathdata.SetFolder(folderName);
+                    }
+                    else
+                    {
+                        pathdata = new SharedPathData();
+
+                        sharedPath = pathdata.CurrentPath;
+
+                        AddNewNotification(new Warning("The previous shared path does not exist, user navigated back to sharing home"));
+                    }
+
+                }
+                else if (sharedPath == Constants.PublicRootName)
+                {
+                    sharedPath = pathdata.SetFolder(folderName);
+
+                }
 
                 await SetSessionSharedPathData(pathdata);
+
                 return View(new SharingDetailsViewModel(await service.GetCurrentDepthAppSharingFiles(sharedPath),
                                                         await service.GetCurrentDepthAppSharingDirectories(sharedPath),
                                                         pathdata.CurrentPathShow,
