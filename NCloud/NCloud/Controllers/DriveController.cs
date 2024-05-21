@@ -29,7 +29,7 @@ namespace NCloud.Controllers
         /// <param name="searchPattern">string seach pattern for folders and files for be displayed on UI</param>
         /// <param name="patternForDirs">If pattern is for directories</param>
         /// <returns>The View with the specified elements or current path elements</returns>
-        public async Task<IActionResult> Details(string? folderName = null, string? searchPattern = null, bool? patternForDirs = null)
+        public async Task<IActionResult> Details(string? folderName = null, string? searchPattern = null, bool patternForDirs = false)
         {
             CloudPathData pathData = await GetSessionCloudPathData();
 
@@ -57,8 +57,8 @@ namespace NCloud.Controllers
 
             try
             {
-                return View(new DriveDetailsViewModel(await service.GetCurrentDepthCloudFiles(currentPath, pattern: (patternForDirs != null && patternForDirs == false ? searchPattern : null)),
-                                                      await service.GetCurrentDepthCloudDirectories(currentPath, pattern: (patternForDirs != null && patternForDirs == true ? searchPattern : null)),
+                return View(new DriveDetailsViewModel(await service.GetCurrentDepthCloudFiles(currentPath, pattern: (searchPattern is null ? null : (patternForDirs == false ? searchPattern : Constants.InvalidSearchPattern))),
+                                                      await service.GetCurrentDepthCloudDirectories(currentPath, pattern: (searchPattern is null ? null : (patternForDirs == true ? searchPattern : Constants.InvalidSearchPattern))),
                                                       searchPattern is not null ? pathData.CurrentPathShow + " (searched)" : pathData.CurrentPathShow,
                                                       pathData.CurrentPath,
                                                       Constants.GetWebControllerAndActionForDetails(),

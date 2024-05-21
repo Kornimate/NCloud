@@ -20,6 +20,7 @@ namespace NCloud.ConstantData
         public static string IV { get => "IJ/UpiC2sYsmrq7fbFyemw=="; }
         public static string NoFileType { get => "notype"; }
         public static string FolderAndFileRegex { get => @"^[0-9a-zA-Z_!%+=.()$\s]+$"; }
+        public static string InvalidSearchPattern { get => @"######"; }
         public static string AbsolutePathRegex { get => @"^[0-9a-zA-Z_!%+=()\\$\s@]+$"; }
         public static string RelativePathRegex { get => @"^[0-9a-zA-Z_!%+=.()\\$\s@]+$"; }
         public static string CommandRegex { get => @"^[0-9a-zA-Z_!%+=.()-/$\s""@]+$"; }
