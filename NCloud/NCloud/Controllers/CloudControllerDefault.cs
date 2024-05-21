@@ -203,19 +203,19 @@ namespace NCloud.Controllers
         /// <returns>The file (zip or single file)</returns>
         public async Task<IActionResult> Download(List<string> itemsForDownload, string cloudPath, IActionResult returnAction, bool connectedToApp = false, bool connectedToWeb = false)
         {
+            string? tempFile = null;
+
             try
             {
                 if (itemsForDownload is not null && itemsForDownload.Count != 0)
                 {
                     if (itemsForDownload.Count > 1 || itemsForDownload[0].StartsWith(Constants.SelectedFolderStarterSymbol))
                     {
-                        string? tempFile = null;
-
                         try
                         {
                             tempFile = await service.CreateZipFile(itemsForDownload, cloudPath, GetTempFileNameAndPath(), connectedToApp, connectedToWeb);
                         }
-                        catch(Exception)
+                        catch (Exception)
                         {
                             throw new CloudFunctionStopException("Error while creating zip file");
                         }
@@ -253,9 +253,9 @@ namespace NCloud.Controllers
                                     throw;
                                 }
                             }
-                            else 
+                            else
                             {
-                                throw new CloudFunctionStopException("Invalid data in request"); 
+                                throw new CloudFunctionStopException("Invalid data in request");
                             }
                         }
                         catch (Exception)
@@ -269,7 +269,19 @@ namespace NCloud.Controllers
             }
             catch (Exception)
             {
-                AddNewNotification(new Error($"App unable to download requested item(s)"));
+                try
+                {
+                    if (System.IO.File.Exists(tempFile))
+                    {
+                        System.IO.File.Delete(tempFile);
+                    }
+
+                    AddNewNotification(new Error($"App unable to download requested item(s)"));
+                }
+                catch (Exception)
+                {
+                    logger.LogError($"Temp file not deleted: {tempFile}");
+                }
             }
 
             return returnAction;

@@ -10,6 +10,7 @@ using NCloud.Users;
 using NCloud.ViewModels;
 using System.IO.Compression;
 using System.Text.Json;
+using static NuGet.Packaging.PackagingConstants;
 
 namespace NCloud.Controllers
 {
@@ -120,20 +121,38 @@ namespace NCloud.Controllers
         /// <returns>Redirection to details</returns>
         public async Task<IActionResult> DownloadFolder(string? folderName)
         {
-            if (String.IsNullOrWhiteSpace(folderName))
+            try
             {
-                AddNewNotification(new Error("Invalid folder name"));
+                SharedPathData sharedPath = await GetSessionSharedPathData();
+
+                string cloudPath = await service.ChangePathStructure(sharedPath.CurrentPath);
+
+                if (String.IsNullOrWhiteSpace(folderName))
+                {
+                    AddNewNotification(new Error("Invalid folder name"));
+
+                    return RedirectToAction("Details", "Sharing");
+                }
+
+                SharedFolder sharedFolder = await service.GetSharedFolderByPathAndName(cloudPath, folderName);
+
+                if (sharedFolder.ConnectedToApp == false)
+                    throw new Exception("Directory is not shared");
+
+                return await Download(new List<string>()
+                {
+                    Constants.SelectedFolderStarterSymbol + folderName
+                },
+                cloudPath,
+                RedirectToAction("Details", "Drive"),
+                connectedToApp: true);
+            }
+            catch (Exception)
+            {
+                AddNewNotification(new Error("Error while downloading directory"));
 
                 return RedirectToAction("Details", "Sharing");
             }
-
-            return await Download(new List<string>()
-            {
-                Constants.SelectedFolderStarterSymbol + folderName
-            },
-            await service.ChangePathStructure((await GetSessionSharedPathData()).CurrentPath),
-            RedirectToAction("Details", "Drive"),
-            connectedToApp: true);
         }
 
 
@@ -144,20 +163,38 @@ namespace NCloud.Controllers
         /// <returns>Redirection to details</returns>
         public async Task<IActionResult> DownloadFile(string? fileName)
         {
-            if (String.IsNullOrWhiteSpace(fileName))
+            try
             {
-                AddNewNotification(new Error("Invalid folder name"));
+                SharedPathData sharedPath = await GetSessionSharedPathData();
+
+                string cloudPath = await service.ChangePathStructure(sharedPath.CurrentPath);
+
+                if (String.IsNullOrWhiteSpace(fileName))
+                {
+                    AddNewNotification(new Error("Invalid folder name"));
+
+                    return RedirectToAction("Details", "Sharing");
+                }
+
+                SharedFile sharedFile = await service.GetSharedFileByPathAndName(cloudPath, fileName);
+
+                if (sharedFile.ConnectedToApp == false)
+                    throw new Exception("File is not shared");
+
+                return await Download(new List<string>()
+                {
+                    Constants.SelectedFileStarterSymbol + fileName
+                },
+                cloudPath,
+                RedirectToAction("Details", "Drive"),
+                connectedToApp: true);
+            }
+            catch (Exception)
+            {
+                AddNewNotification(new Error("Error while downloading file"));
 
                 return RedirectToAction("Details", "Sharing");
             }
-
-            return await Download(new List<string>()
-            {
-                Constants.SelectedFileStarterSymbol + fileName
-            },
-            await service.ChangePathStructure((await GetSessionSharedPathData()).CurrentPath),
-            RedirectToAction("Details", "Drive"),
-            connectedToApp: true);
         }
 
         /// <summary>
@@ -202,7 +239,32 @@ namespace NCloud.Controllers
         [ValidateAntiForgeryToken, ActionName("DownloadItems")]
         public async Task<IActionResult> DownloadItemsFromForm([Bind("ItemsForDownload")] DriveDownloadViewModel vm)
         {
-            return await Download(vm.ItemsForDownload ?? new(), await service.ChangePathStructure((await GetSessionSharedPathData()).CurrentPath), RedirectToAction("Details", "Sharing"), connectedToApp: true);
+            try
+            {
+                SharedPathData sharedPath = await GetSessionSharedPathData();
+
+                string cloudPath = await service.ChangePathStructure(sharedPath.CurrentPath);
+
+                foreach (var item in vm.ItemsForDownload ?? new())
+                {
+                    if (item.StartsWith(Constants.SelectedFileStarterSymbol))
+                        if (!(await service.GetSharedFileByPathAndName(cloudPath, item[1..])).ConnectedToApp)
+                            throw new Exception("File is not shared");
+
+                    if (item.StartsWith(Constants.SelectedFolderStarterSymbol))
+                        if (!(await service.GetSharedFolderByPathAndName(cloudPath, item[1..])).ConnectedToApp)
+                            throw new Exception("Directory is not shared");
+                }
+
+                return await Download(vm.ItemsForDownload ?? new(), await service.ChangePathStructure((await GetSessionSharedPathData()).CurrentPath), RedirectToAction("Details", "Sharing"), connectedToApp: true);
+
+            }
+            catch (Exception)
+            {
+                AddNewNotification(new Error("Error while downloading items"));
+
+                return RedirectToAction("Details", "Sharing");
+            }
         }
 
         /// <summary>
