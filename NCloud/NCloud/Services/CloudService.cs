@@ -85,7 +85,7 @@ namespace NCloud.Services
         {
             try
             {
-                if (!Directory.Exists(privateFolderPath)) //deleting user folder
+                if (Directory.Exists(privateFolderPath)) //deleting user folder
                 {
                     Directory.Delete(privateFolderPath, true);
                 }
@@ -95,6 +95,8 @@ namespace NCloud.Services
 
                 context.SharedFiles.RemoveRange(userFiles);
                 context.SharedFolders.RemoveRange(userFolders);
+
+                await context.SaveChangesAsync();
 
                 return true;
             }
@@ -1226,7 +1228,7 @@ namespace NCloud.Services
         {
             user = await context.Users.FirstOrDefaultAsync(x => x.Id == user.Id) ?? throw new CloudFunctionStopException("user is not found"); //get current user state from database or show error
 
-            user.UsedSpace = await GetDirectorySize(Constants.PrivateRootName);
+            user.UsedSpace = await GetDirectorySize(Constants.GetPrivateCloudDirectoryForUser(user));
 
             context.Users.Update(user);
 

@@ -107,7 +107,7 @@ namespace NCloud.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> EvaluateSingleLine(string command)
         {
-            command = command.Trim();
+            command = command.Trim().Replace('\t',' ');
 
             if (String.IsNullOrWhiteSpace(command))
             {

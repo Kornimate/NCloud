@@ -17,7 +17,7 @@
             </nav>
         </div>
         <div class="input-group hidden" id="fastInputDiv">
-            <input type="text" class="form-control py-3" name="command" id="currentPath" value="@Model.CurrentPathShow" />
+            <input type="text" class="form-control py-3" name="command" spellcheck="false" id="currentPath" value="@Constants.SingleLineCommandMarker" />
             <button type="submit" value="" class="btn btn-primary" form="pathform" id="fastInputBtn"><img src="~/utilities/arrow-right-circle.svg" width=" 20" height="20" class="rounded-circle align-middle" /></button>
         </div>
     </form>
@@ -47,7 +47,7 @@
             <div class="d-flex justify-content-center w-100">
                 <form asp-action="AddNewFolder" class="w-100">
                     <div class="w-100 d-inline-flex input-group form-group">
-                        <input type="text" name="folderName" placeholder="Write new directory name here..." class="d-inline form-control" />
+                        <input type="text" name="folderName" id="folderName" placeholder="Write new directory name here..." class="d-inline form-control" />
                         <button type="submit" class="btn btn-primary d-inline"><img src="~/utilities/folder-plus.svg" width=" 20" height="20" class="rounded align-middle" /></button>
                     </div>
                 </form>
@@ -122,6 +122,8 @@
 
         function FolderCreateShown(){
             sessionStorage.setItem("openedMiniWindow", "folder");
+
+            document.getElementById("folderName").focus();
         }
 
         function FolderCreateHidden(){
@@ -161,8 +163,9 @@
             document.getElementById("fastInputDiv").classList.toggle("hidden");
             input = document.getElementById("currentPath");
             input.focus();
+            const temp = input.value;
             input.value = '';
-            input.value = "@Model.CurrentPathShow";
+            input.value = temp;
         }
 
         function InputFocusLost(e) {

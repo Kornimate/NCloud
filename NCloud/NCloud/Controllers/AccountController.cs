@@ -33,7 +33,7 @@ namespace NCloud.Controllers
             CloudUser user = await userManager.GetUserAsync(User);
 
             ViewBag.ReturnUrl = returnUrl;
-            
+
             return View(new AccountViewModel(user.UserName, user.FullName, user.Email));
         }
 
@@ -55,11 +55,11 @@ namespace NCloud.Controllers
         /// </summary>
         /// <param name="vm">Login data inside LoginViewModel class</param>
         /// <param name="returnUrl">Url to be returned to</param>
-        /// <returns>Redirection to dashboard, otherwise view with error message</returns>
+        /// <returns>Redirection to dashboard or to return URL, otherwise view with error message</returns>
         [HttpPost]
         [AllowAnonymous]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Login([Bind("UserName,Password")]LoginViewModel vm, string? returnUrl = null)
+        public async Task<IActionResult> Login([Bind("UserName,Password")] LoginViewModel vm, string? returnUrl = null)
         {
             ViewBag.ReturnUrl = returnUrl;
 
@@ -77,6 +77,8 @@ namespace NCloud.Controllers
 
                 if (result.Succeeded)
                 {
+                    AddNewNotification(new Success("Successful login"));
+
                     if (returnUrl is null)
                     {
                         return RedirectToAction("Index", "DashBoard");
@@ -130,18 +132,18 @@ namespace NCloud.Controllers
 
                         return View(vm);
                     }
-                    var existingEmail = await userManager.FindByNameAsync(vm.Email);
+                    var existingEmail = await userManager.FindByEmailAsync(vm.Email);
 
                     if (existingEmail is not null)
                     {
-                        AddNewNotification(new Error("This Username is already in use!"));
+                        AddNewNotification(new Error("Email is already in use"));
 
                         return View(vm);
-                   
+
                     }
 
                     var user = new CloudUser { UserName = vm.UserName, FullName = vm.FullName, Email = vm.Email };
-                    
+
                     var result = await userManager.CreateAsync(user, vm.Password);
 
                     if (result.Succeeded)
@@ -154,6 +156,8 @@ namespace NCloud.Controllers
 
                             await signInManager.SignInAsync(newUser, false);
 
+                            AddNewNotification(new Success("Successful registration"));
+
                             return RedirectToAction(nameof(Index), "DashBoard");
                         }
                         catch (CloudFunctionStopException ex)
@@ -162,7 +166,7 @@ namespace NCloud.Controllers
 
                             return View(vm);
                         }
-                        catch(CloudLoggerException ex)
+                        catch (CloudLoggerException ex)
                         {
                             logger.LogError(ex.Message);
 
@@ -171,7 +175,7 @@ namespace NCloud.Controllers
 
                             if (!await service.RemoveUser(user))
                                 logger.LogError($"Error while removing user - {user.UserName}");
-                            
+
 
                             return View(vm);
                         }
@@ -186,6 +190,26 @@ namespace NCloud.Controllers
             }
 
             return View(vm);
+        }
+
+        public async Task<IActionResult> DeleteAccount()
+        {
+            CloudUser user = await userManager.GetUserAsync(User);
+
+            try
+            {
+                await service.DeleteDirectoriesForUser(Constants.GetPrivateBaseDirectoryForUser(user.Id.ToString()), user);
+
+                await signInManager.SignOutAsync();
+
+                await userManager.DeleteAsync(user);
+            }
+            catch (Exception)
+            {
+                logger.LogError($"Failed to remove user and folders for user: {user.UserName} {user.Id.ToString()}");
+            }
+
+            return RedirectToAction("Index", "Home");
         }
 
         public async Task<IActionResult> Logout()

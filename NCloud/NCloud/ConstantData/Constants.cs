@@ -89,6 +89,14 @@ namespace NCloud.ConstantData
             return new Pair<string, string>("Drive", "GetQRCodeForItem");
         }
 
+        public static string GetPrivateCloudDirectoryForUser(CloudUser user)
+        {
+            if (user is null)
+                return String.Empty;
+
+            return Path.Combine(PrivateRootName, user.Id.ToString());
+        }
+
         public static string GetPrivateBaseDirectoryForUser(string userId)
         {
             return Path.Combine(GetPrivateBaseDirectory(), userId);
@@ -111,7 +119,7 @@ namespace NCloud.ConstantData
         }
         public static string GetLogFilePath()
         {
-            return $".__Logs__/{Constants.AppName}-{{Date}}.txt";
+            return $".__Logs__/{AppName}-{{Date}}.txt";
         }
 
         public static string GetSharingRootPathInDatabase(string userName)
