@@ -112,11 +112,11 @@ namespace NCloud.Services
 
             newPath = newPath.Replace($"{Path.DirectorySeparatorChar}{Constants.CommandCurrentPathMarker}{Path.DirectorySeparatorChar}", $"{Path.DirectorySeparatorChar}");
 
-            if (newPath.EndsWith(Constants.CommandCurrentPathMarker) && !newPath.EndsWith(Constants.DirectoryBack))
-                newPath = newPath[..^1];
-
             if (newPath.EndsWith(Path.DirectorySeparatorChar))
                 newPath = newPath[..^1];
+
+            while(newPath.EndsWith($"{Path.DirectorySeparatorChar}{Constants.CommandCurrentPathMarker}"))
+                newPath = newPath[..^2];
 
             return newPath;
         }

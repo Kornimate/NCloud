@@ -82,7 +82,7 @@ namespace NCloud.Services
                     }
                 }
 
-                return (true, Constants.TerminalGreenText("command executed successfully"), result, commandData.PrintResult);
+                return (true, "command executed successfully", result, commandData.PrintResult);
             }
             catch (CloudFunctionStopException ex)
             {

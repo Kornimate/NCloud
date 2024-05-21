@@ -107,7 +107,7 @@ namespace NCloud.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> EvaluateSingleLine(string command)
         {
-            command = command.Trim().Replace('\t',' ');
+            command = command.Trim().Replace('\t', ' ');
 
             if (String.IsNullOrWhiteSpace(command))
             {
@@ -121,12 +121,12 @@ namespace NCloud.Controllers
 
                 CloudTerminalTokenizationManager.CheckCorrectnessOfSingleLineCommand(command);
 
-                var commandAndParamertes = CloudTerminalTokenizationManager.Tokenize(command, (await userManager.GetUserAsync(User)).Id.ToString());
+                var commandAndParameters = CloudTerminalTokenizationManager.Tokenize(command, (await userManager.GetUserAsync(User)).Id.ToString());
 
                 CloudPathData pathData = await GetSessionCloudPathData();
                 SharedPathData sharedData = await GetSessionSharedPathData();
 
-                var successAndMsgAndPayLoadAndPrint = await terminalService.Execute(commandAndParamertes.First, commandAndParamertes.Second, pathData, sharedData, await userManager.GetUserAsync(User));
+                var successAndMsgAndPayLoadAndPrint = await terminalService.Execute(commandAndParameters.First, commandAndParameters.Second, pathData, sharedData, await userManager.GetUserAsync(User));
 
                 await SetSessionCloudPathData(pathData);
                 await SetSessionSharedPathData(sharedData);
@@ -136,10 +136,10 @@ namespace NCloud.Controllers
                 AddNewNotification(notification);
 
                 if (successAndMsgAndPayLoadAndPrint.Item3 is List<CloudFile> files)
-                    return RedirectToAction("Details", "Drive", new { files = files, folders = new List<CloudFolder>(), passedItems = true });
+                    return RedirectToAction("Details", "Drive", new { searchPattern = commandAndParameters.Second[0], patternForDirs = false });
 
                 if (successAndMsgAndPayLoadAndPrint.Item3 is List<CloudFolder> folders)
-                    return RedirectToAction("Details", "Drive", new { files = new List<CloudFile>(), folders = folders, passedItems = true });
+                    return RedirectToAction("Details", "Drive", new { searchPattern = commandAndParameters.Second[0], patternForDirs = true });
 
                 return RedirectToAction("Details", "Drive");
 

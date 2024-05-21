@@ -26,11 +26,10 @@ namespace NCloud.Controllers
         ///  Action method lists the current directory's items
         /// </summary>
         /// <param name="folderName">Name of the directory to be listed</param>
-        /// <param name="files">files to display on UI if passed as parameter, optional</param>
-        /// <param name="folders">folders to display on if passed as parameter, optional</param>
-        /// <param name="passedItems">bool if passed items shoold be displayed on UI</param>
+        /// <param name="searchPattern">string seach pattern for folders and files for be displayed on UI</param>
+        /// <param name="patternForDirs">If pattern is for directories</param>
         /// <returns>The View with the specified elements or current path elements</returns>
-        public async Task<IActionResult> Details(string? folderName = null, List<CloudFile>? files = null, List<CloudFolder>? folders = null, bool passedItems = false)
+        public async Task<IActionResult> Details(string? folderName = null, string? searchPattern = null, bool patternForDirs = false)
         {
             CloudPathData pathData = await GetSessionCloudPathData();
 
@@ -58,9 +57,9 @@ namespace NCloud.Controllers
 
             try
             {
-                return View(new DriveDetailsViewModel(passedItems && files is not null ? files : await service.GetCurrentDepthCloudFiles(currentPath),
-                                                      passedItems && folders is not null ? folders : await service.GetCurrentDepthCloudDirectories(currentPath),
-                                                      pathData.CurrentPathShow,
+                return View(new DriveDetailsViewModel(await service.GetCurrentDepthCloudFiles(currentPath, pattern: (patternForDirs ? null : searchPattern)),
+                                                      await service.GetCurrentDepthCloudDirectories(currentPath, pattern: (patternForDirs ? searchPattern : null)),
+                                                      searchPattern is not null ? pathData.CurrentPathShow + " (searched)" : pathData.CurrentPathShow,
                                                       pathData.CurrentPath,
                                                       Constants.GetWebControllerAndActionForDetails(),
                                                       Constants.GetWebControllerAndActionForDownload()));
