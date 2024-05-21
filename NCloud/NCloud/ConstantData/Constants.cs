@@ -97,57 +97,125 @@ namespace NCloud.ConstantData
             return Path.Combine(PrivateRootName, user.Id.ToString());
         }
 
+        /// <summary>
+        /// static method to get physical path of base directorz of user
+        /// </summary>
+        /// <param name="userId">Id of user</param>
+        /// <returns>The physical path to user base directory</returns>
         public static string GetPrivateBaseDirectoryForUser(string userId)
         {
             return Path.Combine(GetPrivateBaseDirectory(), userId);
         }
+
+        /// <summary>
+        /// Static method to get base directory for stored items
+        /// </summary>
+        /// <returns>The physical path to stored items</returns>
         public static string GetPrivateBaseDirectory()
         {
             return Path.Combine(Directory.GetCurrentDirectory(), ".__CloudData__", "Private");
         }
+
+        /// <summary>
+        /// Static method to get path to temp files folder
+        /// </summary>
+        /// <returns>The physical path to temp files folder</returns>
         public static string GetTempFileDirectory()
         {
             return Path.Combine(Directory.GetCurrentDirectory(), TempFilePath);
         }
+
+        /// <summary>
+        /// Static method to get path in app to user base directory
+        /// </summary>
+        /// <param name="id">user as CloudUser</param>
+        /// <returns>The path in app</returns>
         public static string GetCloudRootPathInDatabase(Guid id)
         {
             return Path.Combine(PrivateRootName, id.ToString());
         }
+
+        /// <summary>
+        /// Static method to get physical path to logs
+        /// </summary>
+        /// <returns>The physical path to logs</returns>
         public static string GetLogFilesDirectory()
         {
             return Path.Combine(Directory.GetCurrentDirectory(), ".__Logs__");
         }
+
+        /// <summary>
+        /// Static method to get logs files path for logging NuGet
+        /// </summary>
+        /// <returns>The format string for logging NuGet</returns>
         public static string GetLogFilePath()
         {
             return $".__Logs__/{AppName}-{{Date}}.txt";
         }
 
+        /// <summary>
+        /// Static method to get sharing path root for user
+        /// </summary>
+        /// <param name="userName">User name</param>
+        /// <returns>The sharing path root for user</returns>
         public static string GetSharingRootPathInDatabase(string userName)
         {
             return Path.Combine(PublicRootName, userName);
         }
+
+        /// <summary>
+        /// Static method to get path of saving files from editor (if new file created)
+        /// </summary>
+        /// <param name="id">Id of user</param>
+        /// <returns>The default saving path for new files in app</returns>
         public static string GetDefaultFileSavingPath(Guid id)
         {
             return Path.Combine(GetCloudRootPathInDatabase(id), "Documents");
         }
 
+        /// <summary>
+        /// Static method to get default file saving path in showable form
+        /// </summary>
+        /// <returns>The default file saving path in showable form</returns>
         public static string GetDefaultFileShowingPath()
         {
             return String.Join(PathSeparator, PrivateRootName, "Documents");
         }
 
+        /// <summary>
+        /// Static method to print red text in cloud terminal
+        /// </summary>
+        /// <param name="text">The text to be formatted</param>
+        /// <returns>The formatted text</returns>
         public static string TerminalRedText(string text)
         {
             return $"[[b;red;black]{text}]";
         }
+
+        /// <summary>
+        /// Static method to print green text in cloud terminal
+        /// </summary>
+        /// <param name="text">The text to be formatted</param>
+        /// <returns>The formatted text</returns>
         public static string TerminalGreenText(string text)
         {
             return $"[[b;green;black]{text}]";
         }
+
+        /// <summary>
+        /// Static method to print red yellow in cloud terminal
+        /// </summary>
+        /// <param name="text">The text to be formatted</param>
+        /// <returns>The formatted text</returns>
         public static string TerminalYellowText(string text)
         {
             return $"[[b;yellow;black]{text}]";
         }
+        /// <summary>
+        /// Static method to print white text in cloud terminal
+        /// </summary>
+        /// <param name="text">The text to be formatted</param>
+        /// <returns>The formatted text</returns>
         public static string TerminalWhiteText(string text)
         {
             return $"[[b;white;black]{text}]";
