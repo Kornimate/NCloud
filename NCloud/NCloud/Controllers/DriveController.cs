@@ -50,7 +50,7 @@ namespace NCloud.Controllers
 
                     currentPath = pathData.CurrentPath;
 
-                    AddNewNotification(new Warning("The previous cloud path does not exist, user navigated back to home"));
+                    AddNewNotification(new Information("The previous cloud path does not exist, user navigated back to home"));
                 }
             }
 

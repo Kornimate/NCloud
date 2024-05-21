@@ -83,7 +83,7 @@
                                         <a asp-controller="Sharing" class="btn btn-primary" asp-action="DownloadFolder" asp-route-folderName="@item.Info.Name"><img src="~/utilities/cloud-download.svg" width=" 20" height="20" class="rounded align-middle" download /></a>
                                         @if (Model.Owner)
                                         {
-                                            <button type="button" class="btn btn-primary"  onclick="disConnectItemFromAppSharing('@Url.Action("DisconnectDirectoryFromApp", "Sharing")','@item.Info.Name', '@counter', 'shareditems')">
+                                            <button type="button" class="btn btn-primary"  onclick="disConnectItemFromAppSharing('@Url.Action("DisconnectDirectoryFromApp", "Sharing")','@item.Info.Name', '@counter', 'shareditems','@Url.Action("Details","Sharing")')">
                                                 <img src="~/utilities/noshare.svg" width=" 20" height="20" class="rounded-circle align-middle" id="@(counter)_btnImage" />
                                                 <div class="spinner-border spinner-border-sm text-dark hidden mx-1" role="status" id="@(counter)_btnSpinner">
                                                     <span class="visually-hidden">Loading...</span>
@@ -120,7 +120,7 @@
                                     <span id="iconforitemtype">
                                         <img src="@item.IconPath" width="20" height="20" class="item align-bottom">
                                     </span>
-                                    <a asp-action="Details" asp-route-folderName="@item.Info!.Name" class="itemlink">@item.Info.Name</a>
+                                    <span class="itemlink">@item.Info.Name</span>
                                     <small class="text-muted text-truncate me-2">(@item.ItemPath)</small>
                                 </summary>
                                 <fieldset class="border border-dark p-2 m-2 rounded">
@@ -187,7 +187,7 @@
                                         <a asp-controller="Sharing" class="btn btn-primary" asp-action="DownloadFile" asp-route-fileName="@item.Info.Name"><img src="~/utilities/cloud-download.svg" width=" 20" height="20" class="rounded align-middle" download /></a>
                                         @if (Model.Owner)
                                         {
-                                            <button type="button" class="btn btn-primary"  onclick="disConnectItemFromAppSharing('@Url.Action("DisconnectFileFromApp", "Sharing")','@item.Info.Name', '@counter', 'shareditems')">
+                                            <button type="button" class="btn btn-primary"  onclick="disConnectItemFromAppSharing('@Url.Action("DisconnectFileFromApp", "Sharing")','@item.Info.Name', '@counter', 'shareditems','@Url.Action("Details","Sharing")')">
                                                 <img src="~/utilities/noshare.svg" width=" 20" height="20" class="rounded-circle align-middle" id="@(counter)_btnImage" />
                                                 <div class="spinner-border spinner-border-sm text-dark hidden mx-1" role="status" id="@(counter)_btnSpinner">
                                                     <span class="visually-hidden">Loading...</span>

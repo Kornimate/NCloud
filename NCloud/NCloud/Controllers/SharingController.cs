@@ -47,7 +47,7 @@ namespace NCloud.Controllers
 
                         sharedPath = pathdata.CurrentPath;
 
-                        AddNewNotification(new Warning("The previous shared path does not exist, user navigated back to sharing home"));
+                        AddNewNotification(new Information("The previous shared path does not exist, user navigated back to sharing home"));
                     }
 
                 }

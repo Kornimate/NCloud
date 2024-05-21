@@ -287,7 +287,7 @@ async function disConnectFileFromApp(url, file, id) {
     }
 }
 
-async function disConnectItemFromAppSharing(url, itemName, id, containerName) {
+async function disConnectItemFromAppSharing(url, itemName, id, containerName, refreshUrl) {
 
     document.getElementById(`${id}_btnImage`).classList.add("hidden");
     document.getElementById(`${id}_btnSpinner`).classList.remove("hidden");
@@ -306,7 +306,9 @@ async function disConnectItemFromAppSharing(url, itemName, id, containerName) {
         itemsContainer.removeChild(document.getElementById(id));
 
         if (itemsContainer.childElementCount == 0) {
-            itemsContainer.innerHTML = '<tr><td><span class="w-100 d-flex justify-content-center text-muted align-middle fst-italic">No shared items</span></td></tr>';
+            window.location.href = refreshUrl;
+
+            return;
         }
 
         ShowSuccessToast("Success", result.message);

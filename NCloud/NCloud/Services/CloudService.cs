@@ -1255,7 +1255,9 @@ namespace NCloud.Services
 
         public async Task<bool> SharedPathExists(string sharingPath)
         {
-            return await context.SharedFiles.AnyAsync(x => x.SharedPathFromRoot.ToLower() == sharingPath.ToLower() && x.ConnectedToApp) || await context.SharedFolders.AnyAsync(x => x.SharedPathFromRoot.ToLower() == sharingPath.ToLower() && x.ConnectedToApp);
+            var parent = GetParentPathAndName(sharingPath);
+
+            return await context.SharedFiles.AnyAsync(x => (x.SharedPathFromRoot.ToLower() == sharingPath.ToLower() || x.SharedPathFromRoot.ToLower() == parent.First.ToLower()) && x.ConnectedToApp) || await context.SharedFolders.AnyAsync(x => (x.SharedPathFromRoot.ToLower() == sharingPath.ToLower() || x.SharedPathFromRoot.ToLower() == parent.First.ToLower()) && x.ConnectedToApp);
         }
 
         #endregion
@@ -1696,10 +1698,10 @@ namespace NCloud.Services
                     }
                     else
                     {
-                        string parentSharingPath = Path.Combine(upperDirs.Take(i).ToArray());
+                        string parentSharingPath = Path.Combine(upperSharingDirs.Take(i).ToArray());
 
-                        if (await context.SharedFolders.AnyAsync(x => x.SharedPathFromRoot.ToLower() == parentSharingPath.ToLower())
-                           || await context.SharedFolders.AnyAsync(x => x.SharedPathFromRoot.ToLower() == parentSharingPath.ToLower()))
+                        if ((await context.SharedFolders.AnyAsync(x => x.SharedPathFromRoot.ToLower() == parentSharingPath.ToLower() && x.ConnectedToApp))
+                           || (await context.SharedFiles.AnyAsync(x => x.SharedPathFromRoot.ToLower() == parentSharingPath.ToLower() && x.ConnectedToApp)))
                         {
                             return noError;
                         }
