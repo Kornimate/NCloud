@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using NCloud.ViewModels;
 
 namespace NCloud.ViewComponents
 {

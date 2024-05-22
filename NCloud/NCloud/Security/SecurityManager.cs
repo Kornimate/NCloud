@@ -15,7 +15,7 @@ namespace NCloud.Security
         /// <returns>Boolean if file exists</returns>
         public static bool CheckIfFileExists(string? path)
         {
-            if(String.IsNullOrWhiteSpace(path))
+            if (String.IsNullOrWhiteSpace(path))
                 return false;
 
             return File.Exists(path);
@@ -48,7 +48,7 @@ namespace NCloud.Security
             var readRule = new FileSystemAccessRule(identity, FileSystemRights.ReadData, AccessControlType.Allow);
             var writeRule = new FileSystemAccessRule(identity, FileSystemRights.WriteData, AccessControlType.Allow);
             var noExecRule = new FileSystemAccessRule(identity, FileSystemRights.ExecuteFile, AccessControlType.Deny); //execution denied
-            
+
             fileSecurity.AddAccessRule(readRule);
             fileSecurity.AddAccessRule(writeRule);
             fileSecurity.AddAccessRule(noExecRule);

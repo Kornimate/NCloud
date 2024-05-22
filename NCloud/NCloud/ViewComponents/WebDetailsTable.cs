@@ -16,7 +16,7 @@ namespace NCloud.ViewComponents
         /// <returns>View of the component</returns>
         public async Task<IViewComponentResult> InvokeAsync(WebDetailsViewModel vm)
         {
-            return await Task.FromResult(View("Table",vm));
+            return await Task.FromResult(View("Table", vm));
         }
     }
 }

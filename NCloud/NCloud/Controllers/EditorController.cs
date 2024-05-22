@@ -1,14 +1,14 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using NCloud.Services;
-using NCloud.Models;
-using NCloud.ViewModels;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
-using NCloud.Users;
-using NCloud.DTOs;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using NCloud.ConstantData;
-using Microsoft.AspNetCore.Authorization;
+using NCloud.DTOs;
+using NCloud.Models;
+using NCloud.Services;
 using NCloud.Services.Exceptions;
+using NCloud.Users;
+using NCloud.ViewModels;
 
 namespace NCloud.Controllers
 {
@@ -275,7 +275,7 @@ namespace NCloud.Controllers
 
                 return Json(new ConnectionDTO { Success = false, Redirection = Url.Action("Index", "DashBoard")! });
             }
-            catch(CloudFunctionStopException ex)
+            catch (CloudFunctionStopException ex)
             {
                 return Json(new ConnectionDTO { Success = false, Message = $"Error - {ex.Message}" });
             }

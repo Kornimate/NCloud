@@ -4,7 +4,6 @@ using NCloud.Models;
 using NCloud.Services.Exceptions;
 using System.Text;
 using System.Text.RegularExpressions;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
 namespace NCloud.Services
 {
@@ -115,7 +114,7 @@ namespace NCloud.Services
             if (newPath.EndsWith(Path.DirectorySeparatorChar))
                 newPath = newPath[..^1];
 
-            while(newPath.EndsWith($"{Path.DirectorySeparatorChar}{Constants.CommandCurrentPathMarker}"))
+            while (newPath.EndsWith($"{Path.DirectorySeparatorChar}{Constants.CommandCurrentPathMarker}"))
                 newPath = newPath[..^2];
 
             return newPath;

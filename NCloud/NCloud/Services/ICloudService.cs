@@ -1,6 +1,5 @@
 ﻿using NCloud.Models;
 using NCloud.Users;
-using System.Security.Claims;
 
 namespace NCloud.Services
 {
@@ -28,7 +27,7 @@ namespace NCloud.Services
         /// <param name="pattern">Pattern to get only files matching the given pattern</param>
         /// <returns></returns>
         Task<List<CloudFile>> GetCurrentDepthCloudFiles(string cloudPath, bool connectToApp = false, bool connectToWeb = false, string? pattern = null);
-        
+
         /// <summary>
         /// Method to get admin user from database
         /// </summary>

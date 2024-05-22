@@ -8,7 +8,6 @@ using NCloud.Services;
 using NCloud.Services.Exceptions;
 using NCloud.Users;
 using NCloud.ViewModels;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
 namespace NCloud.Controllers
 {

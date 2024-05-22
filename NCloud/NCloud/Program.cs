@@ -1,6 +1,4 @@
 using DNTCaptcha.Core;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using NCloud.ConstantData;
 using NCloud.Models;
@@ -8,7 +6,6 @@ using NCloud.Security;
 using NCloud.Services;
 using NCloud.Users;
 using NCloud.Users.Roles;
-using System.Threading;
 
 namespace NCloud
 {
@@ -42,7 +39,7 @@ namespace NCloud
             builder.Services.AddTransient<ICloudTerminalService, CloudTerminalService>();
 
             builder.Services.AddTransient<ICloudNotificationService, CloudNotificationService>();
-          
+
             builder.Services.AddControllersWithViews();
 
             builder.Services.AddDistributedMemoryCache();

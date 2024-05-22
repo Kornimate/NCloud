@@ -32,7 +32,7 @@ namespace NCloud.Security
                     {
                         using (var cryptoStream = new CryptoStream(memoryStream, encryptor, CryptoStreamMode.Write))
                         {
-                            cryptoStream.Write(Encoding.UTF8.GetBytes(input),0, input.Length);
+                            cryptoStream.Write(Encoding.UTF8.GetBytes(input), 0, input.Length);
                             cryptoStream.FlushFinalBlock();
                             return Convert.ToBase64String(memoryStream.ToArray());
                         }

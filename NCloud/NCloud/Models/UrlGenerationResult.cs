@@ -5,7 +5,7 @@
     /// </summary>
     public class UrlGenerationResult
     {
-        public string Controller {  get; set; }
+        public string Controller { get; set; }
         public string Action { get; set; }
         public object Parameters { get; set; }
         public bool Downloadable { get; set; }

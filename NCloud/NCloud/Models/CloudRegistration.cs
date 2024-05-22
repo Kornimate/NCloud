@@ -1,6 +1,4 @@
 ﻿using NCloud.ConstantData;
-using NCloud.Security;
-using System.Text;
 
 namespace NCloud.Models
 {
@@ -15,7 +13,7 @@ namespace NCloud.Models
         public string? ItemPath { get; set; }
         public bool IsConnectedToApp { get; set; }
         public bool IsConnectedToWeb { get; set; }
-        
+
         public CloudRegistration(bool isSharedInApp, bool isPublic, string? id = null)
         {
             IconPath = null!;
@@ -43,7 +41,7 @@ namespace NCloud.Models
         /// </summary>
         /// <returns>The name of the object</returns>
         public abstract string ReturnName();
-        
+
         /// <summary>
         /// static method to create instance of child class using specified rules
         /// </summary>

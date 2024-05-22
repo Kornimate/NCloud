@@ -1,5 +1,4 @@
-﻿using NCloud.ConstantData;
-using QRCoder;
+﻿using QRCoder;
 using System.Drawing;
 
 namespace NCloud.Services

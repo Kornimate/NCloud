@@ -15,8 +15,17 @@ namespace NCloud.Users
         public virtual ICollection<SharedFolder> SharedFolders { get; set; }
         public virtual ICollection<SharedFile> SharedFiles { get; set; }
 
-        public CloudUser()
+        public CloudUser() : base()
         {
+            SharedFolders = new List<SharedFolder>();
+            SharedFiles = new List<SharedFile>();
+        }
+
+        public CloudUser(string userName, string fullName) : base(userName)
+        {
+            FullName = fullName;
+            UsedSpace = 0;
+            MaxSpace = Constants.UserSpaceSize;
             SharedFolders = new List<SharedFolder>();
             SharedFiles = new List<SharedFile>();
         }

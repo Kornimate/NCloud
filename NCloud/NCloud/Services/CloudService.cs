@@ -1,19 +1,15 @@
-﻿using NCloud.Models;
+﻿using Castle.Core;
 using Microsoft.EntityFrameworkCore;
-using NCloud.Users;
-using System.Text.Json;
-using Microsoft.AspNetCore.Identity;
 using NCloud.ConstantData;
-using System.Security.Claims;
-using Castle.Core;
+using NCloud.Models;
+using NCloud.Models.Extensions;
+using NCloud.Security;
 using NCloud.Services.Exceptions;
+using NCloud.Users;
+using Newtonsoft.Json.Linq;
 using System.IO.Compression;
 using System.Text;
-using Newtonsoft.Json.Linq;
 using System.Text.RegularExpressions;
-using NCloud.Security;
-using System.IO;
-using NCloud.Models.Extensions;
 
 namespace NCloud.Services
 {
@@ -33,8 +29,6 @@ namespace NCloud.Services
         }
         public async Task<bool> RemoveUser(CloudUser user)
         {
-
-
             try
             {
                 context.Users.Remove(user);
@@ -1698,7 +1692,7 @@ namespace NCloud.Services
 
                     if (connectToApp)
                     {
-                        noError = noError && await SetDirectoryConnectedState(actualCloudPath, upperDirs[i-1], actualSharingPath, user, connectToApp, false, true);
+                        noError = noError && await SetDirectoryConnectedState(actualCloudPath, upperDirs[i - 1], actualSharingPath, user, connectToApp, false, true);
                     }
                     else
                     {
@@ -1710,7 +1704,7 @@ namespace NCloud.Services
                             return noError;
                         }
 
-                        noError = noError && await SetDirectoryConnectedState(actualCloudPath, upperDirs[i-1], actualSharingPath, user, connectToApp, false, true);
+                        noError = noError && await SetDirectoryConnectedState(actualCloudPath, upperDirs[i - 1], actualSharingPath, user, connectToApp, false, true);
                     }
                 }
 

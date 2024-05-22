@@ -1,5 +1,4 @@
-﻿using NCloud.ConstantData;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace NCloud.ViewModels
 {

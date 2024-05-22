@@ -1,6 +1,5 @@
 ﻿using Castle.Core;
 using NCloud.Users;
-using System.Security.Claims;
 
 namespace NCloud.ConstantData
 {

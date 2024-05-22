@@ -1,6 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
-
-namespace NCloud.ViewModels
+﻿namespace NCloud.ViewModels
 {
     /// <summary>
     /// Container class for data in Editor specific editors action method

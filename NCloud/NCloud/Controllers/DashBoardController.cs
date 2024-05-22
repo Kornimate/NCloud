@@ -30,7 +30,7 @@ namespace NCloud.Controllers
 
                 await service.CheckUserStorageUsed(user);
 
-                double usedPercent = Math.Ceiling((user.UsedSpace / user.MaxSpace)*100);
+                double usedPercent = Math.Ceiling((user.UsedSpace / user.MaxSpace) * 100);
 
                 if (usedPercent < 0.0)
                     usedPercent = 0.0;

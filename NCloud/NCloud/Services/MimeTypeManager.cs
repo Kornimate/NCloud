@@ -19,7 +19,7 @@ namespace NCloud.Services
 
             var provider = new FileExtensionContentTypeProvider();
 
-            if(!provider.TryGetContentType(fileName, out string? possibleMimeType))
+            if (!provider.TryGetContentType(fileName, out string? possibleMimeType))
             {
                 return mimeType;
             }

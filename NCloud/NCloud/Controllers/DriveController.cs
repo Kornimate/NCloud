@@ -1,16 +1,14 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using NCloud.Models;
-using NCloud.Services;
-using NCloud.Users;
-using NCloud.ViewModels;
 using NCloud.ConstantData;
 using NCloud.DTOs;
+using NCloud.Models;
 using NCloud.Security;
-using Microsoft.AspNetCore.Authorization;
+using NCloud.Services;
 using NCloud.Services.Exceptions;
-using System.IO;
-using System.Drawing.Drawing2D;
+using NCloud.Users;
+using NCloud.ViewModels;
 
 namespace NCloud.Controllers
 {

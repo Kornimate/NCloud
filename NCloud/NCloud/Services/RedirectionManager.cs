@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using NCloud.ConstantData;
+﻿using NCloud.ConstantData;
 using NCloud.Models;
 
 namespace NCloud.Services

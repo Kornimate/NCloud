@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using NCloud.Models;
 using NCloud.Services;
 using NCloud.Users;
 using NCloud.ViewModels;

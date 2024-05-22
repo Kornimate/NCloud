@@ -1,12 +1,7 @@
-﻿using Castle.Core;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Routing;
-using NCloud.ConstantData;
+﻿using NCloud.ConstantData;
 using NCloud.Models;
 using NCloud.Services.Exceptions;
 using NCloud.Users;
-using Newtonsoft.Json.Linq;
-using System.Security.Policy;
 using System.Text.RegularExpressions;
 
 namespace NCloud.Services
@@ -139,7 +134,7 @@ namespace NCloud.Services
             path = CloudTerminalTokenizationManager.NormalizeCommandPath(path);
 
             if (path.StartsWith(Constants.AbsolutePathMarker) && path.StartsWith(Constants.PrivateRootName))
-                return await CloudPathManager.GetOriginalPath(pathData.AddUserInfoToAbsolutePath(path),service.ServerPath(Constants.PrivateRootName));
+                return await CloudPathManager.GetOriginalPath(pathData.AddUserInfoToAbsolutePath(path), service.ServerPath(Constants.PrivateRootName));
 
             else if ((path.StartsWith(Constants.AbsolutePathMarker) && !path.StartsWith(Constants.PrivateRootName)))
                 throw new CloudFunctionStopException("wrong root name");
@@ -159,13 +154,13 @@ namespace NCloud.Services
             if (path.StartsWith(Constants.AbsolutePathMarker) && !Regex.IsMatch(path, Constants.AbsolutePathRegex))
                 throw new CloudFunctionStopException("absolute path contains invalid character(s)");
 
-            else if(!Regex.IsMatch(path, Constants.RelativePathRegex))
+            else if (!Regex.IsMatch(path, Constants.RelativePathRegex))
                 throw new CloudFunctionStopException("relative path contains invalid character(s)");
 
             path = CloudTerminalTokenizationManager.NormalizeCommandPath(path);
 
             if (path.StartsWith(Constants.AbsolutePathMarker) && path.StartsWith(Constants.PrivateRootName))
-                return await CloudPathManager.GetOriginalPath(pathData.AddUserInfoToAbsolutePath(path),service.ServerPath(Constants.PrivateRootName));
+                return await CloudPathManager.GetOriginalPath(pathData.AddUserInfoToAbsolutePath(path), service.ServerPath(Constants.PrivateRootName));
 
             else if ((path.StartsWith(Constants.AbsolutePathMarker) && !path.StartsWith(Constants.PrivateRootName)))
                 throw new CloudFunctionStopException("wrong root name");

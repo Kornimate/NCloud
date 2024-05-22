@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using NCloud.Models;
 using NCloud.Services;
-using SkiaSharp;
+using NCloud.Users;
 
 namespace CloudServicesTest
 {
@@ -10,6 +10,7 @@ namespace CloudServicesTest
     {
         private readonly CloudService service;
         private readonly CloudDbContext context;
+        private readonly CloudUser admin;
         public CloudServiceTest()
         {
             var options = new DbContextOptionsBuilder<CloudDbContext>()
@@ -17,6 +18,8 @@ namespace CloudServicesTest
                                 .Options;
 
             context = new CloudDbContext(options);
+
+            admin = TestDbAndFileSystemSeeder.SeedDb(context);
 
             service = new CloudService(context);
 
@@ -28,10 +31,23 @@ namespace CloudServicesTest
             context.Dispose();
         }
 
+        /// <summary>
+        /// Test method to test getting admin form database
+        /// </summary>
         [TestMethod]
-        public void TestMethod1()
+        public void GetAdminTestSuccess()
         {
-            Assert.IsTrue(true);
+            var res = service.GetAdmin().GetAwaiter().GetResult();
+
+            Assert.IsTrue(res == admin);
         }
-    }
+
+        [TestMethod]
+        public void ()
+        {
+            var res = service.GetAdmin().GetAwaiter().GetResult();
+
+        Assert.IsTrue(res == admin);
+        }
+}
 }
