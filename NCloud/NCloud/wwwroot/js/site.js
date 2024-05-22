@@ -372,13 +372,15 @@ async function AjaxCall(address, itemName) {
         if (error.name === 'AbortError') {
             return new Response(JSON.stringify({
                 success: false,
-                message: "Error - server not reachable"
+                message: "Error - server not reachable",
+                closeTerminal: true
             }));
         }
 
         return new Response(JSON.stringify({
             success: false,
-            message: "Error while executing action"
+            message: "Error while executing action",
+            closeTerminal: true
         }));
     }
 

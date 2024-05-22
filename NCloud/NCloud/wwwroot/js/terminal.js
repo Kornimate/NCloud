@@ -17,7 +17,7 @@
 
     //returns errorMessage (string) and stopExecution (bool) value
 
-    async ExecuteClientSideCommand(command, address, terminal) {
+    async ExecuteClientSideCommand(command, address, terminal, errorAction) {
 
         let response = await AjaxCall(address, command);
 
@@ -26,6 +26,14 @@
         console.log(response);
 
         terminal.resume();
+
+        if (response.closeTerminal) {
+            terminal.pause();
+
+            setTimeout(() => window.location.href = errorAction, 3000);
+
+            return [`[[b;red;black]${response.message}, redirected to dashboard]`, true];
+        }
 
         if (!response.isClientSideCommand)
             return ["", false];

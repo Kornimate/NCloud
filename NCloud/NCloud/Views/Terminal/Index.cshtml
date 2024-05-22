@@ -52,7 +52,7 @@
 
                     this.pause();
 
-                    const ajaxData = await terminal.ExecuteClientSideCommand(command, '@Url.Action("CheckClientSideCommand","Terminal")', this);
+                    const ajaxData = await terminal.ExecuteClientSideCommand(command, '@Url.Action("CheckClientSideCommand","Terminal")', this, '@Url.Action("Index","DashBoard")');
 
                     if(ajaxData[1]){
                         
