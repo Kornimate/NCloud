@@ -94,44 +94,46 @@
     </div>
 </form>
 
-<script type="text/javascript">
-    document.getElementById("modalLaunchBtn").addEventListener("click", LaunchModal, false);
+@section Scripts {
+    <script type="text/javascript">
+        document.getElementById("modalLaunchBtn").addEventListener("click", LaunchModal, false);
 
-    function LaunchModal() {
-        var modal = new bootstrap.Modal(document.getElementById('deleteModal'));
+        function LaunchModal() {
+            var modal = new bootstrap.Modal(document.getElementById('deleteModal'));
 
-        modal.show();
-    }
-</script>
+            modal.show();
+        }
+    </script>
 
-<script type="text/javascript">
-    function StartFunction() {
-        document.getElementById("selectAll").addEventListener("click", SelectAll, false)
-        document.getElementById("deselectAll").addEventListener("click", DeselectAll, false)
-        document.getElementById("deleteBtn").addEventListener("click", CallDeselect, false)
-    }
+    <script type="text/javascript">
+        function StartFunction() {
+            document.getElementById("selectAll").addEventListener("click", SelectAll, false)
+            document.getElementById("deselectAll").addEventListener("click", DeselectAll, false)
+            document.getElementById("deleteBtn").addEventListener("click", CallDeselect, false)
+        }
 
-    function CallDeselect(e) {
-        setTimeout(DeselectAll, 1);
-    }
+        function CallDeselect(e) {
+            setTimeout(DeselectAll, 1);
+        }
 
-    function SelectAll() {
-        const checkboxes = document.getElementsByTagName("input");
-        for (let e of checkboxes) {
-            if (!e.checked) {
-                e.checked = true;
+        function SelectAll() {
+            const checkboxes = document.getElementsByTagName("input");
+            for (let e of checkboxes) {
+                if (!e.checked) {
+                    e.checked = true;
+                }
             }
         }
-    }
 
-    function DeselectAll() {
-        let checkboxes = document.getElementsByTagName("input");
-        for (let e of checkboxes) {
-            if (e.checked) {
-                e.checked = false;
+        function DeselectAll() {
+            let checkboxes = document.getElementsByTagName("input");
+            for (let e of checkboxes) {
+                if (e.checked) {
+                    e.checked = false;
+                }
             }
         }
-    }
 
-    StartFunction();
-</script>
+        StartFunction();
+    </script>
+}

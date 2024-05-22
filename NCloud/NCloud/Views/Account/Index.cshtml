@@ -39,10 +39,10 @@
                                 <h6 class="m-b-20 m-t-40 p-b-5 b-b-default f-w-600"></h6>
                                 <div class="row align-items-center justify-content-center h-100">
                                     <div class="col-6 w-100 text-center">
-                                        <a asp-action="DeleteAccount" asp-controller="Account" class="btn btn-danger">
+                                        <button type="button" class="btn btn-danger border border-danger border-3" id="modalLaunchBtn">
                                             <span class="fw-bold align-middle mx-2">Delete Account</span>
                                             <img src="/utilities/trash.svg" width="20" height="20" class="rounded align-middle">
-                                        </a>
+                                        </button>
                                     </div>
                                 </div>
                             </div>
@@ -53,3 +53,33 @@
         </div>
     </div>
 </div>
+
+<div class="modal fade" id="accountDeleteModal" tabindex="-1" aria-labelledby="fileDeleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-dark">
+                <h5 class="modal-title" id="fileDeleteModalLabel">Delete account</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to delete your account?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
+                <a asp-action="DeleteAccount" asp-controller="Account" class="btn btn-danger">Delete</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script type="text/javascript">
+        document.getElementById("modalLaunchBtn").addEventListener("click", LaunchModal, false);
+
+        function LaunchModal() {
+            var modal = new bootstrap.Modal(document.getElementById('accountDeleteModal'));
+
+            modal.show();
+        }
+    </script>
+}

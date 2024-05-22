@@ -153,7 +153,7 @@
 
                                     <button type="button" class="btn btn-secondary" onclick="copyItemToCloudClipBoard('@Url.Action("CopyFolderToCloudClipboard","Drive")','@item.Info.Name')"><img src="~/utilities/copy.svg" width=" 20" height="20" class="align-middle"/></button>
                                     <a asp-controller="Drive" class="btn btn-secondary" asp-action="DownloadFolder" asp-route-folderName="@item.Info.Name" download><img src="~/utilities/cloud-download.svg" width=" 20" height="20" class="rounded align-middle"/></a>
-                                    <a asp-controller="Drive" class="btn btn-danger" asp-action="DeleteFolder" asp-route-folderName="@item.Info.Name"><img src="~/utilities/trash.svg" width=" 20" height="20" class="rounded align-middle" /></a>
+                                    <button type="button" class="btn btn-danger" onclick="DeleteDirModal('@item.Info.Name')"><img src="~/utilities/trash.svg" width=" 20" height="20" class="rounded align-middle" /></button>
                                 </div>
                             </div>
                         </details>
@@ -311,7 +311,7 @@
                                     <button type="button" class="btn btn-secondary" onclick="copyItemToCloudClipBoard('@Url.Action("CopyFileToCloudClipboard","Drive")','@item.Info.Name')"><img src="~/utilities/copy.svg" width=" 20" height="20" class="align-middle"/></button>
                                     <a asp-controller="Drive" class="btn btn-secondary" asp-action="DownloadFile" asp-route-fileName="@item.Info.Name" download><img src="~/utilities/cloud-download.svg" width=" 20" height="20" class="rounded align-middle"/></a>
                                     <a asp-controller="Editor" class="btn btn-secondary" asp-action="EditorHub" asp-route-fileName="@item.Info.Name"><img src="~/utilities/editor-general.svg" width=" 20" height="20" class="rounded align-middle" /></a>
-                                    <a asp-controller="Drive" class="btn btn-danger" asp-action="DeleteFile" asp-route-fileName="@item.Info.Name"><img src="~/utilities/trash.svg" width=" 20" height="20" class="rounded align-middle" /></a>
+                                    <button type="button" class="btn btn-danger" onclick="DeleteFileModal('@item.Info.Name')"><img src="~/utilities/trash.svg" width=" 20" height="20" class="rounded align-middle" /></button>
                                 </div>
                             </div>
                         </details>

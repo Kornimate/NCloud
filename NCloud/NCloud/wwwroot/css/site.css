@@ -446,6 +446,6 @@ progress {
 }
 /*Circular progressbar End*/
 
-selected-menu-point {
-
+.user-button:hover{
+    background-color: blue;
 }
