@@ -240,6 +240,9 @@
 		<Content Update="wwwroot\utilities\home.svg">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</Content>
+		<Content Update="wwwroot\utilities\minus-icon.svg">
+		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
 		<Content Update="wwwroot\utilities\nopublic.svg">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</Content>
@@ -248,6 +251,9 @@
 		</Content>
 		<Content Update="wwwroot\utilities\paste.svg">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+		<Content Update="wwwroot\utilities\plus-icon.svg">
+		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</Content>
 		<Content Update="wwwroot\utilities\public.svg">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
