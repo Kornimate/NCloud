@@ -1,8 +1,12 @@
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using NCloud.ConstantData;
 using NCloud.Models;
 using NCloud.Services;
+using NCloud.Services.Exceptions;
 using NCloud.Users;
+using NCloud.Users.Roles;
+using System.IO;
 
 namespace CloudServicesTest
 {
@@ -88,7 +92,7 @@ namespace CloudServicesTest
         [TestMethod]
         public void DeleteDirectoriesForUserTestSuccess()
         {
-            service.CreateBaseDirectoryForUser(user2).GetAwaiter().GetResult();
+            service.CreateBaseDirectoryForUser(user2).Wait();
 
             string pathBase = Path.Combine(Directory.GetCurrentDirectory(), ".__CloudData__", "Private", user2.Id.ToString());
 
@@ -97,6 +101,401 @@ namespace CloudServicesTest
             Assert.IsTrue(res);
 
             Assert.IsFalse(Directory.Exists(pathBase));
+        }
+
+        /// <summary>
+        /// Test for user adding directory
+        /// </summary>
+        [TestMethod]
+        public void AddDirectoryTestSuccess()
+        {
+            service.CreateBaseDirectoryForUser(admin).Wait();
+
+            string pathBase = Path.Combine(Directory.GetCurrentDirectory(), ".__CloudData__", "Private", admin.Id.ToString());
+
+            string dirName = "Test";
+
+            string res = service.CreateDirectory(dirName, $"@CLOUDROOT\\{admin.Id}", admin).GetAwaiter().GetResult();
+
+            Assert.AreEqual(res, dirName);
+
+            Assert.IsTrue(Directory.Exists(Path.Combine(pathBase, dirName)));
+        }
+
+        /// <summary>
+        /// Test for user adding directory errors
+        /// </summary>
+        [TestMethod]
+        public void AddDirectoryTestErrors()
+        {
+            service.CreateBaseDirectoryForUser(admin).Wait();
+
+            string pathBase = Path.Combine(Directory.GetCurrentDirectory(), ".__CloudData__", "Private", admin.Id.ToString());
+
+            string dirName = "Test";
+
+            Assert.ThrowsException<CloudFunctionStopException>(() => service.CreateDirectory(null!, $"@CLOUDROOT\\{admin.Id}", admin).GetAwaiter().GetResult());
+            Assert.ThrowsException<CloudFunctionStopException>(() => service.CreateDirectory(dirName, null!, admin).GetAwaiter().GetResult());
+            Assert.ThrowsException<CloudFunctionStopException>(() => service.CreateDirectory("######", $"@CLOUDROOT\\{admin.Id}", admin).GetAwaiter().GetResult());
+
+            service.CreateDirectory(dirName, $"@CLOUDROOT\\{admin.Id}", admin).GetAwaiter().GetResult();
+
+            Assert.ThrowsException<CloudFunctionStopException>(() => service.CreateDirectory(dirName, $"@CLOUDROOT\\{admin.Id}", admin).GetAwaiter().GetResult());
+        }
+
+        /// <summary>
+        /// Test for user removing directory
+        /// </summary>
+        [TestMethod]
+        public void RemoveDirectoryTestSuccess()
+        {
+            service.CreateBaseDirectoryForUser(admin).Wait();
+
+            string dirName = "Test";
+            string pathBase = Path.Combine(Directory.GetCurrentDirectory(), ".__CloudData__", "Private", admin.Id.ToString());
+
+            service.CreateDirectory(dirName, $"@CLOUDROOT\\{admin.Id}", admin).Wait();
+
+            bool res = service.RemoveDirectory(dirName, $"@CLOUDROOT\\{admin.Id}", admin).GetAwaiter().GetResult();
+
+            Assert.IsTrue(res);
+
+            Assert.IsFalse(Directory.Exists(Path.Combine(pathBase, dirName)));
+        }
+
+        /// <summary>
+        /// Test for user removing directory errors
+        /// </summary>
+        [TestMethod]
+        public void RemoveDirectoryTestErrors()
+        {
+            service.CreateBaseDirectoryForUser(admin).Wait();
+
+            string dirName = "Test";
+
+            Assert.ThrowsException<CloudFunctionStopException>(() => service.RemoveDirectory(null!, $"@CLOUDROOT\\{admin.Id}", admin).GetAwaiter().GetResult());
+            Assert.ThrowsException<CloudFunctionStopException>(() => service.RemoveDirectory(dirName, $"@CLOUDROOT\\{admin.Id}", admin).GetAwaiter().GetResult());
+            Assert.IsFalse(service.RemoveDirectory("Documents", $"@CLOUDROOT\\{admin.Id}", admin).GetAwaiter().GetResult());
+        }
+
+        /// <summary>
+        /// Test for user adding file to user storage
+        /// </summary>
+        [TestMethod]
+        public void AddingFileTestSuccess()
+        {
+            service.CreateBaseDirectoryForUser(admin).Wait();
+
+            string name = "Test.txt";
+            string name2 = "Test_1.txt";
+            string pathBase = Path.Combine(Directory.GetCurrentDirectory(), ".__CloudData__", "Private", admin.Id.ToString());
+
+            IFormFile file;
+            IFormFile file2;
+
+            using (var stream = File.OpenRead(name))
+            {
+
+                file = new FormFile(stream, 0, stream.Length, null!, name)
+                {
+                    Headers = new HeaderDictionary(),
+                    ContentType = "text/plain"
+                };
+
+                string res = service.CreateFile(file, $"@CLOUDROOT\\{admin.Id}", admin).GetAwaiter().GetResult();
+
+                Assert.AreEqual(res, name);
+
+                Assert.IsTrue(File.Exists(Path.Combine(pathBase, name)));
+            }
+
+            using (var stream = File.OpenRead(name))
+            {
+
+                file2 = new FormFile(stream, 0, stream.Length, null!, name)
+                {
+                    Headers = new HeaderDictionary(),
+                    ContentType = "text/plain"
+                };
+
+                string res = service.CreateFile(file2, $"@CLOUDROOT\\{admin.Id}", admin).GetAwaiter().GetResult();
+
+                Assert.AreEqual(res, name2);
+
+                Assert.IsTrue(File.Exists(Path.Combine(pathBase, name2)));
+            }
+        }
+
+        /// <summary>
+        /// Test for user adding file to user storage errors
+        /// </summary>
+        [TestMethod]
+        public void AddingFileTestErrors()
+        {
+            service.CreateBaseDirectoryForUser(admin).Wait();
+
+            string name = "Test.txt";
+
+            IFormFile file;
+
+            using (var stream = File.OpenRead(name))
+            {
+
+                file = new FormFile(stream, 0, stream.Length, null!, name)
+                {
+                    Headers = new HeaderDictionary(),
+                    ContentType = "text/plain"
+                };
+            }
+
+            Assert.ThrowsException<CloudFunctionStopException>(() => service.CreateFile(file, $"@CLOUDROOT\\{admin.Id}", admin).GetAwaiter().GetResult());
+            Assert.ThrowsException<CloudFunctionStopException>(() => service.CreateFile(null!, $"@CLOUDROOT\\{admin.Id}", admin).GetAwaiter().GetResult());
+            Assert.ThrowsException<CloudFunctionStopException>(() => service.CreateFile(file, null!, admin).GetAwaiter().GetResult());
+
+            admin.UsedSpace = Constants.UserSpaceSize;
+
+            Assert.ThrowsException<CloudFunctionStopException>(() => service.CreateFile(new FormFile(new MemoryStream(), 0, 0, null!, "#####"), $"@CLOUDROOT\\{admin.Id}", admin).GetAwaiter().GetResult());
+        }
+
+        /// <summary>
+        /// Test for user removing file to user storage
+        /// </summary>
+        [TestMethod]
+        public void RemoveFileTestSuccess()
+        {
+            service.CreateBaseDirectoryForUser(admin).Wait();
+
+            string name = "Test.txt";
+            string pathBase = Path.Combine(Directory.GetCurrentDirectory(), ".__CloudData__", "Private", admin.Id.ToString());
+
+            IFormFile file;
+
+            using (var stream = File.OpenRead(name))
+            {
+
+                file = new FormFile(stream, 0, stream.Length, null!, name)
+                {
+                    Headers = new HeaderDictionary(),
+                    ContentType = "text/plain"
+                };
+
+                service.CreateFile(file, $"@CLOUDROOT\\{admin.Id}", admin).Wait();
+
+            }
+
+            bool res = service.RemoveFile(name, $"@CLOUDROOT\\{admin.Id}", admin).GetAwaiter().GetResult();
+
+            Assert.IsTrue(res);
+
+            Assert.IsFalse(File.Exists(Path.Combine(pathBase, name)));
+        }
+
+        /// <summary>
+        /// Test for user removing file from user storage errors
+        /// </summary>
+        [TestMethod]
+        public void RemoveFileTestErrors()
+        {
+            service.CreateBaseDirectoryForUser(admin).Wait();
+
+            string name = "Test.txt";
+
+            Assert.ThrowsException<CloudFunctionStopException>(() => service.RemoveFile(null!, $"@CLOUDROOT\\{admin.Id}", admin).GetAwaiter().GetResult());
+            Assert.ThrowsException<CloudFunctionStopException>(() => service.RemoveFile(name, null!, admin).GetAwaiter().GetResult());
+            Assert.ThrowsException<CloudFunctionStopException>(() => service.RemoveFile("WrongName", $"@CLOUDROOT\\{admin.Id}", admin).GetAwaiter().GetResult());
+        }
+
+        /// <summary>
+        /// Test for user to get current state files
+        /// </summary>
+        [TestMethod]
+        public void GetCurrentDepthFilesTestSuccess()
+        {
+            service.CreateBaseDirectoryForUser(admin).Wait();
+
+            string name = "Test.txt";
+
+            IFormFile file;
+
+            using (var stream = File.OpenRead(name))
+            {
+
+                file = new FormFile(stream, 0, stream.Length, null!, name)
+                {
+                    Headers = new HeaderDictionary(),
+                    ContentType = "text/plain"
+                };
+
+                service.CreateFile(file, $"@CLOUDROOT\\{admin.Id}", admin).Wait();
+
+            }
+
+            context.Add(new SharedFile
+            {
+                Id = Guid.NewGuid(),
+                Name = name,
+                CloudPathFromRoot = $"@CLOUDROOT\\{admin.Id}",
+                SharedPathFromRoot = $"@SHAEDROOT\\{admin.UserName}",
+                Owner = admin,
+                ConnectedToApp = true,
+                ConnectedToWeb = false
+            });
+
+            context.SaveChanges();
+
+            List<CloudFile> res = service.GetCurrentDepthCloudFiles($"@CLOUDROOT\\{admin.Id}").GetAwaiter().GetResult();
+
+            Assert.AreEqual( 1, res.Count );
+
+            res = service.GetCurrentDepthCloudFiles($"@CLOUDROOT\\{admin.Id}",connectedToApp:true).GetAwaiter().GetResult();
+
+            Assert.AreEqual(1, res.Count);
+
+            res = service.GetCurrentDepthCloudFiles($"@CLOUDROOT\\{admin.Id}", connectedToWeb: true).GetAwaiter().GetResult();
+
+            Assert.AreEqual(0, res.Count);
+
+            res = service.GetCurrentDepthCloudFiles($"@CLOUDROOT\\{admin.Id}",pattern:"*.txt").GetAwaiter().GetResult();
+
+            Assert.AreEqual(1, res.Count);
+
+            res = service.GetCurrentDepthCloudFiles($"@CLOUDROOT\\{admin.Id}", pattern: "######").GetAwaiter().GetResult();
+
+            Assert.AreEqual(0, res.Count);
+        }
+
+        /// <summary>
+        /// Test for user to get current state files errors
+        /// </summary>
+        [TestMethod]
+        public void GetCurrentDepthFilesTestErrors()
+        {
+            Assert.ThrowsException<CloudFunctionStopException>(() => service.GetCurrentDepthCloudFiles($"@CLOUDROOT\\{admin.Id}\\Wrong\\Path").GetAwaiter().GetResult());
+        }
+
+        /// <summary>
+        /// Test for user to get current state folders
+        /// </summary>
+        [TestMethod]
+        public void GetCurrentDepthDirectoriesTestSuccess()
+        {
+            service.CreateBaseDirectoryForUser(admin).Wait();
+
+            string name = "Documents";
+
+            context.Add(new SharedFolder
+            {
+                Id = Guid.NewGuid(),
+                Name = name,
+                CloudPathFromRoot = $"@CLOUDROOT\\{admin.Id}",
+                SharedPathFromRoot = $"@SHAEDROOT\\{admin.UserName}",
+                Owner = admin,
+                ConnectedToApp = false,
+                ConnectedToWeb = true
+            });
+
+            context.SaveChanges();
+
+            List<CloudFolder> res = service.GetCurrentDepthCloudDirectories($"@CLOUDROOT\\{admin.Id}").GetAwaiter().GetResult();
+
+            Assert.AreEqual(4, res.Count);
+
+            res = service.GetCurrentDepthCloudDirectories($"@CLOUDROOT\\{admin.Id}", connectedToApp: true).GetAwaiter().GetResult();
+
+            Assert.AreEqual(0, res.Count);
+
+            res = service.GetCurrentDepthCloudDirectories($"@CLOUDROOT\\{admin.Id}", connectedToWeb: true).GetAwaiter().GetResult();
+
+            Assert.AreEqual(1, res.Count);
+
+            res = service.GetCurrentDepthCloudDirectories($"@CLOUDROOT\\{admin.Id}", pattern: "*i*").GetAwaiter().GetResult();
+
+            Assert.AreEqual(3, res.Count);
+
+            res = service.GetCurrentDepthCloudDirectories($"@CLOUDROOT\\{admin.Id}", pattern: "######").GetAwaiter().GetResult();
+
+            Assert.AreEqual(0, res.Count);
+        }
+
+        /// <summary>
+        /// Test for user to get current state folders errors
+        /// </summary>
+        [TestMethod]
+        public void GetCurrentDepthDirectoriesTestErrors()
+        {
+            Assert.ThrowsException<CloudFunctionStopException>(() => service.GetCurrentDepthCloudDirectories($"@CLOUDROOT\\{admin.Id}\\Wrong\\Path").GetAwaiter().GetResult());
+        }
+
+        /// <summary>
+        /// Method to test root name changing protocol
+        /// </summary>
+        [TestMethod]
+        public void ChangeRootNameTest()
+        {
+            string path = $"@CLOUDROOT\\{admin.Id}";
+            string path2 = $"@SHAREDROOT\\{admin.Id}";
+            string path3 = "##############";
+
+            string res = service.ChangeRootName(path);
+
+            Assert.AreEqual(res,path2);
+
+            res = service.ChangeRootName(path2);
+
+            Assert.AreEqual(res,path);
+
+            res = service.ChangeRootName(path3);
+
+            Assert.AreEqual(res,path3);
+        }
+
+        /// <summary>
+        /// Method to test cloud path to physical path converting
+        /// </summary>
+        [TestMethod]
+        public void ServerPathTest()
+        {
+            string pathBase = Path.Combine(Directory.GetCurrentDirectory(), ".__CloudData__", "Private");
+
+            string res = service.ServerPath("@CLOUDROOT");
+
+            Assert.AreEqual(res,pathBase);
+
+            Assert.AreEqual(String.Empty, service.ServerPath("cbusuzcuszvucduvcud"));
+        }
+
+        /// <summary>
+        /// Method to test getting folder data based on path and name
+        /// </summary>
+        [TestMethod]
+        public void GetFolderByPathTestSuccess()
+        {
+            service.CreateBaseDirectoryForUser(admin).Wait();
+
+            string name = "Documents";
+            string pathBase = Path.Combine(Directory.GetCurrentDirectory(), ".__CloudData__", "Private", admin.Id.ToString());
+
+            DirectoryInfo di = service.GetFolderByPath(pathBase, name).GetAwaiter().GetResult();
+
+            Assert.IsTrue(di.Exists);
+            Assert.AreEqual(name, di.Name);
+            Assert.AreEqual(Path.Combine(pathBase,name), di.FullName);
+        }
+
+        /// <summary>
+        /// Method to test getting folder data based on path and name
+        /// </summary>
+        [TestMethod]
+        public void GetFolderByPathTestErrors()
+        {
+            string name = "Documents";
+            string pathBase = Path.Combine(Directory.GetCurrentDirectory(), ".__CloudData__", "Private", admin.Id.ToString(), name);
+
+            Assert.ThrowsException<CloudFunctionStopException>(() => service.GetFolderByPath(pathBase, name).GetAwaiter().GetResult());
+
+            service.CreateBaseDirectoryForUser(admin).Wait();
+
+            Assert.ThrowsException<CloudFunctionStopException>(() => service.GetFolderByPath(pathBase, name).GetAwaiter().GetResult());
         }
     }
 }

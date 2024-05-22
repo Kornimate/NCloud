@@ -262,7 +262,12 @@ namespace NCloud.Services
 
             if (String.IsNullOrWhiteSpace(fileName))
             {
-                throw new ArgumentException("invalid folder name");
+                throw new CloudFunctionStopException("invalid folder name");
+            }
+
+            if (String.IsNullOrWhiteSpace(cloudPath))
+            {
+                throw new CloudFunctionStopException("invalid path");
             }
 
             FileInfo fi = new FileInfo(Path.Combine(ParseRootName(cloudPath), fileName));
@@ -277,8 +282,8 @@ namespace NCloud.Services
                 double fileSize = fi.Length;
 
                 if (!await SetFileConnectedState(cloudPath, fileName, ChangeOwnerIdentification(ChangeRootName(cloudPath), user.UserName), user, false, false, true)
-                    && !await SetFileConnectedState(cloudPath, fileName, Constants.GetSharingRootPathInDatabase(user.UserName), user, false, false, true))
-                    throw new CloudFunctionStopException("failed to adjust file connectivity");
+                    || !await SetUpperlyingObjectsState(cloudPath, ChangeOwnerIdentification(ChangeRootName(cloudPath), user.UserName), user, false))
+                        throw new CloudFunctionStopException("failed to adjust file connectivity");
 
                 await Task.Run(() => fi.Delete());
 
