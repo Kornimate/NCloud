@@ -144,9 +144,11 @@ namespace NCloud.Controllers
 
                     var user = new CloudUser { UserName = vm.UserName, FullName = vm.FullName, Email = vm.Email };
 
-                    var result = await userManager.CreateAsync(user, vm.Password);
+                    var created = await userManager.CreateAsync(user, vm.Password);
+                    var addedToRole = await userManager.AddToRoleAsync(user, Constants.UserRole);
 
-                    if (result.Succeeded)
+
+                    if (created.Succeeded && addedToRole.Succeeded)
                     {
                         try
                         {
@@ -181,6 +183,8 @@ namespace NCloud.Controllers
                         }
                     }
 
+                    await userManager.DeleteAsync(user);
+
                     AddNewNotification(new Error("Failed to register"));
                 }
                 catch
@@ -194,6 +198,13 @@ namespace NCloud.Controllers
 
         public async Task<IActionResult> DeleteAccount()
         {
+            if (User.IsInRole(Constants.AdminRole))
+            {
+                AddNewNotification(new Error("Admin user can not be removed"));
+
+                return RedirectToAction("Index", "Account");
+            }
+
             CloudUser user = await userManager.GetUserAsync(User);
 
             try

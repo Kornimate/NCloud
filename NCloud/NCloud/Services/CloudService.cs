@@ -33,6 +33,8 @@ namespace NCloud.Services
         }
         public async Task<bool> RemoveUser(CloudUser user)
         {
+
+
             try
             {
                 context.Users.Remove(user);
@@ -1264,7 +1266,7 @@ namespace NCloud.Services
 
         #endregion
 
-        #region Private Methods
+        #region Private Instance Methods
 
         /// <summary>
         /// Method to add an existing file to the zipArchive

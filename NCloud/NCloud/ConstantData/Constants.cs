@@ -31,6 +31,8 @@ namespace NCloud.ConstantData
         public static string DateTimeFormat { get => "yyyy'-'MM'-'dd'T'HH'-'mm'-'ss"; }
         public static string TerminalDateTimeFormat { get => "yyyy'-'MM'-'dd' 'HH':'mm"; }
         public static string UnkownFileType { get => "unknown"; }
+        public static string AdminRole { get => "admin"; }
+        public static string UserRole { get => "user"; }
         public static string FileTypePrefix { get => "filetype-"; }
         public static string WebRootFolderName { get => ".__CloudData__"; }
         public static string IconsBasePath { get => Path.Combine("wwwroot", "utilities"); }
