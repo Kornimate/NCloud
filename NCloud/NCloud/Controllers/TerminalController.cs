@@ -179,15 +179,15 @@ namespace NCloud.Controllers
 
                 string elementHTML = GenerateHTMLElementWithUrl(urlDetails);
 
-                return await Task.FromResult<JsonResult>(Json(new CommandDTO { IsClientSide = true, ActionHTMLElement = elementHTML, ActionHTMLElementId = Constants.DownloadHTMLElementId, NoErrorWithSyntax = true, ErrorMessage = "" }));
+                return await Task.FromResult<JsonResult>(Json(new CommandDTO { IsClientSideCommand = true, ActionHTMLElement = elementHTML, ActionHTMLElementId = Constants.DownloadHTMLElementId, NoErrorWithSyntax = true, ErrorMessage = "" }));
             }
             catch (CloudFunctionStopException ex)
             {
-                return await Task.FromResult<JsonResult>(Json(new CommandDTO { IsClientSide = false, NoErrorWithSyntax = true, ErrorMessage = Constants.TerminalRedText($"invalid command - {ex.Message}") }));
+                return await Task.FromResult<JsonResult>(Json(new CommandDTO { IsClientSideCommand = false, NoErrorWithSyntax = true, ErrorMessage = Constants.TerminalRedText($"invalid command - {ex.Message}") }));
             }
             catch (Exception)
             {
-                return await Task.FromResult<JsonResult>(Json(new CommandDTO { IsClientSide = true, NoErrorWithSyntax = false, ErrorMessage = Constants.TerminalRedText("error while executing command") }));
+                return await Task.FromResult<JsonResult>(Json(new CommandDTO { IsClientSideCommand = true, NoErrorWithSyntax = false, ErrorMessage = Constants.TerminalRedText("error while executing command") }));
             }
         }
 

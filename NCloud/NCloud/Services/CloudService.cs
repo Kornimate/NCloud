@@ -1197,7 +1197,7 @@ namespace NCloud.Services
 
         public async Task<string> PrintWorkingDirectory(CloudPathData pathData)
         {
-            return await Task.FromResult<string>(pathData.CurrentPathShow);
+            return await Task.FromResult<string>($"{pathData.CurrentPathShow}\n");
         }
 
         public async Task<List<CloudFolder>> SearchDirectoryInCurrentDirectory(string currentPath, string pattern)

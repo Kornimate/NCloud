@@ -23,6 +23,8 @@
 
         response = await response.json();
 
+        console.log(response);
+
         terminal.resume();
 
         if (!response.isClientSideCommand)
