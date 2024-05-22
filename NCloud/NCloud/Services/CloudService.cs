@@ -832,11 +832,11 @@ namespace NCloud.Services
             return await Task.FromResult<CloudFolder>(new CloudFolder(new DirectoryInfo(Path.Combine(ParseRootName(cloudPath), folderName)), folder?.ConnectedToApp ?? false, folder?.ConnectedToWeb ?? false, Path.Combine(cloudPath, folderName)));
         }
 
-        public async Task<CloudFile> GetFile(string currentPath, string fileName)
+        public async Task<CloudFile> GetFile(string cloudPath, string fileName)
         {
-            var file = await context.SharedFiles.FirstOrDefaultAsync(x => x.CloudPathFromRoot == currentPath && x.Name == fileName);
+            var file = await context.SharedFiles.FirstOrDefaultAsync(x => x.CloudPathFromRoot == cloudPath && x.Name == fileName);
 
-            return await Task.FromResult<CloudFile>(new CloudFile(new FileInfo(Path.Combine(ParseRootName(currentPath), fileName)), file?.ConnectedToApp ?? false, file?.ConnectedToWeb ?? false, Path.Combine(currentPath, fileName)));
+            return await Task.FromResult<CloudFile>(new CloudFile(new FileInfo(Path.Combine(ParseRootName(cloudPath), fileName)), file?.ConnectedToApp ?? false, file?.ConnectedToWeb ?? false, Path.Combine(cloudPath, fileName)));
         }
 
         public async Task<string> RenameFolder(string cloudPath, string folderName, string newName, SharedPathData sharedData)
