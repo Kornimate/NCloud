@@ -128,6 +128,9 @@ namespace NCloud.Services
                     if (!await SetDirectoryConnectedState(cloudPath, folderName, ChangeOwnerIdentification(ChangeRootName(cloudPath), user.UserName), user, connections.First, connections.Second))
                         throw new CloudFunctionStopException("failed to adjust folder rights");
 
+                    if (connections.First && !await SetUpperlyingObjectsState(cloudPath, ChangeOwnerIdentification(ChangeRootName(cloudPath), user.UserName), user, connections.First))
+                        throw new CloudFunctionStopException("failed to adjust folder rights");
+
                     return di.Name;
                 }
                 else
@@ -181,8 +184,8 @@ namespace NCloud.Services
                 double dirSize = await GetDirectorySize(cloudPath);
 
                 if (!await SetObjectAndUnderlyingObjectsState(cloudPath, folderName, ChangeOwnerIdentification(ChangeRootName(cloudPath), user.UserName), user, false, false, true) //delete folder from database
-                    && await SetObjectAndUnderlyingObjectsState(cloudPath, folderName, Constants.GetSharingRootPathInDatabase(user.UserName), user, false, false, true))
-                    throw new CloudFunctionStopException("failed to remove folder connectivity");
+                    || !await SetUpperlyingObjectsState(cloudPath, ChangeOwnerIdentification(ChangeRootName(cloudPath), user.UserName), user, false))
+                        throw new CloudFunctionStopException("failed to remove folder connectivity");
 
                 await Task.Run(() => di.Delete(true)); //delete folder
 
@@ -235,6 +238,9 @@ namespace NCloud.Services
                 Pair<bool, bool> connections = await FolderIsSharedInAppInWeb(parentPathAndName.First, parentPathAndName.Second);
 
                 if (!await SetFileConnectedState(cloudPath, newName, ChangeOwnerIdentification(ChangeRootName(cloudPath), user.UserName), user, connections.First, connections.Second))
+                    throw new CloudFunctionStopException("failed to adjust file rights");
+
+                if (connections.First && !await SetUpperlyingObjectsState(cloudPath, ChangeOwnerIdentification(ChangeRootName(cloudPath), user.UserName), user, connections.First))
                     throw new CloudFunctionStopException("failed to adjust file rights");
 
                 return newName;

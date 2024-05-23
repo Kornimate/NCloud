@@ -109,13 +109,25 @@ namespace CloudServicesTest
         [TestMethod]
         public void AddDirectoryTestSuccess()
         {
+            context.Add(new SharedFolder
+            {
+                CloudPathFromRoot = $"@CLOUDROOT\\{admin.Id}",
+                SharedPathFromRoot = $"@SHAREDROOT\\{admin.UserName}",
+                Name = "Documents",
+                Owner = admin,
+                ConnectedToApp = true,
+                ConnectedToWeb = true
+            });
+
+            context.SaveChanges();
+
             service.CreateBaseDirectoryForUser(admin).Wait();
 
-            string pathBase = Path.Combine(Directory.GetCurrentDirectory(), ".__CloudData__", "Private", admin.Id.ToString());
+            string pathBase = Path.Combine(Directory.GetCurrentDirectory(), ".__CloudData__", "Private", admin.Id.ToString(),"Documents");
 
             string dirName = "Test";
 
-            string res = service.CreateDirectory(dirName, $"@CLOUDROOT\\{admin.Id}", admin).GetAwaiter().GetResult();
+            string res = service.CreateDirectory(dirName, $"@CLOUDROOT\\{admin.Id}\\Documents", admin).GetAwaiter().GetResult();
 
             Assert.AreEqual(res, dirName);
 
@@ -184,11 +196,23 @@ namespace CloudServicesTest
         [TestMethod]
         public void AddingFileTestSuccess()
         {
+            context.Add(new SharedFolder
+            {
+                CloudPathFromRoot = $"@CLOUDROOT\\{admin.Id}",
+                SharedPathFromRoot = $"@SHAREDROOT\\{admin.UserName}",
+                Name = "Documents",
+                Owner = admin,
+                ConnectedToApp = true,
+                ConnectedToWeb = true
+            });
+
+            context.SaveChanges();
+
             service.CreateBaseDirectoryForUser(admin).Wait();
 
             string name = "Test.txt";
             string name2 = "Test_1.txt";
-            string pathBase = Path.Combine(Directory.GetCurrentDirectory(), ".__CloudData__", "Private", admin.Id.ToString());
+            string pathBase = Path.Combine(Directory.GetCurrentDirectory(), ".__CloudData__", "Private", admin.Id.ToString(),"Documents");
 
             IFormFile file;
             IFormFile file2;
@@ -202,7 +226,7 @@ namespace CloudServicesTest
                     ContentType = "text/plain"
                 };
 
-                string res = service.CreateFile(file, $"@CLOUDROOT\\{admin.Id}", admin).GetAwaiter().GetResult();
+                string res = service.CreateFile(file, $"@CLOUDROOT\\{admin.Id}\\Documents", admin).GetAwaiter().GetResult();
 
                 Assert.AreEqual(res, name);
 
@@ -218,9 +242,9 @@ namespace CloudServicesTest
                     ContentType = "text/plain"
                 };
 
-                string res = service.CreateFile(file2, $"@CLOUDROOT\\{admin.Id}", admin).GetAwaiter().GetResult();
+                string res = service.CreateFile(file2, $"@CLOUDROOT\\{admin.Id}\\Documents", admin).GetAwaiter().GetResult();
 
-                Assert.AreEqual(res, name2);
+                Assert.AreEqual(name2, res);
 
                 Assert.IsTrue(File.Exists(Path.Combine(pathBase, name2)));
             }
@@ -345,9 +369,9 @@ namespace CloudServicesTest
 
             List<CloudFile> res = service.GetCurrentDepthCloudFiles($"@CLOUDROOT\\{admin.Id}").GetAwaiter().GetResult();
 
-            Assert.AreEqual( 1, res.Count );
+            Assert.AreEqual(1, res.Count);
 
-            res = service.GetCurrentDepthCloudFiles($"@CLOUDROOT\\{admin.Id}",connectedToApp:true).GetAwaiter().GetResult();
+            res = service.GetCurrentDepthCloudFiles($"@CLOUDROOT\\{admin.Id}", connectedToApp: true).GetAwaiter().GetResult();
 
             Assert.AreEqual(1, res.Count);
 
@@ -355,7 +379,7 @@ namespace CloudServicesTest
 
             Assert.AreEqual(0, res.Count);
 
-            res = service.GetCurrentDepthCloudFiles($"@CLOUDROOT\\{admin.Id}",pattern:"*.txt").GetAwaiter().GetResult();
+            res = service.GetCurrentDepthCloudFiles($"@CLOUDROOT\\{admin.Id}", pattern: "*.txt").GetAwaiter().GetResult();
 
             Assert.AreEqual(1, res.Count);
 
@@ -438,15 +462,15 @@ namespace CloudServicesTest
 
             string res = service.ChangeRootName(path);
 
-            Assert.AreEqual(res,path2);
+            Assert.AreEqual(res, path2);
 
             res = service.ChangeRootName(path2);
 
-            Assert.AreEqual(res,path);
+            Assert.AreEqual(res, path);
 
             res = service.ChangeRootName(path3);
 
-            Assert.AreEqual(res,path3);
+            Assert.AreEqual(res, path3);
         }
 
         /// <summary>
@@ -459,7 +483,7 @@ namespace CloudServicesTest
 
             string res = service.ServerPath("@CLOUDROOT");
 
-            Assert.AreEqual(res,pathBase);
+            Assert.AreEqual(res, pathBase);
 
             Assert.AreEqual(String.Empty, service.ServerPath("cbusuzcuszvucduvcud"));
         }
@@ -479,7 +503,7 @@ namespace CloudServicesTest
 
             Assert.IsTrue(di.Exists);
             Assert.AreEqual(name, di.Name);
-            Assert.AreEqual(Path.Combine(pathBase,name), di.FullName);
+            Assert.AreEqual(Path.Combine(pathBase, name), di.FullName);
         }
 
         /// <summary>
@@ -496,6 +520,308 @@ namespace CloudServicesTest
             service.CreateBaseDirectoryForUser(admin).Wait();
 
             Assert.ThrowsException<CloudFunctionStopException>(() => service.GetFolderByPath(pathBase, name).GetAwaiter().GetResult());
+        }
+
+        /// <summary>
+        /// Method to test connecting directory to web
+        /// </summary>
+        [TestMethod]
+        public void ConnectDirectoryToWebTestSucces()
+        {
+            string name = "Documents";
+            string pathBase = $"@CLOUDROOT\\{admin.Id}";
+
+            service.CreateBaseDirectoryForUser(admin).Wait();
+
+            bool res = service.ConnectDirectoryToWeb(pathBase, name, admin).GetAwaiter().GetResult();
+
+            Assert.IsTrue(res);
+
+            SharedFolder? f = context.SharedFolders.FirstOrDefault(x => x.CloudPathFromRoot == pathBase && x.Name == name);
+
+            Assert.IsNotNull(f);
+
+            Assert.IsTrue(f.ConnectedToWeb);
+        }
+
+        /// <summary>
+        /// Method to test connecting directory to web errors
+        /// </summary>
+        [TestMethod]
+        public void ConnectDirectoryToWebTestErrors()
+        {
+            string name = "Documents";
+            string pathBase = $"@CLOUDROOT\\{admin.Id}";
+
+            service.CreateBaseDirectoryForUser(admin).Wait();
+
+            Assert.ThrowsException<CloudFunctionStopException>(() => service.ConnectDirectoryToWeb(pathBase, "######", admin).GetAwaiter().GetResult());
+            Assert.ThrowsException<CloudFunctionStopException>(() => service.ConnectDirectoryToWeb(Path.Combine(pathBase, name), name, admin).GetAwaiter().GetResult());
+        }
+
+        /// <summary>
+        /// Method to test connecting directory to app
+        /// </summary>
+        [TestMethod]
+        public void ConnectDirectoryToAppTestSucces()
+        {
+            string name = "Documents";
+            string pathBase = $"@CLOUDROOT\\{admin.Id}";
+
+            service.CreateBaseDirectoryForUser(admin).Wait();
+
+            bool res = service.ConnectDirectoryToApp(pathBase, name, admin).GetAwaiter().GetResult();
+
+            Assert.IsTrue(res);
+
+            SharedFolder? f = context.SharedFolders.FirstOrDefault(x => x.CloudPathFromRoot == pathBase && x.Name == name);
+
+            Assert.IsNotNull(f);
+
+            Assert.IsTrue(f.ConnectedToApp);
+        }
+
+        /// <summary>
+        /// Method to test connecting directory to app errors
+        /// </summary>
+        [TestMethod]
+        public void ConnectDirectoryToAppTestErrors()
+        {
+            string name = "Documents";
+            string pathBase = $"@CLOUDROOT\\{admin.Id}";
+
+            service.CreateBaseDirectoryForUser(admin).Wait();
+
+            Assert.ThrowsException<CloudFunctionStopException>(() => service.ConnectDirectoryToApp(pathBase, "######", admin).GetAwaiter().GetResult());
+            Assert.ThrowsException<CloudFunctionStopException>(() => service.ConnectDirectoryToApp(Path.Combine(pathBase, name), name, admin).GetAwaiter().GetResult());
+        }
+
+        /// <summary>
+        /// Method to test disconnecting directory from web
+        /// </summary>
+        [TestMethod]
+        public void DisconnectDirectoryFromWebTestSucces()
+        {
+            string name = "Documents";
+            string pathBase = $"@CLOUDROOT\\{admin.Id}";
+
+            service.CreateBaseDirectoryForUser(admin).Wait();
+
+            service.ConnectDirectoryToWeb(pathBase, name, admin).Wait();
+
+            bool res = service.DisconnectDirectoryFromWeb(pathBase, name, admin).GetAwaiter().GetResult();
+
+            Assert.IsTrue(res);
+
+            SharedFolder? f = context.SharedFolders.FirstOrDefault(x => x.CloudPathFromRoot == pathBase && x.Name == name);
+
+            Assert.IsNull(f);
+        }
+
+        /// <summary>
+        /// Method to test disconnecting directory from web errors
+        /// </summary>
+        [TestMethod]
+        public void DisconnectDirectoryFromWebTestErrors()
+        {
+            string name = "Documents";
+            string pathBase = $"@CLOUDROOT\\{admin.Id}";
+
+            service.CreateBaseDirectoryForUser(admin).Wait();
+
+            Assert.ThrowsException<CloudFunctionStopException>(() => service.DisconnectDirectoryFromWeb(pathBase, "######", admin).GetAwaiter().GetResult());
+            Assert.ThrowsException<CloudFunctionStopException>(() => service.DisconnectDirectoryFromWeb(Path.Combine(pathBase, name), name, admin).GetAwaiter().GetResult());
+        }
+
+        /// <summary>
+        /// Method to test connecting directory to web
+        /// </summary>
+        [TestMethod]
+        public void DisconnectDirectoryFromAppTestSucces()
+        {
+            string name = "Documents";
+            string pathBase = $"@CLOUDROOT\\{admin.Id}";
+
+            service.CreateBaseDirectoryForUser(admin).Wait();
+
+            service.ConnectDirectoryToApp(pathBase, name, admin).Wait();
+
+            bool res = service.DisconnectDirectoryFromApp(pathBase, name, admin).GetAwaiter().GetResult();
+
+            Assert.IsTrue(res);
+
+            SharedFolder? f = context.SharedFolders.FirstOrDefault(x => x.CloudPathFromRoot == pathBase && x.Name == name);
+
+            Assert.IsNull(f);
+        }
+
+        /// <summary>
+        /// Method to test disconnecting directory from web errors
+        /// </summary>
+        [TestMethod]
+        public void DisconnectDirectoryFromAppTestErrors()
+        {
+            string name = "Documents";
+            string pathBase = $"@CLOUDROOT\\{admin.Id}";
+
+            service.CreateBaseDirectoryForUser(admin).Wait();
+
+            Assert.ThrowsException<CloudFunctionStopException>(() => service.DisconnectDirectoryFromApp(pathBase, "######", admin).GetAwaiter().GetResult());
+            Assert.ThrowsException<CloudFunctionStopException>(() => service.DisconnectDirectoryFromApp(Path.Combine(pathBase, name), name, admin).GetAwaiter().GetResult());
+        }
+
+        /// <summary>
+        /// Method to test connecting file to web
+        /// </summary>
+        [TestMethod]
+        public void ConnectFileToWebTestSucces()
+        {
+            string name = "Test.txt";
+            string pathBase = $"@CLOUDROOT\\{admin.Id}";
+
+            service.CreateBaseDirectoryForUser(admin).Wait();
+
+            File.Copy(name, Path.Combine(Directory.GetCurrentDirectory(), ".__CloudData__", "Private", admin.Id.ToString(), name));
+
+            bool res = service.ConnectFileToWeb(pathBase, name, admin).GetAwaiter().GetResult();
+
+            Assert.IsTrue(res);
+
+            SharedFile? f = context.SharedFiles.FirstOrDefault(x => x.CloudPathFromRoot == pathBase && x.Name == name);
+
+            Assert.IsNotNull(f);
+
+            Assert.IsTrue(f.ConnectedToWeb);
+        }
+
+        /// <summary>
+        /// Method to test connecting file to web errors
+        /// </summary>
+        [TestMethod]
+        public void ConnectFileToWebTestErrors()
+        {
+            string name = "Test.txt";
+            string pathBase = $"@CLOUDROOT\\{admin.Id}";
+
+            service.CreateBaseDirectoryForUser(admin).Wait();
+
+            Assert.ThrowsException<CloudFunctionStopException>(() => service.ConnectFileToWeb(pathBase, "######", admin).GetAwaiter().GetResult());        }
+
+        /// <summary>
+        /// Method to test connecting file to app
+        /// </summary>
+        [TestMethod]
+        public void ConnectFileToAppTestSucces()
+        {
+            string name = "Test.txt";
+            string pathBase = $"@CLOUDROOT\\{admin.Id}";
+
+            service.CreateBaseDirectoryForUser(admin).Wait();
+
+            File.Copy(name, Path.Combine(Directory.GetCurrentDirectory(), ".__CloudData__", "Private", admin.Id.ToString(), name));
+
+            bool res = service.ConnectFileToApp(pathBase, name, admin).GetAwaiter().GetResult();
+
+            Assert.IsTrue(res);
+
+            SharedFile? f = context.SharedFiles.FirstOrDefault(x => x.CloudPathFromRoot == pathBase && x.Name == name);
+
+            Assert.IsNotNull(f);
+
+            Assert.IsTrue(f.ConnectedToApp);
+        }
+
+        /// <summary>
+        /// Method to test connecting file to app errors
+        /// </summary>
+        [TestMethod]
+        public void ConnectFileToAppTestErrors()
+        {
+            string name = "Test.txt";
+            string pathBase = $"@CLOUDROOT\\{admin.Id}";
+
+            service.CreateBaseDirectoryForUser(admin).Wait();
+
+            Assert.ThrowsException<CloudFunctionStopException>(() => service.ConnectFileToApp(pathBase, "######", admin).GetAwaiter().GetResult());        }
+
+        /// <summary>
+        /// Method to test disconnecting file from web
+        /// </summary>
+        [TestMethod]
+        public void DisconnectFileFromWebTestSucces()
+        {
+            context.Add(new SharedFile
+            {
+                CloudPathFromRoot = $"@CLOUDROOT\\{admin.Id}\\Documents",
+                SharedPathFromRoot = $"@SHAREDROOT\\{admin.UserName}\\Documents",
+                Name = "Test.txt",
+                Owner = admin,
+                ConnectedToApp = false,
+                ConnectedToWeb = true
+            });
+
+            context.SaveChanges();
+
+            string name = "Test.txt";
+            string pathBase = $"@CLOUDROOT\\{admin.Id}\\Documents";
+
+            service.CreateBaseDirectoryForUser(admin).Wait();
+
+            File.Copy(name, Path.Combine(Directory.GetCurrentDirectory(), ".__CloudData__", "Private", admin.Id.ToString(), name));
+
+            bool res = service.DisconnectFileFromWeb(pathBase, name, admin).GetAwaiter().GetResult();
+
+            Assert.IsTrue(res);
+
+            SharedFile? f = context.SharedFiles.FirstOrDefault(x => x.CloudPathFromRoot == pathBase && x.Name == name);
+
+            Assert.IsNull(f);
+        }
+
+        /// <summary>
+        /// Method to test disconnecting file from app
+        /// </summary>
+        [TestMethod]
+        public void DisconnectFileFromAppTestSucces()
+        {
+            context.Add(new SharedFolder
+            {
+                CloudPathFromRoot = $"@CLOUDROOT\\{admin.Id}",
+                SharedPathFromRoot = $"@SHAREDROOT\\{admin.UserName}",
+                Name = "Documents",
+                Owner = admin,
+                ConnectedToApp = true,
+                ConnectedToWeb = false
+            });
+
+            context.Add(new SharedFile
+            {
+                CloudPathFromRoot = $"@CLOUDROOT\\{admin.Id}\\Documents",
+                SharedPathFromRoot = $"@SHAREDROOT\\{admin.UserName}\\Documents",
+                Name = "Test.txt",
+                Owner = admin,
+                ConnectedToApp = true,
+                ConnectedToWeb = false
+            });
+
+            context.SaveChanges();
+
+            string name = "Test.txt";
+            string pathBase = $"@CLOUDROOT\\{admin.Id}\\Documents";
+
+            service.CreateBaseDirectoryForUser(admin).Wait();
+
+            File.Copy(name, Path.Combine(Directory.GetCurrentDirectory(), ".__CloudData__", "Private", admin.Id.ToString(), name));
+
+            bool res = service.DisconnectFileFromApp(pathBase, name, admin).GetAwaiter().GetResult();
+
+            Assert.IsTrue(res);
+
+            SharedFile? f = context.SharedFiles.FirstOrDefault(x => x.CloudPathFromRoot == pathBase && x.Name == name);
+
+            Assert.IsNull(f);
+
+            Assert.IsTrue(!context.SharedFolders.Any());
         }
     }
 }
