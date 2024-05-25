@@ -1888,13 +1888,9 @@ namespace NCloud.Services
             {
                 return sharedPath.Split(Path.DirectorySeparatorChar, StringSplitOptions.RemoveEmptyEntries)[1];
             }
-            catch (IndexOutOfRangeException)
-            {
-                return String.Empty;
-            }
             catch (Exception)
             {
-                throw;
+                return String.Empty;
             }
         }
 

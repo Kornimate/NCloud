@@ -123,7 +123,7 @@ namespace CloudServicesTest
 
             service.CreateBaseDirectoryForUser(admin).Wait();
 
-            string pathBase = Path.Combine(Directory.GetCurrentDirectory(), ".__CloudData__", "Private", admin.Id.ToString(),"Documents");
+            string pathBase = Path.Combine(Directory.GetCurrentDirectory(), ".__CloudData__", "Private", admin.Id.ToString(), "Documents");
 
             string dirName = "Test";
 
@@ -212,7 +212,7 @@ namespace CloudServicesTest
 
             string name = "Test.txt";
             string name2 = "Test_1.txt";
-            string pathBase = Path.Combine(Directory.GetCurrentDirectory(), ".__CloudData__", "Private", admin.Id.ToString(),"Documents");
+            string pathBase = Path.Combine(Directory.GetCurrentDirectory(), ".__CloudData__", "Private", admin.Id.ToString(), "Documents");
 
             IFormFile file;
             IFormFile file2;
@@ -705,7 +705,8 @@ namespace CloudServicesTest
 
             service.CreateBaseDirectoryForUser(admin).Wait();
 
-            Assert.ThrowsException<CloudFunctionStopException>(() => service.ConnectFileToWeb(pathBase, "######", admin).GetAwaiter().GetResult());        }
+            Assert.ThrowsException<CloudFunctionStopException>(() => service.ConnectFileToWeb(pathBase, "######", admin).GetAwaiter().GetResult());
+        }
 
         /// <summary>
         /// Method to test connecting file to app
@@ -742,7 +743,8 @@ namespace CloudServicesTest
 
             service.CreateBaseDirectoryForUser(admin).Wait();
 
-            Assert.ThrowsException<CloudFunctionStopException>(() => service.ConnectFileToApp(pathBase, "######", admin).GetAwaiter().GetResult());        }
+            Assert.ThrowsException<CloudFunctionStopException>(() => service.ConnectFileToApp(pathBase, "######", admin).GetAwaiter().GetResult());
+        }
 
         /// <summary>
         /// Method to test disconnecting file from web
@@ -822,6 +824,151 @@ namespace CloudServicesTest
             Assert.IsNull(f);
 
             Assert.IsTrue(!context.SharedFolders.Any());
+        }
+
+
+        /// <summary>
+        /// Test mthod to get current depth sharing files
+        /// </summary>
+        [TestMethod]
+        public void CurrentAppSharingFilesTest()
+        {
+            service.CreateBaseDirectoryForUser(admin).Wait();
+
+            string name = "Test.txt";
+
+            File.Copy(name, Path.Combine(Directory.GetCurrentDirectory(), ".__CloudData__", "Private", admin.Id.ToString(), name));
+
+            context.Add(new SharedFile
+            {
+                CloudPathFromRoot = $"@CLOUDROOT\\{admin.Id}",
+                SharedPathFromRoot = $"@SHAREDROOT\\{admin.UserName}",
+                Name = name,
+                Owner = admin,
+                ConnectedToApp = true,
+                ConnectedToWeb = false
+            });
+
+            context.SaveChanges();
+
+            var res = service.GetCurrentDepthAppSharingFiles("@SHAREDROOT").GetAwaiter().GetResult();
+
+            Assert.AreEqual(0, res.Count);
+
+            res = service.GetCurrentDepthAppSharingFiles($"@SHAREDROOT\\{admin.UserName}").GetAwaiter().GetResult();
+
+            Assert.AreEqual(1, res.Count);
+        }
+
+        /// <summary>
+        /// Test mthod to get current depth sharing folders
+        /// </summary>
+        [TestMethod]
+        public void CurrentAppSharingDirectoriesTest()
+        {
+            service.CreateBaseDirectoryForUser(admin).Wait();
+
+            context.Add(new SharedFolder
+            {
+                CloudPathFromRoot = $"@CLOUDROOT\\{admin.Id}",
+                SharedPathFromRoot = $"@SHAREDROOT\\{admin.UserName}",
+                Name = "Documents",
+                Owner = admin,
+                ConnectedToApp = true,
+                ConnectedToWeb = false
+            });
+
+            context.SaveChanges();
+
+            var res = service.GetCurrentDepthAppSharingDirectories("@SHAREDROOT").GetAwaiter().GetResult();
+
+            Assert.AreEqual(1, res.Count);
+            Assert.AreEqual(res[0].SharedName, admin.UserName);
+
+            res = service.GetCurrentDepthAppSharingDirectories($"@SHAREDROOT\\{admin.UserName}").GetAwaiter().GetResult();
+
+            Assert.AreEqual(1, res.Count);
+        }
+
+        /// <summary>
+        /// Test method if owner of path is actual user
+        /// </summary>
+        [TestMethod]
+        public void OwnerOfPathIsActualUserTest()
+        {
+            string path = "@SHAREDROOT\\Admin1";
+
+            bool res = service.OwnerOfPathIsActualUser(path, admin).GetAwaiter().GetResult();
+
+            Assert.IsFalse(res);
+
+            path = "@SHAREDROOT\\Admin";
+
+            res = service.OwnerOfPathIsActualUser(path, admin).GetAwaiter().GetResult();
+
+            Assert.IsTrue(res);
+        }
+
+        /// <summary>
+        /// Test mthod to get current depth web sharing files
+        /// </summary>
+        [TestMethod]
+        public void UserWebSharedFoldersTest()
+        {
+            service.CreateBaseDirectoryForUser(admin).Wait();
+
+            string name = "Test.txt";
+
+            File.Copy(name, Path.Combine(Directory.GetCurrentDirectory(), ".__CloudData__", "Private", admin.Id.ToString(), name));
+
+            context.Add(new SharedFile
+            {
+                CloudPathFromRoot = $"@CLOUDROOT\\{admin.Id}",
+                SharedPathFromRoot = $"@SHAREDROOT\\{admin.UserName}",
+                Name = name,
+                Owner = admin,
+                ConnectedToApp = false,
+                ConnectedToWeb = true
+            });
+
+            context.SaveChanges();
+
+            var res = service.GetUserWebSharedFiles(user).GetAwaiter().GetResult();
+
+            Assert.AreEqual(0, res.Count);
+
+            res = service.GetUserWebSharedFiles(admin).GetAwaiter().GetResult();
+
+            Assert.AreEqual(1, res.Count);
+        }
+
+        /// <summary>
+        /// Test mthod to get current depth web sharing folders
+        /// </summary>
+        [TestMethod]
+        public void WebUserSharedFoldersTest()
+        {
+            service.CreateBaseDirectoryForUser(admin).Wait();
+
+            context.Add(new SharedFolder
+            {
+                CloudPathFromRoot = $"@CLOUDROOT\\{admin.Id}",
+                SharedPathFromRoot = $"@SHAREDROOT\\{admin.UserName}",
+                Name = "Documents",
+                Owner = admin,
+                ConnectedToApp = false,
+                ConnectedToWeb = true
+            });
+
+            context.SaveChanges();
+
+            var res = service.GetUserWebSharedFolders(user).GetAwaiter().GetResult();
+
+            Assert.AreEqual(0, res.Count);
+
+            res = service.GetUserWebSharedFolders(admin).GetAwaiter().GetResult();
+
+            Assert.AreEqual(1, res.Count);
         }
     }
 }
