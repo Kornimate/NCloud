@@ -7,6 +7,7 @@ using NCloud.Services.Exceptions;
 using NCloud.Users;
 using NCloud.Users.Roles;
 using System.IO;
+using System.Xml.Linq;
 
 namespace CloudServicesTest
 {
@@ -700,7 +701,6 @@ namespace CloudServicesTest
         [TestMethod]
         public void ConnectFileToWebTestErrors()
         {
-            string name = "Test.txt";
             string pathBase = $"@CLOUDROOT\\{admin.Id}";
 
             service.CreateBaseDirectoryForUser(admin).Wait();
@@ -738,7 +738,6 @@ namespace CloudServicesTest
         [TestMethod]
         public void ConnectFileToAppTestErrors()
         {
-            string name = "Test.txt";
             string pathBase = $"@CLOUDROOT\\{admin.Id}";
 
             service.CreateBaseDirectoryForUser(admin).Wait();
@@ -910,10 +909,10 @@ namespace CloudServicesTest
         }
 
         /// <summary>
-        /// Test mthod to get current depth web sharing files
+        /// Test mthod to get current user web sharing files
         /// </summary>
         [TestMethod]
-        public void UserWebSharedFoldersTest()
+        public void UserWebSharedFilesTest()
         {
             service.CreateBaseDirectoryForUser(admin).Wait();
 
@@ -943,10 +942,10 @@ namespace CloudServicesTest
         }
 
         /// <summary>
-        /// Test mthod to get current depth web sharing folders
+        /// Test mthod to get current user web sharing folders
         /// </summary>
         [TestMethod]
-        public void WebUserSharedFoldersTest()
+        public void UserWebSharedFoldersTest()
         {
             service.CreateBaseDirectoryForUser(admin).Wait();
 
@@ -969,6 +968,313 @@ namespace CloudServicesTest
             res = service.GetUserWebSharedFolders(admin).GetAwaiter().GetResult();
 
             Assert.AreEqual(1, res.Count);
+        }
+
+        [TestMethod]
+        public void WebBackCheckTest()
+        {
+            service.CreateBaseDirectoryForUser(admin).Wait();
+
+            context.Add(new SharedFolder
+            {
+                CloudPathFromRoot = $"@CLOUDROOT\\{admin.Id}",
+                SharedPathFromRoot = $"@SHAREDROOT\\{admin.UserName}",
+                Name = "Documents",
+                Owner = admin,
+                ConnectedToApp = false,
+                ConnectedToWeb = true
+            });
+
+            context.SaveChanges();
+
+            string path = $"@CLOUDROOT\\{admin.Id}\\Documents\\Test";
+
+            string res = service.WebBackCheck(path).GetAwaiter().GetResult();
+
+            Assert.AreEqual($"@CLOUDROOT\\{admin.Id}\\Documents", res);
+
+            path = $"@CLOUDROOT\\{admin.Id}\\Documents\\Test\\TestII\\TestIII";
+
+            res = service.WebBackCheck(path).GetAwaiter().GetResult();
+
+            Assert.AreEqual(res, path);
+        }
+
+        /// <summary>
+        /// Test mthod to get current depth web sharing files
+        /// </summary>
+        [TestMethod]
+        public void WebCurrentDepthSharedFilesTest()
+        {
+            service.CreateBaseDirectoryForUser(admin).Wait();
+
+            string name = "Test.txt";
+
+            Directory.CreateDirectory(Path.Combine(Directory.GetCurrentDirectory(), ".__CloudData__", "Private", admin.Id.ToString(), "Documents"));
+
+            File.Copy(name, Path.Combine(Directory.GetCurrentDirectory(), ".__CloudData__", "Private", admin.Id.ToString(), "Documents", name));
+
+            context.Add(new SharedFile
+            {
+                CloudPathFromRoot = $"@CLOUDROOT\\{admin.Id}\\Documents",
+                SharedPathFromRoot = $"@SHAREDROOT\\{admin.UserName}\\Documents",
+                Name = name,
+                Owner = admin,
+                ConnectedToApp = false,
+                ConnectedToWeb = true
+            });
+
+            context.SaveChanges();
+
+            string path = $"@CLOUDROOT\\{admin.Id}\\Documents";
+
+
+            var res = service.GetCurrentDepthWebSharingFiles(path).GetAwaiter().GetResult();
+
+            Assert.AreEqual(1, res.Count);
+
+            path = $"@CLOUDROOT\\{admin.Id}\\Documents\\Test";
+
+            res = service.GetCurrentDepthWebSharingFiles(path).GetAwaiter().GetResult();
+
+            Assert.AreEqual(0, res.Count);
+        }
+
+        /// <summary>
+        /// Test mthod to get current depth web sharing folders
+        /// </summary>
+        [TestMethod]
+        public void WebCurrentDepthSharedFoldersTest()
+        {
+            service.CreateBaseDirectoryForUser(admin).Wait();
+
+            context.Add(new SharedFolder
+            {
+                CloudPathFromRoot = $"@CLOUDROOT\\{admin.Id}",
+                SharedPathFromRoot = $"@SHAREDROOT\\{admin.UserName}",
+                Name = "Documents",
+                Owner = admin,
+                ConnectedToApp = false,
+                ConnectedToWeb = true
+            });
+
+            context.SaveChanges();
+
+            string path = $"@CLOUDROOT\\{admin.Id}";
+
+            var res = service.GetCurrentDepthWebSharingDirectories(path).GetAwaiter().GetResult();
+
+            Assert.AreEqual(1, res.Count);
+
+            path = $"@CLOUDROOT\\{admin.Id}\\Documentst";
+
+            res = service.GetCurrentDepthWebSharingDirectories(path).GetAwaiter().GetResult();
+
+            Assert.AreEqual(0, res.Count);
+        }
+
+        /// <summary>
+        /// Test method to change current state to sharing state and sharing state to current state
+        /// </summary>
+        [TestMethod]
+        public void ChangePathStructureTest()
+        {
+            string path = $"@CLOUDROOT";
+
+            string res = service.ChangePathStructure(path).GetAwaiter().GetResult();
+
+            Assert.AreEqual(res, path);
+
+            path = $"@CLOUDROOT\\{admin.Id}";
+
+            res = service.ChangePathStructure(path).GetAwaiter().GetResult();
+
+            Assert.AreEqual($"@SHAREDROOT\\{admin.UserName}", res);
+
+            path = $"@CLOUDROOT\\testnotworkingID";
+
+            res = service.ChangePathStructure(path).GetAwaiter().GetResult();
+
+            Assert.AreEqual(path, res);
+
+            path = $"@SHAREDROOT\\{admin.UserName}";
+
+            res = service.ChangePathStructure(path).GetAwaiter().GetResult();
+
+            Assert.AreEqual($"@CLOUDROOT\\{admin.Id}", res);
+
+            path = $"@CLOUDROOT\\testnotworkingID";
+
+            res = service.ChangePathStructure(path).GetAwaiter().GetResult();
+
+            Assert.AreEqual(path, res);
+        }
+
+
+        /// <summary>
+        /// Test method to modify file content to given content
+        /// </summary>
+        [TestMethod]
+        public void ModifyFileContentTestSuccess()
+        {
+            string content = "This is a test content";
+            string name = "Test.txt";
+            string pathToFile = Path.Combine(Directory.GetCurrentDirectory(), ".__CloudData__", "Private", admin.Id.ToString(), name);
+
+            service.CreateBaseDirectoryForUser(admin).Wait();
+
+            File.Copy(name, pathToFile);
+
+            bool res = service.ModifyFileContent($"@CLOUDROOT\\{admin.Id}\\Test.txt", content, admin).GetAwaiter().GetResult();
+
+            Assert.IsTrue(res);
+
+            Assert.AreEqual(content, File.ReadAllText(pathToFile));
+        }
+
+        /// <summary>
+        /// Test method to modify file content to given content errors
+        /// </summary>
+        [TestMethod]
+        public void ModifyFileContentTestErrors()
+        {
+            string content = "This is a test content but for actually long because the default text is long in the file too.";
+            string name = "Test.txt";
+            string pathToFile = Path.Combine(Directory.GetCurrentDirectory(), ".__CloudData__", "Private", admin.Id.ToString(), name);
+
+            Assert.ThrowsException<FileNotFoundException>(() => service.ModifyFileContent($"@CLOUDROOT\\{admin.Id}\\Test.txt", content, admin).GetAwaiter().GetResult());
+
+            service.CreateBaseDirectoryForUser(admin).Wait();
+
+            File.Copy(name, pathToFile);
+
+            admin.UsedSpace = Constants.UserSpaceSize;
+
+            Assert.ThrowsException<CloudFunctionStopException>(() => service.ModifyFileContent($"@CLOUDROOT\\{admin.Id}\\Test.txt", content, admin).GetAwaiter().GetResult());
+        }
+
+        /// <summary>
+        /// Test method to get folder by path and name
+        /// </summary>
+        [TestMethod]
+        public void GetFolderTest()
+        {
+            service.CreateBaseDirectoryForUser(admin).Wait();
+
+            context.Add(new SharedFolder
+            {
+                CloudPathFromRoot = $"@CLOUDROOT\\{admin.Id}",
+                SharedPathFromRoot = $"@SHAREDROOT\\{admin.UserName}",
+                Name = "Documents",
+                Owner = admin,
+                ConnectedToApp = true,
+                ConnectedToWeb = true
+            });
+
+            context.SaveChanges();
+
+            var res = service.GetFolder($"@CLOUDROOT\\{admin.Id}", "Documents").GetAwaiter().GetResult();
+
+            Assert.IsNotNull(res);
+            Assert.IsTrue(res.Info.Exists);
+            Assert.IsTrue(res.IsConnectedToWeb);
+            Assert.IsTrue(res.IsConnectedToApp);
+        }
+
+        /// <summary>
+        /// Test method to get file by path and name
+        /// </summary>
+        [TestMethod]
+        public void GetFileTest()
+        {
+            string name = "Test.txt";
+
+            service.CreateBaseDirectoryForUser(admin).Wait();
+
+            File.Copy(name, Path.Combine(Directory.GetCurrentDirectory(), ".__CloudData__", "Private", admin.Id.ToString(), name));
+
+            context.Add(new SharedFile
+            {
+                CloudPathFromRoot = $"@CLOUDROOT\\{admin.Id}",
+                SharedPathFromRoot = $"@SHAREDROOT\\{admin.UserName}",
+                Name = name,
+                Owner = admin,
+                ConnectedToApp = true,
+                ConnectedToWeb = true
+            });
+
+            context.SaveChanges();
+
+            var res = service.GetFile($"@CLOUDROOT\\{admin.Id}", name).GetAwaiter().GetResult();
+
+            Assert.IsNotNull(res);
+            Assert.IsTrue(res.Info.Exists);
+            Assert.IsTrue(res.IsConnectedToWeb);
+            Assert.IsTrue(res.IsConnectedToApp);
+        }
+
+        /// <summary>
+        /// Test method to rename folder
+        /// </summary>
+        [TestMethod]
+        public void RenameFolderTest()
+        {
+            service.CreateBaseDirectoryForUser(admin).Wait();
+
+            service.CreateDirectory("Test", $"@CLOUDROOT\\{admin.Id}", admin).Wait();
+
+            var res = service.RenameFolder($"@CLOUDROOT\\{admin.Id}", "Test", "TestII", new SharedPathData()).GetAwaiter().GetResult();
+
+            Assert.AreEqual(res, "TestII");
+        }
+
+        /// <summary>
+        /// Test method for rename folder errors
+        /// </summary>
+        [TestMethod]
+        public void RenameFolderTestErrors()
+        {
+            service.CreateBaseDirectoryForUser(admin).Wait();
+
+            Assert.ThrowsException<CloudFunctionStopException>(() => service.RenameFolder($"@CLOUDROOT\\{admin.Id}", "Test", "TestII", new SharedPathData()).GetAwaiter().GetResult());
+
+            service.CreateDirectory("Test", $"@CLOUDROOT\\{admin.Id}", admin).Wait();
+
+            Assert.ThrowsException<CloudFunctionStopException>(() => service.RenameFolder($"@CLOUDROOT\\{admin.Id}", "Documents", "TestII", new SharedPathData()).GetAwaiter().GetResult());
+            Assert.ThrowsException<CloudFunctionStopException>(() => service.RenameFolder($"@CLOUDROOT\\{admin.Id}", "Test", "Documents", new SharedPathData()).GetAwaiter().GetResult());
+        }
+
+        /// <summary>
+        /// Test method to rename file
+        /// </summary>
+        [TestMethod]
+        public void RenameFileTest()
+        {
+            string name = "Test.txt";
+
+            service.CreateBaseDirectoryForUser(admin).Wait();
+
+            File.Copy(name, Path.Combine(Directory.GetCurrentDirectory(), ".__CloudData__", "Private", admin.Id.ToString(), name));
+            File.Copy(name, Path.Combine(Directory.GetCurrentDirectory(), ".__CloudData__", "Private", admin.Id.ToString(), "TestIII.txt"));
+
+            var res = service.RenameFile($"@CLOUDROOT\\{admin.Id}", name, "TestII.txt").GetAwaiter().GetResult();
+
+            Assert.AreEqual(res, "TestII.txt");
+
+            name = res;
+
+            res = service.RenameFile($"@CLOUDROOT\\{admin.Id}", name, "TestIII.txt").GetAwaiter().GetResult();
+
+            Assert.AreEqual(res, "TestIII_1.txt");
+        }
+
+        /// <summary>
+        /// Test method for rename file errors
+        /// </summary>
+        [TestMethod]
+        public void RenameFileTestErrors()
+        {
+            Assert.ThrowsException<CloudFunctionStopException>(() => service.RenameFile($"@CLOUDROOT\\{admin.Id}", "Test.txt", "TestI.txt").GetAwaiter().GetResult());
         }
     }
 }

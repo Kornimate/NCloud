@@ -605,11 +605,11 @@ namespace NCloud.Services
         {
             try
             {
-                Pair<string, string> parentPathAndName = GetParentPathAndName(path);
+                Pair<string, string> parentPathAndName = GetParentPathAndName(GetParentPathAndName(path).First);
 
                 if (await FolderIsSharedInWeb(parentPathAndName.First, parentPathAndName.Second))
                 {
-                    return parentPathAndName.First;
+                    return Path.Combine(parentPathAndName.First, parentPathAndName.Second);
                 }
 
                 return path;
@@ -914,7 +914,7 @@ namespace NCloud.Services
                 throw new CloudFunctionStopException("file does not exist");
 
             if (File.Exists(newFilePathAndName) && fileName.ToLower() != newName.ToLower())
-                RenameObject(filePath, ref newFileName, true);
+                newFilePathAndName = Path.Combine(filePath, RenameObject(filePath, ref newFileName, true));
 
             File.Move(filePathAndName, newFilePathAndName);
 
@@ -925,7 +925,6 @@ namespace NCloud.Services
                     entry.Name = newFileName;
 
                     context.SharedFiles.Update(entry);
-
                 }
 
                 await context.SaveChangesAsync();
