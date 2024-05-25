@@ -1276,5 +1276,50 @@ namespace CloudServicesTest
         {
             Assert.ThrowsException<CloudFunctionStopException>(() => service.RenameFile($"@CLOUDROOT\\{admin.Id}", "Test.txt", "TestI.txt").GetAwaiter().GetResult());
         }
+
+        /// <summary>
+        /// Test method to copy file
+        /// </summary>
+        [TestMethod]
+        public void CopyFileTestSuccess()
+        {
+            string name = "Test.txt";
+
+            service.CreateBaseDirectoryForUser(admin).Wait();
+
+            File.Copy(name, Path.Combine(Directory.GetCurrentDirectory(), ".__CloudData__", "Private", admin.Id.ToString(), name));
+
+            var res = service.CopyFile($"@CLOUDROOT\\{admin.Id}\\{name}", $"@CLOUDROOT\\{admin.Id}\\Documents", admin).GetAwaiter().GetResult();
+
+            Assert.AreEqual(res, String.Empty);
+            Assert.IsTrue(File.Exists(Path.Combine(Directory.GetCurrentDirectory(), ".__CloudData__", "Private", admin.Id.ToString(), "Documents", name)));
+
+            res = service.CopyFile($"@CLOUDROOT\\{admin.Id}\\{name}", $"@CLOUDROOT\\{admin.Id}\\Documents", admin).GetAwaiter().GetResult();
+
+            Assert.AreEqual(res, "Test_1.txt");
+        }
+
+        /// <summary>
+        /// Test method for copy file errors
+        /// </summary>
+        [TestMethod]
+        public void CopyFileTestErrors()
+        {
+            string name = "Test.txt";
+
+            Assert.ThrowsException<CloudFunctionStopException>(() => service.CopyFile(null!, $"@CLOUDROOT\\{admin.Id}\\Documents", admin).GetAwaiter().GetResult());
+            Assert.ThrowsException<CloudFunctionStopException>(() => service.CopyFile($"@CLOUDROOT\\{admin.Id}\\{name}", null!, admin).GetAwaiter().GetResult());
+            Assert.ThrowsException<CloudFunctionStopException>(() => service.CopyFile($"@CLOUDROOT\\{admin.Id}\\{name}_error", $"@CLOUDROOT\\{admin.Id}\\Documents", admin).GetAwaiter().GetResult());
+            Assert.ThrowsException<CloudFunctionStopException>(() => service.CopyFile($"@CLOUDROOT\\{admin.Id}\\{name}", $"@CLOUDROOT\\{admin.Id}\\WrongPath", admin).GetAwaiter().GetResult());
+
+
+            service.CreateBaseDirectoryForUser(admin).Wait();
+
+            File.Copy(name, Path.Combine(Directory.GetCurrentDirectory(), ".__CloudData__", "Private", admin.Id.ToString(), name));
+
+            admin.UsedSpace = Constants.UserSpaceSize;
+
+            Assert.ThrowsException<CloudFunctionStopException>(() => service.CopyFile($"@CLOUDROOT\\{admin.Id}\\{name}", $"@CLOUDROOT\\{admin.Id}\\Documents", admin).GetAwaiter().GetResult());
+        }
     }
 }

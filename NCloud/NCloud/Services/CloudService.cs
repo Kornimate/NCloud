@@ -961,6 +961,11 @@ namespace NCloud.Services
                 if (!fi.Exists)
                     throw new CloudFunctionStopException("source file does not exist");
 
+                DirectoryInfo di = new DirectoryInfo(dest);
+
+                if (!di.Exists)
+                    throw new CloudFunctionStopException("destination path does not exist");
+
                 user = await context.Users.FirstOrDefaultAsync(x => x.Id == user.Id) ?? throw new CloudFunctionStopException("user is not found"); //get current user state from database or show error
 
                 if (user.UsedSpace + fi.Length > user.MaxSpace)
@@ -1012,6 +1017,11 @@ namespace NCloud.Services
 
                 if (!di.Exists)
                     throw new CloudFunctionStopException("source directory does not exist");
+
+                DirectoryInfo ddi = new DirectoryInfo(dest);
+
+                if (!ddi.Exists)
+                    throw new CloudFunctionStopException("destination path does not exist");
 
                 string name = new string(di.Name);
                 string newDirectoryPath = Path.Combine(dest, RenameObject(dest, ref name, false));
