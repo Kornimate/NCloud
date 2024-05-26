@@ -5,9 +5,6 @@ using NCloud.Models;
 using NCloud.Services;
 using NCloud.Services.Exceptions;
 using NCloud.Users;
-using NCloud.Users.Roles;
-using System.IO;
-using System.Xml.Linq;
 
 namespace CloudServicesTest
 {
@@ -1475,15 +1472,15 @@ namespace CloudServicesTest
         {
             service.CreateBaseDirectoryForUser(admin).Wait();
 
-            List<CloudFolder> res = service.SearchDirectoryInCurrentDirectory($"@CLOUDROOT\\{admin.Id}","*").GetAwaiter().GetResult();
+            List<CloudFolder> res = service.SearchDirectoryInCurrentDirectory($"@CLOUDROOT\\{admin.Id}", "*").GetAwaiter().GetResult();
 
             Assert.AreEqual(4, res.Count);
 
-            res = service.SearchDirectoryInCurrentDirectory($"@CLOUDROOT\\{admin.Id}","#######").GetAwaiter().GetResult();
+            res = service.SearchDirectoryInCurrentDirectory($"@CLOUDROOT\\{admin.Id}", "#######").GetAwaiter().GetResult();
 
             Assert.AreEqual(0, res.Count);
 
-            res = service.SearchDirectoryInCurrentDirectory($"@CLOUDROOT\\{admin.Id}","*ocu*").GetAwaiter().GetResult();
+            res = service.SearchDirectoryInCurrentDirectory($"@CLOUDROOT\\{admin.Id}", "*ocu*").GetAwaiter().GetResult();
 
             Assert.AreEqual(1, res.Count);
         }
@@ -1494,7 +1491,7 @@ namespace CloudServicesTest
         [TestMethod]
         public void SearchDirectoryInCurrentStateTestErrors()
         {
-            Assert.ThrowsException<CloudFunctionStopException>(() => service.SearchDirectoryInCurrentDirectory($"@CLOUDROOT\\{admin.Id}\\Test","*").GetAwaiter().GetResult());
+            Assert.ThrowsException<CloudFunctionStopException>(() => service.SearchDirectoryInCurrentDirectory($"@CLOUDROOT\\{admin.Id}\\Test", "*").GetAwaiter().GetResult());
         }
 
         /// <summary>
@@ -1646,7 +1643,7 @@ namespace CloudServicesTest
 
             var folder = context.SharedFolders.First(x => x.Name == "Documents" && x.Owner == admin);
 
-            var res = service.GetSharedFolderByPathAndName($"@CLOUDROOT\\{admin.Id}","Documents").GetAwaiter().GetResult();
+            var res = service.GetSharedFolderByPathAndName($"@CLOUDROOT\\{admin.Id}", "Documents").GetAwaiter().GetResult();
 
             Assert.IsNotNull(res);
             Assert.AreEqual(folder.Name, res.Name);
@@ -1659,7 +1656,7 @@ namespace CloudServicesTest
         [TestMethod]
         public void SharedFolderByPathAndNameTestErrors()
         {
-            Assert.ThrowsException<CloudFunctionStopException>(() => service.GetSharedFolderByPathAndName("@CLOUDROOT\\WrongPath","WrongName").GetAwaiter().GetResult());
+            Assert.ThrowsException<CloudFunctionStopException>(() => service.GetSharedFolderByPathAndName("@CLOUDROOT\\WrongPath", "WrongName").GetAwaiter().GetResult());
         }
 
         /// <summary>
@@ -1682,7 +1679,7 @@ namespace CloudServicesTest
 
             var file = context.SharedFiles.First(x => x.Name == "Test.txt" && x.Owner == admin);
 
-            var res = service.GetSharedFileByPathAndName($"@CLOUDROOT\\{admin.Id}","Test.txt").GetAwaiter().GetResult();
+            var res = service.GetSharedFileByPathAndName($"@CLOUDROOT\\{admin.Id}", "Test.txt").GetAwaiter().GetResult();
 
             Assert.IsNotNull(res);
             Assert.AreEqual(file.Name, res.Name);
@@ -1695,7 +1692,7 @@ namespace CloudServicesTest
         [TestMethod]
         public void SharedFileByPathAndNameTestErrors()
         {
-            Assert.ThrowsException<CloudFunctionStopException>(() => service.GetSharedFileByPathAndName("@CLOUDROOT\\WrongPath","WrongName").GetAwaiter().GetResult());
+            Assert.ThrowsException<CloudFunctionStopException>(() => service.GetSharedFileByPathAndName("@CLOUDROOT\\WrongPath", "WrongName").GetAwaiter().GetResult());
         }
 
         /// <summary>

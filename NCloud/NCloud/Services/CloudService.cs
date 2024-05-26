@@ -185,7 +185,7 @@ namespace NCloud.Services
 
                 if (!await SetObjectAndUnderlyingObjectsState(cloudPath, folderName, ChangeOwnerIdentification(ChangeRootName(cloudPath), user.UserName), user, false, false, true) //delete folder from database
                     || !await SetUpperlyingObjectsState(cloudPath, ChangeOwnerIdentification(ChangeRootName(cloudPath), user.UserName), user, false))
-                        throw new CloudFunctionStopException("failed to remove folder connectivity");
+                    throw new CloudFunctionStopException("failed to remove folder connectivity");
 
                 await Task.Run(() => di.Delete(true)); //delete folder
 
@@ -289,7 +289,7 @@ namespace NCloud.Services
 
                 if (!await SetFileConnectedState(cloudPath, fileName, ChangeOwnerIdentification(ChangeRootName(cloudPath), user.UserName), user, false, false, true)
                     || !await SetUpperlyingObjectsState(cloudPath, ChangeOwnerIdentification(ChangeRootName(cloudPath), user.UserName), user, false))
-                        throw new CloudFunctionStopException("failed to adjust file connectivity");
+                    throw new CloudFunctionStopException("failed to adjust file connectivity");
 
                 await Task.Run(() => fi.Delete());
 
