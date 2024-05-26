@@ -117,6 +117,12 @@ namespace NCloud.Controllers
         {
             ViewBag.ReturnUrl = returnUrl;
 
+            vm.FullName = $@"{vm.FullName}";
+            vm.UserName = $@"{vm.UserName}";
+            vm.Password = $@"{vm.Password}";
+            vm.PasswordRepeat = $@"{vm.PasswordRepeat}";
+            vm.Email = $@"{vm.Email}";
+
             if (ModelState.IsValid)
             {
                 try
