@@ -25,14 +25,6 @@ namespace NCloud.Controllers
             return await Task.FromResult<IActionResult>(View());
         }
 
-        //Need to be removed
-        public async Task<IActionResult> TestLogin()
-        {
-            await signInManager.PasswordSignInAsync("Admin", "Admin_1234", true, false);
-
-            return RedirectToAction("Index", "Dashboard");
-        }
-
         /// <summary>
         /// Action method to handle errors
         /// </summary>
