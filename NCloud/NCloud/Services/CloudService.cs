@@ -1124,7 +1124,7 @@ namespace NCloud.Services
                     }
                     else
                     {
-                        DirectoryInfo di = new DirectoryInfo(ParseRootName(pathData.TrySetFolder(element) ?? String.Empty));
+                        DirectoryInfo di = new DirectoryInfo(ParseRootName(pathData.TrySetFolder(element)));
 
                         if (di.Exists)
                         {
@@ -1134,7 +1134,7 @@ namespace NCloud.Services
                             }
 
 
-                            if (Directory.Exists(ParseRootName(pathData.TrySetFolder(di.Name) ?? String.Empty)))
+                            if (Directory.Exists(ParseRootName(pathData.TrySetFolder(di.Name))))
                             {
                                 pathData.SetFolder((di.Name));
                             }
@@ -1216,11 +1216,11 @@ namespace NCloud.Services
             return await Task.FromResult<string>($"{pathData.CurrentPathShow}\n");
         }
 
-        public async Task<List<CloudFolder>> SearchDirectoryInCurrentDirectory(string currentPath, string pattern)
+        public async Task<List<CloudFolder>> SearchDirectoryInCurrentDirectory(string cloudPath, string pattern)
         {
             try
             {
-                return await GetCurrentDepthCloudDirectories(currentPath, pattern: pattern);
+                return await GetCurrentDepthCloudDirectories(cloudPath, pattern: pattern);
             }
             catch (CloudFunctionStopException ex)
             {
