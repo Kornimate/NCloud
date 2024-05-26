@@ -51,6 +51,7 @@ namespace NCloud.Services
             };
         }
 
+        #region Public Methods
         public async Task<(bool, string, object?, bool)> Execute(string command, List<string> parameters, CloudPathData pathdata, SharedPathData sharedData, CloudUser user)
         {
             ServerSideCommandContainer? commandData = serverSideCommands.FirstOrDefault(x => x.Command == command);
@@ -116,6 +117,10 @@ namespace NCloud.Services
             return await (commandObject?.UrlDetailsGenerator(parameters, pathData) ?? throw new CloudFunctionStopException($"no command with name: {command}"));
         }
 
+        #endregion
+
+        #region Private Methods
+
         /// <summary>
         /// Private method to create path from used written path (command line input)
         /// </summary>
@@ -167,5 +172,7 @@ namespace NCloud.Services
 
             return await Task.FromResult<string>(path);
         }
+
+        #endregion
     }
 }
