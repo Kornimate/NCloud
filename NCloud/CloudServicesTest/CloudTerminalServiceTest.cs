@@ -1,14 +1,18 @@
 using Microsoft.EntityFrameworkCore;
 using NCloud.Models;
 using NCloud.Services;
+using NCloud.Users;
 
 namespace CloudServicesTest
 {
     [TestClass]
     public class CloudTerminalServiceTest
     {
-        private readonly CloudService service;
+        private readonly CloudTerminalService service;
         private readonly CloudDbContext context;
+        private readonly CloudUser admin;
+        private readonly CloudUser user;
+        private readonly CloudUser user2;
         public CloudTerminalServiceTest()
         {
             var options = new DbContextOptionsBuilder<CloudDbContext>()
@@ -17,15 +21,23 @@ namespace CloudServicesTest
 
             context = new CloudDbContext(options);
 
-            service = new CloudService(context);
+            var users = TestDbAndFileSystemSeeder.SeedDb(context);
 
-            //Data initialization
+            admin = users.Item1;
+            user = users.Item2;
+            user2 = users.Item3;
+
+            service = new CloudTerminalService(new CloudService(context));
         }
-
         public void Dispose()
         {
             context.Database.EnsureDeleted();
             context.Dispose();
+
+            string dir = Path.Combine(Directory.GetCurrentDirectory(), ".__CloudData__");
+
+            if (Directory.Exists(dir))
+                Directory.Delete(dir, true);
         }
 
         [TestMethod]
