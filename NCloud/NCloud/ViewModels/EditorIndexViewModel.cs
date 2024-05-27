@@ -16,5 +16,6 @@ namespace NCloud.ViewModels
 
         [Required(ErrorMessage = "Extension is compulsory")]
         public string Extension { get; set; } = String.Empty;
+        public string Editor { get; set; } = String.Empty;
     }
 }

@@ -38,6 +38,7 @@
                 <div class="modal-body">
                     <div class="input-group">
                         <input asp-for="FileName" class="form-control" placeholder="Write filename here..." />
+                        <input type="hidden" asp-for="Editor" value="@Constants.CodeEditor" />
                         <span class="input-group-text">.</span>
                         <select asp-for="Extension" asp-items="@Model.CodingExtensions" id="codeSelect"></select>
                     </div>
@@ -62,6 +63,7 @@
                 <div class="modal-body">
                     <div class="input-group">
                         <input asp-for="FileName" class="form-control" placeholder="Write filename here..." />
+                        <input type="hidden" asp-for="Editor" value="@Constants.TextEditor" />
                         <span class="input-group-text">.</span>
                         <select asp-for="Extension" asp-items="@Model.TextDocumentExtensions" id="textDocumentSelect"></select>
                     </div>

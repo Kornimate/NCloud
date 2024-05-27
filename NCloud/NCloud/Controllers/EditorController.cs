@@ -68,7 +68,7 @@ namespace NCloud.Controllers
         /// <returns></returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> CreateNewFile([Bind("FileName,Extension")] EditorIndexViewModel vm)
+        public async Task<IActionResult> CreateNewFile([Bind("FileName,Extension,Editor")] EditorIndexViewModel vm)
         {
             if (ModelState.IsValid)
             {
@@ -87,7 +87,7 @@ namespace NCloud.Controllers
 
                     AddNewNotification(new Success($"File successfully created at {Constants.GetDefaultFileShowingPath()}"));
 
-                    return await EditorHub(res, path, RedirectionManager.CreateRedirectionString("Editor", "Index"));
+                    return await EditorHub(res, path, RedirectionManager.CreateRedirectionString("Editor", "Index"), vm.Editor);
                 }
                 catch (CloudFunctionStopException ex)
                 {
@@ -125,11 +125,24 @@ namespace NCloud.Controllers
         /// <param name="fileName">Name of file</param>
         /// <param name="path">Path in app</param>
         /// <param name="redirectData">Special string for redirection</param>
+        /// <param name="fromIndex">Boolean value to see if action call was from Index page</param>
         /// <returns>Selected action method redirection or to selection page (more than one editor can edit the extension)</returns>
-        public async Task<IActionResult> EditorHub(string fileName, string? path = null, string? redirectData = null)
+        public async Task<IActionResult> EditorHub(string fileName, string? path = null, string? redirectData = null, string? editorName = null)
         {
             bool codingExtension = await ExtensionManager.TryGetFileCodingExtensionData(fileName, out string codingExtensionData);
             bool textDocumentExtension = await ExtensionManager.TryGetFileTextDocumentExtensionData(fileName, out string textDocumentExtensionData);
+
+            if (editorName is not null)
+            {
+                if (editorName == Constants.CodeEditor)
+                {
+                    return RedirectToAction("CodeEditor", new { fileName = fileName, path = path, extensionData = codingExtensionData, redirectData = redirectData ?? RedirectionManager.CreateRedirectionString("Drive", "Details") });
+                }
+                else if (editorName == Constants.TextEditor)
+                {
+                    return RedirectToAction("TextEditor", new { fileName = fileName, path = path, extensionData = textDocumentExtensionData, redirectData = redirectData ?? RedirectionManager.CreateRedirectionString("Drive", "Details") });
+                }
+            }
 
             if (codingExtension && textDocumentExtension)
             {

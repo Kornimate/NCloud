@@ -32,6 +32,8 @@ namespace NCloud.ConstantData
         public static string UnkownFileType { get => "unknown"; }
         public static string AdminRole { get => "admin"; }
         public static string UserRole { get => "user"; }
+        public static string TextEditor { get => "Text"; }
+        public static string CodeEditor { get => "Code"; }
         public static string FileTypePrefix { get => "filetype-"; }
         public static string WebRootFolderName { get => ".__CloudData__"; }
         public static string IconsBasePath { get => Path.Combine("wwwroot", "utilities"); }
