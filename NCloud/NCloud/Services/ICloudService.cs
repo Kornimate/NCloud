@@ -404,7 +404,7 @@ namespace NCloud.Services
         Task<SharedFile> GetSharedFileByPathAndName(string cloudPath, string fileName);
 
         /// <summary>
-        /// Method to see if sharing path exists in database
+        /// Method to see if sharing path or the parent sharing path exists in database
         /// </summary>
         /// <param name="path">Path in current sharing state</param>
         /// <returns>Bollean indication the presenc of the path in database</returns>

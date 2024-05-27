@@ -1275,7 +1275,7 @@ namespace NCloud.Services
         {
             var parent = GetParentPathAndName(sharingPath);
 
-            return await context.SharedFiles.AnyAsync(x => (x.SharedPathFromRoot.ToLower() == sharingPath.ToLower() || x.SharedPathFromRoot.ToLower() == parent.First.ToLower()) && x.ConnectedToApp) || await context.SharedFolders.AnyAsync(x => (x.SharedPathFromRoot.ToLower() == sharingPath.ToLower() || x.SharedPathFromRoot.ToLower() == parent.First.ToLower()) && x.ConnectedToApp);
+            return await context.SharedFiles.AnyAsync(x => (x.SharedPathFromRoot.ToLower() == sharingPath.ToLower() || (x.SharedPathFromRoot.ToLower() == parent.First.ToLower() && x.Name.ToLower() == parent.Second.ToLower())) && x.ConnectedToApp) || await context.SharedFolders.AnyAsync(x => (x.SharedPathFromRoot.ToLower() == sharingPath.ToLower() || (x.SharedPathFromRoot.ToLower() == parent.First.ToLower() && x.Name.ToLower() == parent.Second.ToLower())) && x.ConnectedToApp);
         }
 
         #endregion
