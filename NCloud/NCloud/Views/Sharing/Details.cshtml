@@ -21,12 +21,15 @@
         <div class="">
             <a class="btn btn-primary" asp-controller="Sharing" asp-action="Back"><img src="~/utilities/arrow-left-circle.svg" width=" 20" height="20" class="rounded align-middle" /></a>
         </div>
-        <div class="">
-            <div class="btn-group" role="group">
-                <a class="btn btn-primary" asp-controller="Sharing" asp-action="Home"><img src="~/utilities/home.svg" width=" 20" height="20" class="rounded align-middle" /></a>
-                <a class="btn btn-secondary" id="refreshBtn" asp-controller="Sharing" asp-action="Details"><img src="~/utilities/arrow-repeat.svg" width=" 20" height="20" class="rounded align-middle" /></a>
-                <a class="btn btn-primary" asp-controller="Sharing" asp-action="DownloadItems"><img src="~/utilities/cloud-download.svg" width=" 20" height="20" class="rounded align-middle" /></a>
-            </div>
+        <div>
+            @if (Model.CurrentPath != Constants.PublicRootName)
+            {
+                <div class="btn-group" role="group">
+                    <a class="btn btn-primary" asp-controller="Sharing" asp-action="Home"><img src="~/utilities/home.svg" width=" 20" height="20" class="rounded align-middle" /></a>
+                    <a class="btn btn-secondary" id="refreshBtn" asp-controller="Sharing" asp-action="Details"><img src="~/utilities/arrow-repeat.svg" width=" 20" height="20" class="rounded align-middle" /></a>
+                    <a class="btn btn-primary" asp-controller="Sharing" asp-action="DownloadItems"><img src="~/utilities/cloud-download.svg" width=" 20" height="20" class="rounded align-middle" /></a>
+                </div>
+            }
         </div>
     </div>
 </div>
