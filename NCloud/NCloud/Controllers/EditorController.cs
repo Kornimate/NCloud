@@ -125,7 +125,7 @@ namespace NCloud.Controllers
         /// <param name="fileName">Name of file</param>
         /// <param name="path">Path in app</param>
         /// <param name="redirectData">Special string for redirection</param>
-        /// <param name="fromIndex">Boolean value to see if action call was from Index page</param>
+        /// <param name="editorName">String representing the editor to be used</param>
         /// <returns>Selected action method redirection or to selection page (more than one editor can edit the extension)</returns>
         public async Task<IActionResult> EditorHub(string fileName, string? path = null, string? redirectData = null, string? editorName = null)
         {
