@@ -13,7 +13,7 @@ using NCloud.ViewModels;
 namespace NCloud.Controllers
 {
     /// <summary>
-    /// Class to handle Private file and folder requests
+    /// Class to handle private file and folder requests
     /// </summary>
     [Authorize]
     public class DriveController : CloudControllerDefault
