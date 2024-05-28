@@ -663,7 +663,13 @@ namespace NCloud.Services
                                     string serverPathStart = ParseRootName(cloudPath);
                                     string currentRelativePath = String.Empty;
 
-                                    SharedFolder folder = await GetSharedFolderByPathAndName(cloudPath, name);
+                                    SharedFolder sharedFolder = await GetSharedFolderByPathAndName(cloudPath, name);
+
+                                    if (connectedToApp && !sharedFolder.ConnectedToApp)
+                                        continue;
+
+                                    if (connectedToWeb && !sharedFolder.ConnectedToWeb)
+                                        continue;
 
                                     Queue<Pair<string, DirectoryInfo>> directories = new(new List<Pair<string, DirectoryInfo>>() { new Pair<string, DirectoryInfo>(currentRelativePath, await GetFolderByPath(serverPathStart, name)) });
 
