@@ -1,4 +1,109 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="NCloud.Models.ClientSideCommandContainer">
+    <Position X="0.5" Y="0.5" Width="2.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAEBAAAABAAAAAAAIAAAAAAAAA=</HashCode>
+      <FileName>Models\ClientSideCommandContainer.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="NCloud.Models.ServerSideCommandContainer">
+    <Position X="3.25" Y="0.5" Width="2.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAQAAAAAAAAABAAAAAIIAAAAAIAAAAAAAAA=</HashCode>
+      <FileName>Models\ServerSideCommandContainer.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="NCloud.Models.CloudDbContext">
+    <Position X="6" Y="0.5" Width="1.75" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAACAAAAAAAAAEAAAAAAAAAAAAAAAAIA=</HashCode>
+      <FileName>Models\CloudDbContext.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="NCloud.Models.CloudFile">
+    <Position X="0.5" Y="5.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAQAEAAAAAAAABACAAAAAAAAAAEAAAAA=</HashCode>
+      <FileName>Models\CloudFile.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="NCloud.Models.CloudFolder">
+    <Position X="4.25" Y="5.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAQAEAAAAAAAABACAAAAAAAAAAEAAAAA=</HashCode>
+      <FileName>Models\CloudFolder.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="NCloud.Models.CloudRegistration">
+    <Position X="2.5" Y="4.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAACAAAAAAAAAQAAAAAAAAAAFBCABAAAAgAAAABAAEA=</HashCode>
+      <FileName>Models\CloudRegistration.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="NCloud.Models.CloudNotificationAbstarct">
+    <Position X="7.75" Y="4.75" Width="2" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAEAEAAAAAAAAAAAAABAAAAAAiAAAAAA=</HashCode>
+      <FileName>Models\CloudNotificationAbstarct.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="NCloud.Models.Error">
+    <Position X="6" Y="4.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Models\Notifications.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="NCloud.Models.Warning">
+    <Position X="10" Y="4.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Models\Notifications.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="NCloud.Models.Success">
+    <Position X="6" Y="6.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Models\Notifications.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="NCloud.Models.Information">
+    <Position X="10" Y="6.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Models\Notifications.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="NCloud.Models.CloudPathData">
+    <Position X="8" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAgABAIAAAEAAAQAAAA0AAAAAAIAAABAAAAEABAIA=</HashCode>
+      <FileName>Models\CloudPathData.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="NCloud.Models.SharedPathData">
+    <Position X="9.75" Y="0.5" Width="2.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAIAAAAAAAAAAAAkAAAAAAAAACAAAAAEAACIA=</HashCode>
+      <FileName>Models\SharedPathData.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="NCloud.Models.RedirectManagerResult">
+    <Position X="11.75" Y="4.5" Width="2" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQ=</HashCode>
+      <FileName>Models\RedirectManagerResult.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="NCloud.Models.UrlGenerationResult">
+    <Position X="11.75" Y="6.5" Width="2" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAQAAAAAAAAAEAAAAAAAAAAAAAIAAAAAAAAQ=</HashCode>
+      <FileName>Models\UrlGenerationResult.cs</FileName>
+    </TypeIdentifier>
+  </Class>
   <Font Name="Segoe UI" Size="9" />
 </ClassDiagram>
