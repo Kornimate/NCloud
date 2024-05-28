@@ -105,5 +105,35 @@
       <FileName>Models\UrlGenerationResult.cs</FileName>
     </TypeIdentifier>
   </Class>
+  <Class Name="NCloud.Services.CloudService">
+    <Position X="4.5" Y="8.5" Width="3.25" />
+    <TypeIdentifier>
+      <HashCode>EANLFFMQgIggAAAAIEStBBGHXAwagFgQAEC0AQJyhQA=</HashCode>
+      <FileName>Services\CloudService.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Orientation="Left" Position="0.1" />
+  </Class>
+  <Class Name="NCloud.Services.CloudTerminalService">
+    <Position X="0.5" Y="23.5" Width="3" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAIYAAIAQBAAAAAAAACAAAAEAAgEAAAAAEAAA=</HashCode>
+      <FileName>Services\CloudTerminalService.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Orientation="Right" Position="0.218" />
+  </Class>
+  <Interface Name="NCloud.Services.ICloudService">
+    <Position X="0.5" Y="8.5" Width="3" />
+    <TypeIdentifier>
+      <HashCode>EANJBFMQgIgAAAAAAESMABGGWAwaAFAQAEAkAAIyhQA=</HashCode>
+      <FileName>Services\ICloudService.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="NCloud.Services.ICloudTerminalService">
+    <Position X="5" Y="23.5" Width="2.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAYAAAAQBAAAAAAAAAAAAAAAAgAAAAAAEAAA=</HashCode>
+      <FileName>Services\ICloudTerminalService.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
   <Font Name="Segoe UI" Size="9" />
 </ClassDiagram>
