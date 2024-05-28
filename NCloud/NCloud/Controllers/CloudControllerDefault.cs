@@ -238,6 +238,14 @@ namespace NCloud.Controllers
 
                                 try
                                 {
+                                    SharedFile file = await service.GetSharedFileByPathAndName(cloudPath, name);
+
+                                    if(connectedToApp && !file.ConnectedToApp)
+                                        throw new CloudFunctionStopException("File is not shared in app");
+
+                                    if (connectedToWeb && !file.ConnectedToWeb)
+                                        throw new CloudFunctionStopException("File is not shared on web");
+
                                     FileStream stream = new FileStream(Path.Combine(service.ServerPath(cloudPath), name), FileMode.Open, FileAccess.Read, FileShare.Read);
 
                                     return File(stream, MimeTypeManager.GetMimeType(name), name);
