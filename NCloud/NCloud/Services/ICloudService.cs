@@ -321,7 +321,7 @@ namespace NCloud.Services
         /// <param name="destination">Path in app (destination folder)</param>
         /// <param name="user">Owner of file</param>
         /// <returns>Empty string if copied file name not changed, new name if changed during copy (might be renamed)</returns>
-        Task<string> CopyFolder(string source, string destination, CloudUser userPrincipal);
+        Task<string> CopyFolder(string source, string destination, CloudUser user);
 
         /// <summary>
         /// Method to change to directory in session (relative or absolute path)
