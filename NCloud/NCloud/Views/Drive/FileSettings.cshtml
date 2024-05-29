@@ -75,7 +75,7 @@
             </form>
             <div class="d-flex w-100 justify-content-center input-group mt-4">
                 <a asp-controller="Drive" class="btn btn-primary" asp-action="DownloadFolder" asp-route-folderName="@Model.OldName"><img src="~/utilities/cloud-download.svg" width=" 20" height="20" class="rounded align-middle" download /></a>
-                <button type="button" class="btn btn-secondary" onclick="copyItemToCloudClipBoard('@Url.Action("CopyFileToCloudClipboard","Drive")','@Model.Info.Name')"><img src="~/utilities/copy.svg" width=" 20" height="20" class="align-middle" /></button>
+                <button type="button" class="btn btn-secondary" onclick="copyItemToCloudClipBoard('@Url.Action("CopyFileToCloudClipboard","Drive")','@Model?.Info?.Name')"><img src="~/utilities/copy.svg" width=" 20" height="20" class="align-middle" /></button>
                 <button type="button" class="btn btn-danger border border-danger border-3" id="modalLaunchBtn"><img src="~/utilities/trash.svg" width=" 20" height="20" class="rounded align-middle" /></button>
             </div>
         </div>
@@ -94,7 +94,7 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
-                <a asp-controller="Drive" class="btn btn-outline-danger" asp-action="DeleteFile" asp-route-fileName="@Model.OldName">Delete</a>
+                <a asp-controller="Drive" class="btn btn-outline-danger" asp-action="DeleteFile" asp-route-fileName="@Model?.OldName">Delete</a>
             </div>
         </div>
     </div>

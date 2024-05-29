@@ -248,7 +248,7 @@ namespace NCloud.Controllers
 
             string url = Url.Action(urlDetails.Action, urlDetails.Controller, urlDetails.Parameters) ?? throw new CloudFunctionStopException("error while generating URL");
 
-            return $"<div style=\"display:none\"><a href=\"{url}\" {(urlDetails.Downloadable ? "download" : "")} id=\"{Constants.DownloadHTMLElementId}\"></a></div>";
+            return $"<div style=\"display:none\"><a href=\"{url}\" id=\"{Constants.DownloadHTMLElementId}\"></a></div>";
         }
     }
 }
