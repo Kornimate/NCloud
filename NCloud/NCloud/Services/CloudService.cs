@@ -900,6 +900,15 @@ namespace NCloud.Services
                     context.SharedFolders.Update(entry);
                 }
 
+                foreach (var entry in context.SharedFiles.Where(x => x.CloudPathFromRoot.ToLower().Contains(oldPathAndName.ToLower()))) //only at the beginning because of the "@" sign
+                {
+                    entry.CloudPathFromRoot = entry.CloudPathFromRoot.Replace(oldPathAndName, newPathAndName);
+
+                    entry.SharedPathFromRoot = entry.SharedPathFromRoot.Replace(oldSharingPathAndName, newSharingPathAndName);
+
+                    context.SharedFiles.Update(entry);
+                }
+
                 await context.SaveChangesAsync();
             }
             catch (Exception)
