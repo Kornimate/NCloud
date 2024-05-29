@@ -80,7 +80,7 @@
                                 </fieldset>
                                 <div class="d-flex justify-content-end">
                                     <div class="btn-group me-2 my-3" role="group">
-                                        <a asp-controller="Sharing" class="btn btn-primary" asp-action="DownloadFolder" asp-route-folderName="@item.Info.Name"><img src="~/utilities/cloud-download.svg" width=" 20" height="20" class="rounded align-middle" download /></a>
+                                        <a asp-controller="Sharing" class="btn btn-primary" asp-action="DownloadFolder" asp-route-folderName="@item.Info.Name"><img src="~/utilities/cloud-download.svg" width=" 20" height="20" class="rounded align-middle" /></a>
                                         @if (Model.Owner)
                                         {
                                             <button type="button" class="btn btn-primary"  onclick="disConnectItemFromAppSharing('@Url.Action("DisconnectDirectoryFromApp", "Sharing")','@item.Info.Name', '@counter', 'shareditems','@Url.Action("Details","Sharing")')">
@@ -184,7 +184,7 @@
                             </fieldset>
                                 <div class="d-flex justify-content-end">
                                     <div class="btn-group me-2 my-3" role="group">
-                                        <a asp-controller="Sharing" class="btn btn-primary" asp-action="DownloadFile" asp-route-fileName="@item.Info.Name"><img src="~/utilities/cloud-download.svg" width=" 20" height="20" class="rounded align-middle" download /></a>
+                                        <a asp-controller="Sharing" class="btn btn-primary" asp-action="DownloadFile" asp-route-fileName="@item.Info.Name"><img src="~/utilities/cloud-download.svg" width=" 20" height="20" class="rounded align-middle" /></a>
                                         @if (Model.Owner)
                                         {
                                             <button type="button" class="btn btn-primary"  onclick="disConnectItemFromAppSharing('@Url.Action("DisconnectFileFromApp", "Sharing")','@item.Info.Name', '@counter', 'shareditems','@Url.Action("Details","Sharing")')">
