@@ -63,8 +63,9 @@
                         return;
                     }
                     
+                    this.pause();
 
-                    var result = await terminal.ExecuteServerSideCommand(command, '@Url.Action("Evaluate","Terminal")');
+                    var result = await terminal.ExecuteServerSideCommand(command, '@Url.Action("Evaluate","Terminal")', this, '@Url.Action("Index","DashBoard")');
 
                     const toPrint = `${result.result}${result.message}`
 

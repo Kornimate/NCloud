@@ -3,11 +3,23 @@
         this.clientSideCommands = clientSideCommands;
     }
 
-    async ExecuteServerSideCommand(command, address) {
+    async ExecuteServerSideCommand(command, address, terminal, errorAction) {
 
-        var response = await AjaxCall(address, command);
+        let response = await AjaxCall(address, command);
 
-        return await response.json();
+        response = await response.json();
+
+        terminal.resume();
+
+        if (response.closeTerminal) {
+            terminal.pause();
+
+            setTimeout(() => window.location.href = errorAction, 3000);
+
+            terminal.echo(`[[b;red;black]${response.message}, redirected to dashboard]`);
+        }
+
+        return response;
     }
 
     get Commands() {
