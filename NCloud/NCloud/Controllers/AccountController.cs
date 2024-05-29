@@ -62,6 +62,9 @@ namespace NCloud.Controllers
         {
             ViewBag.ReturnUrl = returnUrl;
 
+            vm.UserName = $@"{vm.UserName}";
+            vm.Password = $@"{vm.Password}";
+
             if (ModelState.IsValid)
             {
                 var user = await userManager.FindByNameAsync(vm.UserName);
