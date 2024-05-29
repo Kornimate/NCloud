@@ -2,6 +2,11 @@
 
 @{
     ViewData["Title"] = "Account";
+
+    dynamic? url = TempData["ReturnUrl"];
+
+    if (url is not null)
+        ViewBag.ReturnUrl = url;
 }
 
 <div class="d-flex justify-content-between rounded bg-secondary backbuttondiv">
@@ -66,7 +71,7 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
-                <a asp-action="DeleteAccount" asp-controller="Account" class="btn btn-danger">Delete</a>
+                <a asp-action="DeleteAccount" asp-controller="Account" asp-route-returnUrl="@ViewBag.ReturnUrl" class="btn btn-danger">Delete</a>
             </div>
         </div>
     </div>
