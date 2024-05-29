@@ -183,7 +183,7 @@ namespace NCloud.Services
             {
                 double dirSize = await GetDirectorySize(cloudPath);
 
-                if (!await SetObjectAndUnderlyingObjectsState(cloudPath, folderName, ChangeOwnerIdentification(ChangeRootName(cloudPath), user.UserName), user, false, false, true) //delete folder from database
+                if (!await SetObjectAndUnderlyingObjectsState(cloudPath, folderName, ChangeOwnerIdentification(ChangeRootName(cloudPath), user.UserName), user, false, false) //delete folder from database
                     || !await SetUpperlyingObjectsState(cloudPath, ChangeOwnerIdentification(ChangeRootName(cloudPath), user.UserName), user, false))
                     throw new CloudFunctionStopException("failed to remove folder connectivity");
 
@@ -287,7 +287,7 @@ namespace NCloud.Services
             {
                 double fileSize = fi.Length;
 
-                if (!await SetFileConnectedState(cloudPath, fileName, ChangeOwnerIdentification(ChangeRootName(cloudPath), user.UserName), user, false, false, true)
+                if (!await SetFileConnectedState(cloudPath, fileName, ChangeOwnerIdentification(ChangeRootName(cloudPath), user.UserName), user, false, false)
                     || !await SetUpperlyingObjectsState(cloudPath, ChangeOwnerIdentification(ChangeRootName(cloudPath), user.UserName), user, false))
                     throw new CloudFunctionStopException("failed to adjust file connectivity");
 
