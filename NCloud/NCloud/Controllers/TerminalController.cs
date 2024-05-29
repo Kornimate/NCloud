@@ -180,9 +180,13 @@ namespace NCloud.Controllers
 
                 return await Task.FromResult<JsonResult>(Json(new CommandDTO { IsClientSideCommand = true, ActionHTMLElement = elementHTML, ActionHTMLElementId = Constants.DownloadHTMLElementId, NoErrorWithSyntax = true, ErrorMessage = "" }));
             }
-            catch (CloudFunctionStopException ex)
+            catch (ArgumentException ex)
             {
                 return await Task.FromResult<JsonResult>(Json(new CommandDTO { IsClientSideCommand = false, NoErrorWithSyntax = true, ErrorMessage = Constants.TerminalRedText($"invalid command - {ex.Message}") }));
+            }
+            catch (CloudFunctionStopException ex)
+            {
+                return await Task.FromResult<JsonResult>(Json(new CommandDTO { IsClientSideCommand = true, NoErrorWithSyntax = false, ErrorMessage = Constants.TerminalRedText($"invalid command - {ex.Message}") }));
             }
             catch (Exception)
             {

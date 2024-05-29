@@ -159,7 +159,7 @@ namespace NCloud.Services
         /// <exception cref="CloudFunctionStopException">Throws if there is problem with command</exception>
         public static void CheckClientSideCommandSyntax(string command, int paramCount, List<ClientSideCommandContainer> commands)
         {
-            var commandItem = commands.FirstOrDefault(x => x.Command == command) ?? throw new CloudFunctionStopException($"no command with name: {command}");
+            var commandItem = commands.FirstOrDefault(x => x.Command == command) ?? throw new ArgumentException($"no command with name: {command}");
 
             if (commandItem.Parameters != paramCount)
                 throw new CloudFunctionStopException("wrong number of parameters");

@@ -23,8 +23,6 @@
 
         response = await response.json();
 
-        console.log(response);
-
         terminal.resume();
 
         if (response.closeTerminal) {
@@ -47,6 +45,6 @@
 
         document.getElementById("addElement").innerHTML = "";
 
-        return ["command executed successfully", true];
+        return ["[[b;green;black]command started successfully]", true];
     }
 }
