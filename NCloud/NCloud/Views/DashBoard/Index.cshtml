@@ -53,6 +53,14 @@
                 <progress id="remainingSpace" min="0" max="100" value="@Model.RemainingPercent"></progress>
             </div>
         </div>
+        <div class="row w-100 text-center mt-3">
+            <h4 class="col w-50 mb-3">
+                <span>@CloudSizeManager.ConvertToReadableSize(Model.UsedBytes)</span>
+            </h4>
+            <h4 class="col w-50 mb-3">
+                <span>@CloudSizeManager.ConvertToReadableSize(Model.RemainingBytes)</span>
+            </h4>
+        </div>
     </div>
 </div>
 
@@ -65,10 +73,10 @@
                 </th>
             </tr>
         </thead>
-        @foreach (var folderUrl in Model.SharedFolderUrls)
+        @foreach (var folder in Model.WebSharedFolderData)
         {
-            string? url = Url.Action(Model.WebControllerAndActionForDetails.Second, Model.WebControllerAndActionForDetails.First, new { path = HashManager.EncryptString(folderUrl) }, Context.Request.Scheme);
-            string path = folderUrl.Replace(System.IO.Path.DirectorySeparatorChar, Constants.PathSeparator);
+            string? url = Url.Action(Model.WebControllerAndActionForDetails.Second, Model.WebControllerAndActionForDetails.First, new { id = folder.Id.ToString() }, Context.Request.Scheme);
+            string path = System.IO.Path.Combine(folder.CloudPathFromRoot, folder.Name).Replace(System.IO.Path.DirectorySeparatorChar, Constants.PathSeparator);
 
             <tr class="text-center">
                 <td>
@@ -86,7 +94,7 @@
             </tr>
         }
 
-        @if (Model.SharedFolderUrls is null || Model.SharedFolderUrls.Count == 0)
+        @if (Model.WebSharedFolderData is null || Model.WebSharedFolderData.Count == 0)
         {
             <tr>
                 <td>
@@ -106,10 +114,10 @@
                 </th>
             </tr>
         </thead>
-        @foreach (var fileUrl in Model.SharedFileUrls)
+        @foreach (var file in Model.WebSharedFileData)
         {
-            string? url = Url.Action(Model.WebControllerAndActionForDownload.Second, Model.WebControllerAndActionForDownload.First, new { path = HashManager.EncryptString(fileUrl) }, Context.Request.Scheme);
-            string path = fileUrl.Replace(System.IO.Path.DirectorySeparatorChar, Constants.PathSeparator);
+            string? url = Url.Action(Model.WebControllerAndActionForDownload.Second, Model.WebControllerAndActionForDownload.First, new { id = file.Id.ToString() }, Context.Request.Scheme);
+            string path = System.IO.Path.Combine(file.CloudPathFromRoot, file.Name).Replace(System.IO.Path.DirectorySeparatorChar, Constants.PathSeparator);
 
             <tr class="text-center">
                 <td>
@@ -127,7 +135,7 @@
             </tr>
         }
 
-        @if (Model.SharedFileUrls is null || Model.SharedFileUrls.Count == 0)
+        @if (Model.WebSharedFileData is null || Model.WebSharedFileData.Count == 0)
         {
             <tr>
                 <td>

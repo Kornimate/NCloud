@@ -4,7 +4,6 @@ using NCloud.Models;
 using NCloud.Services.Exceptions;
 using System.Text;
 using System.Text.RegularExpressions;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
 namespace NCloud.Services
 {
@@ -74,8 +73,7 @@ namespace NCloud.Services
                     {
                         sb.Append(c);
                     }
-
-                    if (c == Constants.TerminalStringMarker)
+                    else if (c == Constants.TerminalStringMarker)
                     {
                         nextSplitter = c;
                     }
@@ -113,11 +111,11 @@ namespace NCloud.Services
 
             newPath = newPath.Replace($"{Path.DirectorySeparatorChar}{Constants.CommandCurrentPathMarker}{Path.DirectorySeparatorChar}", $"{Path.DirectorySeparatorChar}");
 
-            if (newPath.EndsWith(Constants.CommandCurrentPathMarker) && !newPath.EndsWith(Constants.DirectoryBack))
-                newPath = newPath[..^1];
-
             if (newPath.EndsWith(Path.DirectorySeparatorChar))
                 newPath = newPath[..^1];
+
+            while (newPath.EndsWith($"{Path.DirectorySeparatorChar}{Constants.CommandCurrentPathMarker}"))
+                newPath = newPath[..^2];
 
             return newPath;
         }
@@ -161,7 +159,7 @@ namespace NCloud.Services
         /// <exception cref="CloudFunctionStopException">Throws if there is problem with command</exception>
         public static void CheckClientSideCommandSyntax(string command, int paramCount, List<ClientSideCommandContainer> commands)
         {
-            var commandItem = commands.FirstOrDefault(x => x.Command == command) ?? throw new CloudFunctionStopException($"no command with name: {command}");
+            var commandItem = commands.FirstOrDefault(x => x.Command == command) ?? throw new ArgumentException($"no command with name: {command}");
 
             if (commandItem.Parameters != paramCount)
                 throw new CloudFunctionStopException("wrong number of parameters");

@@ -17,7 +17,7 @@
             </nav>
         </div>
         <div class="input-group hidden" id="fastInputDiv">
-            <input type="text" class="form-control py-3" name="command" id="currentPath" value="@Model.CurrentPathShow" />
+            <input type="text" class="form-control py-3" name="command" spellcheck="false" id="currentPath" value="@Constants.SingleLineCommandMarker" />
             <button type="submit" value="" class="btn btn-primary" form="pathform" id="fastInputBtn"><img src="~/utilities/arrow-right-circle.svg" width=" 20" height="20" class="rounded-circle align-middle" /></button>
         </div>
     </form>
@@ -47,7 +47,7 @@
             <div class="d-flex justify-content-center w-100">
                 <form asp-action="AddNewFolder" class="w-100">
                     <div class="w-100 d-inline-flex input-group form-group">
-                        <input type="text" name="folderName" placeholder="Write new directory name here..." class="d-inline form-control" />
+                        <input type="text" name="folderName" id="folderName" placeholder="Write new directory name here..." class="d-inline form-control" />
                         <button type="submit" class="btn btn-primary d-inline"><img src="~/utilities/folder-plus.svg" width=" 20" height="20" class="rounded align-middle" /></button>
                     </div>
                 </form>
@@ -81,7 +81,61 @@
     </div>
 </div>
 
+<div class="modal fade" id="fileDeleteModal" tabindex="-1" aria-labelledby="fileDeleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-dark">
+                <h5 class="modal-title" id="fileDeleteModalLabel">Delete file</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to delete this file?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
+                <a href="" class="btn btn-outline-danger" id="deleteFileBtn">Delete</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="dirDeleteModal" tabindex="-1" aria-labelledby="dirDeleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-dark">
+                <h5 class="modal-title" id="dirDeleteModalLabel">Delete directory</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to delete this directory?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
+                <a href="" class="btn btn-outline-danger" id="deleteFolderBtn">Delete</a>
+            </div>
+        </div>
+    </div>
+</div>
+
 @section Scripts {
+    <script type="text/javascript">
+        function DeleteFileModal(fileName) {
+            var modal = new bootstrap.Modal(document.getElementById('fileDeleteModal'));
+            
+            document.getElementById("deleteFileBtn").href = `/Drive/DeleteFile?fileName=${fileName}`;
+
+            modal.show();
+        }
+
+        function DeleteDirModal(folderName) {
+            var modal = new bootstrap.Modal(document.getElementById('dirDeleteModal'));
+            
+            document.getElementById("deleteFolderBtn").href = `/Drive/DeleteFolder?folderName=${folderName}`;
+
+            modal.show();
+        }
+    </script>
+
     <script type="text/javascript">
 
 
@@ -93,18 +147,51 @@
             document.getElementById("addFileBtn").addEventListener("click", AddFileClicked, false);
             document.getElementById("breadcrumbDiv").addEventListener("click", CrumbClicked, false);
             document.getElementById("currentPath").addEventListener("focusout", InputFocusLost, false);
+            document.getElementById("addFileField").addEventListener("shown.bs.collapse", FileUploadShown, false);
+            document.getElementById("addFileField").addEventListener("show.bs.collapse", FileUploadShow, false);
+            document.getElementById("addFileField").addEventListener("hide.bs.collapse", FileUploadHidden, false);
+            document.getElementById("addFolderField").addEventListener("shown.bs.collapse", FolderCreateShown, false);
+            document.getElementById("addFolderField").addEventListener("show.bs.collapse", FolderCreateShow, false);
+            document.getElementById("addFolderField").addEventListener("hide.bs.collapse", FolderCreateHidden, false);
             CheckSessionStorage();
+        }
+
+        function FileUploadShow(){
+            document.getElementById("addFileBtn")?.classList?.add("bg-success");
+        }
+
+        function FolderCreateShow(){
+            document.getElementById("addFolderBtn")?.classList?.add("bg-success");
+        }
+
+        function FileUploadShown(){
+            sessionStorage.setItem("openedMiniWindow", "file");
+        }
+
+        function FileUploadHidden(){
+            sessionStorage.removeItem("openedMiniWindow");
+
+            document.getElementById("addFileBtn")?.classList?.remove("bg-success");
+        }
+
+        function FolderCreateShown(){
+            sessionStorage.setItem("openedMiniWindow", "folder");
+
+            document.getElementById("folderName").focus();
+        }
+
+        function FolderCreateHidden(){
+            sessionStorage.removeItem("openedMiniWindow");
+
+            document.getElementById("addFolderBtn")?.classList?.remove("bg-success");
         }
 
         function AddFolderClicked(e) {
             addFileField.hide();
-            sessionStorage.setItem("openedMiniWindow", "folder");
         }
 
         function AddFileClicked(e) {
             addFolderField.hide();
-            sessionStorage.setItem("openedMiniWindow", "file");
-
         }
 
         function CheckSessionStorage() {
@@ -112,14 +199,17 @@
             if (item !== null) {
 
                 if (item == 'file') {
-                    addFileField.show();
+                    document.getElementById("addFileField")?.classList?.add("show");
+
+                    document.getElementById("addFileBtn")?.classList?.add("bg-success");
                 }
 
                 if (item == 'folder') {
-                    AddFolderClicked.show();
+                    document.getElementById("addFolderField")?.classList?.add("show");
+
+                    document.getElementById("addFolderBtn")?.classList?.add("bg-success");
                 }
             }
-            sessionStorage.removeItem("openedMiniWindow");
         }
 
         function CrumbClicked(e) {
@@ -127,8 +217,9 @@
             document.getElementById("fastInputDiv").classList.toggle("hidden");
             input = document.getElementById("currentPath");
             input.focus();
+            const temp = input.value;
             input.value = '';
-            input.value = "@Model.CurrentPathShow";
+            input.value = temp;
         }
 
         function InputFocusLost(e) {

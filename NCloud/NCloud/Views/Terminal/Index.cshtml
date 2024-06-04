@@ -15,9 +15,10 @@
             <div class="title">Cloud Terminal</div>
         </div>
         <div class="body h-100" id="terminal"></div>
-        @Html.AntiForgeryToken()
     </div>
 </div>
+
+@Html.AntiForgeryToken()
 
 <div id="addElement" class="hidden"></div>
 
@@ -51,7 +52,7 @@
 
                     this.pause();
 
-                    const ajaxData = await terminal.ExecuteClientSideCommand(command, '@Url.Action("CheckClientSideCommand","Terminal")', this);
+                    const ajaxData = await terminal.ExecuteClientSideCommand(command, '@Url.Action("CheckClientSideCommand","Terminal")', this, '@Url.Action("Index","DashBoard")');
 
                     if(ajaxData[1]){
                         
@@ -62,8 +63,9 @@
                         return;
                     }
                     
+                    this.pause();
 
-                    var result = await terminal.ExecuteServerSideCommand(command, '@Url.Action("Evaluate","Terminal")');
+                    var result = await terminal.ExecuteServerSideCommand(command, '@Url.Action("Evaluate","Terminal")', this, '@Url.Action("Index","DashBoard")');
 
                     const toPrint = `${result.result}${result.message}`
 

@@ -1,0 +1,280 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="NCloud.Models.ClientSideCommandContainer">
+    <Position X="0.5" Y="0.5" Width="2.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAEBAAAABAAAAAAAIAAAAAAAAA=</HashCode>
+      <FileName>Models\ClientSideCommandContainer.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="NCloud.Models.ServerSideCommandContainer">
+    <Position X="3.25" Y="0.5" Width="2.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAQAAAAAAAAABAAAAAIIAAAAAIAAAAAAAAA=</HashCode>
+      <FileName>Models\ServerSideCommandContainer.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="NCloud.Models.CloudDbContext">
+    <Position X="6" Y="0.5" Width="1.75" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAACAAAAAAAAAEAAAAAAAAAAAAAAAAIA=</HashCode>
+      <FileName>Models\CloudDbContext.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="NCloud.Models.CloudFile">
+    <Position X="0.5" Y="5.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAQAEAAAAAAAABACAAAAAAAAAAEAAAAA=</HashCode>
+      <FileName>Models\CloudFile.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="NCloud.Models.CloudFolder">
+    <Position X="4.25" Y="5.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAQAEAAAAAAAABACAAAAAAAAAAEAAAAA=</HashCode>
+      <FileName>Models\CloudFolder.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="NCloud.Models.CloudRegistration">
+    <Position X="2.5" Y="4.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAACAAAAAAAAAQAAAAAAAAAAFBCABAAAAgAAAABAAEA=</HashCode>
+      <FileName>Models\CloudRegistration.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="NCloud.Models.CloudNotificationAbstarct">
+    <Position X="7.75" Y="4.75" Width="2" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAEAEAAAAAAAAAAAAABAAAAAAiAAAAAA=</HashCode>
+      <FileName>Models\CloudNotificationAbstarct.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="NCloud.Models.Error">
+    <Position X="6" Y="4.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Models\Notifications.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="NCloud.Models.Warning">
+    <Position X="10" Y="4.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Models\Notifications.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="NCloud.Models.Success">
+    <Position X="6" Y="6.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Models\Notifications.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="NCloud.Models.Information">
+    <Position X="10" Y="6.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Models\Notifications.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="NCloud.Models.CloudPathData">
+    <Position X="8" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAgABAIAAAEAAAQAAAA0AAAAAAIAAABAAAAEABAIA=</HashCode>
+      <FileName>Models\CloudPathData.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="NCloud.Models.SharedPathData">
+    <Position X="9.75" Y="0.5" Width="2.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAIAAAAAAAAAAAAkAAAAAAAAACAAAAAEAACIA=</HashCode>
+      <FileName>Models\SharedPathData.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="NCloud.Models.RedirectManagerResult">
+    <Position X="11.75" Y="4.5" Width="2" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQ=</HashCode>
+      <FileName>Models\RedirectManagerResult.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="NCloud.Models.UrlGenerationResult">
+    <Position X="11.75" Y="6.5" Width="2" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAQAAAAAAAAAEAAAAAAAAAAAAAIAAAAAAAAQ=</HashCode>
+      <FileName>Models\UrlGenerationResult.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="NCloud.Services.CloudService">
+    <Position X="4.5" Y="8.5" Width="3.25" />
+    <TypeIdentifier>
+      <HashCode>EANLFFMQgIggAAAAIEStBBGHXAwagFgQAEC0AQJyhQA=</HashCode>
+      <FileName>Services\CloudService.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Orientation="Left" Position="0.1" />
+  </Class>
+  <Class Name="NCloud.Services.CloudTerminalService">
+    <Position X="0.5" Y="23.5" Width="3" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAIYAAIAQBAAAAAAAACAAAAEAAgEAAAAAEAAA=</HashCode>
+      <FileName>Services\CloudTerminalService.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Orientation="Right" Position="0.218" />
+  </Class>
+  <Class Name="NCloud.Services.AppStartUpManager">
+    <Position X="0.5" Y="27.5" Width="2.25" />
+    <TypeIdentifier>
+      <HashCode>AIACAAAAAAAAAQAiAAAAAAAAIAAAAAAAAEAAAAAAAAA=</HashCode>
+      <FileName>Services\AppStartUpManager.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="NCloud.Services.CloudNotificationService">
+    <Position X="3" Y="27.5" Width="2.25" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAgAAAQAAAAAA=</HashCode>
+      <FileName>Services\CloudNotificationService.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Orientation="Right" Position="0.233" />
+  </Class>
+  <Class Name="NCloud.Services.CloudPathManager">
+    <Position X="9.25" Y="27.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAIAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Services\CloudPathManager.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="NCloud.Services.CloudQRManager">
+    <Position X="9.25" Y="28.75" Width="2" />
+    <TypeIdentifier>
+      <HashCode>AAAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Services\CloudQRManager.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="NCloud.Services.CloudSizeManager">
+    <Position X="9" Y="30" Width="2.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAA=</HashCode>
+      <FileName>Services\CloudSizeManager.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="NCloud.Services.CloudTerminalTokenizationManager">
+    <Position X="3" Y="29.75" Width="3" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAgAAAAAAAAAQAYAAAAAAAAAAAAAAIAAAAAAAA=</HashCode>
+      <FileName>Services\CloudTerminalTokenizationManager.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="NCloud.Services.ExtensionManager">
+    <Position X="6.25" Y="29" Width="2.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAABAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAACAg=</HashCode>
+      <FileName>Services\ExtensionManager.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="NCloud.Services.IconManager">
+    <Position X="0.5" Y="30.5" Width="2" />
+    <TypeIdentifier>
+      <HashCode>AAAAgAAAAAAAAAAAABAAAAAAAAABAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Services\IconManager.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="NCloud.Services.MimeTypeManager">
+    <Position X="6.25" Y="31" Width="2" />
+    <TypeIdentifier>
+      <HashCode>AAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Services\MimeTypeManager.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="NCloud.Services.RedirectionManager">
+    <Position X="8.5" Y="31.25" Width="2" />
+    <TypeIdentifier>
+      <HashCode>AQAAAAAAAAAAAAAAAAAAAAAAAAAAgAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Services\RedirectionManager.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="NCloud.Controllers.AccountController">
+    <Position X="2.5" Y="33" Width="2" />
+    <TypeIdentifier>
+      <HashCode>AQAAAAAAAAAAAAAAAAAAAAIAAAABAAAAAAEQAAAAAAA=</HashCode>
+      <FileName>Controllers\AccountController.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="NCloud.Controllers.CloudControllerDefault">
+    <Position X="4.75" Y="33" Width="2.25" />
+    <TypeIdentifier>
+      <HashCode>AIAAAAACACQAAAACAAUICAAAIAAAAAAAAEEAgACAAAA=</HashCode>
+      <FileName>Controllers\CloudControllerDefault.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="NCloud.Controllers.DashBoardController">
+    <Position X="0.5" Y="33" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAA=</HashCode>
+      <FileName>Controllers\DashBoardController.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="NCloud.Controllers.DriveController">
+    <Position X="7.75" Y="33" Width="3" />
+    <TypeIdentifier>
+      <HashCode>EQABEAAAgAABAQAAAiABABJABAyQQAAAAlEAAkACBAE=</HashCode>
+      <FileName>Controllers\DriveController.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="NCloud.Controllers.EditorController">
+    <Position X="0.5" Y="35" Width="1.75" />
+    <TypeIdentifier>
+      <HashCode>AQAgAAAAAAAAAAAAAAAAAAAQCAAIAAAAAAEAgAAAAAA=</HashCode>
+      <FileName>Controllers\EditorController.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="NCloud.Controllers.HomeController">
+    <Position X="2.75" Y="35.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAEAAAAAAAA=</HashCode>
+      <FileName>Controllers\HomeController.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="NCloud.Controllers.SharingController">
+    <Position X="5.25" Y="38.25" Width="2.25" />
+    <TypeIdentifier>
+      <HashCode>AQAAAAAAgAABAAAAACABAAIAAAQAAAAAABAAAAACAAA=</HashCode>
+      <FileName>Controllers\SharingController.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="NCloud.Controllers.TerminalController">
+    <Position X="0.5" Y="38.25" Width="2.25" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAABAAIAAAAgCABAgAAAAAAAAAAAAEgAAAAAAA=</HashCode>
+      <FileName>Controllers\TerminalController.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="NCloud.Controllers.WebController">
+    <Position X="3" Y="38.25" Width="2" />
+    <TypeIdentifier>
+      <HashCode>AQAACQAAAAIBAAAAACABAAIAAAAAAAAAABAAAAAAAAA=</HashCode>
+      <FileName>Controllers\WebController.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Interface Name="NCloud.Services.ICloudService">
+    <Position X="0.5" Y="8.5" Width="3" />
+    <TypeIdentifier>
+      <HashCode>EANJBFMQgIgAAAAAAESMABGGWAwaAFAQAEAkAAIyhQA=</HashCode>
+      <FileName>Services\ICloudService.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="NCloud.Services.ICloudTerminalService">
+    <Position X="5" Y="23.5" Width="2.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAYAAAAQBAAAAAAAAAAAAAAAAgAAAAAAEAAA=</HashCode>
+      <FileName>Services\ICloudTerminalService.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="NCloud.Services.ICloudNotificationService">
+    <Position X="7" Y="27.5" Width="2" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgAAAQAAAAAA=</HashCode>
+      <FileName>Services\ICloudNotificationService.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Font Name="Segoe UI" Size="9" />
+</ClassDiagram>

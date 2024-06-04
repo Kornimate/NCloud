@@ -1,6 +1,4 @@
 using DNTCaptcha.Core;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using NCloud.ConstantData;
 using NCloud.Models;
@@ -8,7 +6,6 @@ using NCloud.Security;
 using NCloud.Services;
 using NCloud.Users;
 using NCloud.Users.Roles;
-using System.Threading;
 
 namespace NCloud
 {
@@ -32,7 +29,7 @@ namespace NCloud
                 options.Password.RequiredLength = 8;
                 options.Password.RequiredUniqueChars = 1;
                 options.Password.RequireLowercase = true;
-                options.Password.RequireNonAlphanumeric = false;
+                options.Password.RequireNonAlphanumeric = true;
                 options.Password.RequireUppercase = true;
             })
             .AddEntityFrameworkStores<CloudDbContext>();
@@ -42,7 +39,7 @@ namespace NCloud
             builder.Services.AddTransient<ICloudTerminalService, CloudTerminalService>();
 
             builder.Services.AddTransient<ICloudNotificationService, CloudNotificationService>();
-          
+
             builder.Services.AddControllersWithViews();
 
             builder.Services.AddDistributedMemoryCache();
@@ -91,12 +88,12 @@ namespace NCloud
 
             app.MapControllerRoute(
                 name: "default",
-                pattern: "{controller=Home}/{action=TestLogin}/{id?}");
+                pattern: "{controller=Home}/{action=Index}/{id?}");
 
             using (var serviceScope = app.Services.CreateScope())
             using (var context = serviceScope.ServiceProvider.GetRequiredService<CloudDbContext>())
             {
-                AppStartUpManager.Initialize(serviceScope.ServiceProvider);
+                AppStartUpManager.Initialize(serviceScope.ServiceProvider, app.Logger);
             }
 
             Timer timer = new Timer(_ => new Thread(() =>

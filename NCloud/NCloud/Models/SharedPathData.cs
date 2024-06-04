@@ -34,7 +34,7 @@ namespace NCloud.Models
         public string SetFolder(string? folderName)
         {
             string currentPath = String.Empty;
-            
+
             if (String.IsNullOrWhiteSpace(folderName))
             {
                 currentPath = CurrentPath;
@@ -42,12 +42,12 @@ namespace NCloud.Models
             else
             {
                 currentPath = Path.Combine(CurrentPath, folderName);
-                
+
                 PreviousDirectories.Add(folderName);
                 CurrentPath = $@"{currentPath}"; //for security reasons
                 CurrentPathShow += Constants.PathSeparator + folderName;
             }
-            
+
             return currentPath;
         }
 
@@ -58,18 +58,46 @@ namespace NCloud.Models
         public string? RemoveFolderFromPrevDirs()
         {
             string? folder = Constants.PublicRootName;
-            
+
             if (PreviousDirectories.Count > 1)
             {
                 PreviousDirectories.RemoveAt(PreviousDirectories.Count - 1);
-                
+
                 folder = PreviousDirectories.Last();
             }
-            
+
             CurrentPath = Path.Combine(PreviousDirectories.ToArray());
             CurrentPathShow = String.Join(Constants.PathSeparator, PreviousDirectories.ToArray());
-            
+
             return folder;
+        }
+
+        public void UpdateCurrentPath(string oldPath, string newPath)
+        {
+            if (String.IsNullOrWhiteSpace(oldPath) || String.IsNullOrWhiteSpace(newPath))
+                return;
+
+            if (!CurrentPath.StartsWith(oldPath))
+                return;
+
+            CurrentPath = CurrentPath.Replace(oldPath, newPath);
+            var tempFolderList = CurrentPath.Split(Path.DirectorySeparatorChar, StringSplitOptions.RemoveEmptyEntries).ToList();
+            PreviousDirectories = tempFolderList;
+            CurrentPathShow = String.Join(Constants.PathSeparator, Constants.PublicRootName, String.Join(Constants.PathSeparator, tempFolderList.Skip(2)));
+        }
+
+        /// <summary>
+        /// Method to try settnig the path in current sharing state
+        /// </summary>
+        /// <param name="folderName">The name of folder</param>
+        /// <returns>The possible path in current sharing state</returns>
+        /// <exception cref="NotImplementedException"></exception>
+        public string TrySetpath(string? folderName)
+        {
+            if (String.IsNullOrWhiteSpace(folderName))
+                return CurrentPath;
+
+            return Path.Combine(CurrentPath, folderName);
         }
     }
 }

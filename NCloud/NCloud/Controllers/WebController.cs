@@ -3,13 +3,9 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using NCloud.ConstantData;
 using NCloud.Models;
-using NCloud.Models.Extensions;
-using NCloud.Security;
 using NCloud.Services;
 using NCloud.Users;
 using NCloud.ViewModels;
-using System.Drawing.Drawing2D;
-using System.IO;
 
 namespace NCloud.Controllers
 {
@@ -24,13 +20,20 @@ namespace NCloud.Controllers
         /// <summary>
         /// Action method to decrypt path to folder (web shared) and show items in it
         /// </summary>
-        /// <param name="path">Encrypted path</param>
+        /// <param name="id">Encrypted id of folder</param>
         /// <returns>View with files and folders at the current state (web shared)</returns>
-        public async Task<IActionResult> SharingPage(string path)
+        public async Task<IActionResult> SharingPage(string id)
         {
             try
             {
-                path = HashManager.DecryptString(path);
+                Guid folderId = Guid.Parse(id);
+
+                SharedFolder sharedFolder = await service.GetWebSharedFolderById(folderId);
+
+                if (sharedFolder.ConnectedToWeb == false)
+                    throw new Exception("Directory is not shared");
+
+                string path = Path.Combine(sharedFolder.CloudPathFromRoot, sharedFolder.Name);
 
                 return await Task.FromResult<IActionResult>(View("Details", new WebDetailsViewModel(await service.GetCurrentDepthWebSharingFiles(path),
                                                                                                     await service.GetCurrentDepthWebSharingDirectories(path),
@@ -66,7 +69,7 @@ namespace NCloud.Controllers
             catch (Exception)
             {
                 AddNewNotification(new Error("Error while getting files and directories"));
-                
+
                 return RedirectToAction("Error", "Home");
             }
         }
@@ -94,40 +97,68 @@ namespace NCloud.Controllers
         /// <returns>Redirect to download</returns>
         public async Task<IActionResult> DownloadFolder(string? path, string? folderName)
         {
-            if (String.IsNullOrWhiteSpace(folderName) || String.IsNullOrWhiteSpace(path))
+            try
             {
+                if (String.IsNullOrWhiteSpace(folderName) || String.IsNullOrWhiteSpace(path))
+                {
+                    return RedirectToAction("Error", "Home");
+                }
+
+                SharedFolder sharedFolder = await service.GetSharedFolderByPathAndName(path, folderName);
+
+                if (sharedFolder.ConnectedToWeb == false)
+                    throw new Exception("Directory is not shared");
+
+                return await Download(new List<string>()
+                {
+                    Constants.SelectedFolderStarterSymbol + folderName
+                },
+                path,
+                RedirectToAction("Details", "Web", new { path = path }),
+                connectedToWeb: true);
+            }
+            catch (Exception)
+            {
+                AddNewNotification(new Error("Directory is not shared on this URL"));
+
                 return RedirectToAction("Error", "Home");
             }
-
-            return await Download(new List<string>()
-            {
-                Constants.SelectedFolderStarterSymbol + folderName
-            },
-            path,
-            RedirectToAction("Details", "Web", new { path = path }),
-            connectedToWeb: true);
         }
 
         /// <summary>
         /// Action methdo to handle download of web shared file
         /// </summary>
         /// <param name="path">Path to file</param>
-        /// <param name="folderName">Name of file</param>
+        /// <param name="fileName">Name of file</param>
         /// <returns>Redirect to download</returns>
         public async Task<IActionResult> DownloadFile(string? path, string? fileName)
         {
-            if (String.IsNullOrWhiteSpace(fileName) || String.IsNullOrWhiteSpace(path))
+            try
             {
+                if (String.IsNullOrWhiteSpace(fileName) || String.IsNullOrWhiteSpace(path))
+                {
+                    return RedirectToAction("Error", "Home");
+                }
+
+                SharedFile sharedFile = await service.GetSharedFileByPathAndName(path, fileName);
+
+                if (sharedFile.ConnectedToWeb == false)
+                    throw new Exception("File is not shared");
+
+                return await Download(new List<string>()
+                {
+                    Constants.SelectedFileStarterSymbol + fileName
+                },
+                path,
+                RedirectToAction("Details", "Web", new { path = path }),
+                connectedToWeb: true);
+            }
+            catch (Exception)
+            {
+                AddNewNotification(new Error("File is not shared on this URL"));
+
                 return RedirectToAction("Error", "Home");
             }
-
-            return await Download(new List<string>()
-            {
-                Constants.SelectedFileStarterSymbol + fileName
-            },
-            path,
-            RedirectToAction("Details", "Web", new { path = path }),
-            connectedToWeb: true);
         }
 
         /// <summary>
@@ -168,7 +199,27 @@ namespace NCloud.Controllers
         [ActionName("DownloadItems")]
         public async Task<IActionResult> DownloadItemsFromForm(WebDownloadViewModel vm)
         {
-            return await Download(vm.ItemsForDownload ?? new(), vm.Path, RedirectToAction("Details", "Web", new { path = vm.Path }), connectedToWeb: true);
+            try
+            {
+                foreach (var item in vm.ItemsForDownload ?? new())
+                {
+                    if (item.StartsWith(Constants.SelectedFileStarterSymbol))
+                        if (!(await service.GetSharedFileByPathAndName(vm.Path, item[1..])).ConnectedToWeb)
+                            throw new Exception("File is not shared");
+
+                    if (item.StartsWith(Constants.SelectedFolderStarterSymbol))
+                        if (!(await service.GetSharedFolderByPathAndName(vm.Path, item[1..])).ConnectedToWeb)
+                            throw new Exception("Directory is not shared");
+                }
+
+                return await Download(vm.ItemsForDownload ?? new(), vm.Path, RedirectToAction("Details", "Web", new { path = vm.Path }), connectedToWeb: true);
+            }
+            catch (Exception)
+            {
+                AddNewNotification(new Error("One or more files not shared on this URL"));
+
+                return RedirectToAction("Error", "Home");
+            }
         }
 
         /// <summary>
@@ -176,33 +227,57 @@ namespace NCloud.Controllers
         /// </summary>
         /// <param name="path">Path to current state</param>
         /// <returns>View with downloadable file in it</returns>
-        public async Task<IActionResult> DownloadPage(string path)
+        public async Task<IActionResult> DownloadPage(string id)
         {
             try
             {
-                path = HashManager.DecryptString(path);
+                Guid fileId = Guid.Parse(id);
 
-                string fileName = Path.GetFileName(path);
+                SharedFile sharedFile = await service.GetWebSharedFileById(fileId);
 
-                path = path.Substring(0, path.LastIndexOf(Path.DirectorySeparatorChar));
+                if (sharedFile.ConnectedToWeb == false)
+                    throw new Exception("File is not shared");
 
                 return await Task.FromResult<IActionResult>(View("DownloadPage", new WebSingleDownloadViewModel()
                 {
-                    Path = path,
-                    FileName = fileName
+                    FilePath = sharedFile.CloudPathFromRoot,
+                    FileName = sharedFile.Name
                 }));
             }
             catch (Exception)
             {
+                AddNewNotification(new Error("File is not shared on this URL"));
+
                 return RedirectToAction("Error", "Home");
             }
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DownloadSingleItem(string path, string fileName)
+        public async Task<IActionResult> DownloadSingleItem([Bind("FileName,FilePath")] WebSingleDownloadViewModel vm)
         {
-            return await Download(new List<string>() { Constants.SelectedFileStarterSymbol + fileName }, path, RedirectToAction("DownloadPage", new { path = HashManager.EncryptString(Path.Combine(path, fileName)) }), connectedToWeb: true);
+            try
+            {
+                if (ModelState.IsValid)
+                {
+                    SharedFile sharedFile = await service.GetSharedFileByPathAndName(vm.FilePath, vm.FileName);
+
+                    if (sharedFile.ConnectedToWeb == false)
+                        throw new Exception("File is not shared");
+
+                    return await Download(new List<string>() { Constants.SelectedFileStarterSymbol + vm.FileName }, vm.FilePath, RedirectToAction("Error", "Home"), connectedToWeb: true);
+                }
+
+                AddNewNotification(new Error("Invalid download data"));
+
+                return View(vm);
+            }
+            catch (Exception)
+            {
+                AddNewNotification(new Error("File is not shared on this URL"));
+
+                return RedirectToAction("Error", "Home");
+            }
         }
     }
 }

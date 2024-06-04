@@ -1,6 +1,5 @@
 ﻿using NCloud.Models;
 using NCloud.Users;
-using System.Security.Claims;
 
 namespace NCloud.Services
 {
@@ -13,22 +12,22 @@ namespace NCloud.Services
         /// Method to get current state files
         /// </summary>
         /// <param name="cloudPath">The actual path in the cloud</param>
-        /// <param name="connectToApp">Parameter if listed folders are only connected to app</param>
-        /// <param name="connectToWeb">Parameter if listed folders are only connected to web/param>
+        /// <param name="connectedToApp">Parameter if listed folders are only connected to app</param>
+        /// <param name="connectedToWeb">Parameter if listed folders are only connected to web/param>
         /// <param name="pattern">Pattern to get only folders matching the given pattern</param>
         /// <returns></returns>
-        Task<List<CloudFolder>> GetCurrentDepthCloudDirectories(string cloudPath, bool connectToApp = false, bool connectToWeb = false, string? pattern = null);
+        Task<List<CloudFolder>> GetCurrentDepthCloudDirectories(string cloudPath, bool connectedToApp = false, bool connectedToWeb = false, string? pattern = null);
 
         /// <summary>
         /// Method to get current state files
         /// </summary>
         /// <param name="cloudPath">The actual path in the cloud</param>
-        /// <param name="connectToApp">Parameter if listed files are only connected to app</param>
-        /// <param name="connectToWeb">Parameter if listed files are only connected to web/param>
+        /// <param name="connectedToApp">Parameter if listed files are only connected to app</param>
+        /// <param name="connectedToWeb">Parameter if listed files are only connected to web/param>
         /// <param name="pattern">Pattern to get only files matching the given pattern</param>
         /// <returns></returns>
-        Task<List<CloudFile>> GetCurrentDepthCloudFiles(string cloudPath, bool connectToApp = false, bool connectToWeb = false, string? pattern = null);
-        
+        Task<List<CloudFile>> GetCurrentDepthCloudFiles(string cloudPath, bool connectedToApp = false, bool connectedToWeb = false, string? pattern = null);
+
         /// <summary>
         /// Method to get admin user from database
         /// </summary>
@@ -110,10 +109,10 @@ namespace NCloud.Services
         /// <summary>
         /// Method to get CloudFolder object by full path
         /// </summary>
-        /// <param name="cloudPath">Path in app to the folder</param>
+        /// <param name="physicalPath">Physical path to folder on disk</param>
         /// <param name="folderName">Name of the folder</param>
         /// <returns>CloudFolder object with physical data in it</returns>
-        Task<DirectoryInfo> GetFolderByPath(string cloudPath, string folderName);
+        Task<DirectoryInfo> GetFolderByPath(string physicalPath, string folderName);
 
         /// <summary>
         /// Method to handle directory connection in database
@@ -213,15 +212,15 @@ namespace NCloud.Services
         /// Method to get every shared folder for user
         /// </summary>
         /// <param name="user">The logged in user</param>
-        /// <returns>List of urls in string format</returns>
-        Task<List<string>> GetUserSharedFolderUrls(CloudUser user);
+        /// <returns>List of web shared folders wrapped in SharedFolder object</returns>
+        Task<List<SharedFolder>> GetUserWebSharedFolders(CloudUser user);
 
         /// <summary>
         /// Method to get every shared file for user
         /// </summary>
         /// <param name="user">The logged in user</param>
-        /// <returns>List of urls in string format</returns>
-        Task<List<string>> GetUserSharedFileUrls(CloudUser user);
+        /// <returns>List of web shared files wrapped in SharedFile object</returns>
+        Task<List<SharedFile>> GetUserWebSharedFiles(CloudUser user);
 
         /// <summary>
         /// Method to check if Back action is possible on web sharing path
@@ -267,8 +266,9 @@ namespace NCloud.Services
         /// </summary>
         /// <param name="file">Cloud path to file</param>
         /// <param name="content">content to write into the file</param>
+        /// <param name="user">Currently logged in user</param>
         /// <returns>Boolean value indicating the success of action</returns>
-        Task<bool> ModifyFileContent(string file, string content);
+        Task<bool> ModifyFileContent(string file, string content, CloudUser user);
 
         /// <summary>
         /// Method to get CloudFolder object from a specified physical folder
@@ -292,8 +292,9 @@ namespace NCloud.Services
         /// <param name="cloudPath">Path in app</param>
         /// <param name="folderName">Original name of folder</param>
         /// <param name="newName">User defined new name of folder</param>
+        /// <param name="sharedData">Actual path in app sharing state</param>
         /// <returns>The renamed folder name</returns>
-        Task<string> RenameFolder(string cloudPath, string folderName, string newName);
+        Task<string> RenameFolder(string cloudPath, string folderName, string newName, SharedPathData sharedData);
 
         /// <summary>
         /// Method to rename a file
@@ -320,7 +321,7 @@ namespace NCloud.Services
         /// <param name="destination">Path in app (destination folder)</param>
         /// <param name="user">Owner of file</param>
         /// <returns>Empty string if copied file name not changed, new name if changed during copy (might be renamed)</returns>
-        Task<string> CopyFolder(string source, string destination, CloudUser userPrincipal);
+        Task<string> CopyFolder(string source, string destination, CloudUser user);
 
         /// <summary>
         /// Method to change to directory in session (relative or absolute path)
@@ -364,5 +365,49 @@ namespace NCloud.Services
         /// <param name="pattern">Pattern for filtering (*,?)</param>
         /// <returns>The list of filtered files in list of CloudFile objects</returns>
         Task<List<CloudFile>> SearchFileInCurrentDirectory(string cloudPath, string pattern);
+
+        /// <summary>
+        /// Method to adjust storage used by user by measuring the file system of user
+        /// </summary>
+        /// <param name="user">The currently logged in user</param>
+        /// <returns>Task for async usage</returns>
+        Task CheckUserStorageUsed(CloudUser user);
+
+        /// <summary>
+        /// Method to get shared folder by id
+        /// </summary>
+        /// <param name="id">Id of folder</param>
+        /// <returns>The path of the folder</returns>
+        Task<SharedFolder> GetWebSharedFolderById(Guid id);
+
+        /// <summary>
+        /// Method to get shared file by id
+        /// </summary>
+        /// <param name="id">Id of file</param>
+        /// <returns>The path of the folder</returns>
+        Task<SharedFile> GetWebSharedFileById(Guid id);
+
+        /// <summary>
+        /// Method to get a shared folder by path in app and name
+        /// </summary>
+        /// <param name="cloudPath">Path in app</param>
+        /// <param name="folderName">Name of folder</param>
+        /// <returns>The data from database wrapped in SharedFolder object</returns>
+        Task<SharedFolder> GetSharedFolderByPathAndName(string cloudPath, string folderName);
+
+        /// <summary>
+        /// Method to get a shared file by path in app and name
+        /// </summary>
+        /// <param name="cloudPath">Path in app</param>
+        /// <param name="fileName">Name of file</param>
+        /// <returns>The data from database wrapped in SharedFile object</returns>
+        Task<SharedFile> GetSharedFileByPathAndName(string cloudPath, string fileName);
+
+        /// <summary>
+        /// Method to see if sharing path or the parent sharing path exists in database
+        /// </summary>
+        /// <param name="path">Path in current sharing state</param>
+        /// <returns>Bollean indication the presenc of the path in database</returns>
+        Task<bool> SharedPathExists(string sharingPath);
     }
 }

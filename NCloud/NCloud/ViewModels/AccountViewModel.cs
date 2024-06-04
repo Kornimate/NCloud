@@ -1,6 +1,4 @@
-﻿using NCloud.Users;
-
-namespace NCloud.ViewModels
+﻿namespace NCloud.ViewModels
 {
     /// <summary>
     /// Container class for data in Account Index action method
@@ -11,7 +9,7 @@ namespace NCloud.ViewModels
         public string? FullName { get; set; }
         public string? Email { get; set; }
 
-        public AccountViewModel(string? username, string? fullName,string? email)
+        public AccountViewModel(string? username, string? fullName, string? email)
         {
             UserName = username;
             FullName = fullName;

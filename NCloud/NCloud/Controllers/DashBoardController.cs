@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using NCloud.ConstantData;
 using NCloud.Models;
 using NCloud.Services;
+using NCloud.Services.Exceptions;
 using NCloud.Users;
 using NCloud.ViewModels;
 
@@ -27,7 +28,9 @@ namespace NCloud.Controllers
             {
                 CloudUser user = await userManager.GetUserAsync(User);
 
-                double usedPercent = Math.Ceiling(user.UsedSpace / user.MaxSpace);
+                await service.CheckUserStorageUsed(user);
+
+                double usedPercent = Math.Ceiling((user.UsedSpace / user.MaxSpace) * 100);
 
                 if (usedPercent < 0.0)
                     usedPercent = 0.0;
@@ -35,14 +38,20 @@ namespace NCloud.Controllers
                 if (usedPercent > 100.0)
                     usedPercent = 100.0;
 
-                return View(new DashBoardViewModel(await service.GetUserSharedFolderUrls(user), await service.GetUserSharedFileUrls(user), Constants.GetWebControllerAndActionForDetails(), Constants.GetWebControllerAndActionForDownload(), usedPercent));
+                return View(new DashBoardViewModel(await service.GetUserWebSharedFolders(user), await service.GetUserWebSharedFiles(user), Constants.GetWebControllerAndActionForDetails(), Constants.GetWebControllerAndActionForDownload(), usedPercent, user.UsedSpace));
 
+            }
+            catch (CloudFunctionStopException ex)
+            {
+                AddNewNotification(new Error($"Error - {ex.Message}"));
+
+                return View(new DashBoardViewModel(new List<SharedFolder>(), new List<SharedFile>(), Constants.GetWebControllerAndActionForDetails(), Constants.GetWebControllerAndActionForDownload(), 0, 0.0));
             }
             catch (Exception)
             {
                 AddNewNotification(new Error("Error while loading page"));
 
-                return View(new DashBoardViewModel(new List<string>(), new List<string>(), Constants.GetWebControllerAndActionForDetails(), Constants.GetWebControllerAndActionForDownload(), 0));
+                return View(new DashBoardViewModel(new List<SharedFolder>(), new List<SharedFile>(), Constants.GetWebControllerAndActionForDetails(), Constants.GetWebControllerAndActionForDownload(), 0, 0.0));
             }
         }
     }

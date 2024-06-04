@@ -1,8 +1,6 @@
-﻿using System.Numerics;
-using System.Text;
-using System.Text.Json.Serialization;
-using NCloud.ConstantData;
+﻿using NCloud.ConstantData;
 using NCloud.Services;
+using System.Text;
 
 namespace NCloud.Models
 {
@@ -12,15 +10,16 @@ namespace NCloud.Models
     public class CloudFolder : CloudRegistration
     {
         public DirectoryInfo Info { get; set; }
-        public CloudFolder(DirectoryInfo Info, bool isSharedInApp, bool isPublic, string currentPath, string? icon = null) : base(isSharedInApp, isPublic, currentPath)
+        public CloudFolder(DirectoryInfo Info, bool isSharedInApp, bool isPublic, string id, string? itemPath = null) : base(isSharedInApp, isPublic, id)
         {
             this.Info = Info;
-            this.IconPath = icon is null ? IconManager.Load(IsFolder(), Info.Name) : icon;
+            this.IconPath = IconManager.Load(IsFolder(), Info.Name);
+            ItemPath = itemPath ?? String.Empty;
         }
         public CloudFolder(string sharedName, string? icon = null) : base(true, false, icon)
         {
             SharedName = sharedName;
-            this.IconPath = icon is null ? IconManager.Load(IsFolder(), sharedName) : icon;
+            this.IconPath = IconManager.Load(IsFolder(), sharedName);
             Info = null!;
         }
 
@@ -71,7 +70,7 @@ namespace NCloud.Models
             sb.Append("".PadRight(14));
             sb.Append(IsConnectedToApp ? "yes".PadRight(13) : "no".PadRight(13));
             sb.Append("".PadRight(2));
-            sb.Append(IsConnectedToWeb? "yes".PadRight(13) : "no".PadRight(13));
+            sb.Append(IsConnectedToWeb ? "yes".PadRight(13) : "no".PadRight(13));
             sb.Append("".PadRight(2));
             sb.Append(Info.Name);
             sb.Append('\n');

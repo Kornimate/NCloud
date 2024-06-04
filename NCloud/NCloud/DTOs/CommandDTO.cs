@@ -5,7 +5,7 @@
     /// </summary>
     public class CommandDTO
     {
-        public bool IsClientSide { get; set; } = false;
+        public bool IsClientSideCommand { get; set; } = false;
         public string ActionHTMLElement { get; set; } = String.Empty;
         public string ActionHTMLElementId { get; set; } = String.Empty;
         public bool NoErrorWithSyntax { get; set; } = false;

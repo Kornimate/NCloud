@@ -1,16 +1,10 @@
-﻿using Castle.Core;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using NCloud.ConstantData;
 using NCloud.Models;
 using NCloud.Services;
 using NCloud.Services.Exceptions;
 using NCloud.Users;
-using NuGet.Protocol;
-using System.Drawing.Drawing2D;
-using System.IO.Compression;
-using System.Net.Http;
 using System.Text.Json;
 using CloudPathData = NCloud.Models.CloudPathData;
 
@@ -203,19 +197,19 @@ namespace NCloud.Controllers
         /// <returns>The file (zip or single file)</returns>
         public async Task<IActionResult> Download(List<string> itemsForDownload, string cloudPath, IActionResult returnAction, bool connectedToApp = false, bool connectedToWeb = false)
         {
+            string? tempFile = null;
+
             try
             {
                 if (itemsForDownload is not null && itemsForDownload.Count != 0)
                 {
                     if (itemsForDownload.Count > 1 || itemsForDownload[0].StartsWith(Constants.SelectedFolderStarterSymbol))
                     {
-                        string? tempFile = null;
-
                         try
                         {
                             tempFile = await service.CreateZipFile(itemsForDownload, cloudPath, GetTempFileNameAndPath(), connectedToApp, connectedToWeb);
                         }
-                        catch(Exception)
+                        catch (Exception)
                         {
                             throw new CloudFunctionStopException("Error while creating zip file");
                         }
@@ -244,6 +238,17 @@ namespace NCloud.Controllers
 
                                 try
                                 {
+                                    if (connectedToApp || connectedToWeb)
+                                    {
+                                        SharedFile file = await service.GetSharedFileByPathAndName(cloudPath, name);
+
+                                        if (connectedToApp && !file.ConnectedToApp)
+                                            throw new CloudFunctionStopException("File is not shared in app");
+
+                                        if (connectedToWeb && !file.ConnectedToWeb)
+                                            throw new CloudFunctionStopException("File is not shared on web"); 
+                                    }
+
                                     FileStream stream = new FileStream(Path.Combine(service.ServerPath(cloudPath), name), FileMode.Open, FileAccess.Read, FileShare.Read);
 
                                     return File(stream, MimeTypeManager.GetMimeType(name), name);
@@ -253,9 +258,9 @@ namespace NCloud.Controllers
                                     throw;
                                 }
                             }
-                            else 
+                            else
                             {
-                                throw new CloudFunctionStopException("Invalid data in request"); 
+                                throw new CloudFunctionStopException("Invalid data in request");
                             }
                         }
                         catch (Exception)
@@ -269,7 +274,19 @@ namespace NCloud.Controllers
             }
             catch (Exception)
             {
-                AddNewNotification(new Error($"App unable to download requested item(s)"));
+                try
+                {
+                    if (System.IO.File.Exists(tempFile))
+                    {
+                        System.IO.File.Delete(tempFile);
+                    }
+
+                    AddNewNotification(new Error($"App unable to download requested item(s)"));
+                }
+                catch (Exception)
+                {
+                    logger.LogError($"Temp file not deleted: {tempFile}");
+                }
             }
 
             return returnAction;

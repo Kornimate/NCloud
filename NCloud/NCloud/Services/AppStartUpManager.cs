@@ -1,12 +1,10 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using NCloud.ConstantData;
 using NCloud.Models;
 using NCloud.Services.Exceptions;
 using NCloud.Users;
 using NCloud.Users.Roles;
-using System.Text.Json;
 
 namespace NCloud.Services
 {
@@ -20,31 +18,41 @@ namespace NCloud.Services
         private static SignInManager<CloudUser> signInManager = null!;
         private static RoleManager<CloudRole> roleManager = null!;
         private static ICloudService service = null!;
+        private static IConfiguration config = null!;
         private static ILogger logger = null!;
 
         /// <summary>
         /// Static method to initialize database, admin user and its base folder, log file folder, temp file folder
         /// </summary>
         /// <param name="serviceProvider"></param>
+        /// <param name="loggerService">Registered logger for logging</param>
         /// <exception cref="Exception"></exception>
-        public static void Initialize(IServiceProvider serviceProvider)
+        public static void Initialize(IServiceProvider serviceProvider, ILogger loggerService)
         {
             context = serviceProvider.GetRequiredService<CloudDbContext>();
             userManager = serviceProvider.GetRequiredService<UserManager<CloudUser>>();
             signInManager = serviceProvider.GetRequiredService<SignInManager<CloudUser>>();
             roleManager = serviceProvider.GetRequiredService<RoleManager<CloudRole>>();
             service = serviceProvider.GetRequiredService<ICloudService>();
-            logger = serviceProvider.GetRequiredService<ILogger>();
+            config = serviceProvider.GetRequiredService<IConfiguration>();
+            logger = loggerService;
 
             context.Database.Migrate();
 
-            string adminRole = "admin";
-            string userRole = "user";
-
-            if (!roleManager.Roles.Any())
+            if (!roleManager.Roles.Any(x => x.Name == Constants.AdminRole))
             {
-                roleManager.CreateAsync(new CloudRole(adminRole, 10)).Wait();
-                roleManager.CreateAsync(new CloudRole(userRole, 1)).Wait();
+                var adminRoleCreated = roleManager.CreateAsync(new CloudRole(Constants.AdminRole, 10)).GetAwaiter().GetResult();
+
+                if (!adminRoleCreated.Succeeded)
+                    logger.LogCritical("Admin role not created");
+            }
+
+            if (!roleManager.Roles.Any(x => x.Name == Constants.UserRole))
+            {
+                var userRoleCreated = roleManager.CreateAsync(new CloudRole(Constants.UserRole, 1)).GetAwaiter().GetResult();
+
+                if (!userRoleCreated.Succeeded)
+                    logger.LogCritical("User role not created");
             }
 
             string pathHelper = Constants.GetPrivateBaseDirectory();
@@ -75,19 +83,28 @@ namespace NCloud.Services
                 logger.LogCritical($"Error while creating base directories: {ex.Message}");
             }
 
-            if (!context.Users.Any())
+            var adminUser = service.GetAdmin().GetAwaiter().GetResult();
+
+            if (adminUser == null || !userManager.IsInRoleAsync(adminUser, Constants.AdminRole).GetAwaiter().GetResult())
             {
-                var adminUser = new CloudUser { FullName = "Admin", UserName = "Admin", Email = "admin@nclouddrive.hu" };
+                adminUser = new CloudUser { FullName = Constants.AdminUserName, UserName = Constants.AdminUserName, Email = "admin@nclouddrive.hu" };
 
                 try
                 {
-                    userManager.CreateAsync(adminUser, "Admin_1234").Wait();  // Passwords is Admin_1234 because of safety reasons
-                    userManager.AddToRoleAsync(adminUser, adminRole);
+                    var adminCreated = userManager.CreateAsync(adminUser, config.GetSection("AdminPassword").Value).GetAwaiter().GetResult();  // Passwords is defined in appSettings.json
+                    var adminAddedToRole = userManager.AddToRoleAsync(adminUser, Constants.AdminRole).GetAwaiter().GetResult();
 
+                    if (!adminCreated.Succeeded)
+                        logger.LogCritical("Admin user can not be created");
+
+                    if (!adminAddedToRole.Succeeded)
+                        logger.LogCritical("Admin not added to admin role");
                 }
                 catch (Exception)
                 {
                     logger.LogCritical("Exception while creating admin user");
+
+                    userManager.DeleteAsync(adminUser).Wait();
 
                     return;
                 }

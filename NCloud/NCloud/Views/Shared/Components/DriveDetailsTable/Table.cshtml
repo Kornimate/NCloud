@@ -26,7 +26,7 @@
                                 <a asp-action="Details" asp-route-folderName="@item.Info.Name" class="itemlink">@item.Info!.Name</a>
                             </summary>
                             <fieldset class="border border-dark p-2 m-2 rounded">
-                                <legend class="btn btn-outline-primary rounded-pill w-auto">Details</legend>
+                                <legend class="w-100 background-color rounded ps-3 py-2 h3">Details</legend>
                                 <table class="table table-striped rounded">
                                     <tr>
                                         <td class="ps-3 w-25 text-break">
@@ -84,20 +84,37 @@
                                     </tr>
 
                                     @{
-                                        string? url = Url.Action(Model.WebControllerAndActionForDetails.Second, Model.WebControllerAndActionForDetails.First, new { path = item.HashedPath }, Context.Request.Scheme);
+                                        string? url = Url.Action(Model.WebControllerAndActionForDetails.Second, Model.WebControllerAndActionForDetails.First, new { id = item.Id }, Context.Request.Scheme);
                                     }
 
                                     <tr class="align-middle @(item.IsConnectedToWeb ? "" : "hidden")" id="@(counter)_tr1">
                                         <td class="w-25 text-break">
-                                            <button type="button" class="btn btn-outline-dark" onclick="copyToClipBoard('@url')"><span>Url</span><img src="/utilities/link.svg" width=" 20" height="20" class="ms-2 item rounded align-center"></button>
+                                            <button type="button" class="btn btn-outline-dark" onclick="copyToClipBoard('@url')"><span>Url</span><img src="/utilities/link.svg" width=" 20" height="20" class="ms-2 item rounded align-center" /></button>
                                         </td>
                                         <td class="text-break">
-                                            <a href="@url" class="text-decoration-none" target="_blank">@url</a>
+                                            <a id="@(counter)_link" href="@(item.IsConnectedToWeb ? url : "")" class="text-decoration-none" target="_blank">@(item.IsConnectedToWeb ? url : "")</a>
                                         </td>
                                     </tr>
                                     <tr class="@(item.IsConnectedToWeb ? "" : "hidden")" id="@(counter)_tr2">
                                         <td colspan="2" class="text-center">
-                                            <img src="@CloudQRManager.GenerateQRCodeString(url)" height="100" width="100" class="rounded" />
+
+                                            @{
+                                                var qrData = Constants.GetWebControllerAndActionQRCodeGeneration();
+                                            }
+
+                                            <button type="button" id="@(counter)_qrBtn" class="btn btn-primary" onclick="getQRCodeForItem('@Url.Action(qrData.Second,qrData.First)','@counter')">
+                                                <span id="@(counter)_qrCreateText">Create QR Code</span>
+                                                <img src="/utilities/qr-code.svg" width=" 20" height="20" class="ms-2 item rounded align-center" />
+                                                <div class="spinner-border spinner-border-sm text-dark hidden mx-1" role="status" id="@(counter)_qrSpinner">
+                                                    <span class="visually-hidden">Loading...</span>
+                                                </div>
+                                            </button>
+                                            <div class="hidden" id="@(counter)_qrDiv">
+                                                <img src=""  id="@(counter)_img" class="" height="100" width="100" />
+                                                <div class="w-100 d-flex justify-content-center">
+                                                    <button type="button" class="btn-close mt-2" onclick="removeQRCodeFromItem('@counter')"></button>
+                                                </div>
+                                            </div>
                                         </td>
                                     </tr>
                                 </table>
@@ -135,8 +152,8 @@
                                     </button>
 
                                     <button type="button" class="btn btn-secondary" onclick="copyItemToCloudClipBoard('@Url.Action("CopyFolderToCloudClipboard","Drive")','@item.Info.Name')"><img src="~/utilities/copy.svg" width=" 20" height="20" class="align-middle"/></button>
-                                    <a asp-controller="Drive" class="btn btn-secondary" asp-action="DownloadFolder" asp-route-folderName="@item.Info.Name" download><img src="~/utilities/cloud-download.svg" width=" 20" height="20" class="rounded align-middle"/></a>
-                                    <a asp-controller="Drive" class="btn btn-danger" asp-action="DeleteFolder" asp-route-folderName="@item.Info.Name"><img src="~/utilities/trash.svg" width=" 20" height="20" class="rounded align-middle" /></a>
+                                    <a asp-controller="Drive" class="btn btn-secondary" asp-action="DownloadFolder" asp-route-folderName="@item.Info.Name"><img src="~/utilities/cloud-download.svg" width=" 20" height="20" class="rounded align-middle"/></a>
+                                    <button type="button" class="btn btn-danger" onclick="DeleteDirModal('@item.Info.Name')"><img src="~/utilities/trash.svg" width=" 20" height="20" class="rounded align-middle" /></button>
                                 </div>
                             </div>
                         </details>
@@ -190,7 +207,7 @@
                                             Size
                                         </td>
                                         <td>
-                                            @FileSizeManager.ConvertToReadableSize(item.Info.Length)
+                                            @CloudSizeManager.ConvertToReadableSize(item.Info.Length)
                                         </td>
                                     </tr>
                                     <tr>
@@ -224,20 +241,37 @@
                                         </td>
                                     </tr>
                                     @{
-                                        string? url = Url.Action(Model.WebControllerAndActionForDownload.Second, Model.WebControllerAndActionForDownload.First, new { path = item.HashedPath }, Context.Request.Scheme);
+                                        string? url = Url.Action(Model.WebControllerAndActionForDownload.Second, Model.WebControllerAndActionForDownload.First, new { id = item.Id }, Context.Request.Scheme);
                                     }
 
                                     <tr class="align-middle @(item.IsConnectedToWeb ? "" : "hidden")" id="@(counter)_tr1">
                                         <td class="w-25 text-break">
-                                            <button type="button" class="btn btn-outline-dark" onclick="copyToClipBoard('@url')"><span>Url</span><img src="/utilities/link.svg" width=" 20" height="20" class="ms-2 item rounded align-center"></button>
+                                            <button type="button" class="btn btn-outline-dark" onclick="copyToClipBoard('@url')"><span>Url</span><img src="/utilities/link.svg" width=" 20" height="20" class="ms-2 item rounded align-center" /></button>
                                         </td>
                                         <td class="text-break">
-                                            <a href="@url" class="text-decoration-none" target="_blank">@url</a>
+                                            <a id="@(counter)_link" href="@(item.IsConnectedToWeb ? url : "")" class="text-decoration-none" target="_blank">@(item.IsConnectedToWeb ? url : "")</a>
                                         </td>
                                     </tr>
                                     <tr class="@(item.IsConnectedToWeb ? "" : "hidden")" id="@(counter)_tr2">
                                         <td colspan="2" class="text-center">
-                                            <img src="@CloudQRManager.GenerateQRCodeString(url)" height="100" width="100" class="rounded" />
+
+                                            @{
+                                                var qrData = Constants.GetWebControllerAndActionQRCodeGeneration();
+                                            }
+
+                                            <button type="button" id="@(counter)_qrBtn" class="btn btn-primary" onclick="getQRCodeForItem('@Url.Action(qrData.Second,qrData.First)','@counter')">
+                                                <span id="@(counter)_qrCreateText">Create QR Code</span>
+                                                <img src="/utilities/qr-code.svg" width="20" height="20" class="ms-2 item rounded align-center" />
+                                                <div class="spinner-border spinner-border-sm text-dark hidden mx-1" role="status" id="@(counter)_qrSpinner">
+                                                    <span class="visually-hidden">Loading...</span>
+                                                </div>
+                                            </button>
+                                            <div class="hidden" id="@(counter)_qrDiv">
+                                                <img src=""  id="@(counter)_img" class="" height="100" width="100" />
+                                                <div class="w-100 d-flex justify-content-center">
+                                                    <button type="button" class="btn-close mt-2" onclick="removeQRCodeFromItem('@counter')"></button>
+                                                </div>
+                                            </div>
                                         </td>
                                     </tr>
                                 </table>
@@ -275,9 +309,9 @@
                                     </button>
 
                                     <button type="button" class="btn btn-secondary" onclick="copyItemToCloudClipBoard('@Url.Action("CopyFileToCloudClipboard","Drive")','@item.Info.Name')"><img src="~/utilities/copy.svg" width=" 20" height="20" class="align-middle"/></button>
-                                    <a asp-controller="Drive" class="btn btn-secondary" asp-action="DownloadFile" asp-route-fileName="@item.Info.Name" download><img src="~/utilities/cloud-download.svg" width=" 20" height="20" class="rounded align-middle"/></a>
+                                    <a asp-controller="Drive" class="btn btn-secondary" asp-action="DownloadFile" asp-route-fileName="@item.Info.Name"><img src="~/utilities/cloud-download.svg" width=" 20" height="20" class="rounded align-middle"/></a>
                                     <a asp-controller="Editor" class="btn btn-secondary" asp-action="EditorHub" asp-route-fileName="@item.Info.Name"><img src="~/utilities/editor-general.svg" width=" 20" height="20" class="rounded align-middle" /></a>
-                                    <a asp-controller="Drive" class="btn btn-danger" asp-action="DeleteFile" asp-route-fileName="@item.Info.Name"><img src="~/utilities/trash.svg" width=" 20" height="20" class="rounded align-middle" /></a>
+                                    <button type="button" class="btn btn-danger" onclick="DeleteFileModal('@item.Info.Name')"><img src="~/utilities/trash.svg" width=" 20" height="20" class="rounded align-middle" /></button>
                                 </div>
                             </div>
                         </details>

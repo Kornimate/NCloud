@@ -1,6 +1,6 @@
-﻿using System.Text;
-using NCloud.ConstantData;
+﻿using NCloud.ConstantData;
 using NCloud.Services;
+using System.Text;
 
 namespace NCloud.Models
 {
@@ -10,16 +10,11 @@ namespace NCloud.Models
     public class CloudFile : CloudRegistration
     {
         public FileInfo Info { get; set; }
-        public CloudFile(FileInfo Info, bool IsSharedInApp, bool isPublic, string currentPath, string? icon = null) : base(IsSharedInApp, isPublic, currentPath)
+        public CloudFile(FileInfo Info, bool IsSharedInApp, bool isPublic, string id, string? itemPath = null) : base(IsSharedInApp, isPublic, id)
         {
             this.Info = Info;
-            this.IconPath = icon is null ? IconManager.Load(IsFolder(), Info.Name) : icon;
-        }
-        public CloudFile(string sharedName, string? icon = null) : base(true, false, String.Empty)
-        {
-            SharedName = sharedName;
-            this.IconPath = icon is null ? IconManager.Load(IsFolder(), sharedName) : icon;
-            Info = null!;
+            this.IconPath = IconManager.Load(IsFolder(), Info.Name);
+            ItemPath = itemPath ?? String.Empty;
         }
 
         public CloudFile(string itemPath) : base(false, false, String.Empty)
@@ -68,7 +63,7 @@ namespace NCloud.Models
 
             sb.Append(Info.CreationTime.ToString(Constants.TerminalDateTimeFormat));
             sb.Append("".PadRight(2));
-            sb.Append(FileSizeManager.ConvertToReadableSize(Info.Length).PadRight(10));
+            sb.Append(CloudSizeManager.ConvertToReadableSize(Info.Length).PadRight(10));
             sb.Append("".PadRight(2));
             sb.Append(IsConnectedToApp ? "yes".PadRight(13) : "no".PadRight(13));
             sb.Append("".PadRight(2));

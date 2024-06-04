@@ -5,7 +5,7 @@ VisualStudioVersion = 17.6.33801.468
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NCloud", "NCloud\NCloud.csproj", "{F680D519-F35E-46FC-B07B-A9F68AF4AF99}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestEnvironment", "TestEnvironment\TestEnvironment.csproj", "{BAABB97B-E799-4376-8648-CDA275162841}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NCloudServicesTest", "CloudServicesTest\NCloudServicesTest.csproj", "{35C5CF89-2F06-4EF6-86CB-89647A54666C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -17,10 +17,10 @@ Global
 		{F680D519-F35E-46FC-B07B-A9F68AF4AF99}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F680D519-F35E-46FC-B07B-A9F68AF4AF99}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F680D519-F35E-46FC-B07B-A9F68AF4AF99}.Release|Any CPU.Build.0 = Release|Any CPU
-		{BAABB97B-E799-4376-8648-CDA275162841}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{BAABB97B-E799-4376-8648-CDA275162841}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{BAABB97B-E799-4376-8648-CDA275162841}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{BAABB97B-E799-4376-8648-CDA275162841}.Release|Any CPU.Build.0 = Release|Any CPU
+		{35C5CF89-2F06-4EF6-86CB-89647A54666C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{35C5CF89-2F06-4EF6-86CB-89647A54666C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{35C5CF89-2F06-4EF6-86CB-89647A54666C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{35C5CF89-2F06-4EF6-86CB-89647A54666C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

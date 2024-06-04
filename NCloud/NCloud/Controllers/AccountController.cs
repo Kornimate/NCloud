@@ -1,13 +1,13 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using DNTCaptcha.Core;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using NCloud.ConstantData;
+using NCloud.Models;
+using NCloud.Services;
+using NCloud.Services.Exceptions;
 using NCloud.Users;
 using NCloud.ViewModels;
-using NCloud.ConstantData;
-using DNTCaptcha.Core;
-using NCloud.Services;
-using NCloud.Models;
-using NCloud.Services.Exceptions;
 
 namespace NCloud.Controllers
 {
@@ -20,7 +20,14 @@ namespace NCloud.Controllers
         public AccountController(ICloudService service, UserManager<CloudUser> userManager, SignInManager<CloudUser> signInManager, IWebHostEnvironment env, ICloudNotificationService notifier, ILogger<CloudControllerDefault> logger) : base(service, userManager, signInManager, env, notifier, logger) { }
         public IActionResult Back(string returnUrl)
         {
-            return Redirect(returnUrl);
+            try
+            {
+                return Redirect(returnUrl);
+            }
+            catch (Exception)
+            {
+                return RedirectToAction("Index", "DashBoard");
+            }
         }
 
         /// <summary>
@@ -33,7 +40,7 @@ namespace NCloud.Controllers
             CloudUser user = await userManager.GetUserAsync(User);
 
             ViewBag.ReturnUrl = returnUrl;
-            
+
             return View(new AccountViewModel(user.UserName, user.FullName, user.Email));
         }
 
@@ -55,13 +62,16 @@ namespace NCloud.Controllers
         /// </summary>
         /// <param name="vm">Login data inside LoginViewModel class</param>
         /// <param name="returnUrl">Url to be returned to</param>
-        /// <returns>Redirection to dashboard, otherwise view with error message</returns>
+        /// <returns>Redirection to dashboard or to return URL, otherwise view with error message</returns>
         [HttpPost]
         [AllowAnonymous]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Login([Bind("UserName,Password")]LoginViewModel vm, string? returnUrl = null)
+        public async Task<IActionResult> Login([Bind("UserName,Password")] LoginViewModel vm, string? returnUrl = null)
         {
             ViewBag.ReturnUrl = returnUrl;
+
+            vm.UserName = $@"{vm.UserName}";
+            vm.Password = $@"{vm.Password}";
 
             if (ModelState.IsValid)
             {
@@ -77,6 +87,8 @@ namespace NCloud.Controllers
 
                 if (result.Succeeded)
                 {
+                    AddNewNotification(new Success("Successful login"));
+
                     if (returnUrl is null)
                     {
                         return RedirectToAction("Index", "DashBoard");
@@ -118,6 +130,12 @@ namespace NCloud.Controllers
         {
             ViewBag.ReturnUrl = returnUrl;
 
+            vm.FullName = $@"{vm.FullName}";
+            vm.UserName = $@"{vm.UserName}";
+            vm.Password = $@"{vm.Password}";
+            vm.PasswordRepeat = $@"{vm.PasswordRepeat}";
+            vm.Email = $@"{vm.Email}";
+
             if (ModelState.IsValid)
             {
                 try
@@ -130,21 +148,23 @@ namespace NCloud.Controllers
 
                         return View(vm);
                     }
-                    var existingEmail = await userManager.FindByNameAsync(vm.Email);
+                    var existingEmail = await userManager.FindByEmailAsync(vm.Email);
 
                     if (existingEmail is not null)
                     {
-                        AddNewNotification(new Error("This Username is already in use!"));
+                        AddNewNotification(new Error("Email is already in use"));
 
                         return View(vm);
-                   
+
                     }
 
                     var user = new CloudUser { UserName = vm.UserName, FullName = vm.FullName, Email = vm.Email };
-                    
-                    var result = await userManager.CreateAsync(user, vm.Password);
 
-                    if (result.Succeeded)
+                    var created = await userManager.CreateAsync(user, vm.Password);
+                    var addedToRole = await userManager.AddToRoleAsync(user, Constants.UserRole);
+
+
+                    if (created.Succeeded && addedToRole.Succeeded)
                     {
                         try
                         {
@@ -154,6 +174,8 @@ namespace NCloud.Controllers
 
                             await signInManager.SignInAsync(newUser, false);
 
+                            AddNewNotification(new Success("Successful registration"));
+
                             return RedirectToAction(nameof(Index), "DashBoard");
                         }
                         catch (CloudFunctionStopException ex)
@@ -162,7 +184,7 @@ namespace NCloud.Controllers
 
                             return View(vm);
                         }
-                        catch(CloudLoggerException ex)
+                        catch (CloudLoggerException ex)
                         {
                             logger.LogError(ex.Message);
 
@@ -171,11 +193,13 @@ namespace NCloud.Controllers
 
                             if (!await service.RemoveUser(user))
                                 logger.LogError($"Error while removing user - {user.UserName}");
-                            
+
 
                             return View(vm);
                         }
                     }
+
+                    await userManager.DeleteAsync(user);
 
                     AddNewNotification(new Error("Failed to register"));
                 }
@@ -186,6 +210,37 @@ namespace NCloud.Controllers
             }
 
             return View(vm);
+        }
+
+        public async Task<IActionResult> DeleteAccount(string? returnUrl = null)
+        {
+            if (User.IsInRole(Constants.AdminRole))
+            {
+                AddNewNotification(new Error("Admin user can not be removed"));
+
+                TempData["ReturnUrl"] = returnUrl;
+
+                return RedirectToAction("Index", "Account");
+            }
+
+            CloudUser user = await userManager.GetUserAsync(User);
+
+            try
+            {
+                await service.DeleteDirectoriesForUser(Constants.GetPrivateBaseDirectoryForUser(user.Id.ToString()), user);
+
+                await signInManager.SignOutAsync();
+
+                await userManager.DeleteAsync(user);
+
+                AddNewNotification(new Information("Account deleted"));
+            }
+            catch (Exception)
+            {
+                logger.LogError($"Failed to remove user and folders for user: {user.UserName} {user.Id.ToString()}");
+            }
+
+            return RedirectToAction("Index", "Home");
         }
 
         public async Task<IActionResult> Logout()

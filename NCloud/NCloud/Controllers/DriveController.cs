@@ -1,20 +1,19 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using NCloud.Models;
-using NCloud.Services;
-using NCloud.Users;
-using NCloud.ViewModels;
 using NCloud.ConstantData;
 using NCloud.DTOs;
+using NCloud.Models;
 using NCloud.Security;
-using Microsoft.AspNetCore.Authorization;
+using NCloud.Services;
 using NCloud.Services.Exceptions;
-using System.IO;
+using NCloud.Users;
+using NCloud.ViewModels;
 
 namespace NCloud.Controllers
 {
     /// <summary>
-    /// Class to handle Private file and folder requests
+    /// Class to handle private file and folder requests
     /// </summary>
     [Authorize]
     public class DriveController : CloudControllerDefault
@@ -25,30 +24,41 @@ namespace NCloud.Controllers
         ///  Action method lists the current directory's items
         /// </summary>
         /// <param name="folderName">Name of the directory to be listed</param>
-        /// <param name="files">files to display on UI if passed as parameter, optional</param>
-        /// <param name="folders">folders to display on if passed as parameter, optional</param>
-        /// <param name="passedItems">bool if passed items shoold be displayed on UI</param>
+        /// <param name="searchPattern">string seach pattern for folders and files for be displayed on UI</param>
+        /// <param name="patternForDirs">If pattern is for directories</param>
         /// <returns>The View with the specified elements or current path elements</returns>
-        public async Task<IActionResult> Details(string? folderName = null, List<CloudFile>? files = null, List<CloudFolder>? folders = null, bool passedItems = false)
+        public async Task<IActionResult> Details(string? folderName = null, string? searchPattern = null, bool patternForDirs = false)
         {
-            CloudPathData pathdata = await GetSessionCloudPathData();
+            CloudPathData pathData = await GetSessionCloudPathData();
 
             string currentPath;
 
-            if (SecurityManager.CheckIfDirectoryExists(pathdata.TrySetFolder(folderName)))
-                currentPath = pathdata.SetFolder(folderName);
-
+            if (SecurityManager.CheckIfDirectoryExists(service.ServerPath(pathData.TrySetFolder(folderName))))
+            {
+                currentPath = pathData.SetFolder(folderName);
+            }
             else
-                currentPath = pathdata.CurrentPath;
+            {
+                currentPath = pathData.CurrentPath;
 
-            await SetSessionCloudPathData(pathdata);
+                if (!SecurityManager.CheckIfDirectoryExists(service.ServerPath(currentPath)))
+                {
+                    pathData.SetDefaultPathData((await userManager.GetUserAsync(User)).Id.ToString());
+
+                    currentPath = pathData.CurrentPath;
+
+                    AddNewNotification(new Information("The previous cloud path does not exist, user navigated back to home"));
+                }
+            }
+
+            await SetSessionCloudPathData(pathData);
 
             try
             {
-                return View(new DriveDetailsViewModel(passedItems && files is not null ? files : await service.GetCurrentDepthCloudFiles(currentPath),
-                                                      passedItems && folders is not null ? folders : await service.GetCurrentDepthCloudDirectories(currentPath),
-                                                      pathdata.CurrentPathShow,
-                                                      pathdata.CurrentPath,
+                return View(new DriveDetailsViewModel(await service.GetCurrentDepthCloudFiles(currentPath, pattern: (searchPattern is null ? null : (patternForDirs == false ? searchPattern : Constants.InvalidSearchPattern))),
+                                                      await service.GetCurrentDepthCloudDirectories(currentPath, pattern: (searchPattern is null ? null : (patternForDirs == true ? searchPattern : Constants.InvalidSearchPattern))),
+                                                      searchPattern is not null ? pathData.CurrentPathShow + " (searched)" : pathData.CurrentPathShow,
+                                                      pathData.CurrentPath,
                                                       Constants.GetWebControllerAndActionForDetails(),
                                                       Constants.GetWebControllerAndActionForDownload()));
             }
@@ -58,8 +68,8 @@ namespace NCloud.Controllers
 
                 return View(new DriveDetailsViewModel(new List<CloudFile>(),
                                                       new List<CloudFolder>(),
-                                                      pathdata.CurrentPathShow,
-                                                      pathdata.CurrentPath,
+                                                      pathData.CurrentPathShow,
+                                                      pathData.CurrentPath,
                                                       null!,
                                                       null!));
             }
@@ -122,7 +132,7 @@ namespace NCloud.Controllers
                 if (newFolder != folderName)
                     throw new CloudFunctionStopException("error while naming directory");
 
-                AddNewNotification(new Success("directory is created"));
+                AddNewNotification(new Success("Directory is created"));
             }
             catch (CloudFunctionStopException ex)
             {
@@ -522,7 +532,11 @@ namespace NCloud.Controllers
 
                 if (await service.ConnectDirectoryToWeb(session.CurrentPath, itemName, await userManager.GetUserAsync(User)))
                 {
-                    return Json(new ConnectionDTO { Success = true, Message = "Directory and items inside connected to web" });
+                    SharedFolder sf = await service.GetSharedFolderByPathAndName(session.CurrentPath, itemName);
+
+                    var urlData = Constants.GetWebControllerAndActionForDetails();
+
+                    return Json(new ConnectionDTO { Success = true, Message = "Directory and items inside connected to web", Result = Url.Action(urlData.Second, urlData.First, new { id = sf.Id.ToString() }, HttpContext.Request.Scheme) ?? String.Empty });
                 }
                 else
                 {
@@ -586,7 +600,11 @@ namespace NCloud.Controllers
 
                 if (await service.ConnectFileToWeb(session.CurrentPath, itemName, await userManager.GetUserAsync(User)))
                 {
-                    return Json(new ConnectionDTO { Success = true, Message = "File connected to web" });
+                    SharedFile sf = await service.GetSharedFileByPathAndName(session.CurrentPath, itemName);
+
+                    var urlData = Constants.GetWebControllerAndActionForDetails();
+
+                    return Json(new ConnectionDTO { Success = true, Message = "File is connected to web", Result = Url.Action(urlData.Second, urlData.First, new { id = sf.Id.ToString() }, HttpContext.Request.Scheme) ?? String.Empty });
                 }
                 else
                 {
@@ -734,13 +752,13 @@ namespace NCloud.Controllers
         /// <summary>
         /// Action method to handle folder connection deletion request to web via js form dashboard page
         /// </summary>
-        /// <param name="folderName">Name of folder</param>
+        /// <param name="folder">Name of folder</param>
         /// <returns>Redirection to dashboard index action</returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DisconnectDirectoryFromWebDashboard(string folderName)
+        public async Task<IActionResult> DisconnectDirectoryFromWebDashboard(string folder)
         {
-            string[] pathElements = folderName.Split(Constants.PathSeparator, StringSplitOptions.RemoveEmptyEntries);
+            string[] pathElements = folder.Split(Constants.PathSeparator, StringSplitOptions.RemoveEmptyEntries);
 
             if (pathElements is null || pathElements.Length < 2)
             {
@@ -779,13 +797,13 @@ namespace NCloud.Controllers
         /// <summary>
         /// Action method to handle file connection deletion request to web via js from dashboard page
         /// </summary>
-        /// <param name="fileName">Name of file</param>
+        /// <param name="file">Name of file</param>
         /// <returns>Redirection to dashboard index action</returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DisconnectFileFromWebDashboard(string fileName)
+        public async Task<IActionResult> DisconnectFileFromWebDashboard(string file)
         {
-            string[] pathElements = fileName.Split(Constants.PathSeparator, StringSplitOptions.RemoveEmptyEntries);
+            string[] pathElements = file.Split(Constants.PathSeparator, StringSplitOptions.RemoveEmptyEntries);
 
             if (pathElements is null || pathElements.Length < 2)
             {
@@ -865,11 +883,17 @@ namespace NCloud.Controllers
 
                 bool noError = true;
 
+                string actualName = vm.OldName!;
+
                 if (vm.NewName != vm.OldName)
                 {
                     try
                     {
-                        string msg = await service.RenameFolder(pathData.CurrentPath, vm.OldName!, vm.NewName!);
+                        SharedPathData sharedData = await GetSessionSharedPathData();
+
+                        actualName = await service.RenameFolder(pathData.CurrentPath, vm.OldName!, vm.NewName!, sharedData);
+
+                        await SetSessionSharedPathData(sharedData);
                     }
                     catch (CloudFunctionStopException ex)
                     {
@@ -889,7 +913,7 @@ namespace NCloud.Controllers
                 {
                     try
                     {
-                        if (!await service.ConnectDirectoryToWeb(pathData.CurrentPath, vm.NewName!, await userManager.GetUserAsync(User)))
+                        if (!await service.ConnectDirectoryToWeb(pathData.CurrentPath, actualName, await userManager.GetUserAsync(User)))
                         {
                             AddNewNotification(new Error("Error while applying settings (web connect)"));
 
@@ -913,7 +937,7 @@ namespace NCloud.Controllers
                 {
                     try
                     {
-                        if (!await service.DisconnectDirectoryFromWeb(pathData.CurrentPath, vm.NewName!, await userManager.GetUserAsync(User)))
+                        if (!await service.DisconnectDirectoryFromWeb(pathData.CurrentPath, actualName, await userManager.GetUserAsync(User)))
                         {
                             AddNewNotification(new Error("Error while applying settings (web disconnect)"));
 
@@ -938,7 +962,7 @@ namespace NCloud.Controllers
                 {
                     try
                     {
-                        if (!await service.ConnectDirectoryToApp(pathData.CurrentPath, vm.NewName!, await userManager.GetUserAsync(User)))
+                        if (!await service.ConnectDirectoryToApp(pathData.CurrentPath, actualName, await userManager.GetUserAsync(User)))
                         {
                             AddNewNotification(new Error("Error while applying settings (app connect)"));
 
@@ -962,7 +986,7 @@ namespace NCloud.Controllers
                 {
                     try
                     {
-                        if (!await service.DisconnectDirectoryFromApp(pathData.CurrentPath, vm.NewName!, await userManager.GetUserAsync(User)))
+                        if (!await service.DisconnectDirectoryFromApp(pathData.CurrentPath, actualName, await userManager.GetUserAsync(User)))
                         {
                             AddNewNotification(new Error("Error while applying settings (app disconnect)"));
 
@@ -1266,12 +1290,12 @@ namespace NCloud.Controllers
                     try
                     {
                         string result = await service.CopyFile(item.ItemPath ?? String.Empty, pathData.CurrentPath, await userManager.GetUserAsync(User));
-                        
+
                         if (result != String.Empty)
                             AddNewNotification(new Warning("Copied file has been renamed"));
 
                     }
-                    catch(CloudFunctionStopException ex)
+                    catch (CloudFunctionStopException ex)
                     {
                         AddNewNotification(new Error($"Error - {ex.Message}"));
 
@@ -1332,6 +1356,26 @@ namespace NCloud.Controllers
                 AddNewNotification(new Error("Error while pasting item"));
 
                 return RedirectToAction("Details", "Drive");
+            }
+        }
+
+        /// <summary>
+        /// Method to generate QRCode for given url
+        /// </summary>
+        /// <param name="url">Url for QR code generation</param>
+        /// <returns>The image tag src string with base64 string formatted image (the QR code)</returns>
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<JsonResult> GetQRCodeForItem([FromBody] string url)
+        {
+            try
+            {
+                return await Task.FromResult<JsonResult>(new JsonResult(new ConnectionDTO { Success = true, Message = "The QR code is generated for item", Result = CloudQRManager.GenerateQRCodeString(url) }));
+            }
+            catch (Exception)
+            {
+                return await Task.FromResult<JsonResult>(new JsonResult(new ConnectionDTO { Success = false, Message = "Error while generating QR code" }));
             }
         }
     }

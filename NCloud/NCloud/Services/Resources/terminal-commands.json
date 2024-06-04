@@ -33,7 +33,7 @@
   },
   {
     "name": "help",
-    "description": "help, get help for every command"
+    "description": "help, get instructions for every command"
   },
   {
     "name": "ls",

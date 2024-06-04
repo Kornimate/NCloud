@@ -8,22 +8,32 @@ namespace NCloud.ViewModels
     public class RegisterViewModel
     {
         [Required]
-        [MaxLength(10,ErrorMessage ="Maximum length is 10 chars!")]
-        [MinLength(1,ErrorMessage ="Minimum length is 10 chars!")]
+        [MaxLength(20, ErrorMessage = "Maximum length is 20 characters!")]
+        [MinLength(1, ErrorMessage = "Minimum length is 1 character!")]
         [Display(Name = "Username")]
         public string? UserName { get; set; }
-        [Required] // need extra check
+
+        [Required]
+        [MaxLength(40, ErrorMessage = "Maximum length is 40 characters!")]
+        [MinLength(1, ErrorMessage = "Minimum length is 1 character!")]
         [Display(Name = "Full name")]
         public string? FullName { get; set; }
 
         [Required]
+        [RegularExpression(@"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$", ErrorMessage = "Email is not in correct format")]
         [Display(Name = "Email")]
         public string? Email { get; set; }
 
-        [Required] // need extra check
+        [Required]
+        [RegularExpression(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$", ErrorMessage = "Password is not in correct format")]
+        [DataType(DataType.Password)]
         [Display(Name = "Password")]
         public string? Password { get; set; }
-        [Required] // need extra check
+
+        [Required]
+        [RegularExpression(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$", ErrorMessage = "Password repeat is not in correct format")]
+        [DataType(DataType.Password)]
+        [Compare("Password")]
         [Display(Name = "Repeat the password")]
         public string? PasswordRepeat { get; set; }
     }

@@ -13,6 +13,10 @@ async function PeriodicSave(file, content, address) {
 
     spinner?.classList.add("hidden");
 
+    if (response.redirection !== "") {
+        window.location.href = response.redirection;
+    }
+
     if (response.success) {
         text.innerHTML = `Last saved: ${new Date().toLocaleString()}`;
     }
@@ -38,8 +42,13 @@ async function UserSave(file, content, address) {
     spinner?.classList.add("hidden");
     btnSave.disabled = false;
 
+    if (response.redirection !== "") {
+        window.location.href = response.redirection;
+    }
+
     if (response.success) {
         document.getElementById("statustext").innerHTML = `Last saved: ${new Date().toLocaleString()}`;
+
         ShowSuccessToast("Success", response.message);
     }
     else {
@@ -51,17 +60,34 @@ async function SaveData(file, content, address) {
 
     const forgeryToken = document.querySelector('input[name="__RequestVerificationToken"]').value;
 
-    var response = await fetch(address, {
-        method: "POST",
-        headers: {
-            "Content-Type": 'application/json',
-            "X-CSRF-TOKEN": forgeryToken
-        },
-        body: JSON.stringify({
-            file: file,
-            content: content
-        })
-    });
+    try {
 
-    return response;
+        var response = await fetch(address, {
+            method: "POST",
+            headers: {
+                "Content-Type": 'application/json',
+                "X-CSRF-TOKEN": forgeryToken
+            },
+            body: JSON.stringify({
+                file: file,
+                content: content
+            }),
+            signal: AbortSignal.timeout(10000)
+        });
+
+        return response;
+
+    } catch (error) {
+        if (error.name === 'AbortError') {
+            return new Response(JSON.stringify({
+                success: false,
+                message: "Error - server not reachable"
+            }));
+        }
+
+        return new Response(JSON.stringify({
+            success: false,
+            message: "Error while executing action"
+        }));
+    }
 }

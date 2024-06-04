@@ -22,14 +22,14 @@ details summary {
 }
 
 summary:before {
-    content: "➕";
+    content: url("../utilities/plus-icon.svg"); /*"➕"*/
     color: black;
     float: right;
     margin-right: 10px;
 }
 
 details[open] summary:before {
-    content: "➖";
+    content: url("../utilities/minus-icon.svg"); /*"➖"*/
 }
 
 #iconforitemtype {
@@ -445,3 +445,7 @@ progress {
     height: 0;
 }
 /*Circular progressbar End*/
+
+.user-button:hover {
+    background-color: #0d6efd;
+}

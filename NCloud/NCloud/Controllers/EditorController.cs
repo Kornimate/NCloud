@@ -1,14 +1,14 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using NCloud.Services;
-using NCloud.Models;
-using NCloud.ViewModels;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
-using NCloud.Users;
-using NCloud.DTOs;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using NCloud.ConstantData;
-using Microsoft.AspNetCore.Authorization;
+using NCloud.DTOs;
+using NCloud.Models;
+using NCloud.Services;
 using NCloud.Services.Exceptions;
+using NCloud.Users;
+using NCloud.ViewModels;
 
 namespace NCloud.Controllers
 {
@@ -68,7 +68,7 @@ namespace NCloud.Controllers
         /// <returns></returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> CreateNewFile([Bind("FileName,Extension")] EditorIndexViewModel vm)
+        public async Task<IActionResult> CreateNewFile([Bind("FileName,Extension,Editor")] EditorIndexViewModel vm)
         {
             if (ModelState.IsValid)
             {
@@ -87,7 +87,7 @@ namespace NCloud.Controllers
 
                     AddNewNotification(new Success($"File successfully created at {Constants.GetDefaultFileShowingPath()}"));
 
-                    return await EditorHub(fileName, path, RedirectionManager.CreateRedirectionString("Editor", "Index"));
+                    return await EditorHub(res, path, RedirectionManager.CreateRedirectionString("Editor", "Index"), vm.Editor);
                 }
                 catch (CloudFunctionStopException ex)
                 {
@@ -125,11 +125,24 @@ namespace NCloud.Controllers
         /// <param name="fileName">Name of file</param>
         /// <param name="path">Path in app</param>
         /// <param name="redirectData">Special string for redirection</param>
+        /// <param name="editorName">String representing the editor to be used</param>
         /// <returns>Selected action method redirection or to selection page (more than one editor can edit the extension)</returns>
-        public async Task<IActionResult> EditorHub(string fileName, string? path = null, string? redirectData = null)
+        public async Task<IActionResult> EditorHub(string fileName, string? path = null, string? redirectData = null, string? editorName = null)
         {
             bool codingExtension = await ExtensionManager.TryGetFileCodingExtensionData(fileName, out string codingExtensionData);
             bool textDocumentExtension = await ExtensionManager.TryGetFileTextDocumentExtensionData(fileName, out string textDocumentExtensionData);
+
+            if (editorName is not null)
+            {
+                if (editorName == Constants.CodeEditor)
+                {
+                    return RedirectToAction("CodeEditor", new { fileName = fileName, path = path, extensionData = codingExtensionData, redirectData = redirectData ?? RedirectionManager.CreateRedirectionString("Drive", "Details") });
+                }
+                else if (editorName == Constants.TextEditor)
+                {
+                    return RedirectToAction("TextEditor", new { fileName = fileName, path = path, extensionData = textDocumentExtensionData, redirectData = redirectData ?? RedirectionManager.CreateRedirectionString("Drive", "Details") });
+                }
+            }
 
             if (codingExtension && textDocumentExtension)
             {
@@ -246,26 +259,43 @@ namespace NCloud.Controllers
         [ValidateAntiForgeryToken]
         public async Task<JsonResult> SaveData([FromBody] FileDataViewModel vm)
         {
-            if (String.IsNullOrWhiteSpace(vm.File))
+            try
             {
-                return Json(new ConnectionDTO { Success = false, Message = "Invalid file" });
-            }
+                if (String.IsNullOrWhiteSpace(vm.File))
+                {
+                    return Json(new ConnectionDTO { Success = false, Message = "Invalid file" });
+                }
 
-            if (vm.Content is null)
+                if (vm.Content is null)
+                {
+                    return Json(new ConnectionDTO { Success = false, Message = "Invalid path" });
+                }
+
+                vm.File = vm.File.Replace(Constants.PathSeparator, Path.DirectorySeparatorChar);
+
+                bool success = await service.ModifyFileContent(vm.File, vm.Content.ReplaceLineEndings(), await userManager.GetUserAsync(User));
+
+                if (success)
+                {
+                    return Json(new ConnectionDTO { Success = true, Message = "File content successfully saved" });
+                }
+
+                return Json(new ConnectionDTO { Success = false, Message = "Error while saving file content" });
+            }
+            catch (FileNotFoundException ex)
             {
-                return Json(new ConnectionDTO { Success = false, Message = "Invalid path" });
+                AddNewNotification(new Error($"Error - {ex.Message}"));
+
+                return Json(new ConnectionDTO { Success = false, Redirection = Url.Action("Index", "DashBoard")! });
             }
-
-            vm.File = vm.File.Replace(Constants.PathSeparator, Path.DirectorySeparatorChar);
-
-            bool success = await service.ModifyFileContent(vm.File, vm.Content.ReplaceLineEndings());
-
-            if (success)
+            catch (CloudFunctionStopException ex)
             {
-                return Json(new ConnectionDTO { Success = true, Message = "File content successfully saved" });
+                return Json(new ConnectionDTO { Success = false, Message = $"Error - {ex.Message}" });
             }
-
-            return Json(new ConnectionDTO { Success = false, Message = "Error while saving file content" });
+            catch (Exception)
+            {
+                return Json(new ConnectionDTO { Success = false, Message = "Error while saving file content" });
+            }
         }
     }
 }

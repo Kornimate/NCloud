@@ -23,7 +23,7 @@
                                     <a asp-action="Details" asp-route-path="@Model.CurrentPath" asp-route-folderName="@item.Info!.Name" class="itemlink">@item.Info.Name</a>
                                 </summary>
                                 <fieldset class="border border-dark p-2 m-2 rounded">
-                                    <legend class="btn btn-outline-primary rounded-pill w-auto">Details</legend>
+                                <legend class="w-100 background-color rounded ps-3 py-2 h3">Details</legend>
                                     <table class="table table-striped rounded">
                                         <tr>
                                             <td>
@@ -45,7 +45,7 @@
                                 </fieldset>
                                 <div class="d-flex justify-content-end">
                                     <div class="btn-group me-2" role="group">
-                                        <a asp-controller="Web" class="btn btn-primary" asp-action="DownloadFolder" asp-route-path="@Model.CurrentPath" asp-route-folderName="@item.Info.Name"><img src="~/utilities/cloud-download.svg" width=" 20" height="20" class="rounded align-middle" download /></a>
+                                        <a asp-controller="Web" class="btn btn-primary" asp-action="DownloadFolder" asp-route-path="@Model.CurrentPath" asp-route-folderName="@item.Info.Name"><img src="~/utilities/cloud-download.svg" width=" 20" height="20" class="rounded align-middle" /></a>
                                     </div>
                                 </div>
                             </details>
@@ -79,7 +79,7 @@
                                     <span class="itemlink">@item.Info.Name</span>
                                 </summary>
                                 <fieldset class="border border-dark p-2 m-2 rounded">
-                                    <legend class="btn btn-outline-primary rounded-pill w-auto">Details</legend>
+                                <legend class="w-100 background-color rounded ps-3 py-2 h3">Details</legend>
                                     <table class="table table-striped rounded">
                                         <tr>
                                             <td>
@@ -102,14 +102,14 @@
                                                 Size
                                             </td>
                                             <td>
-                                                @FileSizeManager.ConvertToReadableSize(item.Info.Length)
+                                                @CloudSizeManager.ConvertToReadableSize(item.Info.Length)
                                             </td>
                                         </tr>
                                     </table>
                                 </fieldset>
                                 <div class="d-flex justify-content-end">
                                     <div class="btn-group me-2" role="group">
-                                        <a asp-controller="Web" class="btn btn-primary" asp-action="DownloadFile" asp-route-path="@Model.CurrentPath" asp-route-fileName="@item.Info.Name"><img src="~/utilities/cloud-download.svg" width=" 20" height="20" class="rounded align-middle" download /></a>
+                                        <a asp-controller="Web" class="btn btn-primary" asp-action="DownloadFile" asp-route-path="@Model.CurrentPath" asp-route-fileName="@item.Info.Name"><img src="~/utilities/cloud-download.svg" width=" 20" height="20" class="rounded align-middle" /></a>
                                     </div>
                                 </div>
                             </details>

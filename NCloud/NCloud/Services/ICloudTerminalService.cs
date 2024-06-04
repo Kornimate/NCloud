@@ -1,5 +1,4 @@
-﻿using Castle.Core;
-using NCloud.Models;
+﻿using NCloud.Models;
 using NCloud.Users;
 
 namespace NCloud.Services
@@ -15,9 +14,10 @@ namespace NCloud.Services
         /// <param name="commandWord">The command word used in command</param>
         /// <param name="parameters">The parameters used in commands</param>
         /// <param name="pathData">The current state from session</param>
+        /// <param name="sharedData">The current sharing state from session</param>
         /// <param name="user">The current logged in user</param>
         /// <returns>A tuple representing output actions</returns>
-        Task<(bool, string, object?, bool)> Execute(string commandWord, List<string> parameters, CloudPathData pathData, CloudUser user);
+        Task<(bool, string, object?, bool)> Execute(string commandWord, List<string> parameters, CloudPathData pathData, SharedPathData sharedData, CloudUser user);
 
         /// <summary>
         /// Getter method to get all server side commands list of objects

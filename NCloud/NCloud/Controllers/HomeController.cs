@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using NCloud.Models;
 using NCloud.Services;
 using NCloud.Users;
 using NCloud.ViewModels;
@@ -24,14 +23,6 @@ namespace NCloud.Controllers
         public async Task<IActionResult> Index()
         {
             return await Task.FromResult<IActionResult>(View());
-        }
-
-        //Need to be removed
-        public async Task<IActionResult> TestLogin()
-        {
-            await signInManager.PasswordSignInAsync("Admin", "Admin_1234", true, false);
-
-            return RedirectToAction("Index", "Dashboard");
         }
 
         /// <summary>
