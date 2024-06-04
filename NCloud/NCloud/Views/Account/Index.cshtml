@@ -43,6 +43,15 @@
                                 </div>
                                 <h6 class="m-b-20 m-t-40 p-b-5 b-b-default f-w-600"></h6>
                                 <div class="row align-items-center justify-content-center h-100">
+                                    @if (User.IsInRole(Constants.AdminRole))
+                                    {
+                                        <div class="col-6 w-100 text-center mb-3">
+                                            <a asp-controller="Admin" asp-action="Index" type="button" class="btn btn-primary border border-primary border-3">
+                                                <span class="fw-bold align-middle mx-2">Admin Dashboard</span>
+                                                <img src="/utilities/admin-dashboard.svg" width="20" height="20" class="rounded align-middle">
+                                            </a>
+                                        </div>
+                                    }
                                     <div class="col-6 w-100 text-center">
                                         <button type="button" class="btn btn-danger border border-danger border-3" id="modalLaunchBtn">
                                             <span class="fw-bold align-middle mx-2">Delete Account</span>
