@@ -15,9 +15,9 @@ namespace NCloud.Controllers
     /// Class to handle Account related requests
     /// </summary>
     [Authorize]
-    public class AccountController : CloudControllerDefault
+    public class UserManagementController : CloudControllerDefault
     {
-        public AccountController(ICloudService service, UserManager<CloudUser> userManager, SignInManager<CloudUser> signInManager, IWebHostEnvironment env, ICloudNotificationService notifier, ILogger<CloudControllerDefault> logger) : base(service, userManager, signInManager, env, notifier, logger) { }
+        public UserManagementController(ICloudService service, UserManager<CloudUser> userManager, SignInManager<CloudUser> signInManager, IWebHostEnvironment env, ICloudNotificationService notifier, ILogger<CloudControllerDefault> logger) : base(service, userManager, signInManager, env, notifier, logger) { }
         public IActionResult Back(string returnUrl)
         {
             try
@@ -35,7 +35,7 @@ namespace NCloud.Controllers
         /// </summary>
         /// <param name="returnUrl">Url to be returned to</param>
         /// <returns>View of the user details</returns>
-        public async Task<IActionResult> Index(string returnUrl)
+        public async Task<IActionResult> UserPage(string returnUrl)
         {
             CloudUser user = await userManager.GetUserAsync(User);
 

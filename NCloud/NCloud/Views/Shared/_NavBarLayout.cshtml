@@ -50,7 +50,7 @@
                             </a>
                         </li>
                     </ul>
-                    <a asp-action="Index" asp-controller="Account" asp-route-returnUrl="@($"{Context.Request.Scheme}://{Context.Request.Host}{Context.Request.PathBase}{Context.Request.Path}{Context.Request.QueryString}")" class="text-dark text-decoration-none w-100 mb-3">
+                    <a asp-action="UserPage" asp-controller="UserManagement" asp-route-returnUrl="@($"{Context.Request.Scheme}://{Context.Request.Host}{Context.Request.PathBase}{Context.Request.Path}{Context.Request.QueryString}")" class="text-dark text-decoration-none w-100 mb-3">
                         <div class="p-2 d-flex justify-content-center w-100 border border-3 rounded border-dark user-button">
                             <div>
                                 <img src="/utilities/person-circle.svg" alt="profile_icon" width="30" height="30" class="rounded-circle m-1">

@@ -10,8 +10,8 @@
 }
 
 <div class="d-flex justify-content-between rounded bg-secondary backbuttondiv">
-    <a class="btn btn-primary" asp-controller="Account" asp-action="Back" asp-route-returnUrl="@ViewBag.ReturnUrl"><img src="~/utilities/arrow-left-circle.svg" width=" 20" height="20" class="rounded align-middle" /></a>
-    <a class="btn btn-danger" asp-controller="Account" asp-action="Logout"><img src="~/utilities/power.svg" width=" 20" height="20" class="rounded align-middle" /></a>
+    <a class="btn btn-primary" asp-controller="UserManagement" asp-action="Back" asp-route-returnUrl="@ViewBag.ReturnUrl"><img src="~/utilities/arrow-left-circle.svg" width=" 20" height="20" class="rounded align-middle" /></a>
+    <a class="btn btn-danger" asp-controller="UserManagement" asp-action="Logout"><img src="~/utilities/power.svg" width=" 20" height="20" class="rounded align-middle" /></a>
 </div>
 
 <div class="page-content page-container verticalcenter" id="page-content">
@@ -52,6 +52,12 @@
                                             </a>
                                         </div>
                                     }
+                                    <div class="col-6 w-100 text-center mb-3">
+                                        <a class="btn btn-primary border border-primary border-3" asp-area="Identity" asp-page="/Account/Manage/Index" title="Manage">
+                                            <span class="fw-bold align-middle mx-2">Manage User</span>
+                                            <img src="/utilities/gear.svg" width="20" height="20" class="rounded align-middle">
+                                        </a>
+                                    </div>
                                     <div class="col-6 w-100 text-center">
                                         <button type="button" class="btn btn-danger border border-danger border-3" id="modalLaunchBtn">
                                             <span class="fw-bold align-middle mx-2">Delete Account</span>
@@ -80,7 +86,7 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
-                <a asp-action="DeleteAccount" asp-controller="Account" asp-route-returnUrl="@ViewBag.ReturnUrl" class="btn btn-danger">Delete</a>
+                <a asp-action="DeleteAccount" asp-controller="UserManagement" asp-route-returnUrl="@ViewBag.ReturnUrl" class="btn btn-danger">Delete</a>
             </div>
         </div>
     </div>
