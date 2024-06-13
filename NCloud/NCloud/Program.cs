@@ -6,6 +6,7 @@ using NCloud.Security;
 using NCloud.Services;
 using NCloud.Users;
 using NCloud.Users.Roles;
+using Microsoft.AspNetCore.Identity;
 
 namespace NCloud
 {
@@ -20,6 +21,8 @@ namespace NCloud
                 options.UseSqlite(builder.Configuration.GetConnectionString("SQLiteConnection"));
                 options.UseLazyLoadingProxies();
             });
+
+            builder.Services.AddDefaultIdentity<CloudUser>(options => options.SignIn.RequireConfirmedAccount = true).AddEntityFrameworkStores<CloudDbContext>();
 
             builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
