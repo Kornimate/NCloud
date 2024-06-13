@@ -423,7 +423,7 @@ namespace NCloud.Services
 
             try
             {
-                return await SetObjectAndUnderlyingObjectsState(cloudPath, directoryName, Constants.GetSharingRootPathInDatabase(user.UserName), user, connectToWeb: true);
+                return await SetObjectAndUnderlyingObjectsState(cloudPath, directoryName, Constants.GetSharingRootPathInDatabase(user.UserName!), user, connectToWeb: true);
             }
             catch (CloudFunctionStopException ex)
             {
@@ -477,7 +477,7 @@ namespace NCloud.Services
         {
             try
             {
-                return await SetObjectAndUnderlyingObjectsState(cloudPath, directoryName, Constants.GetSharingRootPathInDatabase(user.UserName), user, connectToWeb: false);
+                return await SetObjectAndUnderlyingObjectsState(cloudPath, directoryName, Constants.GetSharingRootPathInDatabase(user.UserName!), user, connectToWeb: false);
             }
             catch (CloudFunctionStopException ex)
             {
@@ -512,7 +512,7 @@ namespace NCloud.Services
         {
             try
             {
-                return await SetFileConnectedState(cloudPath, fileName, Constants.GetSharingRootPathInDatabase(user.UserName), user, connectToWeb: true);
+                return await SetFileConnectedState(cloudPath, fileName, Constants.GetSharingRootPathInDatabase(user.UserName!), user, connectToWeb: true);
             }
             catch (CloudFunctionStopException ex)
             {
@@ -572,7 +572,7 @@ namespace NCloud.Services
         public async Task<List<CloudFolder>> GetCurrentDepthAppSharingDirectories(string sharedPath)
         {
             if (sharedPath == Constants.PublicRootName)
-                return await context.Users.Where(x => x.SharedFiles.Where(x => x.ConnectedToApp).Count() > 0 || x.SharedFolders.Where(x => x.ConnectedToApp).Count() > 0).Select(x => new CloudFolder(x.UserName, null)).ToListAsync();
+                return await context.Users.Where(x => x.SharedFiles.Where(x => x.ConnectedToApp).Count() > 0 || x.SharedFolders.Where(x => x.ConnectedToApp).Count() > 0).Select(x => new CloudFolder(x.UserName!, null)).ToListAsync();
 
             CloudUser? user = await context.Users.FirstOrDefaultAsync(x => x.UserName == GetSharedPathOwnerUser(sharedPath));
 
@@ -784,7 +784,7 @@ namespace NCloud.Services
                     if (user is not null)
                     {
                         pathElements[Constants.RootProviderPlaceinPath] = Constants.PublicRootName;
-                        pathElements[Constants.OwnerPlaceInPath] = user.UserName;
+                        pathElements[Constants.OwnerPlaceInPath] = user.UserName!;
 
                         return String.Join(Path.DirectorySeparatorChar, pathElements);
                     }

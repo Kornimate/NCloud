@@ -1,4 +1,5 @@
 ﻿using Castle.Core;
+using NCloud.Models;
 using NCloud.Users;
 
 namespace NCloud.ConstantData

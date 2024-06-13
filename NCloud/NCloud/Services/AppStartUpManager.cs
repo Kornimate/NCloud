@@ -91,7 +91,7 @@ namespace NCloud.Services
 
                 try
                 {
-                    var adminCreated = userManager.CreateAsync(adminUser, config.GetSection("AdminPassword").Value).GetAwaiter().GetResult();  // Passwords is defined in appSettings.json
+                    var adminCreated = userManager.CreateAsync(adminUser, config.GetSection("AdminPassword").Value!).GetAwaiter().GetResult();  // Passwords is defined in appSettings.json
                     var adminAddedToRole = userManager.AddToRoleAsync(adminUser, Constants.AdminRole).GetAwaiter().GetResult();
 
                     if (!adminCreated.Succeeded)
