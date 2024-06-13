@@ -11,13 +11,18 @@ using NCloud.Models;
 namespace NCloud.Migrations
 {
     [DbContext(typeof(CloudDbContext))]
-    [Migration("20240519122044_initial-files-folders-users")]
-    partial class initialfilesfoldersusers
+    [Migration("20240613085401_Initial-Mig-DB")]
+    partial class InitialMigDB
     {
+        /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            modelBuilder.HasAnnotation("ProductVersion", "6.0.25");
+            modelBuilder
+                .HasAnnotation("ProductVersion", "8.0.6")
+                .HasAnnotation("Proxies:ChangeTracking", false)
+                .HasAnnotation("Proxies:CheckEquality", false)
+                .HasAnnotation("Proxies:LazyLoading", true);
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<System.Guid>", b =>
                 {
@@ -66,9 +71,11 @@ namespace NCloud.Migrations
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<System.Guid>", b =>
                 {
                     b.Property<string>("LoginProvider")
+                        .HasMaxLength(128)
                         .HasColumnType("TEXT");
 
                     b.Property<string>("ProviderKey")
+                        .HasMaxLength(128)
                         .HasColumnType("TEXT");
 
                     b.Property<string>("ProviderDisplayName")
@@ -105,9 +112,11 @@ namespace NCloud.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<string>("LoginProvider")
+                        .HasMaxLength(128)
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Name")
+                        .HasMaxLength(128)
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Value")

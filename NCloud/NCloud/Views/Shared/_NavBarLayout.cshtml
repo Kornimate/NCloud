@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - @Constants.AppName</title>
+    <title>@ViewData["Title"] - @Constants.Branding.AppName</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/lib/select2/css/select2.min.css" />
     <link rel="stylesheet" href="~/lib/select2/theme/select2-bootstrap-5-theme.min.css" />
@@ -21,7 +21,7 @@
             <div class="col-auto col-md-3 col-xl-2 px-sm-2 px-0 background-color border border-dark fixed navwidth">
                 <div class="d-flex flex-column align-items-center align-items-sm-start px-3 pt-2 text-dark min-vh-100">
                     <div class="d-flex align-items-center pb-3 mb-md-0 me-md-auto">
-                        <span class="fs-5 d-none d-sm-inline align-middle justify-content-center"><img src="/utilities/cloud_logo_no_text.png" alt="cloudlogo" class="me-3 logo"></span>
+                        <span class="fs-5 d-none d-sm-inline align-middle justify-content-center"><img src="@Constants.Branding.LogoNoTextPath" alt="cloudlogo" class="me-3 logo"></span>
                     </div>
                     <ul class="nav nav-pills flex-column mb-sm-auto mb-0 align-items-center align-items-sm-start" id="menu">
                         <li class="nav-item my-2">

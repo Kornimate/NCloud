@@ -6,7 +6,7 @@ using NCloud.Security;
 using NCloud.Services;
 using NCloud.Users;
 using NCloud.Users.Roles;
-using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.UI.Services;
 
 namespace NCloud
 {
@@ -21,8 +21,6 @@ namespace NCloud
                 options.UseSqlite(builder.Configuration.GetConnectionString("SQLiteConnection"));
                 options.UseLazyLoadingProxies();
             });
-
-            builder.Services.AddDefaultIdentity<CloudUser>(options => options.SignIn.RequireConfirmedAccount = true).AddEntityFrameworkStores<CloudDbContext>();
 
             builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
@@ -43,7 +41,11 @@ namespace NCloud
 
             builder.Services.AddTransient<ICloudNotificationService, CloudNotificationService>();
 
+            builder.Services.AddTransient<IEmailSender, CloudEmailService>();
+
             builder.Services.AddControllersWithViews();
+
+            builder.Services.AddRazorPages();
 
             builder.Services.AddDistributedMemoryCache();
 
@@ -64,7 +66,7 @@ namespace NCloud
                             .AbsoluteExpiration(minutes: 7)
                             .RateLimiterPermitLimit(10)
                             .WithNoise(0.015f, 0.015f, 1, 0.0f)
-                            .WithEncryptionKey(builder.Configuration.GetSection("EncryptionKey").Value)
+                            .WithEncryptionKey(builder.Configuration.GetSection("EncryptionKey").Value!)
             );
 
             builder.Logging.AddFile(Constants.GetLogFilePath());
@@ -88,6 +90,8 @@ namespace NCloud
             app.UseAuthentication();
 
             app.UseAuthorization();
+
+            app.MapRazorPages();
 
             app.MapControllerRoute(
                 name: "default",

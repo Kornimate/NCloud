@@ -69,12 +69,6 @@
 		<Content Update="wwwroot\utilities\cloud-upload.svg">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</Content>
-		<Content Update="wwwroot\utilities\cloud_logo.png">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</Content>
-		<Content Update="wwwroot\utilities\cloud_logo_no_text.png">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</Content>
 		<Content Update="wwwroot\utilities\copy.svg">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</Content>
