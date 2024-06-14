@@ -18,27 +18,34 @@ namespace NCloud.Services
 
         public Task SendEmailAsync(string email, string subject, string htmlMessage)
         {
-            string emailAddress = config.GetSection("EmailCredentials:Email").Get<string>() ?? throw new CloudFunctionStopException("No email address provided to send data");
-            string password = config.GetSection("EmailCredentials:Password").Get<string>() ?? throw new CloudFunctionStopException("No email password provided to send data");
-            
-
-            var msg = new MailMessage()
+            try
             {
-                Subject = subject,
-                IsBodyHtml = true,
-                Body = htmlMessage,
-                To = { new MailAddress(email) },
-                From = new MailAddress(emailAddress),
-            };
+                string emailAddress = config.GetSection("EmailCredentials:Email").Get<string>() ?? throw new CloudFunctionStopException("No email address provided to send data");
+                string password = config.GetSection("EmailCredentials:Password").Get<string>() ?? throw new CloudFunctionStopException("No email password provided to send data");
 
-            var smtp = new SmtpClient(Constants.SmtpProvider)
+
+                var msg = new MailMessage()
+                {
+                    Subject = subject,
+                    IsBodyHtml = true,
+                    Body = htmlMessage,
+                    To = { new MailAddress(email) },
+                    From = new MailAddress(emailAddress),
+                };
+
+                var smtp = new SmtpClient(Constants.SmtpProvider)
+                {
+                    Port = 587,
+                    EnableSsl = true,
+                    Credentials = new NetworkCredential(emailAddress, password)
+                };
+
+                return smtp.SendMailAsync(msg);
+            }
+            catch (Exception)
             {
-                Port = 587,
-                EnableSsl = true,
-                Credentials = new NetworkCredential(emailAddress,password)
-            };
-
-            return smtp.SendMailAsync(msg);
+                return new Task(() => { });
+            }
         }
     }
 }
