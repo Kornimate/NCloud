@@ -30,8 +30,8 @@ namespace NCloud.Controllers
             {
                 return View(new EditorIndexViewModel
                 {
-                    CodingExtensions = new SelectList(await ExtensionManager.GetCodingExtensions()),
-                    TextDocumentExtensions = new SelectList(await ExtensionManager.GetTextDocumentExtensions())
+                    CodingExtensions = new SelectList(await CloudExtensionManager.GetCodingExtensions()),
+                    TextDocumentExtensions = new SelectList(await CloudExtensionManager.GetTextDocumentExtensions())
                 });
             }
             catch (Exception)
@@ -52,7 +52,7 @@ namespace NCloud.Controllers
                 return await Task.FromResult<IActionResult>(RedirectToAction("Index"));
             }
 
-            var redirection = RedirectionManager.CreateRedirectionAction(redirectionString);
+            var redirection = CloudRedirectionManager.CreateRedirectionAction(redirectionString);
 
             if (redirection is not null)
                 return await Task.FromResult<IActionResult>(RedirectToAction(redirection.Action, redirection.Controller));
@@ -87,7 +87,7 @@ namespace NCloud.Controllers
 
                     AddNewNotification(new Success($"File successfully created at {Constants.GetDefaultFileShowingPath()}"));
 
-                    return await EditorHub(res, path, RedirectionManager.CreateRedirectionString("Editor", "Index"), vm.Editor);
+                    return await EditorHub(res, path, CloudRedirectionManager.CreateRedirectionString("Editor", "Index"), vm.Editor);
                 }
                 catch (CloudFunctionStopException ex)
                 {
@@ -129,32 +129,32 @@ namespace NCloud.Controllers
         /// <returns>Selected action method redirection or to selection page (more than one editor can edit the extension)</returns>
         public async Task<IActionResult> EditorHub(string fileName, string? path = null, string? redirectData = null, string? editorName = null)
         {
-            bool codingExtension = await ExtensionManager.TryGetFileCodingExtensionData(fileName, out string codingExtensionData);
-            bool textDocumentExtension = await ExtensionManager.TryGetFileTextDocumentExtensionData(fileName, out string textDocumentExtensionData);
+            bool codingExtension = await CloudExtensionManager.TryGetFileCodingExtensionData(fileName, out string codingExtensionData);
+            bool textDocumentExtension = await CloudExtensionManager.TryGetFileTextDocumentExtensionData(fileName, out string textDocumentExtensionData);
 
             if (editorName is not null)
             {
                 if (editorName == Constants.CodeEditor)
                 {
-                    return RedirectToAction("CodeEditor", new { fileName = fileName, path = path, extensionData = codingExtensionData, redirectData = redirectData ?? RedirectionManager.CreateRedirectionString("Drive", "Details") });
+                    return RedirectToAction("CodeEditor", new { fileName = fileName, path = path, extensionData = codingExtensionData, redirectData = redirectData ?? CloudRedirectionManager.CreateRedirectionString("Drive", "Details") });
                 }
                 else if (editorName == Constants.TextEditor)
                 {
-                    return RedirectToAction("TextEditor", new { fileName = fileName, path = path, extensionData = textDocumentExtensionData, redirectData = redirectData ?? RedirectionManager.CreateRedirectionString("Drive", "Details") });
+                    return RedirectToAction("TextEditor", new { fileName = fileName, path = path, extensionData = textDocumentExtensionData, redirectData = redirectData ?? CloudRedirectionManager.CreateRedirectionString("Drive", "Details") });
                 }
             }
 
             if (codingExtension && textDocumentExtension)
             {
-                return View("Select", new EditorSelectViewModel(fileName, path, codingExtensionData, textDocumentExtensionData, redirectData ?? RedirectionManager.CreateRedirectionString("Drive", "Details")));
+                return View("Select", new EditorSelectViewModel(fileName, path, codingExtensionData, textDocumentExtensionData, redirectData ?? CloudRedirectionManager.CreateRedirectionString("Drive", "Details")));
             }
             else if (codingExtension)
             {
-                return RedirectToAction("CodeEditor", new { fileName = fileName, path = path, extensionData = codingExtensionData, redirectData = redirectData ?? RedirectionManager.CreateRedirectionString("Drive", "Details") });
+                return RedirectToAction("CodeEditor", new { fileName = fileName, path = path, extensionData = codingExtensionData, redirectData = redirectData ?? CloudRedirectionManager.CreateRedirectionString("Drive", "Details") });
             }
             else if (textDocumentExtension)
             {
-                return RedirectToAction("TextEditor", new { fileName = fileName, path = path, extensionData = textDocumentExtensionData, redirectData = redirectData ?? RedirectionManager.CreateRedirectionString("Drive", "Details") });
+                return RedirectToAction("TextEditor", new { fileName = fileName, path = path, extensionData = textDocumentExtensionData, redirectData = redirectData ?? CloudRedirectionManager.CreateRedirectionString("Drive", "Details") });
             }
 
             else
@@ -167,7 +167,7 @@ namespace NCloud.Controllers
                 }
                 else
                 {
-                    var redirection = RedirectionManager.CreateRedirectionAction(redirectData);
+                    var redirection = CloudRedirectionManager.CreateRedirectionAction(redirectData);
 
                     if (redirection is not null)
                         return RedirectToAction(redirection.Action, redirection.Controller);
@@ -204,7 +204,7 @@ namespace NCloud.Controllers
             {
                 AddNewNotification(new Error("Application could not load the file"));
 
-                var redirection = RedirectionManager.CreateRedirectionAction(redirectData);
+                var redirection = CloudRedirectionManager.CreateRedirectionAction(redirectData);
 
                 if (redirection is not null)
                     return RedirectToAction(redirection.Action, redirection.Controller);
@@ -240,7 +240,7 @@ namespace NCloud.Controllers
             {
                 AddNewNotification(new Error("Application could not load the file"));
 
-                var redirection = RedirectionManager.CreateRedirectionAction(redirectData);
+                var redirection = CloudRedirectionManager.CreateRedirectionAction(redirectData);
 
                 if (redirection is not null)
                     return RedirectToAction(redirection.Action, redirection.Controller);

@@ -13,13 +13,13 @@ namespace NCloud.Models
         public CloudFolder(DirectoryInfo Info, bool isSharedInApp, bool isPublic, string id, string? itemPath = null) : base(isSharedInApp, isPublic, id)
         {
             this.Info = Info;
-            this.IconPath = IconManager.Load(IsFolder(), Info.Name);
+            this.IconPath = CloudIconManager.Load(IsFolder(), Info.Name);
             ItemPath = itemPath ?? String.Empty;
         }
         public CloudFolder(string sharedName, string? icon = null) : base(true, false, icon)
         {
             SharedName = sharedName;
-            this.IconPath = IconManager.Load(IsFolder(), sharedName);
+            this.IconPath = CloudIconManager.Load(IsFolder(), sharedName);
             Info = null!;
         }
 

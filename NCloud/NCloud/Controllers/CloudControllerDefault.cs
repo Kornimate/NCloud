@@ -221,7 +221,7 @@ namespace NCloud.Controllers
 
                             FileStream stream = new FileStream(tempFile, FileMode.Open, FileAccess.Read, FileShare.Read, 4096, FileOptions.DeleteOnClose);
 
-                            return File(stream, Constants.ZipMimeType, $"{Constants.Branding.AppName}_{DateTime.Now.ToString(Constants.DateTimeFormat)}.{Constants.CompressedArchiveFileType}");
+                            return File(stream, Constants.ZipMimeType, $"{Constants.AppName}_{DateTime.Now.ToString(Constants.DateTimeFormat)}.{Constants.CompressedArchiveFileType}");
                         }
                         catch (Exception)
                         {
@@ -251,7 +251,7 @@ namespace NCloud.Controllers
 
                                     FileStream stream = new FileStream(Path.Combine(service.ServerPath(cloudPath), name), FileMode.Open, FileAccess.Read, FileShare.Read);
 
-                                    return File(stream, MimeTypeManager.GetMimeType(name), name);
+                                    return File(stream, CloudMimeTypeManager.GetMimeType(name), name);
                                 }
                                 catch (Exception)
                                 {
