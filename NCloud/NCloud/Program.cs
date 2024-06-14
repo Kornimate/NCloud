@@ -7,6 +7,7 @@ using NCloud.Services;
 using NCloud.Users;
 using NCloud.Users.Roles;
 using Microsoft.AspNetCore.Identity.UI.Services;
+using Microsoft.AspNetCore.Identity;
 
 namespace NCloud
 {
@@ -33,7 +34,9 @@ namespace NCloud
                 options.Password.RequireNonAlphanumeric = true;
                 options.Password.RequireUppercase = true;
             })
-            .AddEntityFrameworkStores<CloudDbContext>();
+            .AddEntityFrameworkStores<CloudDbContext>()
+            .AddDefaultTokenProviders()
+            .AddDefaultUI();
 
             builder.Services.AddTransient<ICloudService, CloudService>();
 

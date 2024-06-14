@@ -87,7 +87,7 @@ namespace NCloud.Services
 
             if (adminUser == null || !userManager.IsInRoleAsync(adminUser, Constants.AdminRole).GetAwaiter().GetResult())
             {
-                adminUser = new CloudUser { FullName = Constants.AdminUserName, UserName = Constants.AdminUserName, Email = config.GetSection("EmailCredentials:Email").Get<string>()! };
+                adminUser = new CloudUser { FullName = Constants.AdminUserName, UserName = Constants.AdminUserName, Email = config.GetSection("EmailCredentials:Email").Get<string>()!, EmailConfirmed = true };
 
                 try
                 {
