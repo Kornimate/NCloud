@@ -18,7 +18,14 @@
 
     <nav class="navbar background-color">
         <div class="container-fluid">
-            <a asp-controller="Home" asp-action="Index" class="navbar-brand"><img src="@Constants.Branding.LogoNoTextPath" width="50" height="50" alt="" class="me-2" />@Constants.Branding.AppName</a>
+            @if (User.Identity?.IsAuthenticated == true)
+            {
+                <a asp-controller="DashBoard" asp-action="Index" class="navbar-brand"><img src="@Constants.Branding.LogoNoTextPath" width="50" height="50" alt="" class="me-2" />@Constants.Branding.AppName</a>
+            }
+            else
+            {
+                <a asp-controller="Home" asp-action="Index" class="navbar-brand"><img src="@Constants.Branding.LogoNoTextPath" width="50" height="50" alt="" class="me-2" />@Constants.Branding.AppName</a>
+            }
         </div>
     </nav>
 

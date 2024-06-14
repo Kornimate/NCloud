@@ -8,6 +8,7 @@ using NCloud.Users;
 using NCloud.Users.Roles;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Authentication.Cookies;
 
 namespace NCloud
 {
@@ -27,16 +28,52 @@ namespace NCloud
 
             builder.Services.AddIdentity<CloudUser, CloudRole>(options =>
             {
+                //Password
                 options.Password.RequireDigit = true;
                 options.Password.RequiredLength = 8;
                 options.Password.RequiredUniqueChars = 1;
                 options.Password.RequireLowercase = true;
                 options.Password.RequireNonAlphanumeric = true;
                 options.Password.RequireUppercase = true;
+
+                //User data
+                options.User.AllowedUserNameCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+";
+                options.User.RequireUniqueEmail = true;
             })
             .AddEntityFrameworkStores<CloudDbContext>()
             .AddDefaultTokenProviders()
             .AddDefaultUI();
+
+            builder.Services.Configure<IdentityOptions>(options =>
+            {
+                //Lockkout
+                options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
+                options.Lockout.MaxFailedAccessAttempts = 5;
+                options.Lockout.AllowedForNewUsers = true;
+
+                //Sign in
+                options.SignIn.RequireConfirmedAccount = true;
+                options.SignIn.RequireConfirmedPhoneNumber = false;
+            });
+
+            builder.Services.ConfigureApplicationCookie(options =>
+            {
+                options.AccessDeniedPath = "/Identity/Account/AccessDenied";
+                options.Cookie.Name = Constants.AppCookieName;
+                options.Cookie.HttpOnly = true;
+                options.ExpireTimeSpan = TimeSpan.FromMinutes(60);
+                options.LoginPath = "/UserManagement/Login";
+                options.ReturnUrlParameter = CookieAuthenticationDefaults.ReturnUrlParameter;
+                options.SlidingExpiration = true;
+            });
+
+            builder.Services.Configure<PasswordHasherOptions>(option =>
+            {
+                option.IterationCount = 12000;
+            });
+
+            builder.Services.Configure<SecurityStampValidatorOptions>(o =>
+                   o.ValidationInterval = TimeSpan.FromMinutes(1));
 
             builder.Services.AddTransient<ICloudService, CloudService>();
 

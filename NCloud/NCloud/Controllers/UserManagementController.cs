@@ -1,13 +1,17 @@
 ﻿using DNTCaptcha.Core;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.WebUtilities;
 using NCloud.ConstantData;
 using NCloud.Models;
 using NCloud.Services;
 using NCloud.Services.Exceptions;
 using NCloud.Users;
 using NCloud.ViewModels;
+using System.Text.Encodings.Web;
+using System.Text;
 
 namespace NCloud.Controllers
 {
@@ -17,7 +21,15 @@ namespace NCloud.Controllers
     [Authorize]
     public class UserManagementController : CloudControllerDefault
     {
-        public UserManagementController(ICloudService service, UserManager<CloudUser> userManager, SignInManager<CloudUser> signInManager, IWebHostEnvironment env, ICloudNotificationService notifier, ILogger<CloudControllerDefault> logger) : base(service, userManager, signInManager, env, notifier, logger) { }
+        private readonly IUserStore<CloudUser> userStore;
+        private readonly IUserEmailStore<CloudUser> emailStore;
+        private readonly IEmailSender emailSender;
+        public UserManagementController(ICloudService service, UserManager<CloudUser> userManager, SignInManager<CloudUser> signInManager, IWebHostEnvironment env, ICloudNotificationService notifier, ILogger<CloudControllerDefault> logger, IEmailSender emailSender, IUserStore<CloudUser> userStore) : base(service, userManager, signInManager, env, notifier, logger)
+        {
+            this.emailSender = emailSender;
+            this.userStore = userStore;
+            emailStore = GetEmailStore();
+        }
         public IActionResult Back(string returnUrl)
         {
             try
@@ -79,11 +91,11 @@ namespace NCloud.Controllers
 
                 if (user is null)
                 {
-                    AddNewNotification(new Error("Invalid username"));
+                    AddNewNotification(new Error("Invalid login credentials"));
                     return View(vm);
                 }
 
-                var result = await signInManager.PasswordSignInAsync(user, vm.Password, false, false);
+                var result = await signInManager.PasswordSignInAsync(user, vm.Password, vm.RememberMe, false);
 
                 if (result.Succeeded)
                 {
@@ -94,7 +106,21 @@ namespace NCloud.Controllers
                         return RedirectToAction("Index", "DashBoard");
                     }
 
+                    logger.LogInformation($"{user.UserName} logged in.");
+
                     return await RedirectToLocal(returnUrl);
+                }
+
+                if (result.RequiresTwoFactor)
+                {
+                    return RedirectToPage("/Account/LoginWith2fa", new { area = "Identity", ReturnUrl = returnUrl, RememberMe = vm.RememberMe });
+                }
+
+                if (result.IsLockedOut)
+                {
+                    logger.LogWarning($"{vm.UserName} account locked out.");
+
+                    return RedirectToPage("/Account/Lockout", new { area = "Identity" });
                 }
 
                 AddNewNotification(new Error("Failed to login"));
@@ -158,7 +184,12 @@ namespace NCloud.Controllers
 
                     }
 
-                    var user = new CloudUser { UserName = vm.UserName, FullName = vm.FullName, Email = vm.Email };
+                    var user = CreateUser();
+
+                    await userStore.SetUserNameAsync(user, vm.UserName, CancellationToken.None);
+                    await emailStore.SetEmailAsync(user, vm.Email, CancellationToken.None);
+
+                    user.FullName = vm.FullName;
 
                     var created = await userManager.CreateAsync(user, vm.Password);
                     var addedToRole = await userManager.AddToRoleAsync(user, Constants.UserRole);
@@ -166,17 +197,36 @@ namespace NCloud.Controllers
 
                     if (created.Succeeded && addedToRole.Succeeded)
                     {
+                        logger.LogInformation($"{user.UserName} created a new account with password.");
+
                         try
                         {
                             CloudUser newUser = await userManager.FindByNameAsync(vm.UserName);
 
                             await service.CreateBaseDirectoryForUser(newUser);
 
-                            await signInManager.SignInAsync(newUser, false);
+                            var code = await userManager.GenerateEmailConfirmationTokenAsync(newUser);
 
-                            AddNewNotification(new Success("Successful registration"));
+                            code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
+                            var callbackUrl = Url.Page(
+                                "/Account/ConfirmEmail",
+                                pageHandler: null,
+                                values: new { area = "Identity", userId = newUser.Id, code = code, returnUrl = returnUrl },
+                                protocol: Request.Scheme)!;
 
-                            return RedirectToAction(nameof(Index), "DashBoard");
+                            await emailSender.SendEmailAsync(newUser.Email!, "Confirm your email",
+                                $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
+
+                            if (userManager.Options.SignIn.RequireConfirmedAccount)
+                            {
+                                var value = RedirectToPage("/Account/RegisterConfirmation", new { area = "Identity", email = newUser.Email, returnUrl = returnUrl });
+                                return value;
+                            }
+                            else
+                            {
+                                await signInManager.SignInAsync(user, isPersistent: false);
+                                return RedirectToAction("Index", "DashBoard");
+                            }
                         }
                         catch (CloudFunctionStopException ex)
                         {
@@ -250,6 +300,29 @@ namespace NCloud.Controllers
             AddNewNotification(new Information("Logout complete"));
 
             return RedirectToAction("Index", "Home");
+        }
+
+        private CloudUser CreateUser()
+        {
+            try
+            {
+                return Activator.CreateInstance<CloudUser>();
+            }
+            catch
+            {
+                throw new InvalidOperationException($"Can't create an instance of '{nameof(CloudUser)}'. " +
+                    $"Ensure that '{nameof(CloudUser)}' is not an abstract class and has a parameterless constructor, or alternatively " +
+                    $"override the register page in /Areas/Identity/Pages/Account/Register.cshtml");
+            }
+        }
+
+        private IUserEmailStore<CloudUser> GetEmailStore()
+        {
+            if (!userManager.SupportsUserEmail)
+            {
+                throw new NotSupportedException("The default UI requires a user store with email support.");
+            }
+            return (IUserEmailStore<CloudUser>)userStore;
         }
     }
 }

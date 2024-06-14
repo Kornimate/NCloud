@@ -34,7 +34,7 @@ namespace NCloud.Areas.Identity.Pages.Account
         {
             if (userId == null || code == null)
             {
-                return RedirectToPage("/Index");
+                return RedirectToPage("/Error");
             }
 
             var user = await _userManager.FindByIdAsync(userId);

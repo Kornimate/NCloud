@@ -1,4 +1,5 @@
-﻿@model NCloud.ViewModels.LoginViewModel
+﻿@model LoginViewModel
+
 @{
     ViewData["Title"] = "Login";
 }
@@ -23,6 +24,12 @@
                                 <input type="password" asp-for="Password" id="typePasswordX" class="form-control form-control-lg" />
                                 <span asp-validation-for="Password" class="text-danger"></span>
                             </div>
+                            <div class="checkbox mb-2">
+                                <label asp-for="RememberMe" class="form-label">
+                                    <input class="form-check-input" asp-for="RememberMe" />
+                                    @Html.DisplayNameFor(m => Model.RememberMe)
+                                </label>
+                            </div>
                             <button class="btn btn-primary btn-lg px-5" type="submit">Login</button>
                         </div>
                     </form>
@@ -31,7 +38,6 @@
                             Forgot your password? <a asp-area="Identity" asp-page="/Account/ForgotPassword" class="text-primary-50 fw-bold">Forgot password</a>
                         </p>
                     </div>
-                    <div asp-validation-summary="All" class="text-danger"></div>
                     <div>
                         <p class="mb-0">
                             Don't have an account? <a asp-controller="UserManagement" asp-action="Register" class="text-primary-50 fw-bold">Sign Up</a>
