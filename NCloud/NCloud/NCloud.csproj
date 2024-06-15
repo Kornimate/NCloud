@@ -222,7 +222,7 @@
 		<Content Update="wwwroot\utilities\filetype-bin.svg">
 		  <CopyToOutputDirectory>Never</CopyToOutputDirectory>
 		</Content>
-		<Content Update="wwwroot\utilities\filetype-blank.svg">
+		<Content Update="wwwroot\utilities\filetype-notype.svg">
 		  <CopyToOutputDirectory>Never</CopyToOutputDirectory>
 		</Content>
 		<Content Update="wwwroot\utilities\filetype-bowerrc.svg">
@@ -1169,9 +1169,6 @@
 		</Content>
 		<Content Update="wwwroot\utilities\filetype-udf.svg">
 		  <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-		</Content>
-		<Content Update="wwwroot\utilities\filetype-unknown.svg">
-			<CopyToOutputDirectory>Never</CopyToOutputDirectory>
 		</Content>
 		<Content Update="wwwroot\utilities\filetype-vb.svg">
 		  <CopyToOutputDirectory>Never</CopyToOutputDirectory>

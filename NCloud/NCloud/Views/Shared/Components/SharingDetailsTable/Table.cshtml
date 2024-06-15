@@ -22,7 +22,7 @@
                             <details>
                                 <summary>
                                     <span id="iconforitemtype">
-                                        <img src="@item.IconPath" width="20" height="20" class="item align-bottom">
+                                        <img src="@item.IconPath" width="@Constants.IconSizeFolder" class="item align-bottom">
                                     </span>
                                     <a asp-action="Details" asp-route-folderName="@item.Info!.Name" class="itemlink">@item.Info.Name</a>
                                     <small class="text-muted text-truncate me-2">(@item.ItemPath)</small>
@@ -50,14 +50,14 @@
                                             <td>
                                                 Shared in app
                                             </td>
-                                            <td>
+                                            <td class="text-break">
                                                 @if (item.IsConnectedToApp)
                                                 {
-                                                    <span>✔</span>
+                                                    <img id="@(counter)_app" class="p-2 bg-primary rounded-circle" src="/utilities/connected.svg" width="50" height="50" />
                                                 }
                                                 else
                                                 {
-                                                    <span>❌</span>
+                                                    <img id="@(counter)_app" class="p-2 bg-danger rounded-circle" src="/utilities/disconnected.svg" width="50" height="50" />
                                                 }
                                             </td>
                                         </tr>
@@ -65,14 +65,14 @@
                                             <td>
                                                 Shared on web
                                             </td>
-                                            <td>
+                                            <td class="text-break">
                                                 @if (item.IsConnectedToWeb)
                                                 {
-                                                    <span>✔</span>
+                                                    <img id="@(counter)_web" class="p-2 bg-primary rounded-circle" src="/utilities/connected.svg" width="50" height="50" />
                                                 }
                                                 else
                                                 {
-                                                    <span>❌</span>
+                                                    <img id="@(counter)_web" class="p-2 bg-danger rounded-circle" src="/utilities/disconnected.svg" width="50" height="50" />
                                                 }
                                             </td>
                                         </tr>
@@ -98,9 +98,9 @@
                         {
                             <div>
                                 <span id="iconforitemtype">
-                                    <img src="/utilities//person-bounding-box.svg" width="20" height="20" class="item align-bottom">
+                                    <img src="/utilities/person-bounding-box.svg" width="@Constants.IconSizeFolder" class="item align-center">
                                 </span>
-                                <a asp-action="Details" asp-route-folderName="@item.SharedName" class="itemlink">@item.SharedName</a>
+                                <a asp-action="Details" asp-route-folderName="@item.SharedName" class="itemlink align-center fw-bold ms-1">@item.SharedName</a>
                             </div>
                         }
                     </td>
@@ -118,7 +118,7 @@
                             <details>
                                 <summary>
                                     <span id="iconforitemtype">
-                                        <img src="@item.IconPath" width="20" height="20" class="item align-bottom">
+                                        <img src="@item.IconPath" width="@Constants.IconSizeFile" class="item align-bottom fileicon">
                                     </span>
                                     <span class="itemlink">@item.Info.Name</span>
                                     <small class="text-muted text-truncate me-2">(@item.ItemPath)</small>
@@ -154,14 +154,14 @@
                                         <td>
                                             Shared in app
                                         </td>
-                                        <td>
+                                        <td class="text-break">
                                             @if (item.IsConnectedToApp)
                                             {
-                                                <span>✔</span>
+                                                <img id="@(counter)_app" class="p-2 bg-primary rounded-circle" src="/utilities/connected.svg" width="50" height="50" />
                                             }
                                             else
                                             {
-                                                <span>❌</span>
+                                                <img id="@(counter)_app" class="p-2 bg-danger rounded-circle" src="/utilities/disconnected.svg" width="50" height="50" />
                                             }
                                         </td>
                                     </tr>
@@ -169,14 +169,14 @@
                                         <td>
                                             Shared on web
                                         </td>
-                                        <td>
+                                        <td class="text-break">
                                             @if (item.IsConnectedToWeb)
                                             {
-                                                <span>✔</span>
+                                                <img id="@(counter)_web" class="p-2 bg-primary rounded-circle" src="/utilities/connected.svg" width="50" height="50" />
                                             }
                                             else
                                             {
-                                                <span>❌</span>
+                                                <img id="@(counter)_web" class="p-2 bg-danger rounded-circle" src="/utilities/disconnected.svg" width="50" height="50" />
                                             }
                                         </td>
                                     </tr>
@@ -202,9 +202,9 @@
                         {
                             <div>
                                 <span id="iconforitemtype">
-                                    <img src="@item.IconPath" width="20" height="20" class="item align-bottom">
+                                    <img src="@item.IconPath" width="@Constants.IconSizeFile" class="item align-center fileicon">
                                 </span>
-                                <a asp-action="Details" asp-route-folderName="@item.SharedName" class="itemlink">@item.SharedName</a>
+                                <a asp-action="Details" asp-route-folderName="@item.SharedName" class="itemlink align-center fw-bold ms-1">@item.SharedName</a>
                             </div>
                         }
                     </td>

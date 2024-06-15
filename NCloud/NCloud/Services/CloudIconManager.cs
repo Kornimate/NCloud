@@ -1,4 +1,5 @@
 ﻿using NCloud.ConstantData;
+using NuGet.Packaging.Signing;
 
 namespace NCloud.Services
 {
@@ -29,7 +30,12 @@ namespace NCloud.Services
         /// <returns>The folder icon</returns>
         private static string LoadDirectoryIcon(string name)
         {
-            return Constants.FolderIcon;
+            if (Constants.SpecialFolders.Contains(name.ToLower()) && File.Exists(Path.Combine(Constants.IconsBasePath, $"{Constants.FolderPrefix}{name}{Constants.SuffixForSpecialFolders}")))
+            {
+                return $"{Constants.PrefixForSpecialFolders}{name}{Constants.SuffixForSpecialFolders}";
+            }
+
+            return Constants.SimpleFolderIcon;
         }
 
         /// <summary>
@@ -45,12 +51,12 @@ namespace NCloud.Services
 
             string extension = extensionFilter != string.Empty ? extensionFilter[1..] : Constants.NoFileType;
 
-            if (File.Exists(Path.Combine(Constants.IconsBasePath, $"{Constants.FileTypePrefix}{extension}{Constants.SuffixForIcons}")))
+            if (File.Exists(Path.Combine(Constants.IconsBasePath, $"{Constants.FileTypePrefix}{extension}{Constants.SuffixForFiles}")))
             {
-                return $"{Constants.PrefixForIcons}{extension}{Constants.SuffixForIcons}";
+                return $"{Constants.PrefixForFiles}{extension}{Constants.SuffixForFiles}";
             }
 
-            return $"{Constants.PrefixForIcons}{Constants.UnkownFileType}{Constants.SuffixForIcons}";
+            return $"{Constants.PrefixForFiles}{Constants.UnkownFileType}{Constants.SuffixForFiles}";
         }
     }
 }

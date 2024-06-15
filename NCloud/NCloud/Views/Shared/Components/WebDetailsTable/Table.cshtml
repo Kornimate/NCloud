@@ -18,7 +18,7 @@
                             <details>
                                 <summary>
                                     <span id="iconforitemtype">
-                                        <img src="@item.IconPath" width="20" height="20" class="item align-bottom">
+                                        <img src="@item.IconPath" width="@Constants.IconSizeFolder" class="item align-bottom">
                                     </span>
                                     <a asp-action="Details" asp-route-path="@Model.CurrentPath" asp-route-folderName="@item.Info!.Name" class="itemlink">@item.Info.Name</a>
                                 </summary>
@@ -54,9 +54,9 @@
                         {
                             <div>
                                 <span id="iconforitemtype">
-                                    <img src="@item.IconPath" width="20" height="20" class="item align-bottom">
+                                    <img src="@item.IconPath" width="@Constants.IconSizeFolder" class="item align-center">
                                 </span>
-                                <a asp-action="Details" asp-route-path="@Model.CurrentPath" asp-route-folderName="@item.SharedName" class="itemlink">@item.SharedName</a>
+                                <a asp-action="Details" asp-route-path="@Model.CurrentPath" asp-route-folderName="@item.SharedName" class="itemlink align-center ms-1">@item.SharedName</a>
                             </div>
                         }
                     </td>
@@ -74,7 +74,7 @@
                             <details>
                                 <summary>
                                     <span id="iconforitemtype">
-                                        <img src="@item.IconPath" width="20" height="20" class="item align-bottom">
+                                        <img src="@item.IconPath" width="@Constants.IconSizeFile" class="item align-bottom fileicon">
                                     </span>
                                     <span class="itemlink">@item.Info.Name</span>
                                 </summary>
@@ -118,9 +118,9 @@
                         {
                             <div>
                                 <span id="iconforitemtype">
-                                    <img src="@item.IconPath" width="20" height="20" class="item align-bottom">
+                                    <img src="@item.IconPath" width="@Constants.IconSizeFile" class="item align-center fileicon">
                                 </span>
-                                <a asp-action="Details" asp-route-path="@Model.CurrentPath" asp-route-folderName="@item.SharedName" class="itemlink">@item.SharedName</a>
+                                <a asp-action="Details" asp-route-path="@Model.CurrentPath" asp-route-folderName="@item.SharedName" class="itemlink align-center ms-1">@item.SharedName</a>
                             </div>
                         }
                     </td>

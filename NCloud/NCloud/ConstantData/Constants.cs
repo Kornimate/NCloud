@@ -46,11 +46,29 @@ namespace NCloud.ConstantData
 
         public static readonly List<string> SystemFolders = new List<string>()
         {
-            "Music",
             "Documents",
-            "Videos",
-            "Pictures"
+            "Music",
+            "Pictures",
+            "Videos"
         };
+
+        public static readonly List<string> SpecialFolders = new List<string>()
+        {
+            "archives",
+            "documents",
+            "favorites",
+            "git",
+            "ideas",
+            "music",
+            "network",
+            "photos",
+            "pictures",
+            "secret",
+            "svn",
+            "trash",
+            "videos"
+        };
+
         public static string ErrorResult { get => "#"; }
         public static string NoFileType { get => "notype"; }
         public static string FolderAndFileRegex { get => @"^[0-9a-zA-Z_!%+=.()$\s]+$"; }
@@ -70,15 +88,18 @@ namespace NCloud.ConstantData
         public static string TextEditor { get => "Text"; }
         public static string CodeEditor { get => "Code"; }
         public static string FileTypePrefix { get => "filetype-"; }
+        public static string FolderPrefix { get => "folder-"; }
         public static string WebRootFolderName { get => ".__CloudData__"; }
         public static string IconsBasePath { get => Path.Combine("wwwroot", "utilities"); }
         public static string LogoPath { get => Path.Combine("wwwroot", "utilities", "cloud_logo.png"); }
         public static string TempFolderName { get => "temp"; }
         public static string TempFilePath { get => Path.Combine(".__TempFiles__", TempFolderName); }
-        public static string FolderIcon { get => "/utilities/folder.svg"; }
-        public static string? SmtpProvider { get => "smtp.gmail.com"; }
-        public static string PrefixForIcons { get => "/utilities/filetype-"; }
-        public static string SuffixForIcons { get => ".svg"; }
+        public static string SimpleFolderIcon { get => "/utilities/folder.svg"; }
+        public static string PrefixForSpecialFolders { get => "/utilities/folder-"; }
+        public static string SuffixForSpecialFolders { get => ".svg"; }
+        public static string SmtpProvider { get => "smtp.gmail.com"; }
+        public static string PrefixForFiles { get => "/utilities/filetype-"; }
+        public static string SuffixForFiles { get => ".svg"; }
         public static string AdminUserName { get => "Admin"; }
         public static string PrivateRootName { get => "@CLOUDROOT"; }
         public static string PublicRootName { get => "@SHAREDROOT"; }
@@ -89,7 +110,7 @@ namespace NCloud.ConstantData
         public static string TerminalCommandsDataFilePath { get => "./Services/Resources/terminal-commands.json"; }
         public static string ControllerDataSeparator { get => "||"; }
         public static string NotificationCookieKey { get => "Notification"; }
-        public static string? AppCookieName { get => "CloudCookie"; }
+        public static string AppCookieName { get => "CloudCookie"; }
         public static string DownloadHTMLElementId { get => "actionTrigger"; }
         public static string CloudCookieKey { get => "pathDataCloud"; }
         public static string SharedCookieKey { get => "pathDataShared"; }
@@ -112,6 +133,8 @@ namespace NCloud.ConstantData
         public static int OwnerPlaceInPath { get => 1; }
         public static int RootProviderPlaceinPath { get => 0; }
         public static int GuidLength { get => 36; }
+        public static int IconSizeFolder { get => 40; }
+        public static int IconSizeFile { get => 30; }
         public static double UserSpaceSize { get => 5_368_709_120.0; } //for better readability (5 GB), base storage size for user
         public static TimeSpan TempFileDeleteTimeSpan { get => TimeSpan.FromMinutes(10); }
 
