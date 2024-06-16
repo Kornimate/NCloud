@@ -138,6 +138,7 @@ namespace NCloud.ConstantData
         public static int IconSizeFile { get => 30; }
         public static double UserSpaceSize { get => 5_368_709_120.0; } //for better readability (5 GB), base storage size for user
         public static TimeSpan TempFileDeleteTimeSpan { get => TimeSpan.FromMinutes(10); }
+        public static DateTime PermanentLockOutTime { get => DateTime.UtcNow.AddYears(1000); }
 
         public static Pair<string, string> GetWebControllerAndActionForDetails()
         {

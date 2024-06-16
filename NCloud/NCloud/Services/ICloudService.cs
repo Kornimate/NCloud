@@ -411,5 +411,8 @@ namespace NCloud.Services
         Task<bool> SharedPathExists(string sharingPath);
         Task<List<CloudUser>> GetCloudUsers();
         Task<bool> SetUserSpaceSize(Guid userId, SpaceSizes spaceSize);
+        Task<CloudUser> GetUserById(Guid userId);
+        Task<bool> LockOutUser(CloudUser user);
+        Task<bool> EnableUser(CloudUser user);
     }
 }

@@ -1299,7 +1299,7 @@ namespace NCloud.Services
         }
         public async Task<List<CloudUser>> GetCloudUsers()
         {
-            return await context.Users.ToListAsync();
+            return await context.Users.OrderBy(x => x.NormalizedUserName).ToListAsync();
         }
 
         public async Task<bool> SetUserSpaceSize(Guid userId, SpaceSizes spaceSize)
@@ -1315,6 +1315,47 @@ namespace NCloud.Services
             await context.SaveChangesAsync();
 
             return true;
+        }
+
+        public async Task<CloudUser> GetUserById(Guid userId)
+        {
+            return await context.Users.FirstOrDefaultAsync(x => x.Id == userId) ?? throw new CloudFunctionStopException("user does not exist");
+        }
+
+        public async Task<bool> LockOutUser(CloudUser user)
+        {
+            try
+            {
+                user.LockoutEnabled = true;
+                user.LockoutEnd = Constants.PermanentLockOutTime;
+
+                context.Users.Update(user);
+                await context.SaveChangesAsync();
+
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
+        public async Task<bool> EnableUser(CloudUser user)
+        {
+            try
+            {
+                user.LockoutEnabled = true;
+                user.LockoutEnd = null;
+
+                context.Users.Update(user);
+                await context.SaveChangesAsync();
+
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
         }
 
         #endregion

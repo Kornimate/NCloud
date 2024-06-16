@@ -5,7 +5,7 @@
 
     var sizes = Enum.GetValues<SpaceSizes>();
 
-    int counter = 1;
+    int counter = 0;
 }
 
 <div class="d-flex justify-content-between rounded bg-primary backbuttondiv mt-1 mb-5">
@@ -20,31 +20,31 @@
                 <td colspan="10">
                     <div class="w-100 d-flex justify-content-evenly">
                         <button class="btn btn-danger" onclick="submitUsersForm('/Admin/DeleteUserAccounts')"><img src="/utilities/person-delete.svg" width=" 20" height="20" class="rounded align-middle" /></button>
-                        <button class="btn btn-warning"><img src="/utilities/person-lockout.svg" width=" 20" height="20" class="rounded align-middle" /></button>
-                        <button class="btn btn-success"><img src="/utilities/person-enable.svg" width=" 20" height="20" class="rounded align-middle" /></button>
+                        <button class="btn btn-warning" onclick="submitUsersForm('/Admin/DisableUserAccounts')"><img src="/utilities/person-lockout.svg" width=" 20" height="20" class="rounded align-middle" /></button>
+                        <button class="btn btn-success" onclick="submitUsersForm('/Admin/EnableUserAccounts')"><img src="/utilities/person-enable.svg" width=" 20" height="20" class="rounded align-middle" /></button>
                     </div>
                 </td>
             </tr>
             <tr>
                 <th></th>
                 <th>User ID</th>
-                <th>User name</th>
+                <th>User Name</th>
                 <th>Email</th>
-                <th>Full name</th>
+                <th>Full Name</th>
                 <th class="min-col-width">Used space</th>
                 <th class="min-col-width">Max space</th>
                 <th>Account Status</th>
-                <th>Two factor authentication</th>
+                <th>Two Factor Authentication</th>
                 <th></th>
             </tr>
         </thead>
         <tbody>
-            <form id="usersForm" method="POST">
             @foreach (CloudUser user in Model.Users)
             {
                 <tr class="@(counter % 2 == 0 ? "" : "table-primary")">
                     <td>
-                        <input type="checkbox" class="form-check-input" value="@user.Id" name="userIds" />
+                        <input type="hidden" value="@user.Id" id="@(counter)_id" name="Ids"/>
+                        <input type="checkbox" class="form-check-input" id="@(counter)_chck" />
                     </td>
                     <td>@user.Id</td>
                     <td>@user.UserName</td>
@@ -55,24 +55,24 @@
                         <form asp-action="ChangeUserMaxSpace" id="@(++counter)">
                             <input type="hidden" value="@user.Id" name="userId" />
                             <select class="form-select" name="newSize">
-                                @foreach (var size in sizes)
+                            @foreach (var size in sizes)
+                            {
+                                if ((long)user.MaxSpace == (long)size)
                                 {
-                                    if ((long)user.MaxSpace == (long)size)
-                                    {
-                                        <option value="@size.ToString()" selected>@CloudSizeManager.ConvertToReadableSize(size)</option>
-                                    }
-                                    else
-                                    {
-                                        <option value="@size.ToString()">@CloudSizeManager.ConvertToReadableSize(size)</option>
-                                    }
+                                    <option value="@size.ToString()" selected>@CloudSizeManager.ConvertToReadableSize(size)</option>
                                 }
+                                else
+                                {
+                                    <option value="@size.ToString()">@CloudSizeManager.ConvertToReadableSize(size)</option>
+                                }
+                            }
                             </select>
                         </form>
                     </td>
                     <td>
                         @if (user.LockoutEnd != null && user.LockoutEnd > DateTime.Now)
                         {
-                            <span class="btn btn-outline-danger">LOCKED OUT</span>
+                            <span class="btn btn-outline-danger" data-toggle="tooltip" data-placement="top" title="@(user.LockoutEnd.Value.ToString("yyyy'-'MM'-'dd'T'HH':'mm':'ss"))">LOCKED OUT</span>
                         }
                         else
                         {
@@ -94,19 +94,30 @@
                     </td>
                 </tr>
             }
-            </form>
         </tbody>
     </table>
 </div>
+<form id="usersForm" method="POST"></form>
 
-@section Scripts{
+@section Scripts {
     <script type="text/javascript">
         function submitUsersForm(actionLink) {
+
+            const chckBoxes = document.querySelectorAll('input[type="checkbox"]');
+
             const form = document.getElementById("usersForm");
+
+            chckBoxes.forEach(x => {
+                if(x.checked){
+                    console.log("belepett")
+
+                    form.appendChild(document.getElementById(`${x?.id?.split('_')[0]}_id`));
+                }
+            });
 
             form.action = actionLink;
 
             form.submit();
-        }    
+        }
     </script>
 }

@@ -118,6 +118,17 @@ namespace NCloud.Controllers
 
                 if (result.IsLockedOut)
                 {
+                    if ((await userManager.GetRolesAsync(user)).Contains(Constants.AdminRole))
+                    {
+                        AddNewNotification(new Warning("Successful login, admin was locked out"));
+
+                        if (returnUrl is null)
+                        {
+                            return RedirectToAction("Index", "DashBoard");
+                        }
+
+                        return await RedirectToLocal(returnUrl);
+                    }
                     logger.LogWarning($"{vm.UserName} account locked out.");
 
                     return RedirectToPage("/Account/Lockout", new { area = "Identity" });

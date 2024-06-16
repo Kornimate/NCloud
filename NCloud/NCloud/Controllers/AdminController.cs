@@ -8,6 +8,7 @@ using NCloud.ViewModels;
 using NCloud.ConstantData;
 using NCloud.Models;
 using NCloud.Services.Exceptions;
+using NuGet.Packaging.Signing;
 
 namespace NCloud.Controllers
 {
@@ -36,27 +37,175 @@ namespace NCloud.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteUserAccounts(List<string> userIds)
+        public async Task<IActionResult> DeleteUserAccounts(List<string> Ids)
         {
-            //TODO: implement method
+            Ids ??= new();
+
+            if (Ids.Count == 0)
+            {
+                AddNewNotification(new Warning("No user selected for action"));
+
+                return RedirectToAction("ManageUserAccounts");
+            }
+
+            int counter = 0;
+
+            CloudUser? user = null;
+
+            foreach (string userId in Ids)
+            {
+                try
+                {
+                    user = await service.GetUserById(Guid.Parse(userId));
+
+                    if ((await userManager.GetRolesAsync(user)).Contains(Constants.AdminRole))
+                        throw new CloudFunctionStopException($"admin user can not be deleted ({user.UserName})");
+
+                    await service.DeleteDirectoriesForUser(Constants.GetPrivateBaseDirectoryForUser(user.Id.ToString()), user);
+
+                    await userManager.DeleteAsync(user);
+
+                    counter++;
+                }
+                catch (CloudFunctionStopException ex)
+                {
+                    AddNewNotification(new Error($"Error - {ex.Message}"));
+
+                    logger.LogError($"Failed to remove user and folders for user: {user?.UserName} {user?.Id.ToString()}");
+                }
+                catch (Exception)
+                {
+                    AddNewNotification(new Error($"Error while removing user ({user?.UserName})"));
+
+                    logger.LogError($"Failed to remove user and folders for user: {user?.UserName} {user?.Id.ToString()}");
+                }
+            }
+
+            if (counter == Ids.Count)
+            {
+                AddNewNotification(new Success("Account(s) deleted successfully"));
+            }
+            else
+            {
+                AddNewNotification(new Warning("Some actions could not be completed"));
+            }
 
             return RedirectToAction("ManageUserAccounts");
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DisableUserAccounts()
+        public async Task<IActionResult> DisableUserAccounts(List<string> Ids)
         {
-            //TODO: implement method
+            if (Ids is null || Ids.Count == 0)
+            {
+                AddNewNotification(new Warning("No user selected for action"));
+
+                return RedirectToAction("ManageUserAccounts");
+            }
+
+            int counter = 0;
+
+            CloudUser? user = null;
+
+            foreach (string userId in Ids)
+            {
+                try
+                {
+                    user = await service.GetUserById(Guid.Parse(userId));
+
+                    if ((await userManager.GetRolesAsync(user)).Contains(Constants.AdminRole))
+                        throw new CloudFunctionStopException($"admin user can not be locked out ({user.UserName})");
+
+                    if (await service.LockOutUser(user))
+                    {
+                        counter++;
+                    }
+                    else
+                    {
+                        throw new CloudFunctionStopException($"user lockout failed {user.UserName}");
+                    }
+
+                }
+                catch (CloudFunctionStopException ex)
+                {
+                    AddNewNotification(new Error($"Error - {ex.Message}"));
+
+                    logger.LogError($"Failed to lock user out: {user?.UserName} {user?.Id.ToString()}");
+                }
+                catch (Exception)
+                {
+                    AddNewNotification(new Error($"Error while locking user out {user?.UserName}"));
+
+                    logger.LogError($"Failed to lock user out: {user?.UserName} {user?.Id.ToString()}");
+                }
+            }
+
+            if (counter == Ids.Count)
+            {
+                AddNewNotification(new Success("User(s) locked out successfully"));
+            }
+            else
+            {
+                AddNewNotification(new Warning("Some actions could not be completed"));
+            }
 
             return RedirectToAction("ManageUserAccounts");
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> EnableUserAccounts()
+        public async Task<IActionResult> EnableUserAccounts(List<string> Ids)
         {
-            //TODO: implement method
+            if (Ids is null || Ids.Count == 0)
+            {
+                AddNewNotification(new Warning("No user selected for action"));
+
+                return RedirectToAction("ManageUserAccounts");
+            }
+
+            int counter = 0;
+
+            CloudUser? user = null;
+
+            foreach (string userId in Ids)
+            {
+                try
+                {
+                    user = await service.GetUserById(Guid.Parse(userId));
+
+                    if (await service.EnableUser(user))
+                    {
+                        counter++;
+                    }
+                    else
+                    {
+                        throw new CloudFunctionStopException($"user account reactivation failed {user.UserName}");
+                    }
+
+                }
+                catch (CloudFunctionStopException ex)
+                {
+                    AddNewNotification(new Error($"Error - {ex.Message}"));
+
+                    logger.LogError($"Failed to reactive user account: {user?.UserName} {user?.Id.ToString()}");
+                }
+                catch (Exception)
+                {
+                    AddNewNotification(new Error($"Error while reactivatin user account {user?.UserName}"));
+
+                    logger.LogError($"Failed to reactive user account: {user?.UserName} {user?.Id.ToString()}");
+                }
+            }
+
+            if (counter == Ids.Count)
+            {
+                AddNewNotification(new Success("User account(s) reactivated successfully"));
+            }
+            else
+            {
+                AddNewNotification(new Warning("Some actions could not be completed"));
+            }
 
             return RedirectToAction("ManageUserAccounts");
         }

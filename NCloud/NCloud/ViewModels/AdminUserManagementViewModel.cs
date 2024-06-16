@@ -1,4 +1,5 @@
-﻿using NCloud.Users;
+﻿using NCloud.Models;
+using NCloud.Users;
 
 namespace NCloud.ViewModels
 {
@@ -9,6 +10,11 @@ namespace NCloud.ViewModels
         public AdminUserManagementViewModel(List<CloudUser> users)
         {
             Users = users;
+        }
+
+        public AdminUserManagementViewModel()
+        {
+            Users = new();
         }
     }
 }
