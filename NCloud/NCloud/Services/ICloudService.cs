@@ -409,5 +409,7 @@ namespace NCloud.Services
         /// <param name="path">Path in current sharing state</param>
         /// <returns>Bollean indication the presenc of the path in database</returns>
         Task<bool> SharedPathExists(string sharingPath);
+        Task<List<CloudUser>> GetCloudUsers();
+        Task<bool> SetUserSpaceSize(Guid userId, SpaceSizes spaceSize);
     }
 }

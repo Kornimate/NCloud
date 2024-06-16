@@ -1,0 +1,112 @@
+﻿@model AdminUserManagementViewModel
+
+@{
+    ViewData["Title"] = "User management";
+
+    var sizes = Enum.GetValues<SpaceSizes>();
+
+    int counter = 1;
+}
+
+<div class="d-flex justify-content-between rounded bg-primary backbuttondiv mt-1 mb-5">
+    <a class="btn btn-primary" asp-controller="Admin" asp-action="Index"><img src="~/utilities/arrow-left-circle.svg" width=" 20" height="20" class="rounded align-middle" /></a>
+    <span class="btn"><img src="~/utilities/person-manage.svg" width=" 20" height="20" class="rounded align-middle" /></span>
+</div>
+
+<div class="table-responsive">
+    <table class="table table-hover align-middle text-center">
+        <thead>
+            <tr class="sticky-top table-primary border-primary border-3">
+                <td colspan="10">
+                    <div class="w-100 d-flex justify-content-evenly">
+                        <button class="btn btn-danger" onclick="submitUsersForm('/Admin/DeleteUserAccounts')"><img src="/utilities/person-delete.svg" width=" 20" height="20" class="rounded align-middle" /></button>
+                        <button class="btn btn-warning"><img src="/utilities/person-lockout.svg" width=" 20" height="20" class="rounded align-middle" /></button>
+                        <button class="btn btn-success"><img src="/utilities/person-enable.svg" width=" 20" height="20" class="rounded align-middle" /></button>
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <th></th>
+                <th>User ID</th>
+                <th>User name</th>
+                <th>Email</th>
+                <th>Full name</th>
+                <th class="min-col-width">Used space</th>
+                <th class="min-col-width">Max space</th>
+                <th>Account Status</th>
+                <th>Two factor authentication</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            <form id="usersForm" method="POST">
+            @foreach (CloudUser user in Model.Users)
+            {
+                <tr class="@(counter % 2 == 0 ? "" : "table-primary")">
+                    <td>
+                        <input type="checkbox" class="form-check-input" value="@user.Id" name="userIds" />
+                    </td>
+                    <td>@user.Id</td>
+                    <td>@user.UserName</td>
+                    <td>@user.Email</td>
+                    <td>@user.FullName</td>
+                    <td>@CloudSizeManager.ConvertToReadableSize(user.UsedSpace)</td>
+                    <td>
+                        <form asp-action="ChangeUserMaxSpace" id="@(++counter)">
+                            <input type="hidden" value="@user.Id" name="userId" />
+                            <select class="form-select" name="newSize">
+                                @foreach (var size in sizes)
+                                {
+                                    if ((long)user.MaxSpace == (long)size)
+                                    {
+                                        <option value="@size.ToString()" selected>@CloudSizeManager.ConvertToReadableSize(size)</option>
+                                    }
+                                    else
+                                    {
+                                        <option value="@size.ToString()">@CloudSizeManager.ConvertToReadableSize(size)</option>
+                                    }
+                                }
+                            </select>
+                        </form>
+                    </td>
+                    <td>
+                        @if (user.LockoutEnd != null && user.LockoutEnd > DateTime.Now)
+                        {
+                            <span class="btn btn-outline-danger">LOCKED OUT</span>
+                        }
+                        else
+                        {
+                            <span class="btn btn-outline-success">ENABLED</span>
+                        }
+                    </td>
+                    <td>
+                        @if (user.TwoFactorEnabled)
+                        {
+                            <span class="btn btn-outline-primary">ENABLED</span>
+                        }
+                        else
+                        {
+                            <span class="btn btn-outline-secondary">DISABLED</span>
+                        }
+                    </td>
+                    <td>
+                        <button onclick="document.getElementById('@(counter)').submit()" class="btn btn-primary"><img src="/utilities/database-manage-user-size.svg" width=" 20" height="20" class="rounded align-middle" /></button>
+                    </td>
+                </tr>
+            }
+            </form>
+        </tbody>
+    </table>
+</div>
+
+@section Scripts{
+    <script type="text/javascript">
+        function submitUsersForm(actionLink) {
+            const form = document.getElementById("usersForm");
+
+            form.action = actionLink;
+
+            form.submit();
+        }    
+    </script>
+}

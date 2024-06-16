@@ -18,7 +18,7 @@ namespace NCloud.ViewModels
         public Pair<string, string> WebControllerAndActionForDetails { get; set; }
         public Pair<string, string> WebControllerAndActionForDownload { get; set; }
 
-        public DashBoardViewModel(List<SharedFolder> sharedFoldersData, List<SharedFile> sharedFilesData, Pair<string, string> webControllerAndActionForDetails, Pair<string, string> webControllerAndActionForDownload, double userPercent, double usedBytes)
+        public DashBoardViewModel(List<SharedFolder> sharedFoldersData, List<SharedFile> sharedFilesData, Pair<string, string> webControllerAndActionForDetails, Pair<string, string> webControllerAndActionForDownload, double userPercent, double usedBytes, double maxBytes)
         {
             WebSharedFolderData = sharedFoldersData;
             WebSharedFileData = sharedFilesData;
@@ -27,7 +27,7 @@ namespace NCloud.ViewModels
             UserPercent = Convert.ToInt32(userPercent);
             RemainingPercent = (100 - UserPercent);
             UsedBytes = usedBytes;
-            RemainingBytes = Constants.UserSpaceSize - usedBytes;
+            RemainingBytes = maxBytes - usedBytes;
         }
     }
 }

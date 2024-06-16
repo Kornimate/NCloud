@@ -458,3 +458,7 @@ progress {
     margin-left:5px;
     margin-right:5px;
 }
+
+.min-col-width{
+    min-width:120px;
+}

@@ -69,6 +69,8 @@ namespace NCloud.ConstantData
             "videos"
         };
 
+        public const string AdminRoleName = "admin";
+        public static string AdminRole { get => AdminRoleName; }
         public static string ErrorResult { get => "#"; }
         public static string NoFileType { get => "notype"; }
         public static string FolderAndFileRegex { get => @"^[0-9a-zA-Z_!%+=.()$\s]+$"; }
@@ -83,7 +85,6 @@ namespace NCloud.ConstantData
         public static string DateTimeFormat { get => "yyyy'-'MM'-'dd'T'HH'-'mm'-'ss"; }
         public static string TerminalDateTimeFormat { get => "yyyy'-'MM'-'dd' 'HH':'mm"; }
         public static string UnkownFileType { get => "unknown"; }
-        public static string AdminRole { get => "admin"; }
         public static string UserRole { get => "user"; }
         public static string TextEditor { get => "Text"; }
         public static string CodeEditor { get => "Code"; }

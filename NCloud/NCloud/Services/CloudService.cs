@@ -1297,6 +1297,25 @@ namespace NCloud.Services
 
             return await context.SharedFiles.AnyAsync(x => (x.SharedPathFromRoot.ToLower() == sharingPath.ToLower() || (x.SharedPathFromRoot.ToLower() == parent.First.ToLower() && x.Name.ToLower() == parent.Second.ToLower())) && x.ConnectedToApp) || await context.SharedFolders.AnyAsync(x => (x.SharedPathFromRoot.ToLower() == sharingPath.ToLower() || (x.SharedPathFromRoot.ToLower() == parent.First.ToLower() && x.Name.ToLower() == parent.Second.ToLower())) && x.ConnectedToApp);
         }
+        public async Task<List<CloudUser>> GetCloudUsers()
+        {
+            return await context.Users.ToListAsync();
+        }
+
+        public async Task<bool> SetUserSpaceSize(Guid userId, SpaceSizes spaceSize)
+        {
+            CloudUser? user = await context.Users.FirstOrDefaultAsync(x => x.Id == userId);
+
+            if (user is null)
+                throw new CloudFunctionStopException("not a valid user");
+
+            user.MaxSpace = (double)spaceSize;
+
+            context.Users.Update(user);
+            await context.SaveChangesAsync();
+
+            return true;
+        }
 
         #endregion
 
@@ -1932,6 +1951,7 @@ namespace NCloud.Services
         {
             return Encoding.UTF8.GetBytes(content).Length;
         }
+
         #endregion
     }
 }
