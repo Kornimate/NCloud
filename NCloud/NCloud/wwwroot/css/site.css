@@ -462,3 +462,7 @@ progress {
 .min-col-width{
     min-width:120px;
 }
+
+#qrCode{
+    width:150px !important;
+}

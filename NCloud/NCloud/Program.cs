@@ -37,7 +37,7 @@ namespace NCloud
                 options.Password.RequireUppercase = true;
 
                 //User data
-                options.User.AllowedUserNameCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+";
+                options.User.AllowedUserNameCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789._@+";
                 options.User.RequireUniqueEmail = true;
             })
             .AddEntityFrameworkStores<CloudDbContext>()

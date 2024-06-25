@@ -6,6 +6,7 @@
     ViewData["ActivePage"] = ManageNavPages.TwoFactorAuthentication;
 }
 
+<div class="text-center">
 <partial name="_StatusMessage" for="StatusMessage" />
 <h3>@ViewData["Title"]</h3>
 @{
@@ -46,7 +47,7 @@
             <a asp-page="./GenerateRecoveryCodes" class="btn btn-primary">Reset recovery codes</a>
         }
 
-        <h4>Authenticator app</h4>
+        <h4 class="my-3">Authenticator app</h4>
         @if (!Model.HasAuthenticator)
         {
             <a id="enable-authenticator" asp-page="./EnableAuthenticator" class="btn btn-primary">Add authenticator app</a>
@@ -65,6 +66,7 @@
         </div>
     }
 }
+</div>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />

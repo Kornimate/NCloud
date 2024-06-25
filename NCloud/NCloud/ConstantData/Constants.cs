@@ -28,9 +28,9 @@ namespace NCloud.ConstantData
         {
             get
             {
-                if(config is null)
+                if (config is null)
                 {
-                    
+
                     return Configuration.GetSection("Branding").Get<CloudBrandingContainer>() ?? new CloudBrandingContainer()
                     {
                         AppName = "NoName"
@@ -139,6 +139,10 @@ namespace NCloud.ConstantData
         public static double UserSpaceSize { get => 5_368_709_120.0; } //for better readability (5 GB), base storage size for user
         public static TimeSpan TempFileDeleteTimeSpan { get => TimeSpan.FromMinutes(10); }
         public static DateTime PermanentLockOutTime { get => DateTime.UtcNow.AddYears(1000); }
+
+        public static string EmailRegistration { get => "Registration"; }
+        public static string EmailIssue { get => "Issue"; }
+        public static string EmailDeleteAccount { get => "Delete-Account"; }
 
         public static Pair<string, string> GetWebControllerAndActionForDetails()
         {
