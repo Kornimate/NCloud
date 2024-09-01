@@ -83,7 +83,7 @@ namespace NCloud.Controllers
                 if (successAndMsgAndPayLoadAndPrint.Item3 is List<CloudFolder> folders)
                     return Json(new ConnectionDTO { Success = successAndMsgAndPayLoadAndPrint.Item1, Message = successAndMsgAndPayLoadAndPrint.Item1 ? Constants.TerminalGreenText(successAndMsgAndPayLoadAndPrint.Item2) : Constants.TerminalRedText(successAndMsgAndPayLoadAndPrint.Item2), Payload = String.Empty, Result = $"\n{String.Join('\n', folders.Select(x => x.Info.Name))}\n\n" });
 
-                return Json(new ConnectionDTO { Success = successAndMsgAndPayLoadAndPrint.Item1, Message = successAndMsgAndPayLoadAndPrint.Item1 ? Constants.TerminalGreenText(successAndMsgAndPayLoadAndPrint.Item2) : Constants.TerminalRedText(successAndMsgAndPayLoadAndPrint.Item2), Payload = (!successAndMsgAndPayLoadAndPrint.Item4 ? successAndMsgAndPayLoadAndPrint.Item3?.ToString() : (await GetSessionCloudPathData()).CurrentPathShow) ?? String.Empty, Result = !String.IsNullOrEmpty(successAndMsgAndPayLoadAndPrint.Item3?.ToString() ?? String.Empty) && successAndMsgAndPayLoadAndPrint.Item4 ? ($"\n{successAndMsgAndPayLoadAndPrint.Item3}\n") : "" });
+                return Json(new ConnectionDTO { Success = successAndMsgAndPayLoadAndPrint.Item1, Message = successAndMsgAndPayLoadAndPrint.Item1 ? Constants.TerminalGreenText(successAndMsgAndPayLoadAndPrint.Item2) : Constants.TerminalRedText(successAndMsgAndPayLoadAndPrint.Item2), Payload = pathData.CurrentPathShow ?? String.Empty, Result = !String.IsNullOrEmpty(successAndMsgAndPayLoadAndPrint.Item3?.ToString() ?? String.Empty) && successAndMsgAndPayLoadAndPrint.Item4 ? ($"\n{successAndMsgAndPayLoadAndPrint.Item3}\n") : "" });
 
             }
             catch (CloudFunctionStopException ex)

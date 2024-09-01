@@ -79,6 +79,8 @@ namespace NCloud.Services
 
         public async Task<bool> DeleteDirectoriesForUser(string privateFolderPath, CloudUser cloudUser)
         {
+            using var transaction = context.Database.BeginTransaction();
+
             try
             {
                 if (Directory.Exists(privateFolderPath)) //deleting user folder
@@ -94,10 +96,14 @@ namespace NCloud.Services
 
                 await context.SaveChangesAsync();
 
+                transaction.Commit();
+
                 return true;
             }
             catch (Exception)
             {
+                transaction.Rollback();
+
                 return false;
             }
         }
@@ -671,7 +677,7 @@ namespace NCloud.Services
                                             continue;
 
                                         if (connectedToWeb && !sharedFolder.ConnectedToWeb)
-                                            continue; 
+                                            continue;
                                     }
 
                                     Queue<Pair<string, DirectoryInfo>> directories = new(new List<Pair<string, DirectoryInfo>>() { new Pair<string, DirectoryInfo>(currentRelativePath, await GetFolderByPath(serverPathStart, name)) });
@@ -875,7 +881,7 @@ namespace NCloud.Services
             string? oldSharingPathAndName = null!;
             string? newSharingPathAndName = null!;
 
-            Directory.Move(folderPathAndName, newFolderPathAndName);
+            using var transaction = context.Database.BeginTransaction();
 
             try
             {
@@ -910,10 +916,14 @@ namespace NCloud.Services
                 }
 
                 await context.SaveChangesAsync();
+
+                Directory.Move(folderPathAndName, newFolderPathAndName);
+
+                transaction.Commit();
             }
             catch (Exception)
             {
-                Directory.Move(newFolderPathAndName, folderPathAndName);
+                transaction.Rollback();
 
                 throw new CloudFunctionStopException("error while renaming directory");
             }
@@ -936,7 +946,7 @@ namespace NCloud.Services
             if (File.Exists(newFilePathAndName) && fileName.ToLower() != newName.ToLower())
                 newFilePathAndName = Path.Combine(filePath, RenameObject(filePath, ref newFileName, true));
 
-            File.Move(filePathAndName, newFilePathAndName);
+            using var transaction = context.Database.BeginTransaction();
 
             try
             {
@@ -948,10 +958,14 @@ namespace NCloud.Services
                 }
 
                 await context.SaveChangesAsync();
+                
+                File.Move(filePathAndName, newFilePathAndName);
+
+                transaction.Commit();
             }
             catch (Exception)
             {
-                File.Move(newFilePathAndName, filePathAndName);
+                transaction.Rollback();
 
                 throw new CloudFunctionStopException("error while renaming file");
             }
