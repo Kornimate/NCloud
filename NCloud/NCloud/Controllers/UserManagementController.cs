@@ -133,7 +133,7 @@ namespace NCloud.Controllers
                     }
                     logger.LogWarning($"{vm.UserName} account locked out.");
 
-                    await emailTemplateService.SendEmailAsync(new CloudUserLockedOut(emailTemplateService.GetSelfEmailAddress(), $"User is locked out: {user.UserName}"));
+                    await emailTemplateService.SendEmailAsync(new CloudUserLockedOut(emailTemplateService.GetSelfEmailAddress(), $"User is locked out: {user.UserName}."));
 
                     return RedirectToPage("/Account/Lockout", new { area = "Identity" });
                 }
@@ -214,7 +214,7 @@ namespace NCloud.Controllers
                     {
                         logger.LogInformation($"{user.UserName} created a new account with password.");
 
-                        await emailTemplateService.SendEmailAsync(new CloudUserRegistration(emailTemplateService.GetSelfEmailAddress(), $"{user.UserName} created a new account"));
+                        await emailTemplateService.SendEmailAsync(new CloudUserRegistration(emailTemplateService.GetSelfEmailAddress(), $"{user.UserName} created a new account."));
 
                         try
                         {
@@ -304,6 +304,8 @@ namespace NCloud.Controllers
                 await userManager.DeleteAsync(user);
 
                 AddNewNotification(new Information("Account deleted"));
+
+                await emailTemplateService.SendEmailAsync(new CloudUserAccountDeletion(emailTemplateService.GetSelfEmailAddress(), $"{user.UserName} deleted the account."));
             }
             catch (Exception)
             {
