@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity.UI.Services;
-using Microsoft.Extensions.Configuration;
 using NCloud.ConstantData;
+using NCloud.Models;
 using NCloud.Services.Exceptions;
 using System.Net;
 using System.Net.Mail;
@@ -16,7 +16,7 @@ namespace NCloud.Services
             this.config = config;
         }
 
-        public Task SendEmailAsync(string email, string subject, string htmlMessage)
+        public Task SendEmailAsync(string targetEmail, string subject, string htmlMessage)
         {
             try
             {
@@ -29,7 +29,7 @@ namespace NCloud.Services
                     Subject = subject,
                     IsBodyHtml = true,
                     Body = htmlMessage,
-                    To = { new MailAddress(email) },
+                    To = { new MailAddress(targetEmail) },
                     From = new MailAddress(emailAddress),
                 };
 

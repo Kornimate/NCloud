@@ -24,11 +24,13 @@ namespace NCloud.Controllers
         private readonly IUserStore<CloudUser> userStore;
         private readonly IUserEmailStore<CloudUser> emailStore;
         private readonly IEmailSender emailSender;
-        public UserManagementController(ICloudService service, UserManager<CloudUser> userManager, SignInManager<CloudUser> signInManager, IWebHostEnvironment env, ICloudNotificationService notifier, ILogger<CloudControllerDefault> logger, IEmailSender emailSender, IUserStore<CloudUser> userStore) : base(service, userManager, signInManager, env, notifier, logger)
+        private readonly IEmailTemplateService emailTemplateService;
+        public UserManagementController(ICloudService service, UserManager<CloudUser> userManager, SignInManager<CloudUser> signInManager, IWebHostEnvironment env, ICloudNotificationService notifier, ILogger<CloudControllerDefault> logger, IEmailSender emailSender, IUserStore<CloudUser> userStore, IConfiguration config) : base(service, userManager, signInManager, env, notifier, logger)
         {
             this.emailSender = emailSender;
+            this.emailTemplateService = new EmailTemplateService(emailSender, config);
             this.userStore = userStore;
-            emailStore = GetEmailStore();
+            this.emailStore = GetEmailStore();
         }
         public IActionResult Back(string returnUrl)
         {
@@ -49,7 +51,7 @@ namespace NCloud.Controllers
         /// <returns>View of the user details</returns>
         public async Task<IActionResult> UserPage(string returnUrl)
         {
-            CloudUser user = await userManager.GetUserAsync(User);
+            CloudUser user = (await userManager.GetUserAsync(User))!;
 
             ViewBag.ReturnUrl = returnUrl;
 
@@ -131,6 +133,8 @@ namespace NCloud.Controllers
                     }
                     logger.LogWarning($"{vm.UserName} account locked out.");
 
+                    await emailTemplateService.SendEmailAsync(new CloudUserLockedOut(emailTemplateService.GetSelfEmailAddress(), $"User is locked out: {user.UserName}"));
+
                     return RedirectToPage("/Account/Lockout", new { area = "Identity" });
                 }
 
@@ -210,9 +214,14 @@ namespace NCloud.Controllers
                     {
                         logger.LogInformation($"{user.UserName} created a new account with password.");
 
+                        await emailTemplateService.SendEmailAsync(new CloudUserRegistration(emailTemplateService.GetSelfEmailAddress(), $"{user.UserName} created a new account"));
+
                         try
                         {
-                            CloudUser newUser = await userManager.FindByNameAsync(vm.UserName);
+                            CloudUser? newUser = await userManager.FindByNameAsync(vm.UserName);
+
+                            if (newUser is null)
+                                throw new CloudFunctionStopException("no user with this username");
 
                             await service.CreateBaseDirectoryForUser(newUser);
 
@@ -284,7 +293,7 @@ namespace NCloud.Controllers
                 return RedirectToAction("Index", "Account");
             }
 
-            CloudUser user = await userManager.GetUserAsync(User);
+            CloudUser user = (await userManager.GetUserAsync(User))!;
 
             try
             {
