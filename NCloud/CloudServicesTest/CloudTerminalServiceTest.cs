@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using NCloud.Models;
 using NCloud.Services;
 using NCloud.Services.Exceptions;
@@ -18,6 +19,7 @@ namespace CloudServicesTest
         {
             var options = new DbContextOptionsBuilder<CloudDbContext>()
                                 .UseInMemoryDatabase("NCloudTestDb")
+                                .ConfigureWarnings(x => x.Ignore(InMemoryEventId.TransactionIgnoredWarning))
                                 .Options;
 
             context = new CloudDbContext(options);

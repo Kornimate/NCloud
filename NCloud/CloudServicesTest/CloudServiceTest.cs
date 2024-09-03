@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using NCloud.ConstantData;
 using NCloud.Models;
 using NCloud.Services;
@@ -21,6 +22,7 @@ namespace CloudServicesTest
         {
             var options = new DbContextOptionsBuilder<CloudDbContext>()
                                 .UseInMemoryDatabase("NCloudTestDb")
+                                .ConfigureWarnings(x => x.Ignore(InMemoryEventId.TransactionIgnoredWarning))
                                 .Options;
 
             context = new CloudDbContext(options);
