@@ -7,5 +7,6 @@
     {
         public string? File { get; set; }
         public string? Content { get; set; }
+        public string? Encoding { get; set; }
     }
 }

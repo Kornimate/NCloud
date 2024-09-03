@@ -43,7 +43,7 @@ namespace NCloud.Controllers
 
                 if (!SecurityManager.CheckIfDirectoryExists(service.ServerPath(currentPath)))
                 {
-                    pathData.SetDefaultPathData((await userManager.GetUserAsync(User)).Id.ToString());
+                    pathData.SetDefaultPathData((await userManager.GetUserAsync(User))!.Id.ToString());
 
                     currentPath = pathData.CurrentPath;
 
@@ -109,7 +109,7 @@ namespace NCloud.Controllers
         {
             CloudPathData pathData = await GetSessionCloudPathData();
 
-            pathData.SetDefaultPathData((await userManager.GetUserAsync(User)).Id.ToString());
+            pathData.SetDefaultPathData((await userManager.GetUserAsync(User))!.Id.ToString());
 
             await SetSessionCloudPathData(pathData);
 
@@ -127,7 +127,7 @@ namespace NCloud.Controllers
         {
             try
             {
-                string newFolder = await service.CreateDirectory(folderName!, (await GetSessionCloudPathData()).CurrentPath, await userManager.GetUserAsync(User));
+                string newFolder = await service.CreateDirectory(folderName!, (await GetSessionCloudPathData()).CurrentPath, (await userManager.GetUserAsync(User))!);
 
                 if (newFolder != folderName)
                     throw new CloudFunctionStopException("error while naming directory");
@@ -160,6 +160,7 @@ namespace NCloud.Controllers
         /// <returns>Redirection to details action</returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [RequestSizeLimit(41943040L)]
         public async Task<IActionResult> AddNewFiles(List<IFormFile>? files = null)
         {
             bool errorPresent = false;
@@ -177,7 +178,7 @@ namespace NCloud.Controllers
             {
                 try
                 {
-                    string newFileName = await service.CreateFile(files[i], pathData.CurrentPath, await userManager.GetUserAsync(User));
+                    string newFileName = await service.CreateFile(files[i], pathData.CurrentPath, (await userManager.GetUserAsync(User))!);
 
                     if (newFileName != files[i].FileName)
                     {

@@ -466,3 +466,9 @@ progress {
 #qrCode{
     width:150px !important;
 }
+
+.codeeditor{
+    height: 89vh;
+}
+
+.texteditor

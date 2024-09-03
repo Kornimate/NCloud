@@ -1,5 +1,5 @@
 /**
- * TinyMCE version 6.7.2 (2023-10-25)
+ * TinyMCE version 7.3.0 (2024-08-07)
  */
 
 (function () {
@@ -249,7 +249,7 @@
           register(editor);
           register$2(editor);
         } else {
-          console.error('Please use the Lists plugin together with the Advanced List plugin.');
+          console.error('Please use the Lists plugin together with the List Styles plugin.');
         }
       });
     };

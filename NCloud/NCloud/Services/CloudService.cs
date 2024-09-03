@@ -808,7 +808,7 @@ namespace NCloud.Services
             }
         }
 
-        public async Task<bool> ModifyFileContent(string file, string content, CloudUser user)
+        public async Task<bool> ModifyFileContent(string file, string content,Encoding encoding, CloudUser user)
         {
             try
             {
@@ -819,7 +819,7 @@ namespace NCloud.Services
                 if (!fi.Exists)
                     throw new FileNotFoundException("File does not exist");
 
-                double contentSize = GetStringLengthInBytes(content);
+                double contentSize = GetStringLengthInBytes(content, encoding);
 
                 contentSize -= fi.Length; //calculate the difference
 
@@ -828,7 +828,7 @@ namespace NCloud.Services
                     throw new CloudFunctionStopException("storage for user is on full, changes can not be saved");
                 }
 
-                File.WriteAllText(filePath, content);
+                File.WriteAllText(filePath, content, encoding);
 
                 await UpdateUserStorageUsed(user, contentSize);
 
@@ -1897,8 +1897,8 @@ namespace NCloud.Services
             if (user.UsedSpace < 0)
                 user.UsedSpace = 0;
 
-            if (user.UsedSpace > Constants.UserSpaceSize)
-                user.UsedSpace = Constants.UserSpaceSize;
+            if (user.UsedSpace > user.MaxSpace)
+                user.UsedSpace = user.MaxSpace;
 
             context.Users.Update(user);
 
@@ -2002,9 +2002,9 @@ namespace NCloud.Services
         /// </summary>
         /// <param name="content">The content to measure</param>
         /// <returns>The size in bytes converted to double</returns>
-        private static double GetStringLengthInBytes(string content)
+        private static double GetStringLengthInBytes(string content, Encoding encoding)
         {
-            return Encoding.UTF8.GetBytes(content).Length;
+            return encoding.GetBytes(content).Length;
         }
 
         #endregion

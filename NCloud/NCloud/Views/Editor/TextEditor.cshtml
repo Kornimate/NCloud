@@ -14,14 +14,14 @@
                 <span class="visually-hidden">Loading...</span>
             </div>
         </div>
-        <button type="button" class="btn" id="usersavebtn" onclick="UserSave('@Model.FilePath',tinymce.get('texteditor').getContent(),'@Url.Action("SaveData", "Editor" )')"><img src="/utilities/save.svg" class="pb-1" /></button>
+        <button type="button" class="btn" id="usersavebtn" onclick="UserSave('@Model.FilePath',tinymce.get('texteditor').getContent(),'@Model.Encoding','@Url.Action("SaveData", "Editor" )')"><img src="/utilities/save.svg" class="pb-1" /></button>
     </div>
 </div>
 
 <div class="d-flex w-100 justify-content-between">
     <div class="w-50 text-break text-wrap">
         <span class="w-75 text-secondary fw-bold align-baseline">@Model.FilePath.Slice(Constants.PrivateRootName.Length, Constants.PrivateRootName.Length + Constants.GuidLength + 1)</span>
-        <span class="w-25 text-secondary fw-bold align-baseline">(@Model.ExtensionData)</span>
+        <span class="w-25 text-secondary fw-bold align-baseline">(@Model.ExtensionData)[@Model.EncodingName]</span>
     </div>
     <div>
         <span class="text-muted fs-6 fst-italic me-2 align-bottom" id="statustext">Not saved yet</span>
@@ -52,11 +52,20 @@
             promotion: false,
             toolbar: "aligncenter alignjustify alignleft alignnone alignright| anchor | blockquote blocks | backcolor | bold | copy | cut | fontfamily fontsize forecolor h1 h2 h3 h4 h5 h6 hr indent | italic | language | lineheight | newdocument | outdent | paste pastetext | print | redo | remove removeformat | selectall | strikethrough | styles | subscript superscript underline | undo | visualaid | a11ycheck advtablerownumbering typopgraphy anchor restoredraft casechange charmap checklist code codesample addcomment showcomments ltr rtl editimage fliph flipv imageoptions rotateleft rotateright emoticons export footnotes footnotesupdate formatpainter fullscreen help image insertdatetime link openlink unlink bullist numlist media mergetags mergetags_list nonbreaking pagebreak pageembed permanentpen preview quickimage quicklink quicktable cancel save searchreplace spellcheckdialog spellchecker | table tablecellprops tablecopyrow tablecutrow tabledelete tabledeletecol tabledeleterow tableinsertdialog tableinsertcolafter tableinsertcolbefore tableinsertrowafter tableinsertrowbefore tablemergecells tablepasterowafter tablepasterowbefore tableprops tablerowprops tablesplitcells tableclass tablecellclass tablecellvalign tablecellborderwidth tablecellborderstyle tablecaption tablecellbackgroundcolor tablecellbordercolor tablerowheader tablecolheader | tableofcontents tableofcontentsupdate | template typography | insertfile | visualblocks visualchars | wordcount",
         });
+
+        document.addEventListener('keydown', function (event) {
+            if ((event.ctrlKey || event.metaKey) && event.key === 's') {
+                
+                event.preventDefault();
+
+                UserSave('@Model.FilePath', window.editor.getValue(), '@Model.Encoding', '@Url.Action("SaveData", "Editor")');
+            }
+        });
     </script>
 
     <script type="text/javascript" src="/js/editor.js"></script>
 
     <script type="text/javascript">
-        setTimeout(async () => await PeriodicSave("@Model.FilePath", tinymce.get("texteditor").getContent(), "@Url.Action("SaveData", "Editor")"), TIMEOUTMS);
+        setTimeout(async () => await PeriodicSave("@Model.FilePath", tinymce.get("texteditor").getContent(), "@Model.Encoding", "@Url.Action("SaveData", "Editor")"), TIMEOUTMS);
     </script>
 }

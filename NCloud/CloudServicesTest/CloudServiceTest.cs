@@ -5,6 +5,7 @@ using NCloud.Models;
 using NCloud.Services;
 using NCloud.Services.Exceptions;
 using NCloud.Users;
+using System.Text;
 
 namespace CloudServicesTest
 {
@@ -1122,7 +1123,7 @@ namespace CloudServicesTest
 
             File.Copy(name, pathToFile);
 
-            bool res = service.ModifyFileContent($"@CLOUDROOT\\{admin.Id}\\Test.txt", content, admin).GetAwaiter().GetResult();
+            bool res = service.ModifyFileContent($"@CLOUDROOT\\{admin.Id}\\Test.txt", content, Encoding.UTF8, admin).GetAwaiter().GetResult();
 
             Assert.IsTrue(res);
 
@@ -1139,7 +1140,7 @@ namespace CloudServicesTest
             string name = "Test.txt";
             string pathToFile = Path.Combine(Directory.GetCurrentDirectory(), ".__CloudData__", "Private", admin.Id.ToString(), name);
 
-            Assert.ThrowsException<FileNotFoundException>(() => service.ModifyFileContent($"@CLOUDROOT\\{admin.Id}\\Test.txt", content, admin).GetAwaiter().GetResult());
+            Assert.ThrowsException<FileNotFoundException>(() => service.ModifyFileContent($"@CLOUDROOT\\{admin.Id}\\Test.txt", content, Encoding.UTF8, admin).GetAwaiter().GetResult());
 
             service.CreateBaseDirectoryForUser(admin).Wait();
 
@@ -1147,7 +1148,7 @@ namespace CloudServicesTest
 
             admin.UsedSpace = Constants.UserSpaceSize;
 
-            Assert.ThrowsException<CloudFunctionStopException>(() => service.ModifyFileContent($"@CLOUDROOT\\{admin.Id}\\Test.txt", content, admin).GetAwaiter().GetResult());
+            Assert.ThrowsException<CloudFunctionStopException>(() => service.ModifyFileContent($"@CLOUDROOT\\{admin.Id}\\Test.txt", content, Encoding.UTF8, admin).GetAwaiter().GetResult());
         }
 
         /// <summary>

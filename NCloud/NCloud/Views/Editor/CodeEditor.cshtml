@@ -14,14 +14,14 @@
                 <span class="visually-hidden">Loading...</span>
             </div>
         </div>
-        <button type="button" class="btn" id="usersavebtn" onclick="UserSave('@Model.FilePath',window.editor.getValue(),'@Url.Action("SaveData", "Editor")')"><img src="/utilities/save.svg" class="pb-1" /></button>
+        <button type="button" class="btn" id="usersavebtn" onclick="UserSave('@Model.FilePath',window.editor.getValue(),'@Model.Encoding','@Url.Action("SaveData", "Editor")')"><img src="/utilities/save.svg" class="pb-1" /></button>
     </div>
 </div>
 
 <div class="d-flex w-100 justify-content-between">
     <div class="w-50 text-break text-wrap">
         <span class="w-75 text-secondary fw-bold">@Model.FilePath.Slice(Constants.PrivateRootName.Length, Constants.PrivateRootName.Length + Constants.GuidLength + 1)</span>
-        <span class="w-25 text-secondary fw-bold">(@Model.ExtensionData)</span>
+        <span class="w-25 text-secondary fw-bold">(@Model.ExtensionData)[@Model.EncodingName]</span>
     </div>
     <div>
 
@@ -32,7 +32,7 @@
     </div>
 </div>
 
-<div class="border border-primary border-3 w-100 h-100 rounded">
+<div class="border border-primary border-3 w-100 codeeditor rounded">
     <div class="w-100 bg-primary"></div>
     <div id="codeeditor" class="editor-class"></div>
 </div>
@@ -52,18 +52,36 @@
 @Html.AntiForgeryToken()
 
 @section Scripts {
-    <script type="text/javascript">
-        window.editor = monaco.editor.create(document.getElementById('codeeditor'), {
-            value: @Html.Raw(Json.Serialize(Model.Content)),
-            theme: "hc-black",
-            language: "javascript",
-            automaticLayout: true,
-        });
-    </script>
-
     <script type="text/javascript" src="/js/editor.js"></script>
 
     <script type="text/javascript">
-        setTimeout(async () => await PeriodicSave("@Model.FilePath", window.editor.getValue(), "@Url.Action("SaveData", "Editor")"), TIMEOUTMS);
+
+        let languageData = monaco.languages.getLanguages().find(x => x.extensions.includes("@Model.FileExtension"));
+
+        if(languageData === undefined){
+            languageData = {
+                id:'plaintext'
+            }
+        }
+
+        window.editor = monaco.editor.create(document.getElementById('codeeditor'), {
+            value: @Html.Raw(Json.Serialize(Model.Content)),
+            theme: "hc-black",
+            language : languageData?.id,
+            automaticLayout: true,
+        });
+
+        document.addEventListener('keydown', function (event) {
+            if ((event.ctrlKey || event.metaKey) && event.key === 's') {
+                
+                event.preventDefault();
+
+                UserSave('@Model.FilePath', window.editor.getValue(), '@Model.Encoding', '@Url.Action("SaveData", "Editor")');
+            }
+        });
+    </script>
+
+    <script type="text/javascript">
+        setTimeout(async () => await PeriodicSave("@Model.FilePath", window.editor.getValue(),"@Model.Encoding", "@Url.Action("SaveData", "Editor")"), TIMEOUTMS);
     </script>
 }

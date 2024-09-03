@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.RateLimiting;
 using System.Threading.RateLimiting;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 
 namespace NCloud
 {
@@ -85,6 +86,16 @@ namespace NCloud
                     options.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
                     options.QueueLimit = 2;
                 }));
+
+            builder.Services.Configure<IISServerOptions>(options =>
+            {
+                options.MaxRequestBodySize = 41943040; //40 MB in binary
+            });
+
+            builder.Services.Configure<KestrelServerOptions>(options =>
+            {
+                options.Limits.MaxRequestBodySize = int.MaxValue;
+            });
 
             builder.Services.AddTransient<ICloudService, CloudService>();
 

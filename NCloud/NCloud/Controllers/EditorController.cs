@@ -9,6 +9,7 @@ using NCloud.Services;
 using NCloud.Services.Exceptions;
 using NCloud.Users;
 using NCloud.ViewModels;
+using System.Text;
 
 namespace NCloud.Controllers
 {
@@ -190,14 +191,21 @@ namespace NCloud.Controllers
         {
             string pathAndName = Path.Combine(path ?? (await GetSessionCloudPathData()).CurrentPath, fileName);
 
+            string fileServerPathAndName = service.ServerPath(pathAndName);
+
+            Encoding fileEncoding = CloudEncodingSupport.GetEncoding(fileServerPathAndName);
+
             try
             {
                 return View(new EditorViewModel
                 {
                     FilePath = pathAndName.Replace(Path.DirectorySeparatorChar, Constants.PathSeparator),
-                    Content = System.IO.File.ReadAllText(service.ServerPath(pathAndName)),
+                    FileExtension = Path.GetExtension(fileName).ToLower(),
+                    Content = System.IO.File.ReadAllText(fileServerPathAndName, fileEncoding),
                     ExtensionData = extensionData,
-                    Redirection = redirectData
+                    Redirection = redirectData,
+                    Encoding = fileEncoding.CodePage.ToString(),
+                    EncodingName = fileEncoding.EncodingName
                 });
             }
             catch (Exception)
@@ -226,15 +234,38 @@ namespace NCloud.Controllers
         {
             string pathAndName = Path.Combine(path ?? (await GetSessionCloudPathData()).CurrentPath, fileName);
 
+            string fileServerPathAndName = service.ServerPath(pathAndName);
+
+            Encoding fileEncoding = CloudEncodingSupport.GetEncoding(fileServerPathAndName);
+
             try
             {
+                FileInfo fi = new FileInfo(fileServerPathAndName);
+
+                if (fi.Length > Constants.MaximumEditableFileLength)
+                    throw new CloudFunctionStopException("File is too big to be edited (maximum 20MB support)");
+
                 return View(new EditorViewModel
                 {
                     FilePath = pathAndName.Replace(Path.DirectorySeparatorChar, Constants.PathSeparator),
-                    Content = System.IO.File.ReadAllText(service.ServerPath(pathAndName)),
+                    Content = System.IO.File.ReadAllText(fileServerPathAndName, fileEncoding),
                     ExtensionData = extensionData,
-                    Redirection = redirectData
+                    Redirection = redirectData,
+                    Encoding = fileEncoding.CodePage.ToString(),
+                    EncodingName = fileEncoding.EncodingName
                 });
+            }
+            catch (CloudFunctionStopException ex)
+            {
+                AddNewNotification(new Error(ex.Message));
+
+                var redirection = CloudRedirectionManager.CreateRedirectionAction(redirectData);
+
+                if (redirection is not null)
+                    return RedirectToAction(redirection.Action, redirection.Controller);
+
+                else
+                    return RedirectToAction("Index", "Editor");
             }
             catch (Exception)
             {
@@ -271,9 +302,25 @@ namespace NCloud.Controllers
                     return Json(new ConnectionDTO { Success = false, Message = "Invalid path" });
                 }
 
+                if (vm.Encoding is null)
+                {
+                    return Json(new ConnectionDTO { Success = false, Message = "Invalid file encoding " });
+                }
+
+                Encoding? encoding = null;
+
+                try
+                {
+                    encoding = Encoding.GetEncoding(int.Parse(vm.Encoding));
+                }
+                catch (Exception)
+                {
+                    return Json(new ConnectionDTO { Success = false, Message = "Error while retrieving encoding" });
+                }
+
                 vm.File = vm.File.Replace(Constants.PathSeparator, Path.DirectorySeparatorChar);
 
-                bool success = await service.ModifyFileContent(vm.File, vm.Content.ReplaceLineEndings(), await userManager.GetUserAsync(User));
+                bool success = await service.ModifyFileContent(vm.File, vm.Content.ReplaceLineEndings(), encoding,  (await userManager.GetUserAsync(User))!);
 
                 if (success)
                 {
