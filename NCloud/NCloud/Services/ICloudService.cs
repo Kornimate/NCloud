@@ -269,7 +269,7 @@ namespace NCloud.Services
         /// <param name="content">content to write into the file</param>
         /// <param name="user">Currently logged in user</param>
         /// <returns>Boolean value indicating the success of action</returns>
-        Task<bool> ModifyFileContent(string file, string content,Encoding encoding, CloudUser user);
+        Task<bool> ModifyFileContent(string file, string content, Encoding encoding, CloudUser user);
 
         /// <summary>
         /// Method to get CloudFolder object from a specified physical folder

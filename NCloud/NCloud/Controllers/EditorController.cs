@@ -337,7 +337,7 @@ namespace NCloud.Controllers
 
                 vm.File = vm.File.Replace(Constants.PathSeparator, Path.DirectorySeparatorChar);
 
-                bool success = await service.ModifyFileContent(vm.File, vm.Content.ReplaceLineEndings(), encoding,  (await userManager.GetUserAsync(User))!);
+                bool success = await service.ModifyFileContent(vm.File, vm.Content.ReplaceLineEndings(), encoding, (await userManager.GetUserAsync(User))!);
 
                 if (success)
                 {

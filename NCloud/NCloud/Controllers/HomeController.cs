@@ -25,7 +25,7 @@ namespace NCloud.Controllers
 
             await signInManager.PasswordSignInAsync(await service.GetAdmin(), "Admin!1234", true, false);
 
-            return await Task.FromResult<IActionResult>(RedirectToAction("Index","DashBoard"));
+            return await Task.FromResult<IActionResult>(RedirectToAction("Index", "DashBoard"));
         }
 
         /// <summary>

@@ -1,5 +1,4 @@
-﻿using Castle.Core;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using NCloud.ConstantData;
 using NCloud.Models;
 using NCloud.Models.Extensions;
@@ -808,7 +807,7 @@ namespace NCloud.Services
             }
         }
 
-        public async Task<bool> ModifyFileContent(string file, string content,Encoding encoding, CloudUser user)
+        public async Task<bool> ModifyFileContent(string file, string content, Encoding encoding, CloudUser user)
         {
             try
             {
@@ -958,7 +957,7 @@ namespace NCloud.Services
                 }
 
                 await context.SaveChangesAsync();
-                
+
                 File.Move(filePathAndName, newFilePathAndName);
 
                 transaction.Commit();

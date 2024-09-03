@@ -1,5 +1,4 @@
-﻿using Castle.Core;
-using NCloud.Models;
+﻿using NCloud.Models;
 
 namespace NCloud.ViewModels
 {
