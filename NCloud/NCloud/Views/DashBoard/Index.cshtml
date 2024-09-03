@@ -64,7 +64,31 @@
     </div>
 </div>
 
-<div class="mt-5">
+<div class="d-flex w-100 justify-content-center">
+    <div id="html" class="demo">
+        <ul>
+            <li data-jstree='{ "opened" : true }'>
+                Root node
+                <ul>
+                    <li data-jstree='{ "selected" : true }'>Child node 1</li>
+                    <li>Child node 2</li>
+                </ul>
+            </li>
+        </ul>
+    </div>
+</div>
+
+@section Scripts {
+    <link rel="stylesheet" href="/lib/JsTree/themes/default/style.min.css" />
+
+    <script type="text/javascript" src="/lib/JsTree/jstree.min.js"></script>
+
+    <script type="text/javascript">
+        $('#html').jstree({ "plugins": ["contextmenu", "dnd", "search", "state", "types", "wholerow"] });
+    </script>
+}
+
+@* <div class="mt-5">
     <table class="table" id="sharedfolders">
         <thead>
             <tr>
@@ -145,4 +169,4 @@
         }
 
     </table>
-</div>
+</div> *@
