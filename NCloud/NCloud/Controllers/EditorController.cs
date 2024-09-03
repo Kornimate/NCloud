@@ -197,6 +197,11 @@ namespace NCloud.Controllers
 
             try
             {
+                FileInfo fi = new FileInfo(fileServerPathAndName);
+
+                if (fi.Length > Constants.MaximumEditableFileLength)
+                    throw new CloudFunctionStopException("File is too big to be edited (maximum 20MB support)");
+
                 return View(new EditorViewModel
                 {
                     FilePath = pathAndName.Replace(Path.DirectorySeparatorChar, Constants.PathSeparator),
@@ -207,6 +212,18 @@ namespace NCloud.Controllers
                     Encoding = fileEncoding.CodePage.ToString(),
                     EncodingName = fileEncoding.EncodingName
                 });
+            }
+            catch (CloudFunctionStopException ex)
+            {
+                AddNewNotification(new Error(ex.Message));
+
+                var redirection = CloudRedirectionManager.CreateRedirectionAction(redirectData);
+
+                if (redirection is not null)
+                    return RedirectToAction(redirection.Action, redirection.Controller);
+
+                else
+                    return RedirectToAction("Index", "Editor");
             }
             catch (Exception)
             {
