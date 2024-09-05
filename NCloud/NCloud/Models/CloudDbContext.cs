@@ -12,6 +12,7 @@ namespace NCloud.Models
     {
         public virtual DbSet<SharedFolder> SharedFolders { get; set; } = null!;
         public virtual DbSet<SharedFile> SharedFiles { get; set; } = null!;
+        public virtual DbSet<CloudSpaceRequest> CloudSpaceRequests { get; set; } = null!;
         public CloudDbContext(DbContextOptions<CloudDbContext> options) : base(options) { }
 
         protected override void OnModelCreating(ModelBuilder builder)
