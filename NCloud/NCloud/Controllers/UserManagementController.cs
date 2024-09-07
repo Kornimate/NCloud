@@ -55,7 +55,7 @@ namespace NCloud.Controllers
 
             ViewBag.ReturnUrl = returnUrl;
 
-            return View(new AccountViewModel(user.UserName, user.FullName, user.Email));
+            return View(new AccountViewModel(user.UserName, user.FullName, user.Email, (long)user.MaxSpace, (long)user.UsedSpace));
         }
 
         /// <summary>

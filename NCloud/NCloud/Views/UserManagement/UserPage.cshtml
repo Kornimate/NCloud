@@ -10,7 +10,14 @@
 }
 
 <div class="d-flex justify-content-between rounded bg-secondary backbuttondiv">
-    <a class="btn btn-primary" asp-controller="UserManagement" asp-action="Back" asp-route-returnUrl="@ViewBag.ReturnUrl"><img src="~/utilities/arrow-left-circle.svg" width=" 20" height="20" class="rounded align-middle" /></a>
+    @if (ViewBag.ReturnUrl is not null)
+    {
+        <a class="btn btn-primary" asp-controller="UserManagement" asp-action="Back" asp-route-returnUrl="@ViewBag.ReturnUrl"><img src="~/utilities/arrow-left-circle.svg" width=" 20" height="20" class="rounded align-middle" /></a>
+    }
+    else
+    {
+        <div>&nbsp;</div>
+    }
     <a class="btn btn-danger" asp-controller="UserManagement" asp-action="Logout"><img src="~/utilities/power.svg" width=" 20" height="20" class="rounded align-middle" /></a>
 </div>
 
@@ -46,20 +53,26 @@
                                     @if (User.IsInRole(Constants.AdminRole))
                                     {
                                         <div class="col-6 w-100 text-center mb-3">
-                                            <a asp-controller="Admin" asp-action="Index" type="button" class="btn btn-primary border border-primary border-3">
+                                            <a asp-controller="Admin" asp-action="Index" type="button" class="btn btn-primary border border-primary border-3 w-50">
                                                 <span class="fw-bold align-middle mx-2">Admin Dashboard</span>
                                                 <img src="/utilities/admin-dashboard.svg" width="20" height="20" class="rounded align-middle">
                                             </a>
                                         </div>
                                     }
+                                    else
+                                    {
+                                    }
                                     <div class="col-6 w-100 text-center mb-3">
-                                        <a class="btn btn-primary border border-primary border-3" asp-area="Identity" asp-page="/Account/Manage/Index" title="Manage">
+                                        <div class="btn btn-primary border border-primary border-3 w-50"><a class="text-light fw-bold text-decoration-none m-2" asp-action="Create" asp-controller="CloudSpaceRequest">@CloudSizeManager.ConvertToReadableSize(Model.MaxSpace) / @CloudSizeManager.ConvertToReadableSize(Model.UsedSpace) </a></div>
+                                    </div>
+                                    <div class="col-6 w-100 text-center mb-3">
+                                        <a class="btn btn-primary border border-primary border-3 w-50" asp-area="Identity" asp-page="/Account/Manage/Index" title="Manage">
                                             <span class="fw-bold align-middle mx-2">Manage Account</span>
                                             <img src="/utilities/gear.svg" width="20" height="20" class="rounded align-middle">
                                         </a>
                                     </div>
                                     <div class="col-6 w-100 text-center">
-                                        <button type="button" class="btn btn-danger border border-danger border-3" id="modalLaunchBtn">
+                                        <button type="button" class="btn btn-danger border border-danger border-3 w-50" id="modalLaunchBtn">
                                             <span class="fw-bold align-middle mx-2">Delete Account</span>
                                             <img src="/utilities/trash.svg" width="20" height="20" class="rounded align-middle">
                                         </button>

@@ -1371,6 +1371,31 @@ namespace NCloud.Services
             }
         }
 
+        public async Task<bool> CreateNewSpaceRequest(CloudSpaceRequest spaceRequest, CloudUser? user)
+        {
+            if(user is null)
+            {
+                throw new CloudFunctionStopException("Invalid user data");
+            }
+
+            try
+            {
+                spaceRequest.Id = Guid.NewGuid();
+
+                spaceRequest.User = user;
+                
+                context.Add(spaceRequest);
+
+                await context.SaveChangesAsync();
+
+                return true;
+            }
+            catch (Exception)
+            {
+                throw new CloudFunctionStopException("Error while submitting request");
+            }
+        }
+
         #endregion
 
         #region Private Instance Methods

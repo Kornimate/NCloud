@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using NCloud.ConstantData;
 using NCloud.Models;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace NCloud.Users
 {
@@ -14,13 +15,14 @@ namespace NCloud.Users
         public double MaxSpace { get; set; } = Constants.UserSpaceSize;
         public virtual ICollection<SharedFolder> SharedFolders { get; set; }
         public virtual ICollection<SharedFile> SharedFiles { get; set; }
-        public virtual ICollection<CloudSpaceRequest> CloudSpaceRequests { get; set; }
+
+        [ForeignKey("CloudSpaceRequestId")]
+        public virtual CloudSpaceRequest? CloudSpaceRequest { get; set; }
 
         public CloudUser() : base()
         {
             SharedFolders = new List<SharedFolder>();
             SharedFiles = new List<SharedFile>();
-            CloudSpaceRequests = new List<CloudSpaceRequest>();
         }
 
         public CloudUser(string userName, string fullName) : base(userName)
@@ -30,7 +32,6 @@ namespace NCloud.Users
             MaxSpace = Constants.UserSpaceSize;
             SharedFolders = new List<SharedFolder>();
             SharedFiles = new List<SharedFile>();
-            CloudSpaceRequests = new List<CloudSpaceRequest>();
         }
     }
 }

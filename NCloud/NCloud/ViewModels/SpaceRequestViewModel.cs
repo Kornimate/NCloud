@@ -1,17 +1,16 @@
 ﻿using NCloud.Users;
 using System.ComponentModel.DataAnnotations;
 
-namespace NCloud.Models
+namespace NCloud.ViewModels
 {
-    public class CloudSpaceRequestViewModel
+    public class SpaceRequestViewModel
     {
-        [Required]
-        public Guid Id { get; set; }
-
         [Required]
         public string SpaceRequest { get; set; } = String.Empty;
 
         [Required]
         public string RequestJustification { get; set; } = String.Empty;
+
+        public CloudUser? User { get; set; }
     }
 }
