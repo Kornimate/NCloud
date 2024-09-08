@@ -47,7 +47,7 @@ namespace NCloud.Services
             {
                 new ClientSideCommandContainer("download-file",1,true,async (parameters, pathData) => await Task.FromResult<UrlGenerationResult>(new UrlGenerationResult("Terminal", "DownloadFile", new { fileName = parameters[0]}, true))),
                 new ClientSideCommandContainer("download-dir",1,true,async (parameters, pathData) => await Task.FromResult<UrlGenerationResult>(new UrlGenerationResult("Terminal", "DownloadFolder", new { folderName = parameters[0]}, true))),
-                new ClientSideCommandContainer("edit",1,false,async (parameters, pathData) => await Task.FromResult<UrlGenerationResult>(new UrlGenerationResult("Editor", "EditorHub", new { fileName = parameters[0], path=pathData.CurrentPath, redirectData = RedirectionManager.CreateRedirectionString("Terminal","Index") }, false))),
+                new ClientSideCommandContainer("edit",1,false,async (parameters, pathData) => await Task.FromResult<UrlGenerationResult>(new UrlGenerationResult("Editor", "EditorHub", new { fileName = parameters[0], path=pathData.CurrentPath, redirectData = CloudRedirectionManager.CreateRedirectionString("Terminal","Index") }, false))),
             };
         }
 

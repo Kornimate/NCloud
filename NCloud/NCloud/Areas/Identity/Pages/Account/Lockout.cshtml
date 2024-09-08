@@ -1,0 +1,15 @@
+﻿@page
+@model LockoutModel
+@{
+    ViewData["Title"] = "Locked out";
+}
+<div class="row text-center">
+    <div class="w-100 justify-content-center text-center mb-3">
+        <img src="@(NCloud.ConstantData.Constants.Branding.LogoPath)" class="img-fluid" width="200" />
+    </div>
+
+    <header>
+        <h1 class="text-danger">@ViewData["Title"]</h1>
+        <p class="text-danger">This account has been locked out, please try again later.</p>
+    </header>
+</div>

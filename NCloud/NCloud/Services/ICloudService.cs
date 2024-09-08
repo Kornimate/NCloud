@@ -1,5 +1,6 @@
 ﻿using NCloud.Models;
 using NCloud.Users;
+using System.Text;
 
 namespace NCloud.Services
 {
@@ -268,7 +269,7 @@ namespace NCloud.Services
         /// <param name="content">content to write into the file</param>
         /// <param name="user">Currently logged in user</param>
         /// <returns>Boolean value indicating the success of action</returns>
-        Task<bool> ModifyFileContent(string file, string content, CloudUser user);
+        Task<bool> ModifyFileContent(string file, string content, Encoding encoding, CloudUser user);
 
         /// <summary>
         /// Method to get CloudFolder object from a specified physical folder
@@ -409,5 +410,15 @@ namespace NCloud.Services
         /// <param name="path">Path in current sharing state</param>
         /// <returns>Bollean indication the presenc of the path in database</returns>
         Task<bool> SharedPathExists(string sharingPath);
+        Task<List<CloudUser>> GetCloudUsers();
+        Task<bool> SetUserSpaceSize(Guid userId, SpaceSizes spaceSize);
+        Task<CloudUser> GetUserById(Guid userId);
+        Task<bool> LockOutUser(CloudUser user);
+        Task<bool> EnableUser(CloudUser user);
+        Task<bool> CreateNewSpaceRequest(CloudSpaceRequest spaceRequest, CloudUser? user);
+        Task<List<CloudSpaceRequest>> GetSpaceRequests();
+        Task FulfilSpaceRequest(List<Guid>? ids);
+        Task DeleteSpaceRequest(List<Guid>? ids);
+        Task CreateNewLoginEntry(CloudUser? cloudUser);
     }
 }

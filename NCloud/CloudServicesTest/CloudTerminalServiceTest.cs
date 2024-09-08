@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using NCloud.Models;
 using NCloud.Services;
 using NCloud.Services.Exceptions;
@@ -12,12 +13,12 @@ namespace CloudServicesTest
         private readonly CloudTerminalService service;
         private readonly CloudDbContext context;
         private readonly CloudUser admin;
-        private readonly CloudUser user;
-        private readonly CloudUser user2;
+
         public CloudTerminalServiceTest()
         {
             var options = new DbContextOptionsBuilder<CloudDbContext>()
                                 .UseInMemoryDatabase("NCloudTestDb")
+                                .ConfigureWarnings(x => x.Ignore(InMemoryEventId.TransactionIgnoredWarning))
                                 .Options;
 
             context = new CloudDbContext(options);
@@ -25,8 +26,6 @@ namespace CloudServicesTest
             var users = TestDbAndFileSystemSeeder.SeedDb(context);
 
             admin = users.Item1;
-            user = users.Item2;
-            user2 = users.Item3;
 
             service = new CloudTerminalService(new CloudService(context));
         }

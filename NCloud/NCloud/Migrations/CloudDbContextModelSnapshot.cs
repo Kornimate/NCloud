@@ -15,7 +15,11 @@ namespace NCloud.Migrations
         protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            modelBuilder.HasAnnotation("ProductVersion", "6.0.25");
+            modelBuilder
+                .HasAnnotation("ProductVersion", "8.0.6")
+                .HasAnnotation("Proxies:ChangeTracking", false)
+                .HasAnnotation("Proxies:CheckEquality", false)
+                .HasAnnotation("Proxies:LazyLoading", true);
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<System.Guid>", b =>
                 {
@@ -114,6 +118,52 @@ namespace NCloud.Migrations
                     b.HasKey("UserId", "LoginProvider", "Name");
 
                     b.ToTable("AspNetUserTokens", (string)null);
+                });
+
+            modelBuilder.Entity("NCloud.Models.CloudLogin", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("UserId")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Logins");
+                });
+
+            modelBuilder.Entity("NCloud.Models.CloudSpaceRequest", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("RequestDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("RequestJustification")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<long>("SpaceRequest")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId")
+                        .IsUnique();
+
+                    b.ToTable("CloudSpaceRequests");
                 });
 
             modelBuilder.Entity("NCloud.Models.SharedFile", b =>
@@ -342,6 +392,26 @@ namespace NCloud.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("NCloud.Models.CloudLogin", b =>
+                {
+                    b.HasOne("NCloud.Users.CloudUser", "User")
+                        .WithMany("Logins")
+                        .HasForeignKey("UserId");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("NCloud.Models.CloudSpaceRequest", b =>
+                {
+                    b.HasOne("NCloud.Users.CloudUser", "User")
+                        .WithOne("CloudSpaceRequest")
+                        .HasForeignKey("NCloud.Models.CloudSpaceRequest", "UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("NCloud.Models.SharedFile", b =>
                 {
                     b.HasOne("NCloud.Users.CloudUser", "Owner")
@@ -366,6 +436,10 @@ namespace NCloud.Migrations
 
             modelBuilder.Entity("NCloud.Users.CloudUser", b =>
                 {
+                    b.Navigation("CloudSpaceRequest");
+
+                    b.Navigation("Logins");
+
                     b.Navigation("SharedFiles");
 
                     b.Navigation("SharedFolders");

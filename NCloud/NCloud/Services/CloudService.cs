@@ -1,5 +1,4 @@
-﻿using Castle.Core;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using NCloud.ConstantData;
 using NCloud.Models;
 using NCloud.Models.Extensions;
@@ -79,6 +78,8 @@ namespace NCloud.Services
 
         public async Task<bool> DeleteDirectoriesForUser(string privateFolderPath, CloudUser cloudUser)
         {
+            using var transaction = context.Database.BeginTransaction();
+
             try
             {
                 if (Directory.Exists(privateFolderPath)) //deleting user folder
@@ -94,10 +95,14 @@ namespace NCloud.Services
 
                 await context.SaveChangesAsync();
 
+                transaction.Commit();
+
                 return true;
             }
             catch (Exception)
             {
+                transaction.Rollback();
+
                 return false;
             }
         }
@@ -423,7 +428,7 @@ namespace NCloud.Services
 
             try
             {
-                return await SetObjectAndUnderlyingObjectsState(cloudPath, directoryName, Constants.GetSharingRootPathInDatabase(user.UserName), user, connectToWeb: true);
+                return await SetObjectAndUnderlyingObjectsState(cloudPath, directoryName, Constants.GetSharingRootPathInDatabase(user.UserName!), user, connectToWeb: true);
             }
             catch (CloudFunctionStopException ex)
             {
@@ -477,7 +482,7 @@ namespace NCloud.Services
         {
             try
             {
-                return await SetObjectAndUnderlyingObjectsState(cloudPath, directoryName, Constants.GetSharingRootPathInDatabase(user.UserName), user, connectToWeb: false);
+                return await SetObjectAndUnderlyingObjectsState(cloudPath, directoryName, Constants.GetSharingRootPathInDatabase(user.UserName!), user, connectToWeb: false);
             }
             catch (CloudFunctionStopException ex)
             {
@@ -512,7 +517,7 @@ namespace NCloud.Services
         {
             try
             {
-                return await SetFileConnectedState(cloudPath, fileName, Constants.GetSharingRootPathInDatabase(user.UserName), user, connectToWeb: true);
+                return await SetFileConnectedState(cloudPath, fileName, Constants.GetSharingRootPathInDatabase(user.UserName!), user, connectToWeb: true);
             }
             catch (CloudFunctionStopException ex)
             {
@@ -572,7 +577,7 @@ namespace NCloud.Services
         public async Task<List<CloudFolder>> GetCurrentDepthAppSharingDirectories(string sharedPath)
         {
             if (sharedPath == Constants.PublicRootName)
-                return await context.Users.Where(x => x.SharedFiles.Where(x => x.ConnectedToApp).Count() > 0 || x.SharedFolders.Where(x => x.ConnectedToApp).Count() > 0).Select(x => new CloudFolder(x.UserName, null)).ToListAsync();
+                return await context.Users.Where(x => x.SharedFiles.Where(x => x.ConnectedToApp).Count() > 0 || x.SharedFolders.Where(x => x.ConnectedToApp).Count() > 0).Select(x => new CloudFolder(x.UserName!, null)).ToListAsync();
 
             CloudUser? user = await context.Users.FirstOrDefaultAsync(x => x.UserName == GetSharedPathOwnerUser(sharedPath));
 
@@ -671,7 +676,7 @@ namespace NCloud.Services
                                             continue;
 
                                         if (connectedToWeb && !sharedFolder.ConnectedToWeb)
-                                            continue; 
+                                            continue;
                                     }
 
                                     Queue<Pair<string, DirectoryInfo>> directories = new(new List<Pair<string, DirectoryInfo>>() { new Pair<string, DirectoryInfo>(currentRelativePath, await GetFolderByPath(serverPathStart, name)) });
@@ -784,7 +789,7 @@ namespace NCloud.Services
                     if (user is not null)
                     {
                         pathElements[Constants.RootProviderPlaceinPath] = Constants.PublicRootName;
-                        pathElements[Constants.OwnerPlaceInPath] = user.UserName;
+                        pathElements[Constants.OwnerPlaceInPath] = user.UserName!;
 
                         return String.Join(Path.DirectorySeparatorChar, pathElements);
                     }
@@ -802,7 +807,7 @@ namespace NCloud.Services
             }
         }
 
-        public async Task<bool> ModifyFileContent(string file, string content, CloudUser user)
+        public async Task<bool> ModifyFileContent(string file, string content, Encoding encoding, CloudUser user)
         {
             try
             {
@@ -813,7 +818,7 @@ namespace NCloud.Services
                 if (!fi.Exists)
                     throw new FileNotFoundException("File does not exist");
 
-                double contentSize = GetStringLengthInBytes(content);
+                double contentSize = GetStringLengthInBytes(content, encoding);
 
                 contentSize -= fi.Length; //calculate the difference
 
@@ -822,7 +827,7 @@ namespace NCloud.Services
                     throw new CloudFunctionStopException("storage for user is on full, changes can not be saved");
                 }
 
-                File.WriteAllText(filePath, content);
+                File.WriteAllText(filePath, content, encoding);
 
                 await UpdateUserStorageUsed(user, contentSize);
 
@@ -875,7 +880,7 @@ namespace NCloud.Services
             string? oldSharingPathAndName = null!;
             string? newSharingPathAndName = null!;
 
-            Directory.Move(folderPathAndName, newFolderPathAndName);
+            using var transaction = context.Database.BeginTransaction();
 
             try
             {
@@ -910,10 +915,14 @@ namespace NCloud.Services
                 }
 
                 await context.SaveChangesAsync();
+
+                Directory.Move(folderPathAndName, newFolderPathAndName);
+
+                transaction.Commit();
             }
             catch (Exception)
             {
-                Directory.Move(newFolderPathAndName, folderPathAndName);
+                transaction.Rollback();
 
                 throw new CloudFunctionStopException("error while renaming directory");
             }
@@ -936,7 +945,7 @@ namespace NCloud.Services
             if (File.Exists(newFilePathAndName) && fileName.ToLower() != newName.ToLower())
                 newFilePathAndName = Path.Combine(filePath, RenameObject(filePath, ref newFileName, true));
 
-            File.Move(filePathAndName, newFilePathAndName);
+            using var transaction = context.Database.BeginTransaction();
 
             try
             {
@@ -948,10 +957,14 @@ namespace NCloud.Services
                 }
 
                 await context.SaveChangesAsync();
+
+                File.Move(filePathAndName, newFilePathAndName);
+
+                transaction.Commit();
             }
             catch (Exception)
             {
-                File.Move(newFilePathAndName, filePathAndName);
+                transaction.Rollback();
 
                 throw new CloudFunctionStopException("error while renaming file");
             }
@@ -1296,6 +1309,167 @@ namespace NCloud.Services
             var parent = GetParentPathAndName(sharingPath);
 
             return await context.SharedFiles.AnyAsync(x => (x.SharedPathFromRoot.ToLower() == sharingPath.ToLower() || (x.SharedPathFromRoot.ToLower() == parent.First.ToLower() && x.Name.ToLower() == parent.Second.ToLower())) && x.ConnectedToApp) || await context.SharedFolders.AnyAsync(x => (x.SharedPathFromRoot.ToLower() == sharingPath.ToLower() || (x.SharedPathFromRoot.ToLower() == parent.First.ToLower() && x.Name.ToLower() == parent.Second.ToLower())) && x.ConnectedToApp);
+        }
+        public async Task<List<CloudUser>> GetCloudUsers()
+        {
+            return await context.Users.OrderBy(x => x.NormalizedUserName).ToListAsync();
+        }
+
+        public async Task<bool> SetUserSpaceSize(Guid userId, SpaceSizes spaceSize)
+        {
+            CloudUser? user = await context.Users.FirstOrDefaultAsync(x => x.Id == userId);
+
+            if (user is null)
+                throw new CloudFunctionStopException("not a valid user");
+
+            user.MaxSpace = (double)spaceSize;
+
+            context.Users.Update(user);
+            await context.SaveChangesAsync();
+
+            return true;
+        }
+
+        public async Task<CloudUser> GetUserById(Guid userId)
+        {
+            return await context.Users.FirstOrDefaultAsync(x => x.Id == userId) ?? throw new CloudFunctionStopException("user does not exist");
+        }
+
+        public async Task<bool> LockOutUser(CloudUser user)
+        {
+            try
+            {
+                user.LockoutEnabled = true;
+                user.LockoutEnd = Constants.PermanentLockOutTime;
+
+                context.Users.Update(user);
+                await context.SaveChangesAsync();
+
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
+        public async Task<bool> EnableUser(CloudUser user)
+        {
+            try
+            {
+                user.LockoutEnabled = true;
+                user.LockoutEnd = null;
+
+                context.Users.Update(user);
+                await context.SaveChangesAsync();
+
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
+        public async Task<bool> CreateNewSpaceRequest(CloudSpaceRequest spaceRequest, CloudUser? user)
+        {
+            if(user is null)
+            {
+                throw new CloudFunctionStopException("Invalid user data");
+            }
+
+            try
+            {
+                spaceRequest.Id = Guid.NewGuid();
+
+                spaceRequest.User = user;
+
+                spaceRequest.RequestDate = DateTime.UtcNow;
+                
+                context.Add(spaceRequest);
+
+                await context.SaveChangesAsync();
+
+                return true;
+            }
+            catch (Exception)
+            {
+                throw new CloudFunctionStopException("Error while submitting request");
+            }
+        }
+
+        public async Task<List<CloudSpaceRequest>> GetSpaceRequests()
+        {
+            return await context.CloudSpaceRequests.OrderByDescending(x => x.RequestDate).ToListAsync();
+        }
+
+        public async Task FulfilSpaceRequest(List<Guid>? ids)
+        {
+            var transaction = context.Database.BeginTransaction();
+
+            try
+            {
+                foreach (var id in ids ?? new())
+                {
+                    var request = await context.CloudSpaceRequests.FirstAsync(x => x.Id == id);
+
+                    double spaceRequestSize = (double)request.SpaceRequest;
+
+                    if (spaceRequestSize > request.User.MaxSpace)
+                    {
+                        request.User.MaxSpace = spaceRequestSize; 
+                    }
+
+                    context.Remove(request);
+                }
+
+                await context.SaveChangesAsync();
+
+                transaction.Commit();
+            }
+            catch (Exception)
+            {
+                transaction.Rollback();
+
+                throw new CloudFunctionStopException("Error while managing requests");
+            }
+        }
+
+        public async Task DeleteSpaceRequest(List<Guid>? ids)
+        {
+            var transaction = context.Database.BeginTransaction();
+
+            try
+            {
+                foreach (var id in ids ?? new())
+                {
+                    context.Remove(await context.CloudSpaceRequests.FirstAsync(x => x.Id == id));
+                }
+
+                await context.SaveChangesAsync();
+
+                transaction.Commit();
+            }
+            catch (Exception)
+            {
+                transaction.Rollback();
+
+                throw new CloudFunctionStopException("Error while managing requests");
+            }
+        }
+
+        public async Task CreateNewLoginEntry(CloudUser? cloudUser)
+        {
+            try
+            {
+                if (cloudUser is null)
+                    return;
+
+                context.Logins.Add(new CloudLogin(cloudUser));
+
+                await context.SaveChangesAsync();
+            }
+            catch (Exception) { }
         }
 
         #endregion
@@ -1823,8 +1997,8 @@ namespace NCloud.Services
             if (user.UsedSpace < 0)
                 user.UsedSpace = 0;
 
-            if (user.UsedSpace > Constants.UserSpaceSize)
-                user.UsedSpace = Constants.UserSpaceSize;
+            if (user.UsedSpace > user.MaxSpace)
+                user.UsedSpace = user.MaxSpace;
 
             context.Users.Update(user);
 
@@ -1928,10 +2102,11 @@ namespace NCloud.Services
         /// </summary>
         /// <param name="content">The content to measure</param>
         /// <returns>The size in bytes converted to double</returns>
-        private static double GetStringLengthInBytes(string content)
+        private static double GetStringLengthInBytes(string content, Encoding encoding)
         {
-            return Encoding.UTF8.GetBytes(content).Length;
+            return encoding.GetBytes(content).Length;
         }
+
         #endregion
     }
 }

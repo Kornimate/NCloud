@@ -1,4 +1,4 @@
-﻿using Castle.Core;
+﻿using NCloud.Models;
 using NCloud.Users;
 
 namespace NCloud.ConstantData
@@ -8,13 +8,66 @@ namespace NCloud.ConstantData
     /// </summary>
     public static class Constants
     {
+        private static IConfiguration? config;
+        public static IConfiguration Configuration
+        {
+            get
+            {
+                var builder = new ConfigurationBuilder()
+                    .SetBasePath(Directory.GetCurrentDirectory())
+                    .AddJsonFile("appsettings.json");
+                config = builder.Build();
+                return config;
+            }
+        }
+
+        public static CloudBrandingContainer Branding
+        {
+            get
+            {
+                if (config is null)
+                {
+
+                    return Configuration.GetSection("Branding").Get<CloudBrandingContainer>() ?? new CloudBrandingContainer()
+                    {
+                        AppName = "NoName"
+                    };
+                }
+
+                return config.GetSection("Branding").Get<CloudBrandingContainer>() ?? new CloudBrandingContainer()
+                {
+                    AppName = "NoName"
+                };
+            }
+        }
+
         public static readonly List<string> SystemFolders = new List<string>()
         {
-            "Music",
             "Documents",
-            "Videos",
-            "Pictures"
+            "Music",
+            "Pictures",
+            "Videos"
         };
+
+        public static readonly List<string> SpecialFolders = new List<string>()
+        {
+            "archives",
+            "documents",
+            "favorites",
+            "git",
+            "ideas",
+            "music",
+            "network",
+            "photos",
+            "pictures",
+            "secret",
+            "svn",
+            "trash",
+            "videos"
+        };
+
+        public const string AdminRoleName = "admin";
+        public static string AdminRole { get => AdminRoleName; }
         public static string ErrorResult { get => "#"; }
         public static string NoFileType { get => "notype"; }
         public static string FolderAndFileRegex { get => @"^[0-9a-zA-Z_!%+=.()$\s]+$"; }
@@ -29,21 +82,23 @@ namespace NCloud.ConstantData
         public static string DateTimeFormat { get => "yyyy'-'MM'-'dd'T'HH'-'mm'-'ss"; }
         public static string TerminalDateTimeFormat { get => "yyyy'-'MM'-'dd' 'HH':'mm"; }
         public static string UnkownFileType { get => "unknown"; }
-        public static string AdminRole { get => "admin"; }
         public static string UserRole { get => "user"; }
         public static string TextEditor { get => "Text"; }
         public static string CodeEditor { get => "Code"; }
         public static string FileTypePrefix { get => "filetype-"; }
+        public static string FolderPrefix { get => "folder-"; }
         public static string WebRootFolderName { get => ".__CloudData__"; }
         public static string IconsBasePath { get => Path.Combine("wwwroot", "utilities"); }
         public static string LogoPath { get => Path.Combine("wwwroot", "utilities", "cloud_logo.png"); }
         public static string TempFolderName { get => "temp"; }
         public static string TempFilePath { get => Path.Combine(".__TempFiles__", TempFolderName); }
-        public static string FolderIcon { get => "/utilities/folder.svg"; }
-        public static string PrefixForIcons { get => "/utilities/filetype-"; }
-        public static string SuffixForIcons { get => ".svg"; }
+        public static string SimpleFolderIcon { get => "/utilities/folder.svg"; }
+        public static string PrefixForSpecialFolders { get => "/utilities/folder-"; }
+        public static string SuffixForSpecialFolders { get => ".svg"; }
+        public static string SmtpProvider { get => "smtp.gmail.com"; }
+        public static string PrefixForFiles { get => "/utilities/filetype-"; }
+        public static string SuffixForFiles { get => ".svg"; }
         public static string AdminUserName { get => "Admin"; }
-        public static string AppName { get => "NCloudDrive"; }
         public static string PrivateRootName { get => "@CLOUDROOT"; }
         public static string PublicRootName { get => "@SHAREDROOT"; }
         public static string CompressedArchiveFileType { get => "zip"; }
@@ -53,6 +108,7 @@ namespace NCloud.ConstantData
         public static string TerminalCommandsDataFilePath { get => "./Services/Resources/terminal-commands.json"; }
         public static string ControllerDataSeparator { get => "||"; }
         public static string NotificationCookieKey { get => "Notification"; }
+        public static string AppCookieName { get => "CloudCookie"; }
         public static string DownloadHTMLElementId { get => "actionTrigger"; }
         public static string CloudCookieKey { get => "pathDataCloud"; }
         public static string SharedCookieKey { get => "pathDataShared"; }
@@ -75,8 +131,16 @@ namespace NCloud.ConstantData
         public static int OwnerPlaceInPath { get => 1; }
         public static int RootProviderPlaceinPath { get => 0; }
         public static int GuidLength { get => 36; }
-        public static double UserSpaceSize { get => 5_368_709_120.0; } //for better readability (5 GB)
+        public static int IconSizeFolder { get => 40; }
+        public static int IconSizeFile { get => 30; }
+        public static double UserSpaceSize { get => (double)SpaceSizes.GB1; }
+        public static long MaximumEditableFileLength { get => 20971520L; } //for better readability (20 MB), maximum editable file length
         public static TimeSpan TempFileDeleteTimeSpan { get => TimeSpan.FromMinutes(10); }
+        public static DateTime PermanentLockOutTime { get => DateTime.UtcNow.AddYears(1000); }
+
+        public static string EmailRegistration { get => "Registration"; }
+        public static string EmailIssue { get => "Issue"; }
+        public static string EmailDeleteAccount { get => "Delete-Account"; }
 
         public static Pair<string, string> GetWebControllerAndActionForDetails()
         {
@@ -153,7 +217,7 @@ namespace NCloud.ConstantData
         /// <returns>The format string for logging NuGet</returns>
         public static string GetLogFilePath()
         {
-            return $".__Logs__/{AppName}-{{Date}}.txt";
+            return $".__Logs__/{Branding.AppName}-{{Date}}.txt";
         }
 
         /// <summary>

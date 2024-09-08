@@ -20,7 +20,7 @@ namespace NCloud.ViewModels
         public string? FullName { get; set; }
 
         [Required]
-        [RegularExpression(@"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$", ErrorMessage = "Email is not in correct format")]
+        [EmailAddress(ErrorMessage = "Email is not in correct format")]
         [Display(Name = "Email")]
         public string? Email { get; set; }
 
@@ -33,8 +33,8 @@ namespace NCloud.ViewModels
         [Required]
         [RegularExpression(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$", ErrorMessage = "Password repeat is not in correct format")]
         [DataType(DataType.Password)]
-        [Compare("Password")]
-        [Display(Name = "Repeat the password")]
+        [Compare("Password", ErrorMessage = "The password and confirmation password do not match")]
+        [Display(Name = "Confirm the password")]
         public string? PasswordRepeat { get; set; }
     }
 }

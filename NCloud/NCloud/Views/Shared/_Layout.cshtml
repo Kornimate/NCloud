@@ -4,7 +4,7 @@
 
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - @Constants.AppName</title>
+    <title>@ViewData["Title"] - @Constants.Branding.AppName</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/NCloud.styles.css" asp-append-version="true" />
@@ -18,7 +18,14 @@
 
     <nav class="navbar background-color">
         <div class="container-fluid">
-            <a asp-controller="Home" asp-action="Index" class="navbar-brand"><img src="~/utilities/cloud_logo_no_text.png" width="50" height="50" alt="" class="me-2" />@Constants.AppName</a>
+            @if (User.Identity?.IsAuthenticated == true)
+            {
+                <a asp-controller="DashBoard" asp-action="Index" class="navbar-brand"><img src="@Constants.Branding.LogoNoTextPath" width="50" height="50" alt="" class="me-2" />@Constants.Branding.AppName</a>
+            }
+            else
+            {
+                <a asp-controller="Home" asp-action="Index" class="navbar-brand"><img src="@Constants.Branding.LogoNoTextPath" width="50" height="50" alt="" class="me-2" />@Constants.Branding.AppName</a>
+            }
         </div>
     </nav>
 

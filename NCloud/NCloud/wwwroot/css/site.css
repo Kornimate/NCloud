@@ -17,6 +17,10 @@ body {
     margin-bottom: 60px;
 }
 
+summary {
+    line-height: 40px;
+}
+
 details summary {
     list-style: none;
 }
@@ -448,4 +452,21 @@ progress {
 
 .user-button:hover {
     background-color: #0d6efd;
+}
+
+.fileicon{
+    margin-left:5px;
+    margin-right:5px;
+}
+
+.min-col-width{
+    min-width:120px;
+}
+
+#qrCode{
+    width:150px !important;
+}
+
+.codeeditor{
+    height: 89vh;
 }

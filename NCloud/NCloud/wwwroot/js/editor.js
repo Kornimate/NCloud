@@ -1,5 +1,5 @@
 ﻿const TIMEOUTMS = 30000;
-async function PeriodicSave(file, content, address) {
+async function PeriodicSave(file, content, encoding, address) {
 
     const spinner = document.getElementById("autosavespinner");
     const text = document.getElementById("statustext");
@@ -7,27 +7,35 @@ async function PeriodicSave(file, content, address) {
     spinner?.classList.remove("hidden");
     text.innerHTML = "Save in progress...";
 
-    let response = await SaveData(file, content, address);
+    try {
+        let response = await SaveData(file, content, encoding, address);
 
-    response = await response.json();
+        response = await response.json();
 
-    spinner?.classList.add("hidden");
+        spinner?.classList.add("hidden");
 
-    if (response.redirection !== "") {
-        window.location.href = response.redirection;
-    }
+        if (response.redirection !== "") {
+            window.location.href = response.redirection;
+        }
 
-    if (response.success) {
-        text.innerHTML = `Last saved: ${new Date().toLocaleString()}`;
-    }
-    else {
+        if (response.success) {
+            text.innerHTML = `Last saved: ${new Date().toLocaleString()}`;
+        }
+        else {
+            text.innerHTML = "Error while saving document...";
+        }
+
+    } catch (e) {
+
+        spinner?.classList.add("hidden");
+
         text.innerHTML = "Error while saving document...";
     }
 
-    setTimeout(async () => await PeriodicSave(file, content, address), TIMEOUTMS);
+    setTimeout(async () => await PeriodicSave(file, content, encoding, address), TIMEOUTMS);
 }
 
-async function UserSave(file, content, address) {
+async function UserSave(file, content, encoding, address) {
 
     const spinner = document.getElementById("usersavespinner");
     const btnSave = document.getElementById("usersavebtn");
@@ -35,28 +43,35 @@ async function UserSave(file, content, address) {
     spinner?.classList.remove("hidden");
     btnSave.disabled = true;
 
-    let response = await SaveData(file, content, address);
+    try {
+        let response = await SaveData(file, content, encoding, address);
 
-    response = await response.json();
+        response = await response.json();
 
-    spinner?.classList.add("hidden");
-    btnSave.disabled = false;
+        spinner?.classList.add("hidden");
+        btnSave.disabled = false;
 
-    if (response.redirection !== "") {
-        window.location.href = response.redirection;
-    }
+        if (response.redirection !== "") {
+            window.location.href = response.redirection;
+        }
 
-    if (response.success) {
-        document.getElementById("statustext").innerHTML = `Last saved: ${new Date().toLocaleString()}`;
+        if (response.success) {
+            document.getElementById("statustext").innerHTML = `Last saved: ${new Date().toLocaleString()}`;
 
-        ShowSuccessToast("Success", response.message);
-    }
-    else {
+            ShowSuccessToast("Success", response.message);
+        }
+        else {
+            ShowErrorToast("Error", response.message);
+        }
+    } catch (e) {
+        spinner?.classList.add("hidden");
+        btnSave.disabled = false;
+
         ShowErrorToast("Error", response.message);
     }
 }
 
-async function SaveData(file, content, address) {
+async function SaveData(file, content, encoding, address) {
 
     const forgeryToken = document.querySelector('input[name="__RequestVerificationToken"]').value;
 
@@ -70,7 +85,8 @@ async function SaveData(file, content, address) {
             },
             body: JSON.stringify({
                 file: file,
-                content: content
+                content: content,
+                encoding: encoding
             }),
             signal: AbortSignal.timeout(10000)
         });

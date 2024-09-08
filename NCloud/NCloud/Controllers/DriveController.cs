@@ -43,7 +43,7 @@ namespace NCloud.Controllers
 
                 if (!SecurityManager.CheckIfDirectoryExists(service.ServerPath(currentPath)))
                 {
-                    pathData.SetDefaultPathData((await userManager.GetUserAsync(User)).Id.ToString());
+                    pathData.SetDefaultPathData((await userManager.GetUserAsync(User))!.Id.ToString());
 
                     currentPath = pathData.CurrentPath;
 
@@ -109,7 +109,7 @@ namespace NCloud.Controllers
         {
             CloudPathData pathData = await GetSessionCloudPathData();
 
-            pathData.SetDefaultPathData((await userManager.GetUserAsync(User)).Id.ToString());
+            pathData.SetDefaultPathData((await userManager.GetUserAsync(User))!.Id.ToString());
 
             await SetSessionCloudPathData(pathData);
 
@@ -127,7 +127,7 @@ namespace NCloud.Controllers
         {
             try
             {
-                string newFolder = await service.CreateDirectory(folderName!, (await GetSessionCloudPathData()).CurrentPath, await userManager.GetUserAsync(User));
+                string newFolder = await service.CreateDirectory(folderName!, (await GetSessionCloudPathData()).CurrentPath, (await userManager.GetUserAsync(User))!);
 
                 if (newFolder != folderName)
                     throw new CloudFunctionStopException("error while naming directory");
@@ -160,6 +160,7 @@ namespace NCloud.Controllers
         /// <returns>Redirection to details action</returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [RequestSizeLimit(41943040L)]
         public async Task<IActionResult> AddNewFiles(List<IFormFile>? files = null)
         {
             bool errorPresent = false;
@@ -177,7 +178,7 @@ namespace NCloud.Controllers
             {
                 try
                 {
-                    string newFileName = await service.CreateFile(files[i], pathData.CurrentPath, await userManager.GetUserAsync(User));
+                    string newFileName = await service.CreateFile(files[i], pathData.CurrentPath, (await userManager.GetUserAsync(User))!);
 
                     if (newFileName != files[i].FileName)
                     {
@@ -225,7 +226,7 @@ namespace NCloud.Controllers
         {
             try
             {
-                if (!(await service.RemoveDirectory(folderName, (await GetSessionCloudPathData()).CurrentPath, await userManager.GetUserAsync(User))))
+                if (!(await service.RemoveDirectory(folderName, (await GetSessionCloudPathData()).CurrentPath, (await userManager.GetUserAsync(User))!)))
                 {
                     throw new CloudFunctionStopException("folder is system folder");
                 }
@@ -253,7 +254,7 @@ namespace NCloud.Controllers
         {
             try
             {
-                if (!(await service.RemoveFile(fileName!, (await GetSessionCloudPathData()).CurrentPath, await userManager.GetUserAsync(User))))
+                if (!(await service.RemoveFile(fileName!, (await GetSessionCloudPathData()).CurrentPath, (await userManager.GetUserAsync(User))!)))
                 {
                     throw new CloudFunctionStopException("error while removing file");
                 }
@@ -330,7 +331,7 @@ namespace NCloud.Controllers
 
                         try
                         {
-                            if (!(await service.RemoveFile(itemForDelete, pathData.CurrentPath, await userManager.GetUserAsync(User))))
+                            if (!(await service.RemoveFile(itemForDelete, pathData.CurrentPath, (await userManager.GetUserAsync(User))!)))
                             {
                                 AddNewNotification(new Error($"Error removing file {itemForDelete}"));
 
@@ -356,7 +357,7 @@ namespace NCloud.Controllers
 
                         try
                         {
-                            if (!(await service.RemoveDirectory(itemForDelete, pathData.CurrentPath, await userManager.GetUserAsync(User))))
+                            if (!(await service.RemoveDirectory(itemForDelete, pathData.CurrentPath, (await userManager.GetUserAsync(User))!)))
                             {
                                 AddNewNotification(new Error($"Error removing directory: {itemForDelete}"));
 
@@ -498,7 +499,7 @@ namespace NCloud.Controllers
             {
                 CloudPathData session = await GetSessionCloudPathData();
 
-                if (await service.ConnectDirectoryToApp(session.CurrentPath, itemName, await userManager.GetUserAsync(User)))
+                if (await service.ConnectDirectoryToApp(session.CurrentPath, itemName, (await userManager.GetUserAsync(User))!))
                 {
                     return Json(new ConnectionDTO { Success = true, Message = "Directory and items inside connected to application" });
                 }
@@ -530,7 +531,7 @@ namespace NCloud.Controllers
             {
                 CloudPathData session = await GetSessionCloudPathData();
 
-                if (await service.ConnectDirectoryToWeb(session.CurrentPath, itemName, await userManager.GetUserAsync(User)))
+                if (await service.ConnectDirectoryToWeb(session.CurrentPath, itemName, (await userManager.GetUserAsync(User))!))
                 {
                     SharedFolder sf = await service.GetSharedFolderByPathAndName(session.CurrentPath, itemName);
 
@@ -566,7 +567,7 @@ namespace NCloud.Controllers
             {
                 CloudPathData session = await GetSessionCloudPathData();
 
-                if (await service.ConnectFileToApp(session.CurrentPath, itemName, await userManager.GetUserAsync(User)))
+                if (await service.ConnectFileToApp(session.CurrentPath, itemName, (await userManager.GetUserAsync(User))!))
                 {
                     return Json(new ConnectionDTO { Success = true, Message = "File connected to application" });
                 }
@@ -598,7 +599,7 @@ namespace NCloud.Controllers
             {
                 CloudPathData session = await GetSessionCloudPathData();
 
-                if (await service.ConnectFileToWeb(session.CurrentPath, itemName, await userManager.GetUserAsync(User)))
+                if (await service.ConnectFileToWeb(session.CurrentPath, itemName, (await userManager.GetUserAsync(User))!))
                 {
                     SharedFile sf = await service.GetSharedFileByPathAndName(session.CurrentPath, itemName);
 
@@ -634,7 +635,7 @@ namespace NCloud.Controllers
             {
                 CloudPathData session = await GetSessionCloudPathData();
 
-                if (await service.DisconnectDirectoryFromApp(session.CurrentPath, itemName, await userManager.GetUserAsync(User)))
+                if (await service.DisconnectDirectoryFromApp(session.CurrentPath, itemName, (await userManager.GetUserAsync(User))!))
                 {
                     return Json(new ConnectionDTO { Success = true, Message = "Directory and items inside disconnected from application" });
                 }
@@ -666,7 +667,7 @@ namespace NCloud.Controllers
             {
                 CloudPathData session = await GetSessionCloudPathData();
 
-                if (await service.DisconnectDirectoryFromWeb(session.CurrentPath, itemName, await userManager.GetUserAsync(User)))
+                if (await service.DisconnectDirectoryFromWeb(session.CurrentPath, itemName, (await userManager.GetUserAsync(User))!))
                 {
                     return Json(new ConnectionDTO { Success = true, Message = "Directory and items inside disconnected from web" });
                 }
@@ -698,7 +699,7 @@ namespace NCloud.Controllers
             {
                 CloudPathData session = await GetSessionCloudPathData();
 
-                if (await service.DisconnectFileFromApp(session.CurrentPath, itemName, await userManager.GetUserAsync(User)))
+                if (await service.DisconnectFileFromApp(session.CurrentPath, itemName, (await userManager.GetUserAsync(User))!))
                 {
                     return Json(new ConnectionDTO { Success = true, Message = "File disconnected from application" });
                 }
@@ -730,7 +731,7 @@ namespace NCloud.Controllers
             {
                 CloudPathData session = await GetSessionCloudPathData();
 
-                if (await service.DisconnectFileFromWeb(session.CurrentPath, itemName, await userManager.GetUserAsync(User)))
+                if (await service.DisconnectFileFromWeb(session.CurrentPath, itemName, (await userManager.GetUserAsync(User))!))
                 {
                     return Json(new ConnectionDTO { Success = true, Message = "File disconnected from web" });
                 }
@@ -773,7 +774,7 @@ namespace NCloud.Controllers
 
             try
             {
-                if (await service.DisconnectDirectoryFromWeb(path, itemName, await userManager.GetUserAsync(User)))
+                if (await service.DisconnectDirectoryFromWeb(path, itemName, (await userManager.GetUserAsync(User))!))
                 {
                     AddNewNotification(new Success("Directory and items inside disconnected from web"));
                 }
@@ -818,7 +819,7 @@ namespace NCloud.Controllers
 
             try
             {
-                if (await service.DisconnectFileFromWeb(path, itemName, await userManager.GetUserAsync(User)))
+                if (await service.DisconnectFileFromWeb(path, itemName, (await userManager.GetUserAsync(User))!))
                 {
                     AddNewNotification(new Success("File disconnected from web"));
                 }
@@ -913,7 +914,7 @@ namespace NCloud.Controllers
                 {
                     try
                     {
-                        if (!await service.ConnectDirectoryToWeb(pathData.CurrentPath, actualName, await userManager.GetUserAsync(User)))
+                        if (!await service.ConnectDirectoryToWeb(pathData.CurrentPath, actualName, (await userManager.GetUserAsync(User))!))
                         {
                             AddNewNotification(new Error("Error while applying settings (web connect)"));
 
@@ -937,7 +938,7 @@ namespace NCloud.Controllers
                 {
                     try
                     {
-                        if (!await service.DisconnectDirectoryFromWeb(pathData.CurrentPath, actualName, await userManager.GetUserAsync(User)))
+                        if (!await service.DisconnectDirectoryFromWeb(pathData.CurrentPath, actualName, (await userManager.GetUserAsync(User))!))
                         {
                             AddNewNotification(new Error("Error while applying settings (web disconnect)"));
 
@@ -962,7 +963,7 @@ namespace NCloud.Controllers
                 {
                     try
                     {
-                        if (!await service.ConnectDirectoryToApp(pathData.CurrentPath, actualName, await userManager.GetUserAsync(User)))
+                        if (!await service.ConnectDirectoryToApp(pathData.CurrentPath, actualName, (await userManager.GetUserAsync(User))!))
                         {
                             AddNewNotification(new Error("Error while applying settings (app connect)"));
 
@@ -986,7 +987,7 @@ namespace NCloud.Controllers
                 {
                     try
                     {
-                        if (!await service.DisconnectDirectoryFromApp(pathData.CurrentPath, actualName, await userManager.GetUserAsync(User)))
+                        if (!await service.DisconnectDirectoryFromApp(pathData.CurrentPath, actualName, (await userManager.GetUserAsync(User))!))
                         {
                             AddNewNotification(new Error("Error while applying settings (app disconnect)"));
 
@@ -1097,7 +1098,7 @@ namespace NCloud.Controllers
                 {
                     try
                     {
-                        if (!await service.ConnectFileToWeb(pathData.CurrentPath, newFileName, await userManager.GetUserAsync(User)))
+                        if (!await service.ConnectFileToWeb(pathData.CurrentPath, newFileName, (await userManager.GetUserAsync(User))!))
                         {
                             AddNewNotification(new Error("Error while applying settings (web connect)"));
 
@@ -1121,7 +1122,7 @@ namespace NCloud.Controllers
                 {
                     try
                     {
-                        if (!await service.DisconnectFileFromWeb(pathData.CurrentPath, newFileName, await userManager.GetUserAsync(User)))
+                        if (!await service.DisconnectFileFromWeb(pathData.CurrentPath, newFileName, (await userManager.GetUserAsync(User))!))
                         {
                             AddNewNotification(new Error("Error while applying settings (web disconnect)"));
 
@@ -1146,7 +1147,7 @@ namespace NCloud.Controllers
                 {
                     try
                     {
-                        if (!await service.ConnectFileToApp(pathData.CurrentPath, newFileName, await userManager.GetUserAsync(User)))
+                        if (!await service.ConnectFileToApp(pathData.CurrentPath, newFileName, (await userManager.GetUserAsync(User))!))
                         {
                             AddNewNotification(new Error("Error while applying settings (app connect)"));
 
@@ -1170,7 +1171,7 @@ namespace NCloud.Controllers
                 {
                     try
                     {
-                        if (!await service.DisconnectFileFromApp(pathData.CurrentPath, newFileName, await userManager.GetUserAsync(User)))
+                        if (!await service.DisconnectFileFromApp(pathData.CurrentPath, newFileName, (await userManager.GetUserAsync(User))!))
                         {
                             AddNewNotification(new Error("Error while applying settings (app disconnect)"));
 
@@ -1289,7 +1290,7 @@ namespace NCloud.Controllers
                 {
                     try
                     {
-                        string result = await service.CopyFile(item.ItemPath ?? String.Empty, pathData.CurrentPath, await userManager.GetUserAsync(User));
+                        string result = await service.CopyFile(item.ItemPath ?? String.Empty, pathData.CurrentPath, (await userManager.GetUserAsync(User))!);
 
                         if (result != String.Empty)
                             AddNewNotification(new Warning("Copied file has been renamed"));
@@ -1313,7 +1314,7 @@ namespace NCloud.Controllers
                 {
                     try
                     {
-                        string result = await service.CopyFolder(item.ItemPath ?? string.Empty, pathData.CurrentPath, await userManager.GetUserAsync(User));
+                        string result = await service.CopyFolder(item.ItemPath ?? string.Empty, pathData.CurrentPath, (await userManager.GetUserAsync(User))!);
 
                         if (result != String.Empty)
                         {

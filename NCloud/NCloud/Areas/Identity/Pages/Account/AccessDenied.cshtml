@@ -1,0 +1,16 @@
+﻿@page
+@model AccessDeniedModel
+@{
+    ViewData["Title"] = "Access denied";
+}
+
+<div class="row text-center">
+    <div class="w-100 justify-content-center text-center mb-3">
+        <img src="@(NCloud.ConstantData.Constants.Branding.LogoPath)" class="img-fluid" width="200" />
+    </div>
+
+    <header class="text-center">
+        <h1 class="text-danger">@ViewData["Title"]</h1>
+        <p class="text-danger">You do not have access to this resource.</p>
+    </header>
+</div>
