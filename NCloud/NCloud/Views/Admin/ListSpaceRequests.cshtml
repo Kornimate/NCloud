@@ -4,42 +4,48 @@
     ViewData["title"] = "Space Requests";
 }
 
+<div class="d-flex justify-content-between rounded bg-primary backbuttondiv mt-1 mb-5">
+    <a class="btn btn-primary" asp-controller="Admin" asp-action="Index"><img src="~/utilities/arrow-left-circle.svg" width=" 20" height="20" class="rounded align-middle" /></a>
+    <span class="btn"><img src="~/utilities/database-manage-user-size.svg" width=" 20" height="20" class="rounded align-middle" /></span>
+</div>
 
-<table class="table table-striped text-center">
-    <thead>
-        <tr class="sticky-top table-primary border-primary border-3">
-            <td colspan="5">
-                <div class="d-flex w-100 justify-content-around">
-                    <button class="btn btn-success" onclick="submitForm('/Admin/FulfilSpaceRequest')"><img src="/utilities/check-lg.svg" width=" 20" height="20" class="rounded align-middle" /></button>
-                    <button class="btn btn-danger" onclick="submitForm('/Admin/DeleteSpaceRequest')"><img src="/utilities/x-lg.svg" width=" 20" height="20" class="rounded align-middle" /></button>
-                </div>
-            </td>
-        </tr>
-        <tr class="align-middle">
-            <th>Requester</th>
-            <th>Requested Space</th>
-            <th>Request Time</th>
-            <th>Request Justification</th>
-            <th class="text-primary">Select</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var item in Model)
-        {
-            <tr class="align-middle">
-                <td>@item.User?.UserName</td>
-                <td>@CloudSizeManager.ConvertToReadableSize((double)item.SpaceRequest)</td>
-                <td>@item.RequestDate.ToString("yyyy'-'MM'-'dd '['HH':'mm':'ss']'") UTC</td>
-                <td class="text-start text-break">@item.RequestJustification</td>
-                <td>
-                    <div class="form-group">
-                        <input type="checkbox" class="form-check-input bg-primary" id="@($"{item.Id}")" name="ids" />
+<div class="table-responsive">
+    <table class="table table-striped text-center">
+        <thead>
+            <tr class="sticky-top table-primary border-primary border-3">
+                <td colspan="5">
+                    <div class="d-flex w-100 justify-content-around">
+                        <button class="btn btn-success" onclick="submitForm('/Admin/FulfilSpaceRequest')"><img src="/utilities/check-lg.svg" width=" 20" height="20" class="rounded align-middle" /></button>
+                        <button class="btn btn-danger" onclick="submitForm('/Admin/DeleteSpaceRequest')"><img src="/utilities/x-lg.svg" width=" 20" height="20" class="rounded align-middle" /></button>
                     </div>
                 </td>
             </tr>
-        }
-    </tbody>
-</table>
+            <tr class="align-middle">
+                <th>Requester</th>
+                <th>Requested Space</th>
+                <th>Request Time</th>
+                <th>Request Justification</th>
+                <th class="text-primary">Select</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr class="align-middle">
+                    <td>@item.User?.UserName</td>
+                    <td>@CloudSizeManager.ConvertToReadableSize((double)item.SpaceRequest)</td>
+                    <td>@item.RequestDate.ToString("yyyy'-'MM'-'dd '['HH':'mm':'ss']'") UTC</td>
+                    <td class="text-start text-break">@item.RequestJustification</td>
+                    <td>
+                        <div class="form-group">
+                            <input type="checkbox" class="form-check-input bg-primary" id="@($"{item.Id}")" name="ids" />
+                        </div>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
 
 <form id="containerForm" method="POST" class="hidden">
 </form>

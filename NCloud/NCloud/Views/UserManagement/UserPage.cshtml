@@ -61,10 +61,10 @@
                                     }
                                     else
                                     {
+                                    }
                                         <div class="col-6 w-100 text-center mb-3">
                                             <div class="btn btn-primary border border-primary border-3 w-50"><a class="text-light fw-bold text-decoration-none m-2" asp-action="Create" asp-controller="CloudSpaceRequest">@CloudSizeManager.ConvertToReadableSize(Model.MaxSpace) / @CloudSizeManager.ConvertToReadableSize(Model.UsedSpace) </a></div>
                                         </div>
-                                    }
                                     <div class="col-6 w-100 text-center mb-3">
                                         <a class="btn btn-primary border border-primary border-3 w-50" asp-area="Identity" asp-page="/Account/Manage/Index" title="Manage">
                                             <span class="fw-bold align-middle mx-2">Manage Account</span>

@@ -1403,14 +1403,73 @@ namespace NCloud.Services
             return await context.CloudSpaceRequests.OrderByDescending(x => x.RequestDate).ToListAsync();
         }
 
-        public Task FulfilSpaceRequest(List<Guid>? id)
+        public async Task FulfilSpaceRequest(List<Guid>? ids)
         {
-            throw new NotImplementedException();
+            var transaction = context.Database.BeginTransaction();
+
+            try
+            {
+                foreach (var id in ids ?? new())
+                {
+                    var request = await context.CloudSpaceRequests.FirstAsync(x => x.Id == id);
+
+                    double spaceRequestSize = (double)request.SpaceRequest;
+
+                    if (spaceRequestSize > request.User.MaxSpace)
+                    {
+                        request.User.MaxSpace = spaceRequestSize; 
+                    }
+
+                    context.Remove(request);
+                }
+
+                await context.SaveChangesAsync();
+
+                transaction.Commit();
+            }
+            catch (Exception)
+            {
+                transaction.Rollback();
+
+                throw new CloudFunctionStopException("Error while managing requests");
+            }
         }
 
-        public Task DeleteSpaceRequest(List<Guid>? id)
+        public async Task DeleteSpaceRequest(List<Guid>? ids)
         {
-            throw new NotImplementedException();
+            var transaction = context.Database.BeginTransaction();
+
+            try
+            {
+                foreach (var id in ids ?? new())
+                {
+                    context.Remove(await context.CloudSpaceRequests.FirstAsync(x => x.Id == id));
+                }
+
+                await context.SaveChangesAsync();
+
+                transaction.Commit();
+            }
+            catch (Exception)
+            {
+                transaction.Rollback();
+
+                throw new CloudFunctionStopException("Error while managing requests");
+            }
+        }
+
+        public async Task CreateNewLoginEntry(CloudUser? cloudUser)
+        {
+            try
+            {
+                if (cloudUser is null)
+                    return;
+
+                context.Logins.Add(new CloudLogin(cloudUser));
+
+                await context.SaveChangesAsync();
+            }
+            catch (Exception) { }
         }
 
         #endregion

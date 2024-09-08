@@ -5,6 +5,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using NCloud.Services;
 using NCloud.Users;
 using System.ComponentModel.DataAnnotations;
 
@@ -15,15 +16,18 @@ namespace NCloud.Areas.Identity.Pages.Account
         private readonly SignInManager<CloudUser> _signInManager;
         private readonly UserManager<CloudUser> _userManager;
         private readonly ILogger<LoginWith2faModel> _logger;
+        private readonly ICloudService _service;
 
         public LoginWith2faModel(
             SignInManager<CloudUser> signInManager,
             UserManager<CloudUser> userManager,
-            ILogger<LoginWith2faModel> logger)
+            ILogger<LoginWith2faModel> logger,
+            ICloudService service)
         {
             _signInManager = signInManager;
             _userManager = userManager;
             _logger = logger;
+            _service = service;
         }
 
         /// <summary>
@@ -108,6 +112,7 @@ namespace NCloud.Areas.Identity.Pages.Account
 
             if (result.Succeeded)
             {
+                await _service.CreateNewLoginEntry(user);
                 _logger.LogInformation("User with ID '{UserId}' logged in with 2fa.", user.Id);
                 return LocalRedirect(returnUrl);
             }

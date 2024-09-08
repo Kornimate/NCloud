@@ -11,8 +11,8 @@ using NCloud.Models;
 namespace NCloud.Migrations
 {
     [DbContext(typeof(CloudDbContext))]
-    [Migration("20240907233156_change-space-request-limit")]
-    partial class changespacerequestlimit
+    [Migration("20240908143843_initial-mig")]
+    partial class initialmig
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -123,10 +123,32 @@ namespace NCloud.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("NCloud.Models.CloudLogin", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("UserId")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Logins");
+                });
+
             modelBuilder.Entity("NCloud.Models.CloudSpaceRequest", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("RequestDate")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("RequestJustification")
@@ -136,7 +158,13 @@ namespace NCloud.Migrations
                     b.Property<long>("SpaceRequest")
                         .HasColumnType("INTEGER");
 
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("TEXT");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("UserId")
+                        .IsUnique();
 
                     b.ToTable("CloudSpaceRequests");
                 });
@@ -218,9 +246,6 @@ namespace NCloud.Migrations
                     b.Property<int>("AccessFailedCount")
                         .HasColumnType("INTEGER");
 
-                    b.Property<Guid?>("CloudSpaceRequestId")
-                        .HasColumnType("TEXT");
-
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
                         .HasColumnType("TEXT");
@@ -275,9 +300,6 @@ namespace NCloud.Migrations
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("CloudSpaceRequestId")
-                        .IsUnique();
 
                     b.HasIndex("NormalizedEmail")
                         .HasDatabaseName("EmailIndex");
@@ -373,6 +395,26 @@ namespace NCloud.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("NCloud.Models.CloudLogin", b =>
+                {
+                    b.HasOne("NCloud.Users.CloudUser", "User")
+                        .WithMany("Logins")
+                        .HasForeignKey("UserId");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("NCloud.Models.CloudSpaceRequest", b =>
+                {
+                    b.HasOne("NCloud.Users.CloudUser", "User")
+                        .WithOne("CloudSpaceRequest")
+                        .HasForeignKey("NCloud.Models.CloudSpaceRequest", "UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("NCloud.Models.SharedFile", b =>
                 {
                     b.HasOne("NCloud.Users.CloudUser", "Owner")
@@ -397,21 +439,10 @@ namespace NCloud.Migrations
 
             modelBuilder.Entity("NCloud.Users.CloudUser", b =>
                 {
-                    b.HasOne("NCloud.Models.CloudSpaceRequest", "CloudSpaceRequests")
-                        .WithOne("User")
-                        .HasForeignKey("NCloud.Users.CloudUser", "CloudSpaceRequestId");
+                    b.Navigation("CloudSpaceRequest");
 
-                    b.Navigation("CloudSpaceRequests");
-                });
+                    b.Navigation("Logins");
 
-            modelBuilder.Entity("NCloud.Models.CloudSpaceRequest", b =>
-                {
-                    b.Navigation("User")
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("NCloud.Users.CloudUser", b =>
-                {
                     b.Navigation("SharedFiles");
 
                     b.Navigation("SharedFolders");

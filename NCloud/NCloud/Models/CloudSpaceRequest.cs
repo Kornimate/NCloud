@@ -15,7 +15,8 @@ namespace NCloud.Models
         public string RequestJustification { get; set; } = String.Empty;
 
         public DateTime RequestDate { get; set; } = DateTime.UtcNow;
-        
+
+        [ForeignKey("UserId")]
         public virtual CloudUser User { get; set; } = null!;
     }
 }

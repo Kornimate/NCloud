@@ -275,13 +275,24 @@ namespace NCloud.Controllers
             if(ids is null)
             {
                 AddNewNotification(new Error("Invalid request"));
+
+                return RedirectToAction("ListSpaceRequests");
+            }
+
+            if (ids.Count == 0)
+            {
+                AddNewNotification(new Warning("No items selected for action"));
+
+                return RedirectToAction("ListSpaceRequests");
             }
 
             try
             {
                 await service.FulfilSpaceRequest(ids);
+
+                AddNewNotification(new Success("Requests handled"));
             }
-            catch(Exception)
+            catch (Exception)
             {
                 AddNewNotification(new Error("Unable to fulfil request"));
             }
@@ -296,11 +307,22 @@ namespace NCloud.Controllers
             if (ids is null)
             {
                 AddNewNotification(new Error("Invalid request"));
+
+                return RedirectToAction("ListSpaceRequests");
+            }
+
+            if (ids.Count == 0)
+            {
+                AddNewNotification(new Warning("No items selected for action"));
+
+                return RedirectToAction("ListSpaceRequests");
             }
 
             try
             {
                 await service.DeleteSpaceRequest(ids);
+
+                AddNewNotification(new Success("Requests handled"));
             }
             catch (Exception)
             {

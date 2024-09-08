@@ -103,12 +103,14 @@ namespace NCloud.Controllers
                 {
                     AddNewNotification(new Success("Successful login"));
 
+                    logger.LogInformation($"{user.UserName} logged in.");
+
+                    await service.CreateNewLoginEntry(await userManager.GetUserAsync(User));
+                    
                     if (returnUrl is null)
                     {
                         return RedirectToAction("Index", "DashBoard");
                     }
-
-                    logger.LogInformation($"{user.UserName} logged in.");
 
                     return await RedirectToLocal(returnUrl);
                 }
@@ -131,6 +133,7 @@ namespace NCloud.Controllers
 
                         return await RedirectToLocal(returnUrl);
                     }
+
                     logger.LogWarning($"{vm.UserName} account locked out.");
 
                     await emailTemplateService.SendEmailAsync(new CloudUserLockedOut(emailTemplateService.GetSelfEmailAddress(), $"User is locked out: {user.UserName}."));
