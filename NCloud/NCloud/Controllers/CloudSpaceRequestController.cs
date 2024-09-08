@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using NCloud.Models;
 using NCloud.Services;
@@ -12,7 +13,11 @@ namespace NCloud.Controllers
     [Authorize]
     public class CloudSpaceRequestController : CloudControllerDefault
     {
-        public CloudSpaceRequestController(ICloudService service, UserManager<CloudUser> userManager, SignInManager<CloudUser> signInManager, IWebHostEnvironment env, ICloudNotificationService notifier, ILogger<CloudControllerDefault> logger) : base(service, userManager, signInManager, env, notifier, logger) { }
+        private EmailTemplateService emailTemplateService;
+        public CloudSpaceRequestController(ICloudService service, UserManager<CloudUser> userManager, SignInManager<CloudUser> signInManager, IWebHostEnvironment env, ICloudNotificationService notifier, ILogger<CloudControllerDefault> logger, IEmailSender emailSender, IConfiguration config) : base(service, userManager, signInManager, env, notifier, logger)
+        {
+            emailTemplateService = new EmailTemplateService(emailSender, config);
+        }
 
         public async Task<IActionResult> Create()
         {
@@ -53,13 +58,17 @@ namespace NCloud.Controllers
             {
                 try
                 {
+                    CloudUser? user = await userManager.GetUserAsync(User);
+
                     await service.CreateNewSpaceRequest(new CloudSpaceRequest
                     {
                         SpaceRequest = Enum.Parse<SpaceSizes>(vm.SpaceRequest),
                         RequestJustification = vm.RequestJustification
-                    }, await userManager.GetUserAsync(User));
+                    }, user);
 
                     AddNewNotification(new Success("Request has been successfully sent"));
+
+                    await emailTemplateService.SendEmailAsync(new CloudUserSpaceRequest(emailTemplateService.GetSelfEmailAddress(),$"{user?.UserName} created a new cloud space request!"));
 
                     return RedirectToAction("UserPage", "UserManagement");
                 }

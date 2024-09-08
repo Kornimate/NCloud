@@ -11,10 +11,16 @@
         <div class="col-12 w-100 text-center mb-4">
             <h3 class="fw-bold">Admin Dashboard</h3>
         </div>
-        <div class="col-12 w-100 text-center">
-            <a asp-action="ManageUserAccounts" asp-controller="Admin" class="btn btn-primary">
+        <div class="col-12 w-100 text-center my-3">
+            <a asp-action="ManageUserAccounts" asp-controller="Admin" class="btn btn-primary w-75">
                 <span class="fw-bold align-middle mx-2">Manage Accounts</span>
                 <img src="/utilities/person-manage.svg" width="20" height="20" class="rounded align-middle">
+            </a>
+        </div>
+        <div class="col-12 w-100 text-center my-3">
+            <a asp-action="ListSpaceRequests" asp-controller="Admin" class="btn btn-primary w-75">
+                <span class="fw-bold align-middle mx-2">Manage Space Requests</span>
+                <img src="/utilities/database-manage-user-size.svg" width="20" height="20" class="rounded align-middle">
             </a>
         </div>
     </div>

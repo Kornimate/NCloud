@@ -13,6 +13,8 @@ namespace NCloud.Models
         public SpaceSizes SpaceRequest { get; set; }
         
         public string RequestJustification { get; set; } = String.Empty;
+
+        public DateTime RequestDate { get; set; } = DateTime.UtcNow;
         
         public virtual CloudUser User { get; set; } = null!;
     }

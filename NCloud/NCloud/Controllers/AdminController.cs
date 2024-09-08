@@ -242,7 +242,72 @@ namespace NCloud.Controllers
 
         public async Task<IActionResult> Monitoring()
         {
-            return await Task.FromResult<IActionResult>(View());
+            try
+            {
+                return await Task.FromResult<IActionResult>(View());
+            }
+            catch (Exception)
+            {
+                AddNewNotification(new Error("Unable to retrieve monitoring data"));
+
+                return RedirectToAction("Index");
+            }
+        }
+
+        public async Task<IActionResult> ListSpaceRequests()
+        {
+            try
+            {
+                return View(await service.GetSpaceRequests());
+            }
+            catch (Exception)
+            {
+                AddNewNotification(new Error("Unable to retrieve requests\' list"));
+
+                return RedirectToAction("Index");
+            }
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> FulfilSpaceRequest(List<Guid>? ids)
+        {
+            if(ids is null)
+            {
+                AddNewNotification(new Error("Invalid request"));
+            }
+
+            try
+            {
+                await service.FulfilSpaceRequest(ids);
+            }
+            catch(Exception)
+            {
+                AddNewNotification(new Error("Unable to fulfil request"));
+            }
+
+            return RedirectToAction("ListSpaceRequests");
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteSpaceRequest(List<Guid>? ids)
+        {
+            if (ids is null)
+            {
+                AddNewNotification(new Error("Invalid request"));
+            }
+
+            try
+            {
+                await service.DeleteSpaceRequest(ids);
+            }
+            catch (Exception)
+            {
+                AddNewNotification(new Error("Unable to delete request"));
+            }
+
+            return RedirectToAction("ListSpaceRequests");
         }
     }
 }

@@ -416,5 +416,8 @@ namespace NCloud.Services
         Task<bool> LockOutUser(CloudUser user);
         Task<bool> EnableUser(CloudUser user);
         Task<bool> CreateNewSpaceRequest(CloudSpaceRequest spaceRequest, CloudUser? user);
+        Task<List<CloudSpaceRequest>> GetSpaceRequests();
+        Task FulfilSpaceRequest(List<Guid>? id);
+        Task DeleteSpaceRequest(List<Guid>? id);
     }
 }

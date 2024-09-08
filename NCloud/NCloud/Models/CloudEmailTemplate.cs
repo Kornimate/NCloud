@@ -88,4 +88,28 @@
             return targetEmail!;
         }
     }
+
+    public class CloudUserSpaceRequest : CloudEmailTemplateAbstract
+    {
+        public CloudUserSpaceRequest(string targetEmail, string htmlMessage)
+        {
+            this.targetEmail = targetEmail;
+            this.htmlMessage = htmlMessage;
+        }
+
+        public override string GetHtmlMessage()
+        {
+            return htmlMessage!;
+        }
+
+        public override string GetSubject()
+        {
+            return "#NEW SPACE REQUEST";
+        }
+
+        public override string GetTargetEmail()
+        {
+            return targetEmail!;
+        }
+    }
 }

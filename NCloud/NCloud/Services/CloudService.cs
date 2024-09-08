@@ -1383,6 +1383,8 @@ namespace NCloud.Services
                 spaceRequest.Id = Guid.NewGuid();
 
                 spaceRequest.User = user;
+
+                spaceRequest.RequestDate = DateTime.UtcNow;
                 
                 context.Add(spaceRequest);
 
@@ -1394,6 +1396,21 @@ namespace NCloud.Services
             {
                 throw new CloudFunctionStopException("Error while submitting request");
             }
+        }
+
+        public async Task<List<CloudSpaceRequest>> GetSpaceRequests()
+        {
+            return await context.CloudSpaceRequests.OrderByDescending(x => x.RequestDate).ToListAsync();
+        }
+
+        public Task FulfilSpaceRequest(List<Guid>? id)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task DeleteSpaceRequest(List<Guid>? id)
+        {
+            throw new NotImplementedException();
         }
 
         #endregion
