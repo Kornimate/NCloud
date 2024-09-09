@@ -1400,7 +1400,14 @@ namespace NCloud.Services
 
         public async Task<List<CloudSpaceRequest>> GetSpaceRequests()
         {
-            return await context.CloudSpaceRequests.OrderByDescending(x => x.RequestDate).ToListAsync();
+            try
+            {
+                return await context.CloudSpaceRequests.OrderByDescending(x => x.RequestDate).ToListAsync();
+            }
+            catch (Exception)
+            {
+                return [];
+            }
         }
 
         public async Task FulfilSpaceRequest(List<Guid>? ids)
