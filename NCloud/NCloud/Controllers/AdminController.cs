@@ -24,21 +24,43 @@ namespace NCloud.Controllers
             this.emailService = emailService;
         }
 
+        /// <summary>
+        /// Index action to list admin activities
+        /// </summary>
+        /// <returns>View of page</returns>
         public async Task<IActionResult> Index()
         {
             return await Task.FromResult<IActionResult>(View());
         }
 
+        /// <summary>
+        /// Index function to list users for handling
+        /// </summary>
+        /// <returns>View of page or in case of problem a redirection</returns>
         public async Task<IActionResult> ManageUserAccounts()
         {
-            return await Task.FromResult<IActionResult>(View(new AdminUserManagementViewModel(await service.GetCloudUsers())));
+            try
+            {
+                return await Task.FromResult<IActionResult>(View(new AdminUserManagementViewModel(await service.GetCloudUsers())));
+            }
+            catch (Exception)
+            {
+                AddNewNotification(new Error("Failed to retrieve information about users"));
+
+                return RedirectToAction("Index");
+            }
         }
 
+        /// <summary>
+        /// Post function to handle accound deletions
+        /// </summary>
+        /// <param name="Ids">List of Ids in string form</param>
+        /// <returns>Redirection to ManageUserAccounts</returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteUserAccounts(List<string> Ids)
         {
-            Ids ??= new();
+            Ids ??= [];
 
             if (Ids.Count == 0)
             {
@@ -92,6 +114,11 @@ namespace NCloud.Controllers
             return RedirectToAction("ManageUserAccounts");
         }
 
+        /// <summary>
+        /// Post action to handle account disable
+        /// </summary>
+        /// <param name="Ids">List of ids in string format</param>
+        /// <returns>Redirection to ManageUserAccounts</returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DisableUserAccounts(List<string> Ids)
@@ -152,6 +179,11 @@ namespace NCloud.Controllers
             return RedirectToAction("ManageUserAccounts");
         }
 
+        /// <summary>
+        /// Post action to handle account enable
+        /// </summary>
+        /// <param name="Ids">List of ids in string format</param>
+        /// <returns>Redirection to ManageUserAccounts</returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> EnableUserAccounts(List<string> Ids)
@@ -209,6 +241,12 @@ namespace NCloud.Controllers
             return RedirectToAction("ManageUserAccounts");
         }
 
+        /// <summary>
+        /// Post action to handle user space change
+        /// </summary>
+        /// <param name="userId">Id of user in GUID format</param>
+        /// <param name="newSize">New Size for user in string format</param>
+        /// <returns>Redirection to ManageUserAccounts</returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ChangeUserMaxSpace(Guid userId, string newSize)
@@ -240,11 +278,18 @@ namespace NCloud.Controllers
             return RedirectToAction("ManageUserAccounts");
         }
 
+        /// <summary>
+        /// Get action to handle monitoring page
+        /// </summary>
+        /// <returns>View of monitoring page</returns>
         public async Task<IActionResult> Monitoring()
         {
             try
             {
                 return await Task.FromResult<IActionResult>(View());
+
+                //elaborate charts with ChartJs NuGet
+                //elaborate and query methods in CloudService.cs
             }
             catch (Exception)
             {
@@ -254,6 +299,10 @@ namespace NCloud.Controllers
             }
         }
 
+        /// <summary>
+        /// Get action to list space requests
+        /// </summary>
+        /// <returns>View of space requests</returns>
         public async Task<IActionResult> ListSpaceRequests()
         {
             try
@@ -268,6 +317,11 @@ namespace NCloud.Controllers
             }
         }
 
+        /// <summary>
+        /// Post action to handle space request filfilment
+        /// </summary>
+        /// <param name="ids">List of ids in GUID format</param>
+        /// <returns>Redirection to ListSpaceRequests</returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> FulfilSpaceRequest(List<Guid>? ids)
@@ -300,6 +354,11 @@ namespace NCloud.Controllers
             return RedirectToAction("ListSpaceRequests");
         }
 
+        /// <summary>
+        /// Post action to handle space request deletion
+        /// </summary>
+        /// <param name="ids">List of ids in GUID format</param>
+        /// <returns>Redirection to ListSpaceRequests</returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteSpaceRequest(List<Guid>? ids)
