@@ -32,7 +32,7 @@ namespace NCloud.Services.HostedServices
 
             try
             {
-                using(var scope = serviceProvider.CreateScope())
+                using (var scope = serviceProvider.CreateScope())
                 {
                     scope.ServiceProvider.GetRequiredService<ICloudService>().RemoveOldLogins().Wait();
                 }
