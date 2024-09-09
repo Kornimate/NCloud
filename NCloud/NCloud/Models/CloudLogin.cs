@@ -4,6 +4,9 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace NCloud.Models
 {
+    /// <summary>
+    /// Class to store login data in database
+    /// </summary>
     public class CloudLogin
     {
         [Key]
