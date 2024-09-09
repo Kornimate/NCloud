@@ -3,7 +3,7 @@
 namespace NCloud.Services.HostedServices
 {
     /// <summary>
-    /// Class to clean up created files for download
+    /// Hoster servive class to clean up created files for download
     /// </summary>
     public class CloudDirectoryManagerHostedService : IHostedService, IDisposable
     {

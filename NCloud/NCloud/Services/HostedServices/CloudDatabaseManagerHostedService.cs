@@ -3,7 +3,7 @@
 namespace NCloud.Services.HostedServices
 {
     /// <summary>
-    /// Hosted service class 
+    /// Hosted service class to clean up database
     /// </summary>
     public class CloudDatabaseManagerHostedService : IHostedService, IDisposable
     {
