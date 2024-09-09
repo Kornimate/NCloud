@@ -1373,7 +1373,7 @@ namespace NCloud.Services
 
         public async Task<bool> CreateNewSpaceRequest(CloudSpaceRequest spaceRequest, CloudUser? user)
         {
-            if(user is null)
+            if (user is null)
             {
                 throw new CloudFunctionStopException("Invalid user data");
             }
@@ -1385,7 +1385,7 @@ namespace NCloud.Services
                 spaceRequest.User = user;
 
                 spaceRequest.RequestDate = DateTime.UtcNow;
-                
+
                 context.Add(spaceRequest);
 
                 await context.SaveChangesAsync();
@@ -1400,7 +1400,14 @@ namespace NCloud.Services
 
         public async Task<List<CloudSpaceRequest>> GetSpaceRequests()
         {
-            return await context.CloudSpaceRequests.OrderByDescending(x => x.RequestDate).ToListAsync();
+            try
+            {
+                return await context.CloudSpaceRequests.OrderByDescending(x => x.RequestDate).ToListAsync();
+            }
+            catch (Exception)
+            {
+                return [];
+            }
         }
 
         public async Task FulfilSpaceRequest(List<Guid>? ids)
@@ -1417,7 +1424,7 @@ namespace NCloud.Services
 
                     if (spaceRequestSize > request.User.MaxSpace)
                     {
-                        request.User.MaxSpace = spaceRequestSize; 
+                        request.User.MaxSpace = spaceRequestSize;
                     }
 
                     context.Remove(request);
@@ -1470,6 +1477,23 @@ namespace NCloud.Services
                 await context.SaveChangesAsync();
             }
             catch (Exception) { }
+        }
+
+        public async Task RemoveOldLogins()
+        {
+            try
+            {
+                var oldLogins = context.Logins.Where(x => x.Date < DateTime.UtcNow.AddDays(Constants.LoginCleanUpTime));
+
+                context.Logins.RemoveRange(oldLogins);
+
+                await context.SaveChangesAsync();
+            }
+            catch (Exception)
+            {
+                throw new CloudFunctionStopException("Failed to clean up database logins.");
+            }
+
         }
 
         #endregion

@@ -410,15 +410,81 @@ namespace NCloud.Services
         /// <param name="path">Path in current sharing state</param>
         /// <returns>Bollean indication the presenc of the path in database</returns>
         Task<bool> SharedPathExists(string sharingPath);
+
+        /// <summary>
+        /// Method to get every user from the database
+        /// </summary>
+        /// <returns>List of users</returns>
         Task<List<CloudUser>> GetCloudUsers();
+
+        /// <summary>
+        /// Method to change user space size
+        /// </summary>
+        /// <param name="userId">Id of user in GUID format</param>
+        /// <param name="spaceSize">SpaceSize enum for new size of user</param>
+        /// <returns>Boolean value indicating the success of the action</returns>
         Task<bool> SetUserSpaceSize(Guid userId, SpaceSizes spaceSize);
+
+        /// <summary>
+        /// Method to get user by Id
+        /// </summary>
+        /// <param name="userId">Id of user in GUID format</param>
+        /// <returns>The user with the specified id</returns>
         Task<CloudUser> GetUserById(Guid userId);
+
+        /// <summary>
+        /// Methdot to lockout user from app
+        /// </summary>
+        /// <param name="user">User to be locked out</param>
+        /// <returns>Boolean value indicating the success of the action</returns>
         Task<bool> LockOutUser(CloudUser user);
+
+        /// <summary>
+        /// Method to enable user account
+        /// </summary>
+        /// <param name="user">User whose account to be enabled</param>
+        /// <returns>Boolean value indicating the success of the action</returns>
         Task<bool> EnableUser(CloudUser user);
+
+        /// <summary>
+        /// Method to add new space request to the database
+        /// </summary>
+        /// <param name="spaceRequest">Request Object</param>
+        /// <param name="user">User who requested the new space size</param>
+        /// <returns>Boolean value indicating the success of the action</returns>
         Task<bool> CreateNewSpaceRequest(CloudSpaceRequest spaceRequest, CloudUser? user);
+
+        /// <summary>
+        /// Method to get the list of space requests
+        /// </summary>
+        /// <returns>The List of space requests</returns>
         Task<List<CloudSpaceRequest>> GetSpaceRequests();
+
+        /// <summary>
+        /// Method to fulfil a space request and remove it from database
+        /// </summary>
+        /// <param name="ids">List if ids in GUID format to be fulfilled</param>
+        /// <returns>Task to be awaited</returns>
         Task FulfilSpaceRequest(List<Guid>? ids);
+
+        /// <summary>
+        /// Method to delete a space request and remove it from database
+        /// </summary>
+        /// <param name="ids">List if ids in GUID format to be deleted</param>
+        /// <returns>Task to be awaited</returns>
         Task DeleteSpaceRequest(List<Guid>? ids);
+
+        /// <summary>
+        /// Method to create a new login entry in the database
+        /// </summary>
+        /// <param name="cloudUser">User who initiated the login</param>
+        /// <returns>Task to be awaited</returns>
         Task CreateNewLoginEntry(CloudUser? cloudUser);
+
+        /// <summary>
+        /// Method to remove old logins (older than 1 month)
+        /// </summary>
+        /// <returns>Task to be awaited</returns>
+        Task RemoveOldLogins();
     }
 }

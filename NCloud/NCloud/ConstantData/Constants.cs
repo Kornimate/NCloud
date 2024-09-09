@@ -133,9 +133,11 @@ namespace NCloud.ConstantData
         public static int GuidLength { get => 36; }
         public static int IconSizeFolder { get => 40; }
         public static int IconSizeFile { get => 30; }
+        public static int LoginCleanUpTime { get => -30; } //days
         public static double UserSpaceSize { get => (double)SpaceSizes.GB1; }
         public static long MaximumEditableFileLength { get => 20971520L; } //for better readability (20 MB), maximum editable file length
-        public static TimeSpan TempFileDeleteTimeSpan { get => TimeSpan.FromMinutes(10); }
+        public static TimeSpan DirectoryManagementTimeSpan { get => TimeSpan.FromMinutes(10); }
+        public static TimeSpan DatabaseManagementTimeSpan { get => TimeSpan.FromMinutes(10); }
         public static DateTime PermanentLockOutTime { get => DateTime.UtcNow.AddYears(1000); }
 
         public static string EmailRegistration { get => "Registration"; }

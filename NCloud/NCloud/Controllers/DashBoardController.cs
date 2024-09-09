@@ -26,7 +26,7 @@ namespace NCloud.Controllers
         {
             try
             {
-                CloudUser user = await userManager.GetUserAsync(User);
+                CloudUser user = (await userManager.GetUserAsync(User))!;
 
                 await service.CheckUserStorageUsed(user);
 

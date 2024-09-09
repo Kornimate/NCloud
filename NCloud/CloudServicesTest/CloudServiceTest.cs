@@ -1738,5 +1738,200 @@ namespace CloudServicesTest
 
             Assert.IsFalse(res);
         }
+
+        /// <summary>
+        /// Test method to get cloud users from database
+        /// </summary>
+        [TestMethod]
+        public void GetCloudUsersTest()
+        {
+            var users = service.GetCloudUsers().GetAwaiter().GetResult();
+
+            Assert.AreEqual(3, users.Count);
+        }
+
+        /// <summary>
+        /// Test method to test changing the user space size
+        /// </summary>
+        [TestMethod]
+        public void SetUserSpaceSizeTest()
+        {
+            bool result = service.SetUserSpaceSize(admin.Id, SpaceSizes.GB5).GetAwaiter().GetResult();
+
+            Assert.IsTrue(result);
+
+            var user = service.GetAdmin().GetAwaiter().GetResult();
+
+            Assert.AreEqual((long)user!.MaxSpace, (long)SpaceSizes.GB5);
+        }
+
+        /// <summary>
+        /// Test method to test changing the user space size fail
+        /// </summary>
+        [TestMethod]
+        public void SetUserSpaceSizeTestFail()
+        {
+            Assert.ThrowsException<CloudFunctionStopException>(() => service.SetUserSpaceSize(Guid.Empty, SpaceSizes.GB5).GetAwaiter().GetResult());
+        }
+
+        /// <summary>
+        /// Test method to get user by id from database
+        /// </summary>
+        [TestMethod]
+        public void GetUserByIdTest()
+        {
+            var user = service.GetUserById(admin.Id).GetAwaiter().GetResult();
+
+            Assert.AreEqual(admin.Id, user.Id);
+        }
+
+        /// <summary>
+        /// Test method to test changing the user lockout state
+        /// </summary>
+        [TestMethod]
+        public void LockOutUserTest()
+        {
+            bool result = service.LockOutUser(admin).GetAwaiter().GetResult();
+
+            Assert.IsTrue(result);
+
+            var user = service.GetAdmin().GetAwaiter().GetResult();
+
+            Assert.IsTrue(user!.LockoutEnd > DateTime.UtcNow.AddYears(900));
+        }
+
+        /// <summary>
+        /// Test method to test changing the user enabled state
+        /// </summary>
+        [TestMethod]
+        public void EnableUserTest()
+        {
+            bool result = service.EnableUser(admin).GetAwaiter().GetResult();
+
+            Assert.IsTrue(result);
+
+            var user = service.GetAdmin().GetAwaiter().GetResult();
+
+            Assert.IsNull(user!.LockoutEnd);
+        }
+
+        /// <summary>
+        /// Test method to test if cloud space requests can be created
+        /// </summary>
+        [TestMethod]
+        public void CreateNewSpaceRequestTest()
+        {
+            var res = service.CreateNewSpaceRequest(new CloudSpaceRequest { RequestJustification = "Test", SpaceRequest = SpaceSizes.GB1 }, admin).GetAwaiter().GetResult();
+
+            Assert.IsTrue(res);
+
+            Assert.AreEqual(context.CloudSpaceRequests.Count(), 1);
+        }
+
+        /// <summary>
+        /// Test method to test if cloud space requests fails
+        /// </summary>
+        [TestMethod]
+        public void CreateNewSpaceRequestTestFail()
+        {
+            Assert.ThrowsException<CloudFunctionStopException>(() => service.CreateNewSpaceRequest(new CloudSpaceRequest { RequestJustification = "Test", SpaceRequest = SpaceSizes.GB5 }, null).GetAwaiter().GetResult());
+        }
+
+        /// <summary>
+        /// Test method to test if cloud space requests can be created
+        /// </summary>
+        [TestMethod]
+        public void GetSpaceRequestTest()
+        {
+            service.CreateNewSpaceRequest(new CloudSpaceRequest { RequestJustification = "Test", SpaceRequest = SpaceSizes.GB5 }, admin).GetAwaiter().GetResult();
+
+            var requests = service.GetSpaceRequests().GetAwaiter().GetResult();
+
+            Assert.AreEqual(requests.Count, 1);
+        }
+
+        /// <summary>
+        /// Test method to test if cloud space requests can be fulfiled
+        /// </summary>
+        [TestMethod]
+        public void FulfilSpaceRequestTest()
+        {
+            var res = service.CreateNewSpaceRequest(new CloudSpaceRequest { RequestJustification = "Test", SpaceRequest = SpaceSizes.GB5 }, admin).GetAwaiter().GetResult();
+
+            Assert.IsTrue(res);
+
+            var requests = service.GetSpaceRequests().GetAwaiter().GetResult();
+
+            service.FulfilSpaceRequest(requests.Select(x => x.Id).ToList()).Wait();
+
+            requests = service.GetSpaceRequests().GetAwaiter().GetResult();
+
+            Assert.AreEqual(requests.Count, 0);
+
+            var user = service.GetAdmin().GetAwaiter().GetResult();
+
+            Assert.AreEqual((long)user!.MaxSpace, (long)SpaceSizes.GB5);
+        }
+
+        /// <summary>
+        /// Test method to test if cloud space requests can be deleted
+        /// </summary>
+        [TestMethod]
+        public void DeleteSpaceRequestTest()
+        {
+            var res = service.CreateNewSpaceRequest(new CloudSpaceRequest { RequestJustification = "Test", SpaceRequest = SpaceSizes.GB5 }, admin).GetAwaiter().GetResult();
+
+            Assert.IsTrue(res);
+
+            var requests = service.GetSpaceRequests().GetAwaiter().GetResult();
+
+            service.DeleteSpaceRequest(requests.Select(x => x.Id).ToList()).Wait();
+
+            requests = service.GetSpaceRequests().GetAwaiter().GetResult();
+
+            Assert.AreEqual(requests.Count, 0);
+
+            var user = service.GetAdmin().GetAwaiter().GetResult();
+
+            Assert.AreEqual((long)user!.MaxSpace, (long)SpaceSizes.GB1);
+        }
+
+        /// <summary>
+        /// Test method to see if new loogin entries can be created
+        /// </summary>
+        [TestMethod]
+        public void CreateNewLoginEntryTest()
+        {
+            service.CreateNewLoginEntry(admin).Wait();
+
+            Assert.AreEqual(context.Logins.Count(), 1);
+
+            service.CreateNewLoginEntry(null).Wait();
+
+            Assert.AreEqual(context.Logins.Count(), 1);
+        }
+
+        /// <summary>
+        /// Test method to see if old logins can be removed
+        /// </summary>
+        [TestMethod]
+        public void RemoveOldLoginsTest()
+        {
+            service.CreateNewLoginEntry(admin).Wait();
+
+            Assert.AreEqual(context.Logins.Count(), 1);
+
+            var entry = context.Logins.First();
+
+            entry.Date = DateTime.UtcNow.AddDays(-31);
+
+            context.Logins.Update(entry);
+
+            context.SaveChanges();
+
+            service.RemoveOldLogins().Wait();
+
+            Assert.AreEqual(context.Logins.Count(), 0);
+        }
     }
 }

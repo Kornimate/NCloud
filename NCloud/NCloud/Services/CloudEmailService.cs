@@ -6,6 +6,9 @@ using System.Net.Mail;
 
 namespace NCloud.Services
 {
+    /// <summary>
+    /// Class to send emails via google smtp server
+    /// </summary>
     public class CloudEmailService : IEmailSender
     {
         private readonly IConfiguration config;

@@ -7,8 +7,8 @@ using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.EntityFrameworkCore;
 using NCloud.ConstantData;
 using NCloud.Models;
-using NCloud.Security;
 using NCloud.Services;
+using NCloud.Services.HostedServices;
 using NCloud.Users;
 using NCloud.Users.Roles;
 using System.Threading.RateLimiting;
@@ -105,6 +105,10 @@ namespace NCloud
 
             builder.Services.AddTransient<IEmailSender, CloudEmailService>();
 
+            builder.Services.AddHostedService<CloudDirectoryManagerHostedService>();
+
+            builder.Services.AddHostedService<CloudDatabaseManagerHostedService>();
+
             builder.Services.AddControllersWithViews();
 
             builder.Services.AddRazorPages();
@@ -164,13 +168,6 @@ namespace NCloud
             {
                 CloudStartUpManager.Initialize(serviceScope.ServiceProvider, app.Logger);
             }
-
-            Timer timer = new Timer(_ => new Thread(() =>
-            {
-                Thread.CurrentThread.IsBackground = true;
-                CloudDirectoryManager.RemoveOutdatedItems();
-
-            }).Start(), null, TimeSpan.FromSeconds(0), Constants.TempFileDeleteTimeSpan);
 
             app.Run();
         }
