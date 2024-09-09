@@ -106,7 +106,7 @@ namespace NCloud.Controllers
                     logger.LogInformation($"{user.UserName} logged in.");
 
                     await service.CreateNewLoginEntry(await userManager.GetUserAsync(User));
-                    
+
                     if (returnUrl is null)
                     {
                         return RedirectToAction("Index", "DashBoard");

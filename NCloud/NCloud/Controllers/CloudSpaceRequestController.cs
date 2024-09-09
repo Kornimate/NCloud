@@ -23,21 +23,21 @@ namespace NCloud.Controllers
         {
             CloudUser? user = await userManager.GetUserAsync(User)!;
 
-            if(user is null)
+            if (user is null)
             {
                 AddNewNotification(new Error("Can not retrieve user information"));
 
                 return RedirectToAction("UserPage", "UserManagement");
             }
 
-            if(user.MaxSpace == (double)SpaceSizes.GB100)
+            if (user.MaxSpace == (double)SpaceSizes.GB100)
             {
                 AddNewNotification(new Information("Cloud space is already on maximum"));
 
                 return RedirectToAction("UserPage", "UserManagement");
             }
 
-            if(user.CloudSpaceRequest is not null)
+            if (user.CloudSpaceRequest is not null)
             {
                 AddNewNotification(new Warning("One request has already been sent"));
 
@@ -52,7 +52,7 @@ namespace NCloud.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("SpaceRequest,RequestJustification")]SpaceRequestViewModel vm)
+        public async Task<IActionResult> Create([Bind("SpaceRequest,RequestJustification")] SpaceRequestViewModel vm)
         {
             if (ModelState.IsValid)
             {
@@ -68,7 +68,7 @@ namespace NCloud.Controllers
 
                     AddNewNotification(new Success("Request has been successfully sent"));
 
-                    await emailTemplateService.SendEmailAsync(new CloudUserSpaceRequest(emailTemplateService.GetSelfEmailAddress(),$"{user?.UserName} created a new cloud space request!"));
+                    await emailTemplateService.SendEmailAsync(new CloudUserSpaceRequest(emailTemplateService.GetSelfEmailAddress(), $"{user?.UserName} created a new cloud space request!"));
 
                     return RedirectToAction("UserPage", "UserManagement");
                 }

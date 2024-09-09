@@ -326,7 +326,7 @@ namespace NCloud.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> FulfilSpaceRequest(List<Guid>? ids)
         {
-            if(ids is null)
+            if (ids is null)
             {
                 AddNewNotification(new Error("Invalid request"));
 

@@ -1373,7 +1373,7 @@ namespace NCloud.Services
 
         public async Task<bool> CreateNewSpaceRequest(CloudSpaceRequest spaceRequest, CloudUser? user)
         {
-            if(user is null)
+            if (user is null)
             {
                 throw new CloudFunctionStopException("Invalid user data");
             }
@@ -1385,7 +1385,7 @@ namespace NCloud.Services
                 spaceRequest.User = user;
 
                 spaceRequest.RequestDate = DateTime.UtcNow;
-                
+
                 context.Add(spaceRequest);
 
                 await context.SaveChangesAsync();
@@ -1417,7 +1417,7 @@ namespace NCloud.Services
 
                     if (spaceRequestSize > request.User.MaxSpace)
                     {
-                        request.User.MaxSpace = spaceRequestSize; 
+                        request.User.MaxSpace = spaceRequestSize;
                     }
 
                     context.Remove(request);

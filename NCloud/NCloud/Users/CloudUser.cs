@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using NCloud.ConstantData;
 using NCloud.Models;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace NCloud.Users
 {
