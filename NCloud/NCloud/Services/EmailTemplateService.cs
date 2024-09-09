@@ -3,6 +3,9 @@ using NCloud.Models;
 
 namespace NCloud.Services
 {
+    /// <summary>
+    /// Class to handle email template sending via google smtp, uses decorator pattern for extending basic CloudEmailService
+    /// </summary>
     public class EmailTemplateService : IEmailTemplateService
     {
         private IEmailSender emailSender;
