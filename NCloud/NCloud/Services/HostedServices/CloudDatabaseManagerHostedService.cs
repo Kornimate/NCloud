@@ -8,13 +8,13 @@ namespace NCloud.Services.HostedServices
     public class CloudDatabaseManagerHostedService : IHostedService, IDisposable
     {
         private readonly ILogger<CloudDatabaseManagerHostedService> logger;
-        private readonly ICloudService service;
+        private readonly IServiceProvider serviceProvider;
         private Timer? timer = null;
 
-        public CloudDatabaseManagerHostedService(ILogger<CloudDatabaseManagerHostedService> logger, ICloudService serivce)
+        public CloudDatabaseManagerHostedService(ILogger<CloudDatabaseManagerHostedService> logger, IServiceProvider serviceProvider)
         {
             this.logger = logger;
-            this.service = serivce;
+            this.serviceProvider = serviceProvider;
         }
 
         public Task StartAsync(CancellationToken stoppingToken)
@@ -32,7 +32,10 @@ namespace NCloud.Services.HostedServices
 
             try
             {
-                service.RemoveOldLogins().Wait();
+                using(var scope = serviceProvider.CreateScope())
+                {
+                    scope.ServiceProvider.GetRequiredService<ICloudService>().RemoveOldLogins().Wait();
+                }
             }
             catch (Exception ex)
             {

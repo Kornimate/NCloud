@@ -17,7 +17,7 @@ namespace NCloud.Services.HostedServices
         {
             logger.LogInformation("Directory clean up service started. [CloudDirectoryManagerHostedService]");
 
-            timer = new Timer(ManageDirectories, null, TimeSpan.Zero, Constants.DatabaseManagementTimeSpan);
+            timer = new Timer(ManageDirectories, null, TimeSpan.Zero, TimeSpan.FromSeconds(10));
 
             return Task.CompletedTask;
         }
