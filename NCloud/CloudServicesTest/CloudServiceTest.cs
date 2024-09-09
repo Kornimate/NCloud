@@ -1910,5 +1910,28 @@ namespace CloudServicesTest
 
             Assert.AreEqual(context.Logins.Count(), 1);
         }
+
+        /// <summary>
+        /// Test method to see if old logins can be removed
+        /// </summary>
+        [TestMethod]
+        public void RemoveOldLoginsTest()
+        {
+            service.CreateNewLoginEntry(admin).Wait();
+
+            Assert.AreEqual(context.Logins.Count(), 1);
+
+            var entry = context.Logins.First();
+
+            entry.Date = DateTime.UtcNow.AddDays(-31);
+
+            context.Logins.Update(entry);
+
+            context.SaveChanges();
+
+            service.RemoveOldLogins().Wait();
+
+            Assert.AreEqual(context.Logins.Count(), 0);
+        }
     }
 }

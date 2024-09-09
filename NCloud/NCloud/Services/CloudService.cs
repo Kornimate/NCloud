@@ -1483,7 +1483,7 @@ namespace NCloud.Services
         {
             try
             {
-                var oldLogins = context.Logins.Where(x => x.Date > DateTime.UtcNow.AddDays(Constants.LoginCleanUpTime));
+                var oldLogins = context.Logins.Where(x => x.Date < DateTime.UtcNow.AddDays(Constants.LoginCleanUpTime));
 
                 context.Logins.RemoveRange(oldLogins);
 
