@@ -1479,6 +1479,23 @@ namespace NCloud.Services
             catch (Exception) { }
         }
 
+        public async Task RemoveOldLogins()
+        {
+            try
+            {
+                var oldLogins = context.Logins.Where(x => x.Date > DateTime.UtcNow.AddDays(Constants.LoginCleanUpTime));
+
+                context.Logins.RemoveRange(oldLogins);
+
+                await context.SaveChangesAsync();
+            }
+            catch (Exception)
+            {
+                throw new CloudFunctionStopException("Failed to clean up database logins.");
+            }
+
+        }
+
         #endregion
 
         #region Private Instance Methods

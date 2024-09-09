@@ -475,10 +475,16 @@ namespace NCloud.Services
         Task DeleteSpaceRequest(List<Guid>? ids);
 
         /// <summary>
-        /// Methot to create a new login entry in the database
+        /// Method to create a new login entry in the database
         /// </summary>
         /// <param name="cloudUser">User who initiated the login</param>
         /// <returns>Task to be awaited</returns>
         Task CreateNewLoginEntry(CloudUser? cloudUser);
+
+        /// <summary>
+        /// Method to remove old logins (older than 1 month)
+        /// </summary>
+        /// <returns>Task to be awaited</returns>
+        Task RemoveOldLogins();
     }
 }

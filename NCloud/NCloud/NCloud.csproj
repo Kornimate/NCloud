@@ -1417,8 +1417,4 @@
 		</Content>
 	</ItemGroup>
 
-	<ItemGroup>
-	  <Folder Include="Services\HostedServices\" />
-	</ItemGroup>
-
 </Project>
