@@ -16,7 +16,7 @@
     }
     else
     {
-        <div>&nbsp;</div>
+        <a class="btn btn-primary" asp-controller="DashBoard" asp-action="Index" asp-route-returnUrl="@ViewBag.ReturnUrl"><img src="~/utilities/arrow-left-circle.svg" width=" 20" height="20" class="rounded align-middle" /></a>
     }
     <a class="btn btn-danger" asp-controller="UserManagement" asp-action="Logout"><img src="~/utilities/power.svg" width=" 20" height="20" class="rounded align-middle" /></a>
 </div>
