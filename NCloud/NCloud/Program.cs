@@ -143,8 +143,8 @@ namespace NCloud
             builder.Logging.AddFile(Constants.GetLogFilePath());
 
             builder.Services.AddHealthChecks()
-                            .AddCheck<RemoteHealthCheck>("Endpoints Health Check", failureStatus: HealthStatus.Unhealthy)
-                            .AddCheck<MemoryHealthCheck>($"Memory Check", failureStatus: HealthStatus.Unhealthy, tags: new[] { "Feedback Service" });
+                            .AddCheck<RemoteHealthCheck>("Endpoints Health Check", failureStatus: HealthStatus.Unhealthy, tags: new[] { "Endpoint" })
+                            .AddCheck<MemoryHealthCheck>($"Memory Check", failureStatus: HealthStatus.Unhealthy, tags: new[] { "Memory" });
 
             builder.Services.AddHealthChecksUI(opt =>
             {
