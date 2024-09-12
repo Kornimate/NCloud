@@ -486,5 +486,7 @@ namespace NCloud.Services
         /// </summary>
         /// <returns>Task to be awaited</returns>
         Task RemoveOldLogins();
+        Task<List<int>> GetLast30DaysLoginsCount();
+        Task<List<List<int>>> GetLastWeeksLoginsGroupped();
     }
 }

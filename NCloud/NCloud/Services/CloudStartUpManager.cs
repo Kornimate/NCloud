@@ -130,6 +130,24 @@ namespace NCloud.Services
                 }).Wait();
             }
 
+            if (!context.Logins.Any())
+            {
+                List<CloudLogin> logins = new();
+
+                Random rand = new Random();
+
+                for(int i = 0; i < 100; i++)
+                {
+                    logins.Add(new CloudLogin()
+                    {
+                        Date = DateTime.UtcNow.AddDays(rand.Next(-30, 1)).AddHours(rand.Next(-23,1)),
+                        User = adminUser
+                    });
+                }
+
+                context.AddRange(logins);
+            }
+
             context.SaveChanges();
         }
     }

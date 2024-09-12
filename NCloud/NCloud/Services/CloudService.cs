@@ -1496,6 +1496,30 @@ namespace NCloud.Services
 
         }
 
+        public async Task<List<int>> GetLast30DaysLoginsCount()
+        {
+            return await context.Logins.Where(x => x.Date > DateTime.UtcNow.AddDays(-30)).GroupBy(x => x.Date).Select(x => x.Count()).ToListAsync();
+        }
+
+        public async Task<List<List<int>>> GetLastWeeksLoginsGroupped()
+        {
+            List<List<int>> logiValues = new();
+
+            for (int i = 6; i >= 7; i--)
+            {
+                List<int> dayValues = new();
+
+                for (int j = 0; j < 24; j++)
+                {
+                    dayValues.Add(await context.Logins.Where(x => x.Date == DateTime.UtcNow.AddDays(-i) && x.Date.Hour == j).CountAsync());
+                }
+
+                logiValues.Add(dayValues);
+            }
+
+            return logiValues;
+        }
+
         #endregion
 
         #region Private Instance Methods
