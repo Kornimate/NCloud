@@ -1520,6 +1520,17 @@ namespace NCloud.Services
             return logiValues;
         }
 
+        public async Task<List<CloudLineGraphPointModel>> CreateLineGraphPoints(List<int> daysValues)
+        {
+
+        }
+
+        public async Task<List<CloudHeatMapPointModel>> CreateHeatMapPoints(List<List<int>> hourAndDayValues)
+        {
+
+        }
+
+
         #endregion
 
         #region Private Instance Methods

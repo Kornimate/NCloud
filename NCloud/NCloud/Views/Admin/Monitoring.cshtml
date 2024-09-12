@@ -25,12 +25,6 @@
             { ser1: 3, ser2: 8 }
         ];
 
-        var data2 = [
-            { ser1: 1, ser2: 7 },
-            { ser1: 4, ser2: 1 },
-            { ser1: 6, ser2: 8 }
-        ];
-
         // set the dimensions and margins of the graph
         var margin = { top: 10, right: 30, bottom: 30, left: 50 },
             width = 460 - margin.left - margin.right,
@@ -41,6 +35,7 @@
             .append("svg")
             .attr("width", width + margin.left + margin.right)
             .attr("height", height + margin.top + margin.bottom)
+            .attr("fill", "#cce5df")
             .append("g")
             .attr("transform",
                 "translate(" + margin.left + "," + margin.top + ")");
@@ -64,14 +59,14 @@
             // Create the X axis:
             x.domain([0, d3.max(data, function (d) { return d.ser1 })]);
             svg.selectAll(".myXaxis").transition()
-                .duration(3000)
+                .duration(1000)
                 .call(xAxis);
 
             // create the Y axis
             y.domain([0, d3.max(data, function (d) { return d.ser2 })]);
             svg.selectAll(".myYaxis")
                 .transition()
-                .duration(3000)
+                .duration(1000)
                 .call(yAxis);
 
             // Create a update selection: bind to the new data
@@ -85,7 +80,7 @@
                 .attr("class", "lineTest")
                 .merge(u)
                 .transition()
-                .duration(3000)
+                .duration(1000)
                 .attr("d", d3.line()
                     .x(function (d) { return x(d.ser1); })
                     .y(function (d) { return y(d.ser2); }))
