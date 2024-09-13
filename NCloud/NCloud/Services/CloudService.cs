@@ -1500,7 +1500,7 @@ namespace NCloud.Services
         {
             List<int> dayValues = [];
 
-            for(int i = 29; i >=0; i--)
+            for (int i = 29; i >= 0; i--)
             {
                 dayValues.Add(await context.Logins.Where(x => x.Date.Date == DateTime.UtcNow.AddDays(-i).Date).CountAsync());
             }
@@ -1512,13 +1512,15 @@ namespace NCloud.Services
         {
             List<List<int>> loginValues = new();
 
-            for (int i = 6; i >= 7; i--)
+            for (int i = 6; i >= 0; i--)
             {
                 List<int> dayValues = new();
 
+                DateTime computedTime = DateTime.UtcNow.AddDays(-i);
+
                 for (int j = 0; j < 24; j++)
                 {
-                    dayValues.Add(await context.Logins.Where(x => x.Date == DateTime.UtcNow.AddDays(-i) && x.Date.Hour == j).CountAsync());
+                    dayValues.Add(await context.Logins.Where(x => x.Date.Year == computedTime.Year && x.Date.DayOfYear ==computedTime.DayOfYear  && x.Date.Hour == j).CountAsync());
                 }
 
                 loginValues.Add(dayValues);
@@ -1531,7 +1533,7 @@ namespace NCloud.Services
         {
             List<CloudLineGraphPointModel> lineGraphPoints = [];
 
-            for(int i = 29; i >= 0; i--)
+            for (int i = 29; i >= 0; i--)
             {
                 lineGraphPoints.Add(new CloudLineGraphPointModel
                 {
@@ -1540,12 +1542,27 @@ namespace NCloud.Services
                 });
             }
 
-            return lineGraphPoints;
+            return await Task.FromResult(lineGraphPoints);
         }
 
         public async Task<List<CloudHeatMapPointModel>> CreateHeatMapPoints(List<List<int>> hourAndDayValues)
         {
-            return null!;
+            List<CloudHeatMapPointModel> heatMapPoints = [];
+
+            for (int i = 6; i >= 0 && i < hourAndDayValues.Count; i--)
+            {
+                for (int j = 0; j < 24 && j < hourAndDayValues[i].Count; j++)
+                {
+                    heatMapPoints.Add(new CloudHeatMapPointModel
+                    {
+                        X = DateTime.UtcNow.AddDays(-i).ToString("yyyy-MM-dd"),
+                        Y = j.ToString(),
+                        Value = hourAndDayValues[i][j]
+                    });
+                }
+            }
+
+            return await Task.FromResult(heatMapPoints);
         }
 
 
