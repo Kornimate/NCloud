@@ -19,15 +19,21 @@
     <script type="text/javascript">
 
         // Create 2 datasets
-        var data1 = [
-            { ser1: 0.3, ser2: 4 },
-            { ser1: 2, ser2: 16 },
-            { ser1: 3, ser2: 8 }
-        ];
+        var data1 = @Html.Raw(Json.Serialize(Model.LineGraphPoints));
+
+        console.log(data1)
+
+        const mapperFunction = (d) => {
+            return { x : d3.timeParse("%Y-%m-%d")(d.x), y : d.y }
+        }
+
+        data1 = data1.map(mapperFunction)
+
+        console.log(data1);
 
         // set the dimensions and margins of the graph
         var margin = { top: 10, right: 30, bottom: 30, left: 50 },
-            width = 460 - margin.left - margin.right,
+            width = 700 - margin.left - margin.right,
             height = 400 - margin.top - margin.bottom;
 
         // append the svg object to the body of the page
@@ -41,11 +47,17 @@
                 "translate(" + margin.left + "," + margin.top + ")");
 
         // Initialise a X axis:
-        var x = d3.scaleLinear().range([0, width]);
+        var x = d3.scaleTime()
+            .domain(d3.extent(data1, function(d) { return d.x; }))
+            .range([ 0, width ]);
+
         var xAxis = d3.axisBottom().scale(x);
+
         svg.append("g")
             .attr("transform", "translate(0," + height + ")")
             .attr("class", "myXaxis")
+            .call(d3.axisBottom(x));
+                
 
         // Initialize an Y axis
         var y = d3.scaleLinear().range([height, 0]);
@@ -57,13 +69,13 @@
         function update(data) {
 
             // Create the X axis:
-            x.domain([0, d3.max(data, function (d) { return d.ser1 })]);
+            x.domain([0, d3.max(data, function (d) { return d.x })]);
             svg.selectAll(".myXaxis").transition()
                 .duration(1000)
                 .call(xAxis);
 
             // create the Y axis
-            y.domain([0, d3.max(data, function (d) { return d.ser2 })]);
+            y.domain([0, d3.max(data, function (d) { return d.y })]);
             svg.selectAll(".myYaxis")
                 .transition()
                 .duration(1000)
@@ -71,7 +83,7 @@
 
             // Create a update selection: bind to the new data
             var u = svg.selectAll(".lineTest")
-                .data([data], function (d) { return d.ser1 });
+                .data([data], function (d) { return d.x });
 
             // Updata the line
             u
@@ -81,11 +93,12 @@
                 .merge(u)
                 .transition()
                 .duration(1000)
-                .attr("d", d3.line()
-                    .x(function (d) { return x(d.ser1); })
-                    .y(function (d) { return y(d.ser2); }))
-                .attr("fill", "none")
-                .attr("stroke", "steelblue")
+                .attr("d", d3.area()
+                    .x(function(d) { return x(d.x) })
+                    .y0(y(0))
+                    .y1(function(d) { return y(d.y) }))
+                .attr("fill", "#0d6efd")
+                .attr("stroke", "#0d6efd")
                 .attr("stroke-width", 2.5)
         }
 

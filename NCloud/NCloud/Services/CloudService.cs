@@ -1498,12 +1498,19 @@ namespace NCloud.Services
 
         public async Task<List<int>> GetLast30DaysLoginsCount()
         {
-            return await context.Logins.Where(x => x.Date > DateTime.UtcNow.AddDays(-30)).GroupBy(x => x.Date).Select(x => x.Count()).ToListAsync();
+            List<int> dayValues = [];
+
+            for(int i = 29; i >=0; i--)
+            {
+                dayValues.Add(await context.Logins.Where(x => x.Date.Date == DateTime.UtcNow.AddDays(-i).Date).CountAsync());
+            }
+
+            return dayValues;
         }
 
         public async Task<List<List<int>>> GetLastWeeksLoginsGroupped()
         {
-            List<List<int>> logiValues = new();
+            List<List<int>> loginValues = new();
 
             for (int i = 6; i >= 7; i--)
             {
@@ -1514,20 +1521,31 @@ namespace NCloud.Services
                     dayValues.Add(await context.Logins.Where(x => x.Date == DateTime.UtcNow.AddDays(-i) && x.Date.Hour == j).CountAsync());
                 }
 
-                logiValues.Add(dayValues);
+                loginValues.Add(dayValues);
             }
 
-            return logiValues;
+            return loginValues;
         }
 
-        public async Task<List<CloudLineGraphPointModel>> CreateLineGraphPoints(List<int> daysValues)
+        public async Task<List<CloudLineGraphPointModel>> CreateLineGraphPoints(List<int> dayValues)
         {
+            List<CloudLineGraphPointModel> lineGraphPoints = [];
 
+            for(int i = 29; i >= 0; i--)
+            {
+                lineGraphPoints.Add(new CloudLineGraphPointModel
+                {
+                    X = DateTime.UtcNow.AddDays(-i).Date.ToString("yyyy-MM-dd"),
+                    Y = dayValues[i]
+                });
+            }
+
+            return lineGraphPoints;
         }
 
         public async Task<List<CloudHeatMapPointModel>> CreateHeatMapPoints(List<List<int>> hourAndDayValues)
         {
-
+            return null!;
         }
 
 

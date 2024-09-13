@@ -491,7 +491,7 @@ namespace NCloud.Services
 
         Task<List<List<int>>> GetLastWeeksLoginsGroupped();
 
-        Task<List<CloudLineGraphPointModel>> CreateLineGraphPoints(List<int> daysValues);
+        Task<List<CloudLineGraphPointModel>> CreateLineGraphPoints(List<int> dayValues);
 
         Task<List<CloudHeatMapPointModel>> CreateHeatMapPoints(List<List<int>> hourAndDayValues);
     }
