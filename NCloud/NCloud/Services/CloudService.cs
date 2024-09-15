@@ -1533,11 +1533,11 @@ namespace NCloud.Services
         {
             List<CloudLineGraphPointModel> lineGraphPoints = [];
 
-            for (int i = 29; i >= 0; i--)
+            for (int i = 0; i < 30; i++)
             {
                 lineGraphPoints.Add(new CloudLineGraphPointModel
                 {
-                    X = DateTime.UtcNow.AddDays(-i).Date.ToString("yyyy-MM-dd"),
+                    X = DateTime.UtcNow.AddDays(29-i).Date.ToString("yyyy-MM-dd"),
                     Y = dayValues[i]
                 });
             }
@@ -1549,13 +1549,13 @@ namespace NCloud.Services
         {
             List<CloudHeatMapPointModel> heatMapPoints = [];
 
-            for (int i = 6; i >= 0 && i < hourAndDayValues.Count; i--)
+            for (int i = 0; i < 7 && i < hourAndDayValues.Count; i++)
             {
                 for (int j = 0; j < 24 && j < hourAndDayValues[i].Count; j++)
                 {
                     heatMapPoints.Add(new CloudHeatMapPointModel
                     {
-                        X = DateTime.UtcNow.AddDays(-i).ToString("yyyy-MM-dd"),
+                        X = DateTime.UtcNow.AddDays(6-i).ToString("yyyy-MM-dd"),
                         Y = j.ToString(),
                         Value = hourAndDayValues[i][j]
                     });
