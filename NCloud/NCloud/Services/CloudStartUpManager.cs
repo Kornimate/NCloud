@@ -19,6 +19,7 @@ namespace NCloud.Services
         private static RoleManager<CloudRole> roleManager = null!;
         private static ICloudService service = null!;
         private static IConfiguration config = null!;
+        private static IWebHostEnvironment appEnvironment = null!;
         private static ILogger logger = null!;
 
         /// <summary>
@@ -35,6 +36,7 @@ namespace NCloud.Services
             roleManager = serviceProvider.GetRequiredService<RoleManager<CloudRole>>();
             service = serviceProvider.GetRequiredService<ICloudService>();
             config = serviceProvider.GetRequiredService<IConfiguration>();
+            appEnvironment = serviceProvider.GetRequiredService<IWebHostEnvironment>();
             logger = loggerService;
 
             context.Database.Migrate();
@@ -130,7 +132,7 @@ namespace NCloud.Services
                 }).Wait();
             }
 
-            if (!context.Logins.Any())
+            if (appEnvironment.IsDevelopment() && !context.Logins.Any())
             {
                 List<CloudLogin> logins = new();
 
