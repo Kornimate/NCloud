@@ -80,6 +80,25 @@
         svg.append("g")
             .attr("class", "myYaxis")
 
+        d3.selectAll("g.myYaxis g.tick")
+            .append("line")
+            .attr("class", "gridline")
+            .attr("x1", 0)
+            .attr("y1", 0)
+            .attr("x2", width)
+            .attr("y2", 0)
+            .attr("stroke", "#9ca5aecf") // line color
+            .attr("stroke-dasharray", "4") // make it dashed;;
+
+        d3.selectAll("g.myXaxis g.tick")
+            .append("line")
+            .attr("class", "gridline")
+            .attr("x1", 0)
+            .attr("y1", -height)
+            .attr("x2", 0)
+            .attr("y2", 0)
+            .attr("stroke", "#9ca5aecf") // line color
+
         // Create a function that takes a dataset as input and update the plot:
         function update(data) {
 
@@ -137,12 +156,12 @@
 
         // append the svg object to the body of the page
         let svg2 = d3.select("#heatMap")
-        .append("svg")
-          .attr("width", width2 + margin2.left + margin2.right)
-          .attr("height", height2 + margin2.top + margin2.bottom)
-        .append("g")
-          .attr("transform",
-                "translate(" + margin2.left + "," + margin2.top + ")");
+            .append("svg")
+            .attr("width", width2 + margin2.left + margin2.right)
+            .attr("height", height2 + margin2.top + margin2.bottom)
+            .append("g")
+            .attr("transform",
+                "translate(" + margin2.left + "," + margin2.top + ")")
 
         // Labels of row and columns
         let myGroups = [...new Set(data.map(x => x.x))];
@@ -156,6 +175,7 @@
 
         svg2.append("g")
           .attr("transform", "translate(0," + height2 + ")")
+          .attr("class", "xAxis")
           .call(d3.axisBottom(x2))
 
         // Build X scales and axis:
@@ -165,12 +185,31 @@
           .padding(0.01);
 
         svg2.append("g")
-          .call(d3.axisLeft(y2));
+            .attr("class", "yAxis")
+            .call(d3.axisLeft(y2));
+
+        d3.selectAll("g.yAxis g.tick")
+            .append("line")
+            .attr("class", "gridline")
+            .attr("x1", 0)
+            .attr("y1", 0)
+            .attr("x2", width)
+            .attr("y2", 0)
+            .attr("stroke", "#9ca5aecf") // line color
+
+        d3.selectAll("g.xAxis g.tick")
+            .append("line")
+            .attr("class", "gridline")
+            .attr("x1", 0)
+            .attr("y1", -height)
+            .attr("x2", 0)
+            .attr("y2", 0)
+            .attr("stroke", "#9ca5aecf") // line color
 
         // Build color scale
         let myColor = d3.scaleLinear()
             .range(["white", "#cce5df"])
-            .domain([1, d3.max(data, function (d) { return d.value })]);
+            .domain([0, d3.max(data, function (d) { return d.value })]);
 
         //Read the data
         svg2.selectAll()
