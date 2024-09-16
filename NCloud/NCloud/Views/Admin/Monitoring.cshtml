@@ -88,7 +88,7 @@
             .attr("x2", width)
             .attr("y2", 0)
             .attr("stroke", "#9ca5aecf") // line color
-            .attr("stroke-dasharray", "4") // make it dashed;;
+            .attr("stroke-dasharray", "4") // make it dashed;
 
         d3.selectAll("g.myXaxis g.tick")
             .append("line")
@@ -99,44 +99,36 @@
             .attr("y2", 0)
             .attr("stroke", "#9ca5aecf") // line color
 
-        // Create a function that takes a dataset as input and update the plot:
-        function update(data) {
+        //Create x axis
+        x.domain(d3.extent(data1, function (d) { return d.x }));
+        svg.selectAll(".myXaxis").transition()
+            .duration(1000)
+            .call(xAxis);
 
-            // Create the X axis:
-            x.domain(d3.extent(data, function (d) { return d.x }));
-            svg.selectAll(".myXaxis").transition()
-                .duration(1000)
-                .call(xAxis);
+        // create the Y axis
+        y.domain([0, d3.max(data1, function (d) { return d.y })]);
+        svg.selectAll(".myYaxis")
+            .transition()
+            .duration(1000)
+            .call(yAxis);
 
-            // create the Y axis
-            y.domain([0, d3.max(data, function (d) { return d.y })]);
-            svg.selectAll(".myYaxis")
-                .transition()
-                .duration(1000)
-                .call(yAxis);
+        var u = svg.selectAll(".lineTest");
 
-            // Create a update selection: bind to the new data
-            let u = svg.selectAll(".lineTest")
-                .data([data], function (d) { return d.x });
-
-            // Updata the line
-            u.enter()
-                .append("path")
-                .attr("class", "lineTest")
-                .merge(u)
-                .transition()
-                .duration(1000)
-                .attr("d", d3.area()
-                    .x(function(d) { return x(d.x) })
-                    .y0(y(0))
-                    .y1(function(d) { return y(d.y) }))
-                .attr("fill", "#0d6efd")
-                .attr("stroke", "#0d6efd")
-                .attr("stroke-width", 2.5)
-        }
-
-        // At the beginning, I run the update function on the first dataset:
-        update(data1)
+        // Updata the line
+        u.enter()
+            .append("path")
+            .attr("class", "lineTest")
+            .data([data1], function (d) { return d.y })
+            .merge(u)
+            .transition()
+            .duration(1000)
+            .attr("d", d3.area()
+                .x(function(d) { return x(d.x) })
+                .y0(y(0))
+                .y1(function(d) { return y(d.y) }))
+            .attr("fill", "#0d6efd")
+            .attr("stroke", "#0d6efd")
+            .attr("stroke-width", 2.5)
 
     </script>
 
@@ -193,7 +185,7 @@
             .attr("class", "gridline")
             .attr("x1", 0)
             .attr("y1", 0)
-            .attr("x2", width)
+            .attr("x2", width2)
             .attr("y2", 0)
             .attr("stroke", "#9ca5aecf") // line color
 
@@ -201,7 +193,7 @@
             .append("line")
             .attr("class", "gridline")
             .attr("x1", 0)
-            .attr("y1", -height)
+            .attr("y1", -height2)
             .attr("x2", 0)
             .attr("y2", 0)
             .attr("stroke", "#9ca5aecf") // line color
@@ -209,7 +201,7 @@
         // Build color scale
         let myColor = d3.scaleLinear()
             .range(["white", "#cce5df"])
-            .domain([0, d3.max(data, function (d) { return d.value })]);
+            .domain([0,d3.max(data, function (d) { return d.value })]);
 
         //Read the data
         svg2.selectAll()

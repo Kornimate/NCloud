@@ -1520,7 +1520,7 @@ namespace NCloud.Services
 
                 for (int j = 0; j < 24; j++)
                 {
-                    dayValues.Add(await context.Logins.Where(x => x.Date.Year == computedTime.Year && x.Date.DayOfYear ==computedTime.DayOfYear  && x.Date.Hour == j).CountAsync());
+                    dayValues.Add(await context.Logins.Where(x => x.Date.Year == computedTime.Year && x.Date.DayOfYear == computedTime.DayOfYear && x.Date.Hour == j).CountAsync());
                 }
 
                 loginValues.Add(dayValues);
@@ -1537,8 +1537,8 @@ namespace NCloud.Services
             {
                 lineGraphPoints.Add(new CloudLineGraphPointModel
                 {
-                    X = DateTime.UtcNow.AddDays(29-i).Date.ToString("yyyy-MM-dd"),
-                    Y = dayValues[i]
+                    X = DateTime.UtcNow.AddDays(-i).Date.ToString("yyyy-MM-dd"),
+                    Y = dayValues[dayValues.Count - i - 1]
                 });
             }
 
@@ -1555,9 +1555,9 @@ namespace NCloud.Services
                 {
                     heatMapPoints.Add(new CloudHeatMapPointModel
                     {
-                        X = DateTime.UtcNow.AddDays(6-i).ToString("yyyy-MM-dd"),
+                        X = DateTime.UtcNow.AddDays(-i).ToString("yyyy-MM-dd"),
                         Y = j.ToString(),
-                        Value = hourAndDayValues[i][j]
+                        Value = hourAndDayValues[hourAndDayValues.Count - i - 1][j]
                     });
                 }
             }
