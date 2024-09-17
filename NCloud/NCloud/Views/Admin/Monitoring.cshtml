@@ -99,6 +99,25 @@
             .attr("y2", 0)
             .attr("stroke", "#9ca5aecf") // line color
 
+        const gradient = svg.append("defs")
+            .append("linearGradient")
+            .attr("id", "gradient")
+            .attr("x1", "0%")
+            .attr("y1", "20%")
+            .attr("x2", "0%")
+            .attr("y2", "100%");
+
+        // Gradient stops
+        gradient.append("stop")
+            .attr("offset", "50%")
+            .attr("stop-color", "#0d6efd")
+            .attr("stop-opacity", 0.7);
+
+        gradient.append("stop")
+            .attr("offset", "100%")
+            .attr("stop-color", "white")
+            .attr("stop-opacity", 1);
+
         //Create x axis
         x.domain(d3.extent(data1, function (d) { return d.x }));
         svg.selectAll(".myXaxis").transition()
@@ -112,25 +131,21 @@
             .duration(1000)
             .call(yAxis);
 
-        var u = svg.selectAll(".lineTest");
+        svg.append("path")
+           .datum(data1)
+           .attr("class", "lineTest")
+           .transition()
+           .duration(1000)
+           .attr("d", d3.area()
+               .x(function(d) { return x(d.x) })
+               .y0(y(0))
+               .y1(function(d) { return y(d.y) }))
+           .style("fill", "url(#gradient)")
+           .attr("stroke", "#0d6efd")
+           .attr("stroke-width", 2.5)
 
-        // Updata the line
-        u.enter()
-            .append("path")
-            .attr("class", "lineTest")
-            .data([data1], function (d) { return d.y })
-            .merge(u)
-            .transition()
-            .duration(1000)
-            .attr("d", d3.area()
-                .x(function(d) { return x(d.x) })
-                .y0(y(0))
-                .y1(function(d) { return y(d.y) }))
-            .attr("fill", "#0d6efd")
-            .attr("stroke", "#0d6efd")
-            .attr("stroke-width", 2.5)
-
-    </script>
+    
+            </script>
 
     <script type="text/javascript">
 
