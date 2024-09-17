@@ -22,9 +22,7 @@ namespace NCloud.Controllers
         /// <returns>Home page view</returns>
         public async Task<IActionResult> Index()
         {
-            await signInManager.PasswordSignInAsync(await service.GetAdmin()!,"Admin!1234", true, false);
-
-            return await Task.FromResult<IActionResult>(RedirectToAction("Monitoring","Admin"));
+            return await Task.FromResult<IActionResult>(View());
         }
 
         /// <summary>
