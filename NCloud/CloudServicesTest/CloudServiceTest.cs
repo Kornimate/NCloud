@@ -1904,11 +1904,11 @@ namespace CloudServicesTest
         {
             service.CreateNewLoginEntry(admin).Wait();
 
-            Assert.AreEqual(context.Logins.Count(), 1);
+            Assert.AreEqual(context.Logins.Count(), 4);
 
             service.CreateNewLoginEntry(null).Wait();
 
-            Assert.AreEqual(context.Logins.Count(), 1);
+            Assert.AreEqual(context.Logins.Count(), 4);
         }
 
         /// <summary>
@@ -1919,7 +1919,7 @@ namespace CloudServicesTest
         {
             service.CreateNewLoginEntry(admin).Wait();
 
-            Assert.AreEqual(context.Logins.Count(), 1);
+            Assert.AreEqual(context.Logins.Count(), 4);
 
             var entry = context.Logins.First();
 
@@ -1931,7 +1931,75 @@ namespace CloudServicesTest
 
             service.RemoveOldLogins().Wait();
 
-            Assert.AreEqual(context.Logins.Count(), 0);
+            Assert.AreEqual(context.Logins.Count(), 3);
+        }
+
+        /// <summary>
+        /// Test method to see correct query of logins in last 30 days
+        /// </summary>
+        [TestMethod]
+        public void GetLast30DaysLoginsTest()
+        {
+            var result = service.GetLast30DaysLoginsCount().GetAwaiter().GetResult();
+
+            Assert.AreEqual(result.Count, 30);
+
+            Assert.AreEqual(result[^1], 3);
+        }
+
+        /// <summary>
+        /// Test method to see correct query of logins in last 7 days groupped by days and hours
+        /// </summary>
+        [TestMethod]
+        public void GetLatWeekLoginsGrouppedTest()
+        {
+            var result = service.GetLastWeeksLoginsGroupped().GetAwaiter().GetResult();
+
+            Assert.AreEqual(result.Count, 7);
+
+            Assert.AreEqual(result[0].Count, 24);
+
+            Assert.IsTrue(result[^1].Any(x => x == 3));
+        }
+
+        /// <summary>
+        /// Test method to see correct query of logins in last 30 days and convert it to plottable format for d3.js
+        /// </summary>
+        [TestMethod]
+        public void CreateLineGraphPointsTest()
+        {
+            var points = service.GetLast30DaysLoginsCount().GetAwaiter().GetResult();
+
+            var result = service.CreateLineGraphPoints(points).GetAwaiter().GetResult();
+
+            Assert.AreEqual(result.Count, 30);
+
+            Assert.AreEqual(result[0].X, DateTime.UtcNow.AddDays(-29).ToString("yyyy-MM-dd"));
+            Assert.AreEqual(result[0].Y, points[0]);
+            
+            Assert.AreEqual(result[^1].X, DateTime.UtcNow.ToString("yyyy-MM-dd"));
+            Assert.AreEqual(result[^1].Y, points[^1]);
+        }
+
+        /// <summary>
+        /// Test method to see correct query of logins in last 7 days groupped by days and hours and convert it to plottable format for d3.js
+        /// </summary>
+        [TestMethod]
+        public void CreateHeatMapPointsTest()
+        {
+            var points = service.GetLastWeeksLoginsGroupped().GetAwaiter().GetResult();
+
+            var result = service.CreateHeatMapPoints(points).GetAwaiter().GetResult();
+
+            Assert.AreEqual(result.Count, 168);
+
+            Assert.AreEqual(result[0].X, DateTime.UtcNow.AddDays(-6).ToString("yyyy-MM-dd"));
+            Assert.AreEqual(result[0].Y, "0");
+            Assert.AreEqual(result[0].Value, points[0][0]);
+
+            Assert.AreEqual(result[^1].X, DateTime.UtcNow.ToString("yyyy-MM-dd"));
+            Assert.AreEqual(result[^1].Y, "23");
+            Assert.AreEqual(result[^1].Value, points[^1][^1]);
         }
     }
 }

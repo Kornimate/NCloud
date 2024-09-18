@@ -1510,11 +1510,11 @@ namespace NCloud.Services
 
         public async Task<List<List<int>>> GetLastWeeksLoginsGroupped()
         {
-            List<List<int>> loginValues = new();
+            List<List<int>> loginValues = [];
 
             for (int i = 6; i >= 0; i--)
             {
-                List<int> dayValues = new();
+                List<int> dayValues = [];
 
                 DateTime computedTime = DateTime.UtcNow.AddDays(-i);
 
