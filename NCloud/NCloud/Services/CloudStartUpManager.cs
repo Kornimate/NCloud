@@ -19,6 +19,7 @@ namespace NCloud.Services
         private static RoleManager<CloudRole> roleManager = null!;
         private static ICloudService service = null!;
         private static IConfiguration config = null!;
+        private static IWebHostEnvironment appEnvironment = null!;
         private static ILogger logger = null!;
 
         /// <summary>
@@ -35,6 +36,7 @@ namespace NCloud.Services
             roleManager = serviceProvider.GetRequiredService<RoleManager<CloudRole>>();
             service = serviceProvider.GetRequiredService<ICloudService>();
             config = serviceProvider.GetRequiredService<IConfiguration>();
+            appEnvironment = serviceProvider.GetRequiredService<IWebHostEnvironment>();
             logger = loggerService;
 
             context.Database.Migrate();
@@ -128,6 +130,24 @@ namespace NCloud.Services
                         logger.LogCritical("Erro while creating base directory for admin");
                     }
                 }).Wait();
+            }
+
+            if (appEnvironment.IsDevelopment() && !context.Logins.Any())
+            {
+                List<CloudLogin> logins = new();
+
+                Random rand = new Random();
+
+                for(int i = 0; i < 100; i++)
+                {
+                    logins.Add(new CloudLogin()
+                    {
+                        Date = DateTime.UtcNow.AddDays(rand.Next(-30, 1)).AddHours(rand.Next(-23,1)),
+                        User = adminUser
+                    });
+                }
+
+                context.AddRange(logins);
             }
 
             context.SaveChanges();

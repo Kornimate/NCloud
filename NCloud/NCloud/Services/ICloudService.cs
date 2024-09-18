@@ -486,5 +486,13 @@ namespace NCloud.Services
         /// </summary>
         /// <returns>Task to be awaited</returns>
         Task RemoveOldLogins();
+
+        Task<List<int>> GetLast30DaysLoginsCount();
+
+        Task<List<List<int>>> GetLastWeeksLoginsGroupped();
+
+        Task<List<CloudLineGraphPointModel>> CreateLineGraphPoints(List<int> dayValues);
+
+        Task<List<CloudHeatMapPointModel>> CreateHeatMapPoints(List<List<int>> hourAndDayValues);
     }
 }

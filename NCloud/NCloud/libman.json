@@ -23,10 +23,6 @@
       "destination": "wwwroot/monaco-editor/"
     },
     {
-      "library": "Chart.js@4.4.1",
-      "destination": "wwwroot/lib/Chart.js/"
-    },
-    {
       "library": "tinymce@7.3.0",
       "destination": "wwwroot/lib/tinymce/"
     }

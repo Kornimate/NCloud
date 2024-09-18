@@ -1,1 +1,232 @@
 ﻿@model MonitorViewModel
+
+@{
+    ViewData["title"] = "Database Metrics";
+}
+
+<div class="d-flex justify-content-between w-100 bg-primary rounded mb-3">
+    <a asp-action="Index" asp-controller="Admin" class="btn btn-primary"><img src="~/utilities/arrow-left-circle.svg" width=" 20" height="20" class="rounded align-middle" /></a>
+    <span class="btn"><img src="~/utilities/metrics.svg" width=" 20" height="20" class="rounded align-middle" /></span>
+</div>
+
+<script src="/lib/d3/d3.v7.min.js"></script>
+
+<div class="my-5">
+    <h2>Last 30 days login frequency</h2>
+</div>
+<div class="d-flex w-100 justify-content-center my-5">
+    <div id="lineChart"></div>
+</div>
+
+<div class="my-5">
+    <h2>Last 7 days login frequency / hour</h2>
+</div>
+<div class="d-flex w-100 justify-content-center my-5">
+    <div id="heatMap"></div>
+</div>
+
+
+@section Scripts {
+    <script type="text/javascript">
+
+        // Create 2 datasets
+        let data1 = @Html.Raw(Json.Serialize(Model.LineGraphPoints));
+
+        const mapperFunction = (d) => {
+            return { x : d3.timeParse("%Y-%m-%d")(d.x), y : d.y }
+        }
+
+        data1 = data1.map(mapperFunction)
+
+        // set the dimensions and margins of the graph
+        let margin = { top: 10, right: 30, bottom: 30, left: 50 },
+            width = 900 - margin.left - margin.right,
+            height = 300 - margin.top - margin.bottom;
+
+        // append the svg object to the body of the page
+        let svg = d3.select("#lineChart")
+            .append("svg")
+            .attr("width", width + margin.left + margin.right)
+            .attr("height", height + margin.top + margin.bottom)
+            .attr("fill", "#0d6efd")
+            .append("g")
+            .attr("transform",
+                "translate(" + margin.left + "," + margin.top + ")");
+
+        // Initialise a X axis:
+        let x = d3.scaleTime()
+            .domain(d3.extent(data1, function(d) { return d.x; }))
+            .range([ 0, width ]);
+
+        let xAxis = d3.axisBottom()
+            .scale(x)
+            .ticks(30)
+            .tickFormat(d3.timeFormat("%m-%d"));
+
+        let XAxis = svg.append("g")
+            .attr("transform", "translate(0," + height + ")")
+            .attr("class", "myXaxis")
+            .call(d3.axisBottom(x));
+
+        XAxis.selectAll(".tick text")
+            .style("text-anchor", "start")   // Align text so it does not overlap the ticks
+            .attr("dy", "2.0em") 
+            .attr("dx", "-1.0em"); 
+                
+
+        // Initialize an Y axis
+        let y = d3.scaleLinear().range([height, 0]);
+        let yAxis = d3.axisLeft().scale(y);
+        svg.append("g")
+            .attr("class", "myYaxis")
+
+        d3.selectAll("g.myYaxis g.tick")
+            .append("line")
+            .attr("class", "gridline")
+            .attr("x1", 0)
+            .attr("y1", 0)
+            .attr("x2", width)
+            .attr("y2", 0)
+            .attr("stroke", "#9ca5aecf") // line color
+            .attr("stroke-dasharray", "4") // make it dashed;
+
+        d3.selectAll("g.myXaxis g.tick")
+            .append("line")
+            .attr("class", "gridline")
+            .attr("x1", 0)
+            .attr("y1", -height)
+            .attr("x2", 0)
+            .attr("y2", 0)
+            .attr("stroke", "#9ca5aecf") // line color
+
+        const gradient = svg.append("defs")
+            .append("linearGradient")
+            .attr("id", "gradient")
+            .attr("x1", "0%")
+            .attr("y1", "20%")
+            .attr("x2", "0%")
+            .attr("y2", "100%");
+
+        // Gradient stops
+        gradient.append("stop")
+            .attr("offset", "50%")
+            .attr("stop-color", "#0d6efd")
+            .attr("stop-opacity", 0.7);
+
+        gradient.append("stop")
+            .attr("offset", "100%")
+            .attr("stop-color", "white")
+            .attr("stop-opacity", 1);
+
+        //Create x axis
+        x.domain(d3.extent(data1, function (d) { return d.x }));
+        svg.selectAll(".myXaxis").transition()
+            .duration(1000)
+            .call(xAxis);
+
+        // create the Y axis
+        y.domain([0, d3.max(data1, function (d) { return d.y })]);
+        svg.selectAll(".myYaxis")
+            .transition()
+            .duration(1000)
+            .call(yAxis);
+
+        svg.append("path")
+           .datum(data1)
+           .attr("class", "lineTest")
+           .transition()
+           .duration(1000)
+           .attr("d", d3.area()
+               .x(function(d) { return x(d.x) })
+               .y0(y(0))
+               .y1(function(d) { return y(d.y) }))
+           .style("fill", "url(#gradient)")
+           .attr("stroke", "#0d6efd")
+           .attr("stroke-width", 2.5)
+
+    
+            </script>
+
+    <script type="text/javascript">
+
+        let data = @Html.Raw(Json.Serialize(Model.HeatMapPoints));
+
+        const mapperFunction2 = (d) => {
+            return { x: new Date(d.x).toLocaleDateString(), y: d.y, value: d.value }
+        }
+
+        data = data.map(mapperFunction2)
+
+          let margin2 = {top: 30, right: 30, bottom: 30, left: 30},
+          width2 = 900 - margin2.left - margin2.right,
+          height2 = 900 - margin2.top - margin2.bottom;
+
+        // append the svg object to the body of the page
+        let svg2 = d3.select("#heatMap")
+            .append("svg")
+            .attr("width", width2 + margin2.left + margin2.right)
+            .attr("height", height2 + margin2.top + margin2.bottom)
+            .append("g")
+            .attr("transform",
+                "translate(" + margin2.left + "," + margin2.top + ")")
+
+        // Labels of row and columns
+        let myGroups = [...new Set(data.map(x => x.x))];
+        let myVars = [...new Set(data.map(x => x.y))];
+
+        // Build X scales and axis:
+        let x2 = d3.scaleBand()
+          .range([ 0, width2 ])
+          .domain(myGroups)
+          .padding(0.01);
+
+        svg2.append("g")
+          .attr("transform", "translate(0," + height2 + ")")
+          .attr("class", "xAxis")
+          .call(d3.axisBottom(x2))
+
+        // Build X scales and axis:
+        let y2 = d3.scaleBand()
+          .range([ height2, 0 ])
+          .domain(myVars)
+          .padding(0.01);
+
+        svg2.append("g")
+            .attr("class", "yAxis")
+            .call(d3.axisLeft(y2));
+
+        d3.selectAll("g.yAxis g.tick")
+            .append("line")
+            .attr("class", "gridline")
+            .attr("x1", 0)
+            .attr("y1", 0)
+            .attr("x2", width2)
+            .attr("y2", 0)
+            .attr("stroke", "#9ca5aecf") // line color
+
+        d3.selectAll("g.xAxis g.tick")
+            .append("line")
+            .attr("class", "gridline")
+            .attr("x1", 0)
+            .attr("y1", -height2)
+            .attr("x2", 0)
+            .attr("y2", 0)
+            .attr("stroke", "#9ca5aecf") // line color
+
+        // Build color scale
+        let myColor = d3.scaleLinear()
+            .range(["white", "#0d6efd"])
+            .domain([0,d3.max(data, function (d) { return d.value })]);
+
+        //Read the data
+        svg2.selectAll()
+            .data(data)
+            .enter()
+            .append("rect")
+            .attr("x", function (d) { return x2(d.x) })
+            .attr("y", function (d) { return y2(d.y) })
+            .attr("width", x2.bandwidth())
+            .attr("height", y2.bandwidth())
+            .style("fill", d => myColor(d.value));
+    </script>
+}

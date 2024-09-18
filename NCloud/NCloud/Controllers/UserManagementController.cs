@@ -293,7 +293,7 @@ namespace NCloud.Controllers
 
                 TempData["ReturnUrl"] = returnUrl;
 
-                return RedirectToAction("Index", "Account");
+                return RedirectToAction("UserPage", "UserManagement");
             }
 
             CloudUser user = (await userManager.GetUserAsync(User))!;

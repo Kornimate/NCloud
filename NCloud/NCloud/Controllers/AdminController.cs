@@ -286,10 +286,11 @@ namespace NCloud.Controllers
         {
             try
             {
-                return await Task.FromResult<IActionResult>(View());
-
-                //elaborate charts with ChartJs NuGet
-                //elaborate and query methods in CloudService.cs
+                return await Task.FromResult<IActionResult>(View(new MonitorViewModel
+                {
+                    LineGraphPoints = await service.CreateLineGraphPoints(await service.GetLast30DaysLoginsCount()),
+                    HeatMapPoints = await service.CreateHeatMapPoints(await service.GetLastWeeksLoginsGroupped())
+                }));
             }
             catch (Exception)
             {

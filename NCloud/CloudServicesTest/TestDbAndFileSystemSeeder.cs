@@ -18,6 +18,13 @@ namespace CloudServicesTest
             context.Users.Add(user);
             context.Users.Add(user2);
 
+            context.Logins.AddRange(new List<CloudLogin>()
+            {
+                new CloudLogin(admin),
+                new CloudLogin(admin),
+                new CloudLogin(admin)
+            });
+
             context.SaveChanges();
 
             return (admin, user, user2);
