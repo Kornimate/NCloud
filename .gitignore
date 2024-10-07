@@ -81,12 +81,8 @@ _[Ss]cripts
 /NCloud/NCloud/database.db-wal
 */NCloud/NCloud/.__Logs__
 */NCloud/NCloud/.__CloudData__
+*/NCloud/NCloud/.__CloudData__/*
 */NCloud/NCloud/.__TempFiles__
 *.__Logs__
 *.__Logs__*
-/NCloud/NCloud/.__CloudData__/Private/03fc99ac-c177-42ab-a4e8-258c9ce9a0fe
-/NCloud/NCloud/.__CloudData__/Private/793a7b51-dead-4fbb-a724-93708b705ed3/Music/Documents
-/NCloud/NCloud/.__CloudData__/Private/a207081c-48ca-4a40-9112-e77a23aaea31
-/NCloud/Release-win-x64/Services/Resources/coding-extensions.json
-/NCloud/NCloud/appsettings.json
-/NCloud/NCloud/.__CloudData__/Private/a7c8c695-d4d2-4273-afe5-9adef0cece32/19182527 (1).pdf
+/NCloud/NCloud/.__CloudData__/Private/efa8c4e8-c2b8-4311-b742-4b9a09aa5a1a/Documents
