@@ -81,8 +81,10 @@ _[Ss]cripts
 /NCloud/NCloud/database.db-wal
 */NCloud/NCloud/.__Logs__
 */NCloud/NCloud/.__CloudData__
-*/NCloud/NCloud/.__CloudData__/*
 */NCloud/NCloud/.__TempFiles__
 *.__Logs__
 *.__Logs__*
-/NCloud/NCloud/.__CloudData__/Private/efa8c4e8-c2b8-4311-b742-4b9a09aa5a1a/Documents
+/NCloud/Release-win-x64/Services/Resources/coding-extensions.json
+/NCloud/NCloud/appsettings.json
+*.__*
+
