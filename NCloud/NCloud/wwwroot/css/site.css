@@ -205,6 +205,10 @@ details[open] summary:before {
     padding: 20px 0;
 }
 
+.middle-justification {
+    align-items: center;
+}
+
 .card-block {
     padding: 1.25rem;
 }
