@@ -22,11 +22,7 @@ namespace NCloud.Controllers
         /// <returns>Home page view</returns>
         public async Task<IActionResult> Index()
         {
-            await signInManager.PasswordSignInAsync("Admin", "Admin!1234", false, false);
-
-            return RedirectToAction("UserPage", "UserManagement");
-
-            //return await Task.FromResult<IActionResult>(View());
+            return await Task.FromResult<IActionResult>(View());
         }
 
         /// <summary>
